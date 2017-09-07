@@ -21,8 +21,8 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib import exceptions as lib_exc
 from tempest import test
 
-from neutron.common import constants
-from neutron.common import utils
+from neutron.tests.tempest.common import constants
+from neutron.tests.tempest.common import utils
 from neutron.tests.tempest.api import clients
 from neutron.tests.tempest import config
 from neutron.tests.tempest import exceptions

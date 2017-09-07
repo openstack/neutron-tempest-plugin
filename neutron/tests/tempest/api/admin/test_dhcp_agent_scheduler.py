@@ -15,7 +15,7 @@
 from neutron_lib import constants
 from tempest.lib import decorators
 
-from neutron.common import utils
+from neutron.tests.tempest.common import utils
 from neutron.tests.tempest.api import base
 
 

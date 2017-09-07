@@ -20,7 +20,7 @@ from tempest import test
 import testscenarios
 import testtools
 
-from neutron.services.qos import qos_consts
+from neutron.tests.tempest.common import qos_consts
 from neutron.tests.tempest.api import base
 
 

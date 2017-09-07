@@ -21,8 +21,8 @@ from tempest.lib import decorators
 from tempest.lib import exceptions
 from tempest import test
 
-from neutron.common import utils
-from neutron.services.qos import qos_consts
+from neutron.tests.tempest.common import utils
+from neutron.tests.tempest.common import qos_consts
 from neutron.tests.tempest.api import base as base_api
 from neutron.tests.tempest.common import ssh
 from neutron.tests.tempest import config

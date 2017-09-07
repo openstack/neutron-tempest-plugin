@@ -18,7 +18,7 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest import test
 
-from neutron.common import utils
+from neutron.tests.tempest.common import utils
 from neutron.tests.tempest.api import base
 from neutron.tests.tempest.api import base_routers
 from neutron.tests.tempest import config

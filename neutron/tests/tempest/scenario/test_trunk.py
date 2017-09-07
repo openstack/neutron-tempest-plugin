@@ -20,7 +20,7 @@ from tempest.lib import decorators
 from tempest import test
 import testtools
 
-from neutron.common import utils
+from neutron.tests.tempest.common import utils
 from neutron.tests.tempest.common import ssh
 from neutron.tests.tempest import config
 from neutron.tests.tempest.scenario import base

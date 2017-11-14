@@ -1,0 +1,9 @@
+- project:
+    name: openstack/neutron-tempest-plugin
+    check:
+      jobs:
+        # These jobs are defined in http://git.openstack.org/cgit/openstack/neutron/tree/.zuul.yaml
+        # They are all non-voting.
+        - neutron-tempest-plugin-dvr-multinode-scenario
+        - neutron-tempest-plugin-scenario-linuxbridge
+        - neutron-tempest-plugin-api

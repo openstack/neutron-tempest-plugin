@@ -14,10 +14,9 @@
 #    under the License.
 
 import six
-from tempest.lib.common.utils import data_utils
+from tempest.common import utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
-from tempest import test
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin import config
@@ -32,17 +31,6 @@ class QuotasTestBase(base.BaseAdminNetworkTest):
     @classmethod
     def resource_setup(cls):
         super(QuotasTestBase, cls).resource_setup()
-
-    def _create_tenant(self):
-        # Add a tenant to conduct the test
-        test_tenant = data_utils.rand_name('test_tenant_')
-        test_description = data_utils.rand_name('desc_')
-        project = self.identity_admin_client.create_project(
-            name=test_tenant,
-            description=test_description)['project']
-        self.addCleanup(
-            self.identity_admin_client.delete_project, project['id'])
-        return project
 
     def _setup_quotas(self, project_id, **new_quotas):
         # Change quotas for tenant
@@ -96,7 +84,7 @@ class QuotasTest(QuotasTestBase):
     @decorators.attr(type='gate')
     @decorators.idempotent_id('2390f766-836d-40ef-9aeb-e810d78207fb')
     def test_quotas(self):
-        tenant_id = self._create_tenant()['id']
+        tenant_id = self.create_project()['id']
         new_quotas = {'network': 0, 'security_group': 0}
 
         # Change quotas for tenant
@@ -127,9 +115,9 @@ class QuotasTest(QuotasTestBase):
 
     @decorators.idempotent_id('e974b5ba-090a-452c-a578-f9710151d9fc')
     @decorators.attr(type='gate')
-    @test.requires_ext(extension="quota_details", service="network")
+    @utils.requires_ext(extension="quota_details", service="network")
     def test_detail_quotas(self):
-        tenant_id = self._create_tenant()['id']
+        tenant_id = self.create_project()['id']
         new_quotas = {'network': {'used': 1, 'limit': 2, 'reserved': 0},
                       'port': {'used': 1, 'limit': 2, 'reserved': 0}}
 

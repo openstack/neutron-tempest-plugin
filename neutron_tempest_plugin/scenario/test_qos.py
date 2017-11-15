@@ -16,13 +16,13 @@ import errno
 import socket
 import time
 
+from neutron_lib.services.qos import constants as qos_consts
 from oslo_log import log as logging
+from tempest.common import utils as tutils
 from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 from neutron_tempest_plugin.api import base as base_api
-from neutron_tempest_plugin.common import qos_consts
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
@@ -80,7 +80,7 @@ class QoSTest(base.BaseTempestTestCase):
     FILE_PATH = "/tmp/img"
 
     @classmethod
-    @test.requires_ext(extension="qos", service="network")
+    @tutils.requires_ext(extension="qos", service="network")
     @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
     def resource_setup(cls):
         super(QoSTest, cls).resource_setup()
@@ -154,9 +154,9 @@ class QoSTest(base.BaseTempestTestCase):
                                 CONF.validation.image_ssh_user,
                                 pkey=self.keypair['private_key'])
         policy = self.os_admin.network_client.create_qos_policy(
-                                       name='test-policy',
-                                       description='test-qos-policy',
-                                       shared=True)
+                                        name='test-policy',
+                                        description='test-qos-policy',
+                                        shared=True)
         policy_id = policy['policy']['id']
         self.os_admin.network_client.create_bandwidth_limit_rule(
             policy_id, max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,

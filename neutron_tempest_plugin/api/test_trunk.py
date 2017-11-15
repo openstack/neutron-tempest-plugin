@@ -12,11 +12,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
-from tempest import test
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin import config
@@ -95,7 +95,7 @@ class TrunkTestJSON(TrunkTestJSONBase):
         self.assertRaises(lib_exc.NotFound, self._show_trunk, trunk_id)
 
     @decorators.idempotent_id('8d83a6ca-662d-45b8-8062-d513077296aa')
-    @test.requires_ext(extension="project-id", service="network")
+    @utils.requires_ext(extension="project-id", service="network")
     def test_show_trunk_has_project_id(self):
         trunk = self._create_trunk_with_network_and_parent(None)
         body = self._show_trunk(trunk['trunk']['id'])
@@ -228,7 +228,7 @@ class TrunkTestInheritJSONBase(TrunkTestJSONBase):
 
     def create_provider_network(self):
         foo_net = config.CONF.neutron_plugin_options.provider_vlans[0]
-        post_body = {'network_name': data_utils.rand_name('vlan-net-'),
+        post_body = {'network_name': data_utils.rand_name('vlan-net'),
                      'provider:network_type': 'vlan',
                      'provider:physical_network': foo_net}
         return self.create_shared_network(**post_body)
@@ -276,11 +276,11 @@ class TrunkTestMtusJSONBase(TrunkTestJSONBase):
         super(TrunkTestMtusJSONBase, self).setUp()
 
         # VXLAN autocomputed MTU (1450) is smaller than that of GRE (1458)
-        vxlan_kwargs = {'network_name': data_utils.rand_name('vxlan-net-'),
+        vxlan_kwargs = {'network_name': data_utils.rand_name('vxlan-net'),
                         'provider:network_type': 'vxlan'}
         self.smaller_mtu_net = self.create_shared_network(**vxlan_kwargs)
 
-        gre_kwargs = {'network_name': data_utils.rand_name('gre-net-'),
+        gre_kwargs = {'network_name': data_utils.rand_name('gre-net'),
                       'provider:network_type': 'gre'}
         self.larger_mtu_net = self.create_shared_network(**gre_kwargs)
 

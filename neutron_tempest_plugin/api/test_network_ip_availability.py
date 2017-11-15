@@ -15,11 +15,11 @@
 
 import netaddr
 
+from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
-from tempest import test
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin import config
@@ -50,7 +50,7 @@ class NetworksIpAvailabilityTest(base.BaseAdminNetworkTest):
     """
 
     @classmethod
-    @test.requires_ext(extension="network-ip-availability", service="network")
+    @utils.requires_ext(extension="network-ip-availability", service="network")
     def skip_checks(cls):
         super(NetworksIpAvailabilityTest, cls).skip_checks()
 
@@ -111,7 +111,7 @@ class NetworksIpAvailabilityIPv4Test(NetworksIpAvailabilityTest):
 
     @decorators.idempotent_id('0f33cc8c-1bf6-47d1-9ce1-010618240599')
     def test_admin_network_availability_before_subnet(self):
-        net_name = data_utils.rand_name('network-')
+        net_name = data_utils.rand_name('network')
         network = self.create_network(network_name=net_name)
         self.addCleanup(self.client.delete_network, network['id'])
         net_availability = self.admin_client.list_network_ip_availabilities()
@@ -119,7 +119,7 @@ class NetworksIpAvailabilityIPv4Test(NetworksIpAvailabilityTest):
 
     @decorators.idempotent_id('3aecd3b2-16ed-4b87-a54a-91d7b3c2986b')
     def test_net_ip_availability_after_subnet_and_ports(self):
-        net_name = data_utils.rand_name('network-')
+        net_name = data_utils.rand_name('network')
         network = self.create_network(network_name=net_name)
         self.addCleanup(self.client.delete_network, network['id'])
         subnet, prefix = self._create_subnet(network, self._ip_version)
@@ -138,7 +138,7 @@ class NetworksIpAvailabilityIPv4Test(NetworksIpAvailabilityTest):
 
     @decorators.idempotent_id('9f11254d-757b-492e-b14b-f52144e4ee7b')
     def test_net_ip_availability_after_port_delete(self):
-        net_name = data_utils.rand_name('network-')
+        net_name = data_utils.rand_name('network')
         network = self.create_network(network_name=net_name)
         self.addCleanup(self.client.delete_network, network['id'])
         subnet, prefix = self._create_subnet(network, self._ip_version)

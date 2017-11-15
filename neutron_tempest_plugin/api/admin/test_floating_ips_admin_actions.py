@@ -36,7 +36,7 @@ class FloatingIPAdminTestJSON(base.BaseAdminNetworkTest):
         cls.alt_client = cls.os_alt.network_client
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
-        cls.router = cls.create_router(data_utils.rand_name('router-'),
+        cls.router = cls.create_router(data_utils.rand_name('router'),
                                        external_network_id=cls.ext_net_id)
         cls.create_router_interface(cls.router['id'], cls.subnet['id'])
         cls.port = cls.create_port(cls.network)
@@ -47,12 +47,7 @@ class FloatingIPAdminTestJSON(base.BaseAdminNetworkTest):
         body = self.client.create_floatingip(
             floating_network_id=self.ext_net_id)
         floating_ip = body['floatingip']
-        test_project = data_utils.rand_name('test_project_')
-        test_description = data_utils.rand_name('desc_')
-        project = self.identity_admin_client.create_project(
-            name=test_project, description=test_description)['project']
-        project_id = project['id']
-        self.addCleanup(self.identity_admin_client.delete_project, project_id)
+        project_id = self.create_project()['id']
 
         port = self.admin_client.create_port(network_id=self.network['id'],
                                              project_id=project_id)

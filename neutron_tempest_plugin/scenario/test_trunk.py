@@ -14,10 +14,10 @@
 
 import netaddr
 from oslo_log import log as logging
+from tempest.common import utils as tutils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
-from tempest import test
 import testtools
 
 from neutron_tempest_plugin.common import ssh
@@ -47,7 +47,7 @@ class TrunkTest(base.BaseTempestTestCase):
     force_tenant_isolation = False
 
     @classmethod
-    @test.requires_ext(extension="trunk", service="network")
+    @tutils.requires_ext(extension="trunk", service="network")
     def resource_setup(cls):
         super(TrunkTest, cls).resource_setup()
         # setup basic topology for servers we can log into
@@ -57,7 +57,7 @@ class TrunkTest(base.BaseTempestTestCase):
         cls.create_router_interface(router['id'], cls.subnet['id'])
         cls.keypair = cls.create_keypair()
         cls.secgroup = cls.os_primary.network_client.create_security_group(
-            name=data_utils.rand_name('secgroup-'))
+            name=data_utils.rand_name('secgroup'))
         cls.security_groups.append(cls.secgroup['security_group'])
         cls.create_loginable_secgroup_rule(
             secgroup_id=cls.secgroup['security_group']['id'])

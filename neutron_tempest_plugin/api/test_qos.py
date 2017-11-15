@@ -12,16 +12,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib.api.definitions import qos as qos_apidef
+from neutron_lib.services.qos import constants as qos_consts
+from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions
-from tempest import test
 
 import testscenarios
 import testtools
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin.common import qos_consts
 
 
 load_tests = testscenarios.load_tests_apply_scenarios
@@ -29,24 +30,13 @@ load_tests = testscenarios.load_tests_apply_scenarios
 
 class QosTestJSON(base.BaseAdminNetworkTest):
 
-    required_extensions = ['qos']
+    required_extensions = [qos_apidef.ALIAS]
 
     @staticmethod
     def _get_driver_details(rule_type_details, driver_name):
         for driver in rule_type_details['drivers']:
             if driver['name'] == driver_name:
                 return driver
-
-    def _create_project(self):
-        # Add a project to conduct the test
-        test_project = data_utils.rand_name('test_project_')
-        test_description = data_utils.rand_name('desc_')
-        project = self.identity_admin_client.create_project(
-            name=test_project,
-            description=test_description)['project']
-        self.addCleanup(
-            self.identity_admin_client.delete_project, project['id'])
-        return project
 
     @decorators.idempotent_id('108fbdf7-3463-4e47-9871-d07f3dcf5bbb')
     def test_create_policy(self):
@@ -67,7 +57,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         self.assertIn(policy['id'], policies_ids)
 
     @decorators.idempotent_id('606a48e2-5403-4052-b40f-4d54b855af76')
-    @test.requires_ext(extension="project-id", service="network")
+    @utils.requires_ext(extension="project-id", service="network")
     def test_show_policy_has_project_id(self):
         policy = self.create_qos_policy(name='test-policy', shared=False)
         body = self.admin_client.show_qos_policy(policy['id'])
@@ -371,7 +361,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('18d94f22-b9d5-4390-af12-d30a0cfc4cd3')
     def test_default_policy_creating_network_without_policy(self):
-        project_id = self._create_project()['id']
+        project_id = self.create_project()['id']
         policy = self.create_qos_policy(name='test-policy',
                                         tenant_id=project_id,
                                         is_default=True)
@@ -383,7 +373,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('807cce45-38e5-482d-94db-36e1796aba73')
     def test_default_policy_creating_network_with_policy(self):
-        project_id = self._create_project()['id']
+        project_id = self.create_project()['id']
         self.create_qos_policy(name='test-policy',
                                tenant_id=project_id,
                                is_default=True)
@@ -400,7 +390,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     direction = None
-    required_extensions = ['qos']
+    required_extensions = [qos_apidef.ALIAS]
 
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
@@ -598,7 +588,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
 
     force_tenant_isolation = True
     credentials = ['primary', 'alt', 'admin']
-    required_extensions = ['qos']
+    required_extensions = [qos_apidef.ALIAS]
 
     @classmethod
     def resource_setup(cls):
@@ -852,7 +842,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
     VALID_DSCP_MARK1 = 56
     VALID_DSCP_MARK2 = 48
 
-    required_extensions = ['qos']
+    required_extensions = [qos_apidef.ALIAS]
 
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_DSCP_MARKING)
@@ -986,7 +976,7 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
     DIRECTION_INGRESS = "ingress"
     RULE_NAME = qos_consts.RULE_TYPE_MINIMUM_BANDWIDTH + "_rule"
     RULES_NAME = RULE_NAME + "s"
-    required_extensions = ['qos']
+    required_extensions = [qos_apidef.ALIAS]
 
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_MINIMUM_BANDWIDTH)
@@ -1148,7 +1138,7 @@ class QosSearchCriteriaTest(base.BaseSearchCriteriaTest,
     list_kwargs = {'description': 'search-criteria-test'}
     list_as_admin = True
 
-    required_extensions = ['qos']
+    required_extensions = [qos_apidef.ALIAS]
 
     @classmethod
     def resource_setup(cls):

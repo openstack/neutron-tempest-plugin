@@ -17,6 +17,8 @@ import functools
 import math
 
 import netaddr
+from neutron_lib import constants as const
+from tempest.common import utils as tutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import exceptions as lib_exc
 from tempest import test
@@ -77,7 +79,7 @@ class BaseNetworkTest(test.BaseTestCase):
         if cls._ip_version == 6 and not CONF.network_feature_enabled.ipv6:
             raise cls.skipException("IPv6 Tests are disabled.")
         for req_ext in getattr(cls, 'required_extensions', []):
-            if not test.is_extension_enabled(req_ext, 'network'):
+            if not tutils.is_extension_enabled(req_ext, 'network'):
                 msg = "%s extension not enabled." % req_ext
                 raise cls.skipException(msg)
 
@@ -115,6 +117,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.subnetpools = []
         cls.admin_subnetpools = []
         cls.security_groups = []
+        cls.projects = []
 
     @classmethod
     def resource_cleanup(cls):
@@ -190,6 +193,11 @@ class BaseNetworkTest(test.BaseTestCase):
                 cls._try_delete_resource(
                     cls.admin_client.delete_address_scope,
                     address_scope['id'])
+
+            for project in cls.projects:
+                cls._try_delete_resource(
+                    cls.identity_admin_client.delete_project,
+                    project['id'])
 
             # Clean up QoS rules
             for qos_rule in cls.qos_rules:
@@ -395,7 +403,7 @@ class BaseNetworkTest(test.BaseTestCase):
     @classmethod
     def create_qos_bandwidth_limit_rule(cls, policy_id, max_kbps,
                                         max_burst_kbps,
-                                        direction=constants.EGRESS_DIRECTION):
+                                        direction=const.EGRESS_DIRECTION):
         """Wrapper utility that returns a test QoS bandwidth limit rule."""
         body = cls.admin_client.create_bandwidth_limit_rule(
             policy_id, max_kbps, max_burst_kbps, direction)
@@ -406,7 +414,8 @@ class BaseNetworkTest(test.BaseTestCase):
     @classmethod
     def delete_router(cls, router):
         body = cls.client.list_router_interfaces(router['id'])
-        interfaces = body['ports']
+        interfaces = [port for port in body['ports']
+                      if port['device_owner'] in const.ROUTER_INTERFACE_OWNERS]
         for i in interfaces:
             try:
                 cls.client.remove_router_interface_with_subnet_id(
@@ -434,6 +443,22 @@ class BaseNetworkTest(test.BaseTestCase):
             body = cls.client.create_subnetpool(name, **kwargs)
             cls.subnetpools.append(body['subnetpool'])
         return body['subnetpool']
+
+    @classmethod
+    def create_project(cls, name=None, description=None):
+        test_project = name or data_utils.rand_name('test_project_')
+        test_description = description or data_utils.rand_name('desc_')
+        project = cls.identity_admin_client.create_project(
+            name=test_project,
+            description=test_description)['project']
+        cls.projects.append(project)
+        return project
+
+    @classmethod
+    def create_security_group(cls, name, **kwargs):
+        body = cls.client.create_security_group(name=name, **kwargs)
+        cls.security_groups.append(body['security_group'])
+        return body['security_group']
 
 
 class BaseAdminNetworkTest(BaseNetworkTest):
@@ -542,7 +567,7 @@ def require_qos_rule_type(rule_type):
 def _require_sorting(f):
     @functools.wraps(f)
     def inner(self, *args, **kwargs):
-        if not test.is_extension_enabled("sorting", "network"):
+        if not tutils.is_extension_enabled("sorting", "network"):
             self.skipTest('Sorting feature is required')
         return f(self, *args, **kwargs)
     return inner
@@ -551,7 +576,7 @@ def _require_sorting(f):
 def _require_pagination(f):
     @functools.wraps(f)
     def inner(self, *args, **kwargs):
-        if not test.is_extension_enabled("pagination", "network"):
+        if not tutils.is_extension_enabled("pagination", "network"):
             self.skipTest('Pagination feature is required')
         return f(self, *args, **kwargs)
     return inner

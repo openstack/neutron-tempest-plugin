@@ -12,6 +12,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from neutron_lib.api.definitions import metering as metering_apidef
 from neutron_lib.db import constants as db_const
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -31,7 +32,7 @@ class MeteringTestJSON(base.BaseAdminNetworkTest):
         List, Show, Create, Delete Metering labels rules
     """
 
-    required_extensions = ['metering']
+    required_extensions = [metering_apidef.ALIAS]
 
     @classmethod
     def resource_setup(cls):
@@ -72,7 +73,7 @@ class MeteringTestJSON(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('ec8e15ff-95d0-433b-b8a6-b466bddb1e50')
     def test_create_delete_metering_label_with_filters(self):
         # Creates a label
-        name = data_utils.rand_name('metering-label-')
+        name = data_utils.rand_name('metering-label')
         description = "label created by tempest"
         body = self.admin_client.create_metering_label(name=name,
                                                        description=description)

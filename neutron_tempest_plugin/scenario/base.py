@@ -42,15 +42,17 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     @classmethod
     def resource_cleanup(cls):
         for keypair in cls.keypairs:
-            cls.os_primary.keypairs_client.delete_keypair(
-                keypair_name=keypair['name'])
+            client = keypair['client']
+            client.delete_keypair(
+                keypair_name=keypair['keypair']['name'])
 
         super(BaseTempestTestCase, cls).resource_cleanup()
 
     def create_server(self, flavor_ref, image_ref, key_name, networks,
-                      name=None, security_groups=None):
+                      **kwargs):
         """Create a server using tempest lib
         All the parameters are the ones used in Compute API
+        * - Kwargs that require admin privileges
 
         Args:
            flavor_ref(str): The flavor of the server to be provisioned.
@@ -61,30 +63,47 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                an interface to be attached to the server. For network
                it should be {'uuid': network_uuid} and for port it should
                be {'port': port_uuid}
+        kwargs:
            name(str): Name of the server to be provisioned.
            security_groups(list): List of dictionaries where
                 the keys is 'name' and the value is the name of
                 the security group. If it's not passed the default
                 security group will be used.
+           availability_zone(str)*: The availability zone that
+                the instance will be in.
+                You can request a specific az without actually creating one,
+                Just pass 'X:Y' where X is the default availability
+                zone, and Y is the compute host name.
         """
 
-        name = name or data_utils.rand_name('server-test')
-        if not security_groups:
-            security_groups = [{'name': 'default'}]
+        name = kwargs.get('name', data_utils.rand_name('server-test'))
+        security_groups = kwargs.get(
+            'security_groups', [{'name': 'default'}])
+        availability_zone = kwargs.get('availability_zone')
 
-        server = self.os_primary.servers_client.create_server(
-            name=name,
-            flavorRef=flavor_ref,
-            imageRef=image_ref,
-            key_name=key_name,
-            networks=networks,
-            security_groups=security_groups)
+        server_args = {
+            'name': name,
+            'flavorRef': flavor_ref,
+            'imageRef': image_ref,
+            'key_name': key_name,
+            'networks': networks,
+            'security_groups': security_groups
+        }
+
+        if availability_zone:
+            server_args['availability_zone'] = availability_zone
+            client = self.os_admin.servers_client
+        else:
+            client = self.os_primary.servers_client
+
+        server = client.create_server(**server_args)
 
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-            waiters.wait_for_server_termination,
-            self.os_primary.servers_client, server['server']['id'])
+                        waiters.wait_for_server_termination,
+                        client,
+                        server['server']['id'])
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        self.os_primary.servers_client.delete_server,
+                        client.delete_server,
                         server['server']['id'])
         return server
 
@@ -93,12 +112,16 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         client = client or cls.os_primary.keypairs_client
         name = data_utils.rand_name('keypair-test')
         body = client.create_keypair(name=name)
-        cls.keypairs.append(body['keypair'])
+        body.update(client=client)
+        if client is cls.os_primary.keypairs_client:
+            cls.keypairs.append(body)
+
         return body['keypair']
 
     @classmethod
-    def create_secgroup_rules(cls, rule_list, secgroup_id=None):
-        client = cls.os_primary.network_client
+    def create_secgroup_rules(cls, rule_list, client=None,
+                              secgroup_id=None):
+        client = client or cls.os_primary.network_client
         if not secgroup_id:
             sgs = client.list_security_groups()['security_groups']
             for sg in sgs:
@@ -114,7 +137,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 **rule)
 
     @classmethod
-    def create_loginable_secgroup_rule(cls, secgroup_id=None):
+    def create_loginable_secgroup_rule(cls, secgroup_id=None,
+                                       client=None):
         """This rule is intended to permit inbound ssh
 
         Allowing ssh traffic traffic from all sources, so no group_id is
@@ -128,10 +152,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                       'port_range_min': 22,
                       'port_range_max': 22,
                       'remote_ip_prefix': '0.0.0.0/0'}]
-        cls.create_secgroup_rules(rule_list, secgroup_id=secgroup_id)
+        client = client or cls.os_primary.network_client
+        cls.create_secgroup_rules(rule_list, client,
+                                  secgroup_id=secgroup_id)
 
     @classmethod
-    def create_pingable_secgroup_rule(cls, secgroup_id=None):
+    def create_pingable_secgroup_rule(cls, secgroup_id=None,
+                                      client=None):
         """This rule is intended to permit inbound ping
         """
 
@@ -140,7 +167,9 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                       'port_range_min': 8,  # type
                       'port_range_max': 0,  # code
                       'remote_ip_prefix': '0.0.0.0/0'}]
-        cls.create_secgroup_rules(rule_list, secgroup_id=secgroup_id)
+        client = client or cls.os_primary.network_client
+        cls.create_secgroup_rules(rule_list, client,
+                                  secgroup_id=secgroup_id)
 
     @classmethod
     def create_router_by_client(cls, is_admin=False, **kwargs):
@@ -155,11 +184,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         cls.routers.append(router)
         return router
 
-    def create_and_associate_floatingip(self, port_id):
-        fip = self.os_primary.network_client.create_floatingip(
+    def create_and_associate_floatingip(self, port_id, client=None):
+        client = client or self.os_primary.network_client
+        fip = client.create_floatingip(
             CONF.network.public_network_id,
             port_id=port_id)['floatingip']
-        self.floating_ips.append(fip)
+        if client is self.os_primary.network_client:
+            self.floating_ips.append(fip)
         return fip
 
     def setup_network_and_server(self, router=None, **kwargs):

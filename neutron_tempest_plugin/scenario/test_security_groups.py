@@ -62,6 +62,34 @@ class NetworkDefaultSecGroupTest(base.BaseTempestTestCase):
                 pkey=self.keypair['private_key']))
         return server_ssh_clients, fips, servers
 
+    def _test_ip_prefix(self, rule_list, should_succeed):
+        # Add specific remote prefix to VMs and check connectivity
+        ssh_secgrp_name = data_utils.rand_name('ssh_secgrp')
+        icmp_secgrp_name = data_utils.rand_name('icmp_secgrp_with_cidr')
+        ssh_secgrp = self.os_primary.network_client.create_security_group(
+            name=ssh_secgrp_name)
+        self.create_loginable_secgroup_rule(
+            secgroup_id=ssh_secgrp['security_group']['id'])
+        icmp_secgrp = self.os_primary.network_client.create_security_group(
+            name=icmp_secgrp_name)
+        self.create_secgroup_rules(
+            rule_list, secgroup_id=icmp_secgrp['security_group']['id'])
+        for sec_grp in (ssh_secgrp, icmp_secgrp):
+            self.security_groups.append(sec_grp['security_group'])
+        security_groups_list = [{'name': ssh_secgrp_name},
+                                {'name': icmp_secgrp_name}]
+        server_ssh_clients, fips, servers = self.create_vm_testing_sec_grp(
+            security_groups=security_groups_list)
+
+        # make sure ssh connectivity works
+        self.check_connectivity(fips[0]['floating_ip_address'],
+                                CONF.validation.image_ssh_user,
+                                self.keypair['private_key'])
+
+        # make sure ICMP connectivity works
+        self.check_remote_connectivity(server_ssh_clients[0], fips[1][
+            'fixed_ip_address'], should_succeed=should_succeed)
+
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a283d9d764')
     def test_default_sec_grp_scenarios(self):
         server_ssh_clients, fips, _ = self.create_vm_testing_sec_grp()
@@ -167,34 +195,18 @@ class NetworkDefaultSecGroupTest(base.BaseTempestTestCase):
 
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a283d9d664')
     def test_ip_prefix(self):
-        # Add specific remote prefix to VMs and check connectivity
-        ssh_secgrp_name = data_utils.rand_name('ssh_secgrp')
-        icmp_secgrp_name = data_utils.rand_name('icmp_secgrp_with_cidr')
         cidr = self.subnet['cidr']
-        ssh_secgrp = self.os_primary.network_client.create_security_group(
-            name=ssh_secgrp_name)
-        self.create_loginable_secgroup_rule(
-            secgroup_id=ssh_secgrp['security_group']['id'])
-
         rule_list = [{'protocol': constants.PROTO_NUM_ICMP,
                       'direction': constants.INGRESS_DIRECTION,
                       'remote_ip_prefix': cidr}]
-        icmp_secgrp = self.os_primary.network_client.create_security_group(
-            name=icmp_secgrp_name)
-        self.create_secgroup_rules(
-            rule_list, secgroup_id=icmp_secgrp['security_group']['id'])
-        for sec_grp in (ssh_secgrp, icmp_secgrp):
-            self.security_groups.append(sec_grp['security_group'])
-        security_groups_list = [{'name': ssh_secgrp_name},
-                                {'name': icmp_secgrp_name}]
-        server_ssh_clients, fips, servers = self.create_vm_testing_sec_grp(
-            security_groups=security_groups_list)
+        self._test_ip_prefix(rule_list, should_succeed=True)
 
-        # make sure ssh connectivity works
-        self.check_connectivity(fips[0]['floating_ip_address'],
-                                CONF.validation.image_ssh_user,
-                                self.keypair['private_key'])
-
-        # make sure ICMP connectivity works
-        self.check_remote_connectivity(server_ssh_clients[0], fips[1][
-            'fixed_ip_address'])
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('a01cd2ef-3cfc-4614-8aac-9d1333ea21dd')
+    def test_ip_prefix_negative(self):
+        # define bad CIDR
+        cidr = '10.100.0.254/32'
+        rule_list = [{'protocol': constants.PROTO_NUM_ICMP,
+                      'direction': constants.INGRESS_DIRECTION,
+                      'remote_ip_prefix': cidr}]
+        self._test_ip_prefix(rule_list, should_succeed=False)

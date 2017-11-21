@@ -77,8 +77,9 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         """
 
         name = kwargs.get('name', data_utils.rand_name('server-test'))
-        security_groups = kwargs.get(
-            'security_groups', [{'name': 'default'}])
+        security_groups = kwargs.get('security_groups')
+        if not security_groups:
+            security_groups = [{'name': 'default'}]
         availability_zone = kwargs.get('availability_zone')
 
         server_args = {
@@ -119,8 +120,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         return body['keypair']
 
     @classmethod
-    def create_secgroup_rules(cls, rule_list, client=None,
-                              secgroup_id=None):
+    def create_secgroup_rules(cls, rule_list, secgroup_id=None,
+                              client=None):
         client = client or cls.os_primary.network_client
         if not secgroup_id:
             sgs = client.list_security_groups()['security_groups']
@@ -153,7 +154,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                       'port_range_max': 22,
                       'remote_ip_prefix': '0.0.0.0/0'}]
         client = client or cls.os_primary.network_client
-        cls.create_secgroup_rules(rule_list, client,
+        cls.create_secgroup_rules(rule_list, client=client,
                                   secgroup_id=secgroup_id)
 
     @classmethod
@@ -168,7 +169,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                       'port_range_max': 0,  # code
                       'remote_ip_prefix': '0.0.0.0/0'}]
         client = client or cls.os_primary.network_client
-        cls.create_secgroup_rules(rule_list, client,
+        cls.create_secgroup_rules(rule_list, client=client,
                                   secgroup_id=secgroup_id)
 
     @classmethod

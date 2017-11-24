@@ -58,6 +58,8 @@ class NetworkClientJSON(service_client.RestClient):
             'minimum_bandwidth_rules': 'qos',
             'rule_types': 'qos',
             'rbac-policies': '',
+            'logs': 'log',
+            'loggable_resources': 'log',
         }
         service_prefix = service_resource_prefix_map.get(
             plural_name)

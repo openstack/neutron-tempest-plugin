@@ -121,6 +121,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.admin_subnetpools = []
         cls.security_groups = []
         cls.projects = []
+        cls.log_objects = []
 
     @classmethod
     def resource_cleanup(cls):
@@ -212,6 +213,11 @@ class BaseNetworkTest(test.BaseTestCase):
             for qos_policy in cls.qos_policies:
                 cls._try_delete_resource(cls.admin_client.delete_qos_policy,
                                          qos_policy['id'])
+
+            # Clean up log_objects
+            for log_object in cls.log_objects:
+                cls._try_delete_resource(cls.admin_client.delete_log,
+                                         log_object['id'])
 
         super(BaseNetworkTest, cls).resource_cleanup()
 
@@ -514,6 +520,23 @@ class BaseAdminNetworkTest(BaseNetworkTest):
         service_profile = body['service_profile']
         cls.service_profiles.append(service_profile)
         return service_profile
+
+    @classmethod
+    def create_log(cls, name, description=None,
+                   resource_type='security_group', resource_id=None,
+                   target_id=None, event='ALL', enabled=True):
+        """Wrapper utility that returns a test log object."""
+        log_args = {'name': name,
+                    'description': description,
+                    'resource_type': resource_type,
+                    'resource_id': resource_id,
+                    'target_id': target_id,
+                    'event': event,
+                    'enabled': enabled}
+        body = cls.admin_client.create_log(**log_args)
+        log_object = body['log']
+        cls.log_objects.append(log_object)
+        return log_object
 
     @classmethod
     def get_unused_ip(cls, net_id, ip_version=None):

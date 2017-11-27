@@ -12,6 +12,7 @@
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
+      - ^doc/.*$
       - ^setup.cfg$
 
 - job:
@@ -28,6 +29,7 @@
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
+      - ^doc/.*$
       - ^setup.cfg$
     voting: false
 
@@ -46,6 +48,7 @@
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
+      - ^doc/.*$
       - ^setup.cfg$
     voting: false
 

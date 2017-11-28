@@ -76,28 +76,24 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 zone, and Y is the compute host name.
         """
 
-        name = kwargs.get('name', data_utils.rand_name('server-test'))
-        security_groups = kwargs.get('security_groups')
-        if not security_groups:
-            security_groups = [{'name': 'default'}]
-        availability_zone = kwargs.get('availability_zone')
+        kwargs.setdefault('name', data_utils.rand_name('server-test'))
 
-        server_args = {
-            'name': name,
-            'flavorRef': flavor_ref,
-            'imageRef': image_ref,
-            'key_name': key_name,
-            'networks': networks,
-            'security_groups': security_groups
-        }
+        # We cannot use setdefault() here because caller could have passed
+        # security_groups=None and we don't want to pass None to
+        # client.create_server()
+        if not kwargs.get('security_groups'):
+            kwargs['security_groups'] = [{'name': 'default'}]
 
-        if availability_zone:
-            server_args['availability_zone'] = availability_zone
+        client = self.os_primary.servers_client
+        if kwargs.get('availability_zone'):
             client = self.os_admin.servers_client
-        else:
-            client = self.os_primary.servers_client
 
-        server = client.create_server(**server_args)
+        server = client.create_server(
+            flavorRef=flavor_ref,
+            imageRef=image_ref,
+            key_name=key_name,
+            networks=networks,
+            **kwargs)
 
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         waiters.wait_for_server_termination,

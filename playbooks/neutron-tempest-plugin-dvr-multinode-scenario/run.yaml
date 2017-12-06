@@ -27,23 +27,13 @@
         cmd: |
           set -e
           set -x
-          cat << 'EOF' >>"/tmp/dg-local.conf"
-          [[local|localrc]]
-          TEMPEST_PLUGINS='/opt/stack/new/neutron-tempest-plugin'
-          EOF
-        executable: /bin/bash
-        chdir: '{{ ansible_user_dir }}/workspace'
-      environment: '{{ zuul | zuul_legacy_vars }}'
-
-    - shell:
-        cmd: |
-          set -e
-          set -x
           export PYTHONUNBUFFERED=true
           export DEVSTACK_GATE_TEMPEST=1
+          export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
           export DEVSTACK_GATE_NEUTRON=1
           export DEVSTACK_GATE_CONFIGDRIVE=0
           export DEVSTACK_GATE_TEMPEST_REGEX="(neutron_tempest_plugin.scenario)"
+          export DEVSTACK_LOCAL_CONFIG="enable_plugin neutron-tempest-plugin git://git.openstack.org/openstack/neutron-tempest-plugin"
           export TEMPEST_CONCURRENCY=2
           # Test DVR works multinode
           export DEVSTACK_GATE_NEUTRON_DVR=1

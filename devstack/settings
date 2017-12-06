@@ -1,0 +1,3 @@
+GITREPO["neutron-tempest-plugin"]=${NEUTRON_TEMPEST_REPO:-${GIT_BASE}/openstack/neutron-tempest-plugin.git}
+GITDIR["neutron-tempest-plugin"]=$DEST/neutron-tempest-plugin
+GITBRANCH["neutron-tempest-plugin"]=master

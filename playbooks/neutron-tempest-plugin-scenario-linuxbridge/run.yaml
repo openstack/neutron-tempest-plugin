@@ -31,7 +31,6 @@
           [[local|localrc]]
           Q_AGENT=linuxbridge
           PHYSICAL_NETWORK=default
-          TEMPEST_PLUGINS='/opt/stack/new/neutron-tempest-plugin'
 
           EOF
         executable: /bin/bash
@@ -44,9 +43,11 @@
           set -x
           export PYTHONUNBUFFERED=true
           export DEVSTACK_GATE_TEMPEST=1
+          export DEVSTACK_GATE_TEMPEST_ALL_PLUGINS=1
           export DEVSTACK_GATE_NEUTRON=1
           export DEVSTACK_GATE_EXERCISES=0
           export DEVSTACK_GATE_TEMPEST_REGEX="(neutron_tempest_plugin.scenario)"
+          export DEVSTACK_LOCAL_CONFIG="enable_plugin neutron-tempest-plugin git://git.openstack.org/openstack/neutron-tempest-plugin"
           export BRANCH_OVERRIDE=default
           if [ "$BRANCH_OVERRIDE" != "default" ] ; then
               export OVERRIDE_ZUUL_BRANCH=$BRANCH_OVERRIDE

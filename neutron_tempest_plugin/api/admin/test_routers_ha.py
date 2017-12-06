@@ -33,8 +33,8 @@ class RoutersTestHA(base.BaseRouterTest):
         super(RoutersTestHA, cls).resource_setup()
         name = data_utils.rand_name('pretest-check')
         router = cls.admin_client.create_router(name)
+        cls.admin_client.delete_router(router['router']['id'])
         if 'ha' not in router['router']:
-            cls.admin_client.delete_router(router['router']['id'])
             msg = "'ha' attribute not found. HA Possibly not enabled"
             raise cls.skipException(msg)
 
@@ -48,10 +48,8 @@ class RoutersTestHA(base.BaseRouterTest):
         The router is created and the "ha" attribute is set to True
         """
         name = data_utils.rand_name('router')
-        router = self.admin_client.create_router(name, ha=True)
-        self.addCleanup(self.admin_client.delete_router,
-                        router['router']['id'])
-        self.assertTrue(router['router']['ha'])
+        router = self._create_admin_router(name, ha=True)
+        self.assertTrue(router['ha'])
 
     @decorators.idempotent_id('97b5f7ef-2192-4fa3-901e-979cd5c1097a')
     def test_legacy_router_creation(self):
@@ -65,10 +63,8 @@ class RoutersTestHA(base.BaseRouterTest):
         as opposed to a "High Availability Router"
         """
         name = data_utils.rand_name('router')
-        router = self.admin_client.create_router(name, ha=False)
-        self.addCleanup(self.admin_client.delete_router,
-                        router['router']['id'])
-        self.assertFalse(router['router']['ha'])
+        router = self.create_admin_router(name, ha=False)
+        self.assertFalse(router['ha'])
 
     @decorators.idempotent_id('5a6bfe82-5b23-45a4-b027-5160997d4753')
     def test_legacy_router_update_to_ha(self):
@@ -84,12 +80,10 @@ class RoutersTestHA(base.BaseRouterTest):
         """
         name = data_utils.rand_name('router')
         # router needs to be in admin state down in order to be upgraded to HA
-        router = self.admin_client.create_router(name, ha=False,
-                                                 admin_state_up=False)
-        self.addCleanup(self.admin_client.delete_router,
-                        router['router']['id'])
-        self.assertFalse(router['router']['ha'])
-        router = self.admin_client.update_router(router['router']['id'],
+        router = self._create_admin_router(name, ha=False,
+                                           admin_state_up=False)
+        self.assertFalse(router['ha'])
+        router = self.admin_client.update_router(router['id'],
                                                  ha=True)
         self.assertTrue(router['router']['ha'])
 

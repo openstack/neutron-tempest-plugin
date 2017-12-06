@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from tempest.lib import exceptions
+
 from neutron_tempest_plugin.api import base
 
 
@@ -21,9 +23,12 @@ class BaseRouterTest(base.BaseAdminNetworkTest):
     # as some router operations, such as enabling or disabling SNAT
     # require admin credentials by default
 
-    def _cleanup_router(self, router):
-        self.delete_router(router)
-        self.routers.remove(router)
+    def _cleanup_router(self, router, client=None):
+        try:
+            self.delete_router(router, client)
+            self.routers.remove(router)
+        except exceptions.NotFound:
+            pass
 
     def _create_router(self, name, admin_state_up=False,
                        external_network_id=None, enable_snat=None):
@@ -31,6 +36,12 @@ class BaseRouterTest(base.BaseAdminNetworkTest):
         router = self.create_router(name, admin_state_up,
                                     external_network_id, enable_snat)
         self.addCleanup(self._cleanup_router, router)
+        return router
+
+    def _create_admin_router(self, *args, **kwargs):
+        router = self.create_admin_router(*args, **kwargs)
+        self.addCleanup(
+            self._cleanup_router, router, self.os_admin.network_client)
         return router
 
     def _delete_router(self, router_id, network_client=None):

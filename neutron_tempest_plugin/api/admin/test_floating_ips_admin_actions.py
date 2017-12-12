@@ -47,6 +47,7 @@ class FloatingIPAdminTestJSON(base.BaseAdminNetworkTest):
         body = self.client.create_floatingip(
             floating_network_id=self.ext_net_id)
         floating_ip = body['floatingip']
+        self.addCleanup(self.client.delete_floatingip, floating_ip['id'])
         project_id = self.create_project()['id']
 
         port = self.admin_client.create_port(network_id=self.network['id'],

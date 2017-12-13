@@ -110,6 +110,47 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
         body = self.admin_client.show_network(net_id)['network']
         self.assertTrue(body['router:external'])
 
+    @decorators.idempotent_id('beddbe9d-304c-4577-8bbe-9b61d0a449b4')
+    def test_external_conversion_on_policy_delete(self):
+        net_id = self._create_network(external=False)['id']
+        policy = self.admin_client.create_rbac_policy(
+            object_type='network', object_id=net_id,
+            action='access_as_external',
+            target_tenant='*')
+        body = self.admin_client.show_network(net_id)['network']
+        self.assertTrue(body['router:external'])
+        self.admin_client.delete_rbac_policy(policy['rbac_policy']['id'])
+        body = self.admin_client.show_network(net_id)['network']
+        self.assertFalse(body['router:external'])
+
+    @decorators.idempotent_id('fb938b8e-d1d2-4bf8-823a-1b3c79c98a25')
+    def test_external_conversion_on_one_policy_delete(self):
+        net_id = self._create_network(external=False)['id']
+        self.admin_client.create_rbac_policy(
+            object_type='network', object_id=net_id,
+            action='access_as_external',
+            target_tenant=self.admin_client.tenant_id)
+        body = self.admin_client.show_network(net_id)['network']
+        self.assertTrue(body['router:external'])
+        policy2 = self.admin_client.create_rbac_policy(
+            object_type='network', object_id=net_id,
+            action='access_as_external',
+            target_tenant=self.client2.tenant_id)
+        self.admin_client.delete_rbac_policy(policy2['rbac_policy']['id'])
+        body = self.admin_client.show_network(net_id)['network']
+        self.assertTrue(body['router:external'])
+
+    @decorators.idempotent_id('046aff1a-3962-4e2b-9a3b-93a24f255fd0')
+    def test_external_network_on_shared_policy_delete(self):
+        net_id = self._create_network(external=True)['id']
+        policy = self.admin_client.create_rbac_policy(
+            object_type='network', object_id=net_id,
+            action='access_as_shared',
+            target_tenant='*')
+        self.admin_client.delete_rbac_policy(policy['rbac_policy']['id'])
+        body = self.admin_client.show_network(net_id)['network']
+        self.assertTrue(body['router:external'])
+
     @decorators.idempotent_id('01364c50-bfb6-46c4-b44c-edc4564d61cf')
     def test_policy_allows_tenant_to_allocate_floatingip(self):
         net = self._create_network(external=False)

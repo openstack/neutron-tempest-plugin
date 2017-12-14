@@ -22,6 +22,7 @@ import testscenarios
 from testscenarios.scenarios import multiply_scenarios
 
 from neutron_tempest_plugin.common import ssh
+from neutron_tempest_plugin.common import utils as common_utils
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 from neutron_tempest_plugin.scenario import constants
@@ -134,6 +135,7 @@ class FloatingIpSameNetwork(FloatingIpTestCasesMixin,
 
     same_network = True
 
+    @common_utils.unstable_test("bug 1717302")
     @decorators.idempotent_id('05c4e3b3-7319-4052-90ad-e8916436c23b')
     def test_east_west(self):
         self._test_east_west()
@@ -151,6 +153,7 @@ class FloatingIpSeparateNetwork(FloatingIpTestCasesMixin,
 
     same_network = False
 
+    @common_utils.unstable_test("bug 1717302")
     @decorators.idempotent_id('f18f0090-3289-4783-b956-a0f8ac511e8b')
     def test_east_west(self):
         self._test_east_west()

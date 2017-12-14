@@ -19,6 +19,7 @@
 """Utilities and helper functions."""
 
 import eventlet
+import functools
 import threading
 import time
 
@@ -70,3 +71,19 @@ def wait_until_true(predicate, timeout=60, sleep=1, exception=None):
             #pylint: disable=raising-bad-type
             raise exception
         raise WaitTimeout("Timed out after %d seconds" % timeout)
+
+
+# TODO(haleyb): move to neutron-lib
+# code copied from neutron repository - neutron/tests/base.py
+def unstable_test(reason):
+    def decor(f):
+        @functools.wraps(f)
+        def inner(self, *args, **kwargs):
+            try:
+                return f(self, *args, **kwargs)
+            except Exception as e:
+                msg = ("%s was marked as unstable because of %s, "
+                       "failure was: %s") % (self.id(), reason, e)
+                raise self.skipTest(msg)
+        return inner
+    return decor

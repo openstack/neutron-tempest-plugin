@@ -412,17 +412,18 @@ class BaseNetworkTest(test.BaseTestCase):
         return qos_rule
 
     @classmethod
-    def delete_router(cls, router):
-        body = cls.client.list_router_interfaces(router['id'])
+    def delete_router(cls, router, client=None):
+        client = client or cls.client
+        body = client.list_router_interfaces(router['id'])
         interfaces = [port for port in body['ports']
                       if port['device_owner'] in const.ROUTER_INTERFACE_OWNERS]
         for i in interfaces:
             try:
-                cls.client.remove_router_interface_with_subnet_id(
+                client.remove_router_interface_with_subnet_id(
                     router['id'], i['fixed_ips'][0]['subnet_id'])
             except lib_exc.NotFound:
                 pass
-        cls.client.delete_router(router['id'])
+        client.delete_router(router['id'])
 
     @classmethod
     def create_address_scope(cls, name, is_admin=False, **kwargs):

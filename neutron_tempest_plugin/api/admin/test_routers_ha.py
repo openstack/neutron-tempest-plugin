@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from tempest.common import utils as tutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
@@ -19,6 +20,7 @@ from neutron_tempest_plugin.api import base_routers as base
 class RoutersTestHA(base.BaseRouterTest):
 
     required_extensions = ['router', 'l3-ha']
+    HA_NETWORK_NAME_TEMPL = "HA network tenant %s"
 
     @classmethod
     def resource_setup(cls):
@@ -90,3 +92,30 @@ class RoutersTestHA(base.BaseRouterTest):
         router = self.admin_client.update_router(router['router']['id'],
                                                  ha=True)
         self.assertTrue(router['router']['ha'])
+
+    @decorators.idempotent_id('0d8c0c8f-3809-4acc-a2c8-e0941333ff6c')
+    @tutils.requires_ext(extension="provider", service="network")
+    def test_delete_ha_router_keeps_ha_network_segment_data(self):
+        """Test deleting an HA router keeps correct segment data for network.
+
+        Each tenant with HA router has an HA network. The HA network is a
+        normal tenant network with segmentation data like type (vxlan) and
+        segmenation id. This test makes sure that after an HA router is
+        deleted, those segmentation data are kept in HA network. This tests
+        regression of https://bugs.launchpad.net/neutron/+bug/1732543.
+        """
+        for i in range(2):
+            router = self._create_admin_router(
+                data_utils.rand_name('router%d' % i),
+                ha=True)
+        ha_net_name = self.HA_NETWORK_NAME_TEMPL % router['tenant_id']
+        ha_network_pre_delete = self.admin_client.list_networks(
+            name=ha_net_name)['networks'][0]
+        segmentation_id = ha_network_pre_delete['provider:segmentation_id']
+        self._delete_router(router['id'], self.admin_client)
+
+        ha_network_post_delete = self.admin_client.show_network(
+            ha_network_pre_delete['id'])['network']
+        self.assertEqual(
+            ha_network_post_delete['provider:segmentation_id'],
+            segmentation_id)

@@ -173,9 +173,12 @@ class TrunkTest(base.BaseTempestTestCase):
             exception=RuntimeError("Timed out waiting for trunk %s to "
                                    "transition to ACTIVE." % trunk2_id))
         # create a few more networks and ports for subports
+        # check limit of networks per project
+        max_vlan = 3 + CONF.neutron_plugin_options.max_networks_per_project
+        allowed_vlans = range(3, max_vlan)
         subports = [{'port_id': self.create_port(self.create_network())['id'],
                      'segmentation_type': 'vlan', 'segmentation_id': seg_id}
-                    for seg_id in range(3, 7)]
+                    for seg_id in allowed_vlans]
         # add all subports to server1
         self.client.add_subports(trunk1_id, subports)
         # ensure trunk transitions to ACTIVE

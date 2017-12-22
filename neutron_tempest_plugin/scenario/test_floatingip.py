@@ -14,6 +14,8 @@
 #    under the License.
 
 import netaddr
+from neutron_lib import constants as lib_constants
+from neutron_lib.services.qos import constants as qos_consts
 from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
@@ -21,12 +23,13 @@ from tempest.lib import decorators
 import testscenarios
 from testscenarios.scenarios import multiply_scenarios
 
-from neutron_lib import constants as lib_constants
+from neutron_tempest_plugin.api import base as base_api
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils as common_utils
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 from neutron_tempest_plugin.scenario import constants
+from neutron_tempest_plugin.scenario import test_qos
 
 
 CONF = config.CONF
@@ -196,3 +199,62 @@ class DefaultSnatToExternal(FloatingIpTestCasesMixin,
                                 proxy_client=proxy_client)
         self.check_remote_connectivity(ssh_client,
                                        gateway_external_ip)
+
+
+class FloatingIPQosTest(FloatingIpTestCasesMixin,
+                        test_qos.QoSTest):
+
+    same_network = True
+
+    @classmethod
+    @utils.requires_ext(extension="router", service="network")
+    @utils.requires_ext(extension="qos", service="network")
+    @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
+    def resource_setup(cls):
+        super(FloatingIPQosTest, cls).resource_setup()
+
+    @decorators.idempotent_id('5eb48aea-eaba-4c20-8a6f-7740070a0aa3')
+    def test_qos(self):
+        """Test floating IP is binding to a QoS policy with
+
+           ingress and egress bandwidth limit rules. And it applied correctly
+           by sending a file from the instance to the test node.
+           Then calculating the bandwidth every ~1 sec by the number of bits
+           received / elapsed time.
+        """
+
+        self._test_basic_resources()
+        policy_id = self._create_qos_policy()
+        ssh_client = self._create_ssh_client()
+        self.os_admin.network_client.create_bandwidth_limit_rule(
+            policy_id, max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
+            max_burst_kbps=constants.LIMIT_KILO_BYTES,
+            direction=lib_constants.INGRESS_DIRECTION)
+        self.os_admin.network_client.create_bandwidth_limit_rule(
+            policy_id, max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
+            max_burst_kbps=constants.LIMIT_KILO_BYTES,
+            direction=lib_constants.EGRESS_DIRECTION)
+
+        rules = self.os_admin.network_client.list_bandwidth_limit_rules(
+            policy_id)
+        self.assertEqual(2, len(rules['bandwidth_limit_rules']))
+
+        fip = self.os_admin.network_client.get_floatingip(
+            self.fip['id'])['floatingip']
+        self.assertEqual(self.port['id'], fip['port_id'])
+
+        self.os_admin.network_client.update_floatingip(
+            self.fip['id'],
+            qos_policy_id=policy_id)
+
+        fip = self.os_admin.network_client.get_floatingip(
+            self.fip['id'])['floatingip']
+        self.assertEqual(policy_id, fip['qos_policy_id'])
+
+        self._create_file_for_bw_tests(ssh_client)
+        common_utils.wait_until_true(lambda: self._check_bw(
+            ssh_client,
+            self.fip['floating_ip_address'],
+            port=self.NC_PORT),
+            timeout=120,
+            sleep=1)

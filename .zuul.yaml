@@ -52,11 +52,46 @@
       - ^setup.cfg$
     voting: false
 
+- job:
+    name: neutron-tempest-plugin-designate-scenario
+    parent: devstack-tempest
+    description: Neutron designate integration scenario
+    required-projects:
+      - openstack/designate
+      - openstack/designate-dashboard
+      - openstack/designate-tempest-plugin
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - openstack/tempest
+    timeout: 3600
+    roles:
+      - zuul: openstack-dev/devstack
+    vars:
+      devstack_localrc:
+        DESIGNATE_BACKEND_DRIVER: bind9
+      devstack_plugins:
+        designate: git://git.openstack.org/openstack/designate.git
+        neutron: git://git.openstack.org/openstack/neutron.git
+        neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
+      devstack_services:
+        cinder: False
+        designate: True
+        q-dns: True
+        tempest: True
+      tempest_test_regex: '^neutron_tempest_plugin\.scenario\.test_dns_integration'
+      tox_venvlist: all-plugin
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^setup.cfg$
+    voting: false
+
 - project-template:
     name: neutron-tempest-plugin-jobs
     check:
       jobs:
         - neutron-tempest-plugin-api
+        - neutron-tempest-plugin-designate-scenario
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-scenario-linuxbridge
     gate:

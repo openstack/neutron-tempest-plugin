@@ -69,6 +69,9 @@ class BaseNetworkTest(test.BaseTestCase):
             force_new=force_new
         )
         # Neutron uses a different clients manager than the one in the Tempest
+        # save the original in case mixed tests need it
+        if credential_type == 'primary':
+            cls.os_tempest = manager
         return clients.Manager(manager.credentials)
 
     @classmethod

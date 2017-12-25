@@ -14,11 +14,12 @@
 #    under the License.
 
 import netaddr
+import testscenarios
+
 from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
-import testscenarios
 from testscenarios.scenarios import multiply_scenarios
 
 from neutron_tempest_plugin.common import ssh
@@ -57,6 +58,17 @@ class FloatingIpTestCasesMixin(object):
             cls._dest_network = cls.network
         else:
             cls._dest_network = cls._create_dest_network()
+
+    @classmethod
+    def _get_external_gateway(self):
+        if CONF.network.public_network_id:
+            subnets = self.os_admin.network_client.list_subnets(
+                network_id=CONF.network.public_network_id)
+
+            for subnet in subnets['subnets']:
+                if subnet['gateway_ip']:
+                    gateway_external_ip = subnet['gateway_ip']
+                    return gateway_external_ip
 
     @classmethod
     def _create_dest_network(cls):
@@ -157,3 +169,29 @@ class FloatingIpSeparateNetwork(FloatingIpTestCasesMixin,
     @decorators.idempotent_id('f18f0090-3289-4783-b956-a0f8ac511e8b')
     def test_east_west(self):
         self._test_east_west()
+
+
+class DefaultSnatToExternal(FloatingIpTestCasesMixin,
+                            base.BaseTempestTestCase):
+    same_network = True
+
+    @decorators.idempotent_id('3d73ea1a-27c6-45a9-b0f8-04a283d9d764')
+    def test_snat_external_ip(self):
+        """Check connectivity to an external IP"""
+        gateway_external_ip = self._get_external_gateway()
+
+        if not gateway_external_ip:
+            raise self.skipTest("Gateway is not configured for public network"
+                                " or public_network_id is not configured")
+        proxy = self._create_server()
+        proxy_client = ssh.Client(proxy['fip']['floating_ip_address'],
+                                  CONF.validation.image_ssh_user,
+                                  pkey=self.keypair['private_key'])
+        src_server = self._create_server(create_floating_ip=False)
+        src_server_ip = src_server['port']['fixed_ips'][0]['ip_address']
+        ssh_client = ssh.Client(src_server_ip,
+                                CONF.validation.image_ssh_user,
+                                pkey=self.keypair['private_key'],
+                                proxy_client=proxy_client)
+        self.check_remote_connectivity(ssh_client,
+                                       gateway_external_ip)

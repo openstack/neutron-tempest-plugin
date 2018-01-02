@@ -145,6 +145,7 @@ class TrunkTest(base.BaseTempestTestCase):
                                 CONF.validation.image_ssh_user,
                                 self.keypair['private_key'])
 
+    @utils.unstable_test("bug 1740885")
     @decorators.idempotent_id('bb13fe28-f152-4000-8131-37890a40c79e')
     def test_trunk_subport_lifecycle(self):
         """Test trunk creation and subport transition to ACTIVE status.
@@ -225,6 +226,7 @@ class TrunkTest(base.BaseTempestTestCase):
     @testtools.skipUnless(
           CONF.neutron_plugin_options.image_is_advanced,
           "Advanced image is required to run this test.")
+    @utils.unstable_test("bug 1740885")
     @decorators.idempotent_id('a8a02c9b-b453-49b5-89a2-cce7da66aafb')
     def test_subport_connectivity(self):
         vlan_tag = 10

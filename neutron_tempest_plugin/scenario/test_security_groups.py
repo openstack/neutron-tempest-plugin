@@ -210,3 +210,39 @@ class NetworkDefaultSecGroupTest(base.BaseTempestTestCase):
                       'direction': constants.INGRESS_DIRECTION,
                       'remote_ip_prefix': cidr}]
         self._test_ip_prefix(rule_list, should_succeed=False)
+
+    @decorators.idempotent_id('7ed39b86-006d-40fb-887a-ae46693dabc9')
+    def test_remote_group(self):
+        # create a new sec group
+        ssh_secgrp_name = data_utils.rand_name('ssh_secgrp')
+        ssh_secgrp = self.os_primary.network_client.create_security_group(
+            name=ssh_secgrp_name)
+        # add cleanup
+        self.security_groups.append(ssh_secgrp['security_group'])
+        # configure sec group to support SSH connectivity
+        self.create_loginable_secgroup_rule(
+            secgroup_id=ssh_secgrp['security_group']['id'])
+        # spawn two instances with the sec group created
+        server_ssh_clients, fips, servers = self.create_vm_testing_sec_grp(
+            security_groups=[{'name': ssh_secgrp_name}])
+        # verify SSH functionality
+        for i in range(2):
+            self.check_connectivity(fips[i]['floating_ip_address'],
+                                    CONF.validation.image_ssh_user,
+                                    self.keypair['private_key'])
+        # try to ping instances without ICMP permissions
+        self.check_remote_connectivity(
+            server_ssh_clients[0], fips[1]['fixed_ip_address'],
+            should_succeed=False)
+        # add ICMP support to the remote group
+        rule_list = [{'protocol': constants.PROTO_NUM_ICMP,
+                      'direction': constants.INGRESS_DIRECTION,
+                      'remote_group_id': ssh_secgrp['security_group']['id']}]
+        self.create_secgroup_rules(
+            rule_list, secgroup_id=ssh_secgrp['security_group']['id'])
+        # verify ICMP connectivity between instances works
+        self.check_remote_connectivity(
+            server_ssh_clients[0], fips[1]['fixed_ip_address'])
+        # make sure ICMP connectivity doesn't work from framework
+        self.ping_ip_address(fips[0]['floating_ip_address'],
+                             should_succeed=False)

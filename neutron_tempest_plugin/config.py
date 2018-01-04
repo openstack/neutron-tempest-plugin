@@ -38,6 +38,11 @@ NeutronPluginOptions = [
                help='The availability zone for all agents in the deployment. '
                     'Configure this only when the single value is used by '
                     'all agents in the deployment.'),
+    cfg.IntOpt('max_networks_per_project',
+               default=4,
+               help='Max number of networks per project. '
+                    'Configure this only when project is limited with real '
+                    'vlans in deployment.'),
 ]
 
 # TODO(amuller): Redo configuration options registration as part of the planned

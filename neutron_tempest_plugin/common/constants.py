@@ -123,10 +123,6 @@ AGENT_ALIVE = 'alive'
 # agent has just returned to alive after being dead
 AGENT_REVIVED = 'revived'
 
-INGRESS_DIRECTION = 'ingress'
-EGRESS_DIRECTION = 'egress'
-
-VALID_DIRECTIONS = (INGRESS_DIRECTION, EGRESS_DIRECTION)
 VALID_ETHERTYPES = (lib_constants.IPv4, lib_constants.IPv6)
 
 IP_ALLOWED_VERSIONS = [lib_constants.IP_VERSION_4, lib_constants.IP_VERSION_6]

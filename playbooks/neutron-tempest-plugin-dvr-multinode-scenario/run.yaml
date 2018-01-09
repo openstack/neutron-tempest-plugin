@@ -34,7 +34,6 @@
           export DEVSTACK_GATE_CONFIGDRIVE=0
           export DEVSTACK_GATE_TEMPEST_REGEX="(neutron_tempest_plugin.scenario)"
           export DEVSTACK_LOCAL_CONFIG="enable_plugin neutron-tempest-plugin git://git.openstack.org/openstack/neutron-tempest-plugin"
-          export TEMPEST_CONCURRENCY=2
           # Test DVR works multinode
           export DEVSTACK_GATE_NEUTRON_DVR=1
           export BRANCH_OVERRIDE=default

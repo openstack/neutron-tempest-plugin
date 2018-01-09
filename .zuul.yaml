@@ -76,7 +76,7 @@
       devstack_services:
         cinder: False
         designate: True
-        q-dns: True
+        neutron-dns: True
         tempest: True
       tempest_test_regex: '^neutron_tempest_plugin\.scenario\.test_dns_integration'
       tox_venvlist: all-plugin

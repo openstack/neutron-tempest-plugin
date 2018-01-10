@@ -19,17 +19,45 @@ from tempest.lib.common.utils import data_utils
 from neutron_tempest_plugin.api import base
 
 
-V4_PROTOCOL_NAMES = set(key for key in constants.IP_PROTOCOL_MAP if
-                        'v6' not in key)
-V4_PROTOCOL_INTS = set(v for k, v in constants.IP_PROTOCOL_MAP.items()
-                       if 'v6' not in k)
+# NOTE(yamamoto): The list of protocols here is what we had in Ocata.
+# (neutron-lib 1.1.0)
+# Why don't we just use neutron_lib.constants.IP_PROTOCOL_MAP etc here?
+# Tempest is branchless and thus supposed to work against older deployments.
+# Also, it's supposed to work against other implementations, which might not
+# support the same set as the reference implementation. Ideally SG can have
+# a way to discover the set of usable protocols. But for now, we need to be
+# conservative.
+
+V4_PROTOCOL_NAMES = {
+    'ah',
+    'dccp',
+    'egp',
+    'esp',
+    'gre',
+    'icmp',
+    'igmp',
+    'ospf',
+    'pgm',
+    'rsvp',
+    'sctp',
+    'tcp',
+    'udp',
+    'udplite',
+    'vrrp',
+}
+V4_PROTOCOL_INTS = set(v for k, v in constants.IP_PROTOCOL_MAP.items() if
+                       k in V4_PROTOCOL_NAMES)
 V6_PROTOCOL_LEGACY = set([constants.PROTO_NAME_IPV6_ICMP_LEGACY])
-V6_PROTOCOL_NAMES = (
-    set(key for key in constants.IP_PROTOCOL_MAP if 'v6' in key) -
-    V6_PROTOCOL_LEGACY
-)
+V6_PROTOCOL_NAMES = {
+    'ipv6-encap',
+    'ipv6-frag',
+    'ipv6-icmp',
+    'ipv6-nonxt',
+    'ipv6-opts',
+    'ipv6-route',
+}
 V6_PROTOCOL_INTS = set(v for k, v in constants.IP_PROTOCOL_MAP.items() if
-                       'v6' in k)
+                       k in (V6_PROTOCOL_NAMES | V6_PROTOCOL_LEGACY))
 
 
 class BaseSecGroupTest(base.BaseNetworkTest):

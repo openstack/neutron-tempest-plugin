@@ -53,7 +53,6 @@
               export OVERRIDE_ZUUL_BRANCH=$BRANCH_OVERRIDE
           fi
 
-          export TEMPEST_CONCURRENCY=2
           export PROJECTS="openstack/neutron-tempest-plugin $PROJECTS"
           function gate_hook {
               bash -xe $BASE/new/neutron/neutron/tests/contrib/gate_hook.sh dsvm-scenario-linuxbridge dvrskip

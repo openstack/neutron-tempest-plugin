@@ -79,7 +79,6 @@
         neutron-dns: True
         tempest: True
       tempest_test_regex: '^neutron_tempest_plugin\.scenario\.test_dns_integration'
-      tox_venvlist: all-plugin
       tox_envlist: all-plugin
     irrelevant-files:
       - ^(test-|)requirements.txt$

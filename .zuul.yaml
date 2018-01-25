@@ -74,11 +74,11 @@
         neutron: git://git.openstack.org/openstack/neutron.git
         neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
       devstack_services:
-        cinder: False
-        designate: True
-        neutron-dns: True
-        tempest: True
-      tempest_test_regex: '^neutron_tempest_plugin\.scenario\.test_dns_integration'
+        cinder: false
+        designate: true
+        neutron-dns: true
+        tempest: true
+      tempest_test_regex: ^neutron_tempest_plugin\.scenario\.test_dns_integration
       tox_envlist: all-plugin
     irrelevant-files:
       - ^(test-|)requirements.txt$
@@ -99,6 +99,5 @@
         - neutron-tempest-plugin-api
 
 - project:
-    name: openstack/neutron-tempest-plugin
     templates:
       - neutron-tempest-plugin-jobs

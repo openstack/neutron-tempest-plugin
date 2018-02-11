@@ -14,6 +14,7 @@
 #    under the License.
 from tempest.common import utils
 from tempest.lib import decorators
+import testtools
 
 from neutron_lib import constants
 from neutron_tempest_plugin import config
@@ -54,6 +55,9 @@ class NetworkDvrTest(base.BaseTempestTestCase, NetworkTestMixin):
         super(NetworkDvrTest, cls).skip_checks()
 
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a283d9d344')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_vm_reachable_through_compute(self):
         """Check that the VM is reachable through compute node.
 

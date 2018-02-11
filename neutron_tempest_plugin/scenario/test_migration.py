@@ -19,10 +19,14 @@ from neutron_lib.api.definitions import portbindings as pb
 from neutron_lib import constants as const
 from tempest.common import utils
 from tempest.lib import decorators
+import testtools
 
 from neutron_tempest_plugin.common import utils as common_utils
+from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 from neutron_tempest_plugin.scenario import test_dvr
+
+CONF = config.CONF
 
 
 class NetworkMigrationTestBase(base.BaseTempestTestCase,
@@ -131,6 +135,9 @@ class NetworkMigrationTestBase(base.BaseTempestTestCase,
 class NetworkMigrationFromLegacy(NetworkMigrationTestBase):
 
     @decorators.idempotent_id('23724222-483a-4129-bc15-7a9278f3828b')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_legacy_to_dvr(self):
         self._test_migration(before_dvr=False, before_ha=False,
                              after_dvr=True, after_ha=False)
@@ -141,6 +148,9 @@ class NetworkMigrationFromLegacy(NetworkMigrationTestBase):
                              after_dvr=False, after_ha=True)
 
     @decorators.idempotent_id('fe169f2c-6ed3-4eb0-8afe-2d540c4b49e2')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_legacy_to_dvr_ha(self):
         self._test_migration(before_dvr=False, before_ha=False,
                              after_dvr=True, after_ha=True)
@@ -154,11 +164,17 @@ class NetworkMigrationFromHA(NetworkMigrationTestBase):
                              after_dvr=False, after_ha=False)
 
     @decorators.idempotent_id('42260eea-5d56-4d30-b62a-a62694dfe4d5')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_ha_to_dvr(self):
         self._test_migration(before_dvr=False, before_ha=True,
                              after_dvr=True, after_ha=False)
 
     @decorators.idempotent_id('e4149576-248b-43fa-9d0b-a5c2f51967ce')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_ha_to_dvr_ha(self):
         self._test_migration(before_dvr=False, before_ha=True,
                              after_dvr=True, after_ha=True)
@@ -167,16 +183,25 @@ class NetworkMigrationFromHA(NetworkMigrationTestBase):
 class NetworkMigrationFromDVR(NetworkMigrationTestBase):
 
     @decorators.idempotent_id('e5cac02c-248d-4aac-bd5e-9d47c5197307')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_dvr_to_legacy(self):
         self._test_migration(before_dvr=True, before_ha=False,
                              after_dvr=False, after_ha=False)
 
     @decorators.idempotent_id('a00d5ad7-8509-4bb0-bdd2-7f1ee052d1cd')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_dvr_to_ha(self):
         self._test_migration(before_dvr=True, before_ha=False,
                              after_dvr=False, after_ha=True)
 
     @decorators.idempotent_id('25304a51-93a8-4cf3-9523-bce8b4eaecf8')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_dvr_to_dvr_ha(self):
         self._test_migration(before_dvr=True, before_ha=False,
                              after_dvr=True, after_ha=True)
@@ -185,16 +210,25 @@ class NetworkMigrationFromDVR(NetworkMigrationTestBase):
 class NetworkMigrationFromDVRHA(NetworkMigrationTestBase):
 
     @decorators.idempotent_id('1be9b2e2-379c-40a4-a269-6687b81df691')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_dvr_ha_to_legacy(self):
         self._test_migration(before_dvr=True, before_ha=True,
                              after_dvr=False, after_ha=False)
 
     @decorators.idempotent_id('55957267-4e84-4314-a2f7-7cd36a2df04b')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_dvr_ha_to_ha(self):
         self._test_migration(before_dvr=True, before_ha=True,
                              after_dvr=False, after_ha=True)
 
     @decorators.idempotent_id('d6bedff1-72be-4a9a-8ea2-dc037cd838e0')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
+        "Need dvr_snat agent mode assumption.")
     def test_from_dvr_ha_to_dvr(self):
         self._test_migration(before_dvr=True, before_ha=True,
                              after_dvr=True, after_ha=False)

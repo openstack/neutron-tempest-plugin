@@ -386,6 +386,19 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         self.assertEqual(
             policy['id'], retrieved_network['network']['qos_policy_id'])
 
+    @decorators.idempotent_id('06060880-2956-4c16-9a63-f284c3879229')
+    def test_user_create_port_with_admin_qos_policy(self):
+        qos_policy = self.create_qos_policy(
+            name='test-policy',
+            tenant_id=self.admin_client.tenant_id,
+            shared=False)
+        network = self.create_network(
+            'test network', client=self.admin_client,
+            project_id=self.client.tenant_id,
+            qos_policy_id=qos_policy['id'])
+        port = self.create_port(network)
+        self.assertEqual(network['id'], port['network_id'])
+
 
 class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 

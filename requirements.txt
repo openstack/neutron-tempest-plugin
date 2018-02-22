@@ -2,17 +2,17 @@
 # of appearance. Changing the order has an impact on the overall integration
 # process, which may cause wedges in the gate later.
 
-pbr>=2.0 # Apache-2.0
-neutron-lib>=1.9.0 # Apache-2.0
-oslo.config!=4.3.0,!=4.4.0,>=4.0.0 # Apache-2.0
+pbr!=2.1.0,>=2.0.0 # Apache-2.0
+neutron-lib>=1.13.0 # Apache-2.0
+oslo.config>=5.1.0 # Apache-2.0
 ipaddress>=1.0.16;python_version<'3.3' # PSF
-netaddr!=0.7.16,>=0.7.13 # BSD
-oslo.log>=3.22.0 # Apache-2.0
-oslo.serialization!=2.19.1,>=1.10.0 # Apache-2.0
-oslo.utils>=3.20.0 # Apache-2.0
-six>=1.9.0 # MIT
-tempest>=16.1.0 # Apache-2.0
+netaddr>=0.7.18 # BSD
+oslo.log>=3.36.0 # Apache-2.0
+oslo.serialization!=2.19.1,>=2.18.0 # Apache-2.0
+oslo.utils>=3.33.0 # Apache-2.0
+six>=1.10.0 # MIT
+tempest>=17.1.0 # Apache-2.0
 ddt>=1.0.1 # MIT
-testtools>=1.4.0 # MIT
+testtools>=2.2.0 # MIT
 testscenarios>=0.4 # Apache-2.0/BSD
 eventlet!=0.18.3,!=0.20.1,<0.21.0,>=0.18.2 # MIT

@@ -14,6 +14,7 @@
 #    under the License.
 
 from neutron_lib.api.definitions import provider_net
+from oslo_serialization import jsonutils
 from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
@@ -59,6 +60,9 @@ class NetworkMtuBaseTest(base.BaseTempestTestCase):
         fip = self.create_and_associate_floatingip(port['id'])
         return server, fip
 
+    def _get_network_params(self):
+        return jsonutils.loads(CONF.neutron_plugin_options.test_mtu_networks)
+
 
 class NetworkMtuTest(NetworkMtuBaseTest):
     credentials = ['primary', 'admin']
@@ -97,13 +101,13 @@ class NetworkMtuTest(NetworkMtuBaseTest):
         self.assertNotEqual(self.networks[0]['mtu'], self.networks[1]['mtu'])
         self.networks.sort(key=lambda net: net['mtu'])
         server1, fip1 = self.create_pingable_vm(self.networks[0],
-            self.keypair, self.secgroup)
+                                                self.keypair, self.secgroup)
         server_ssh_client1 = ssh.Client(
             self.floating_ips[0]['floating_ip_address'],
             CONF.validation.image_ssh_user,
             pkey=self.keypair['private_key'])
         server2, fip2 = self.create_pingable_vm(self.networks[1],
-            self.keypair, self.secgroup)
+                                                self.keypair, self.secgroup)
         server_ssh_client2 = ssh.Client(
             self.floating_ips[0]['floating_ip_address'],
             CONF.validation.image_ssh_user,
@@ -150,7 +154,7 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
     def skip_checks(cls):
         super(NetworkWritableMtuTest, cls).skip_checks()
         if ("vxlan" not in
-            config.CONF.neutron_plugin_options.available_type_drivers):
+                config.CONF.neutron_plugin_options.available_type_drivers):
             raise cls.skipException("VXLAN type_driver is not enabled")
 
     @classmethod
@@ -160,24 +164,24 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
 
     def _create_setup(self):
         self.admin_client = self.os_admin.network_client
-        net_kwargs = {'tenant_id': self.client.tenant_id,
-                      'provider:network_type': 'vxlan'}
-        for _ in range(2):
-            net_kwargs['name'] = data_utils.rand_name('net')
-            network = self.admin_client.create_network(**net_kwargs)[
+        for test_net in self._get_network_params():
+            test_net['tenant_id'] = self.client.tenant_id
+            test_net['name'] = data_utils.rand_name('net')
+            cidr = None if 'cidr' not in test_net else test_net.pop('cidr')
+            network = self.admin_client.create_network(**test_net)[
                 'network']
             self.networks.append(network)
             self.addCleanup(self.admin_client.delete_network, network['id'])
-            subnet = self.create_subnet(network)
+            subnet = self.create_subnet(network, cidr=cidr)
             self.create_router_interface(self.router['id'], subnet['id'])
             self.addCleanup(self.client.remove_router_interface_with_subnet_id,
                             self.router['id'], subnet['id'])
 
-        # Update network mtu.
+        # update network mtu
         net_mtu = self.admin_client.show_network(
             self.networks[0]['id'])['network']['mtu']
         self.admin_client.update_network(self.networks[0]['id'],
-            mtu=(net_mtu - 1))
+                                         mtu=(net_mtu - 1))
         self.networks[0]['mtu'] = (
             self.admin_client.show_network(
                 self.networks[0]['id'])['network']['mtu'])
@@ -186,13 +190,13 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
         self.assertNotEqual(self.networks[0]['mtu'], self.networks[1]['mtu'])
         self.networks.sort(key=lambda net: net['mtu'])
         server1, fip1 = self.create_pingable_vm(self.networks[0],
-            self.keypair, self.secgroup)
+                                                self.keypair, self.secgroup)
         server_ssh_client1 = ssh.Client(
             self.floating_ips[0]['floating_ip_address'],
             CONF.validation.image_ssh_user,
             pkey=self.keypair['private_key'])
         server2, fip2 = self.create_pingable_vm(self.networks[1],
-            self.keypair, self.secgroup)
+                                                self.keypair, self.secgroup)
         server_ssh_client2 = ssh.Client(
             self.floating_ips[0]['floating_ip_address'],
             CONF.validation.image_ssh_user,

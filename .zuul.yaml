@@ -41,7 +41,6 @@
       - ^neutron/tests/unit/.*$
       - ^tools/.*$
       - ^tox.ini$
-    voting: false
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario

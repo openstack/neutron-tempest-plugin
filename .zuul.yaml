@@ -108,9 +108,11 @@
         - neutron-tempest-plugin-designate-scenario
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-scenario-linuxbridge
+        - build-openstack-sphinx-docs
     gate:
       jobs:
         - neutron-tempest-plugin-api
+        - build-openstack-sphinx-docs
 
 - project:
     templates:

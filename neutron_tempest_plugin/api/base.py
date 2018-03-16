@@ -339,6 +339,8 @@ class BaseNetworkTest(test.BaseTestCase):
     @classmethod
     def create_port(cls, network, **kwargs):
         """Wrapper utility that returns a test port."""
+        if CONF.network.port_vnic_type and 'binding:vnic_type' not in kwargs:
+            kwargs['binding:vnic_type'] = CONF.network.port_vnic_type
         body = cls.client.create_port(network_id=network['id'],
                                       **kwargs)
         port = body['port']

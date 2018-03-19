@@ -79,6 +79,8 @@ class QoSTest(base.BaseTempestTestCase):
                        * TOLERANCE_FACTOR / 8.0)
     FILE_PATH = "/tmp/img"
 
+    NC_PORT = 1234
+
     @classmethod
     @tutils.requires_ext(extension="qos", service="network")
     @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
@@ -117,7 +119,7 @@ class QoSTest(base.BaseTempestTestCase):
         time_elapsed = time.time() - start_time
         bytes_per_second = total_bytes_read / time_elapsed
 
-        LOG.debug("time_elapsed = %(time_elapsed)d, "
+        LOG.debug("time_elapsed = %(time_elapsed).16f, "
                   "total_bytes_read = %(total_bytes_read)d, "
                   "bytes_per_second = %(bytes_per_second)d",
                   {'time_elapsed': time_elapsed,
@@ -125,6 +127,31 @@ class QoSTest(base.BaseTempestTestCase):
                    'bytes_per_second': bytes_per_second})
 
         return bytes_per_second <= QoSTest.LIMIT_BYTES_SEC
+
+    def _create_ssh_client(self):
+        return ssh.Client(self.fip['floating_ip_address'],
+                          CONF.validation.image_ssh_user,
+                          pkey=self.keypair['private_key'])
+
+    def _test_basic_resources(self):
+        self.setup_network_and_server()
+        self.check_connectivity(self.fip['floating_ip_address'],
+                                CONF.validation.image_ssh_user,
+                                self.keypair['private_key'])
+        rulesets = [{'protocol': 'tcp',
+                     'direction': 'ingress',
+                     'port_range_min': self.NC_PORT,
+                     'port_range_max': self.NC_PORT,
+                     'remote_ip_prefix': '0.0.0.0/0'}]
+        self.create_secgroup_rules(rulesets,
+                                   self.security_groups[-1]['id'])
+
+    def _create_qos_policy(self):
+        policy = self.os_admin.network_client.create_qos_policy(
+                                        name='test-policy',
+                                        description='test-qos-policy',
+                                        shared=True)
+        return policy['policy']['id']
 
     @decorators.idempotent_id('1f7ed39b-428f-410a-bd2b-db9f465680df')
     def test_qos(self):
@@ -135,29 +162,9 @@ class QoSTest(base.BaseTempestTestCase):
            Then calculating the bandwidth every ~1 sec by the number of bits
            received / elapsed time.
         """
-
-        NC_PORT = 1234
-
-        self.setup_network_and_server()
-        self.check_connectivity(self.fip['floating_ip_address'],
-                                CONF.validation.image_ssh_user,
-                                self.keypair['private_key'])
-        rulesets = [{'protocol': 'tcp',
-                     'direction': 'ingress',
-                     'port_range_min': NC_PORT,
-                     'port_range_max': NC_PORT,
-                     'remote_ip_prefix': '0.0.0.0/0'}]
-        self.create_secgroup_rules(rulesets,
-                                   self.security_groups[-1]['id'])
-
-        ssh_client = ssh.Client(self.fip['floating_ip_address'],
-                                CONF.validation.image_ssh_user,
-                                pkey=self.keypair['private_key'])
-        policy = self.os_admin.network_client.create_qos_policy(
-                                        name='test-policy',
-                                        description='test-qos-policy',
-                                        shared=True)
-        policy_id = policy['policy']['id']
+        self._test_basic_resources()
+        policy_id = self._create_qos_policy()
+        ssh_client = self._create_ssh_client()
         self.os_admin.network_client.create_bandwidth_limit_rule(
             policy_id, max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
             max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)
@@ -170,6 +177,6 @@ class QoSTest(base.BaseTempestTestCase):
         utils.wait_until_true(lambda: self._check_bw(
             ssh_client,
             self.fip['floating_ip_address'],
-            port=NC_PORT),
+            port=self.NC_PORT),
             timeout=120,
             sleep=1)

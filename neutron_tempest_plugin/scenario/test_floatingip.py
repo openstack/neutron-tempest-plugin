@@ -209,6 +209,7 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
     @classmethod
     @utils.requires_ext(extension="router", service="network")
     @utils.requires_ext(extension="qos", service="network")
+    @utils.requires_ext(extension="qos-fip", service="network")
     @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
     def resource_setup(cls):
         super(FloatingIPQosTest, cls).resource_setup()

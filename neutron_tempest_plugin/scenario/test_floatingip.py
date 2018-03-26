@@ -214,6 +214,15 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
     def resource_setup(cls):
         super(FloatingIPQosTest, cls).resource_setup()
 
+    @classmethod
+    def skip_checks(cls):
+        super(FloatingIPQosTest, cls).skip_checks()
+        if utils.is_extension_enabled("dvr", "network"):
+            raise cls.skipException(
+                "Skip until bug "
+                "https://bugs.launchpad.net/neutron/+bug/1758316 "
+                "will be fixed.")
+
     @decorators.idempotent_id('5eb48aea-eaba-4c20-8a6f-7740070a0aa3')
     def test_qos(self):
         """Test floating IP is binding to a QoS policy with

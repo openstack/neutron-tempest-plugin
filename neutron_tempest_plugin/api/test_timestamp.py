@@ -177,6 +177,30 @@ class TestTimeStamp(base.BaseAdminNetworkTest):
         self.assertEqual(sp['created_at'], show_sp['created_at'])
         self.assertEqual(sp['updated_at'], show_sp['updated_at'])
 
+    @decorators.idempotent_id('396a97dc-b66c-4c46-9171-c39eefe6936c')
+    def test_segment_with_timestamp(self):
+        network = self.create_network()
+        segment = self.admin_client.list_segments(
+            network_id=network['id'])['segments'][0]
+        # Verifies body contains timestamp fields
+        self.assertIsNotNone(segment['created_at'])
+        self.assertIsNotNone(segment['updated_at'])
+
+        body = self.admin_client.show_segment(segment['id'])
+        show_segment = body['segment']
+        # verify the timestamp from creation and showed is same
+        self.assertEqual(segment['created_at'], show_segment['created_at'])
+        self.assertEqual(segment['updated_at'], show_segment['updated_at'])
+
+        origin_updated_at = segment['updated_at']
+        update_body = {'name': str(segment['name']) + 'new'}
+        body = self.admin_client.update_segment(segment['id'], **update_body)
+        updated_segment = body['segment']
+        new_updated_at = updated_segment['updated_at']
+        self.assertEqual(segment['created_at'], updated_segment['created_at'])
+        # Verify that origin_updated_at is not same with new_updated_at
+        self.assertIsNot(origin_updated_at, new_updated_at)
+
 
 class TestTimeStampWithL3(base_routers.BaseRouterTest):
 

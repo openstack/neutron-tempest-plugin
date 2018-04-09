@@ -43,6 +43,10 @@ NeutronPluginOptions = [
                help='Max number of networks per project. '
                     'Configure this only when project is limited with real '
                     'vlans in deployment.'),
+    cfg.StrOpt('l3_agent_mode',
+               help='The agent mode for L3 agents in the deployment. '
+                    'Configure this only when the single value is used by '
+                    'all agents in the deployment.'),
 ]
 
 # TODO(amuller): Redo configuration options registration as part of the planned

@@ -63,9 +63,6 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
     @decorators.idempotent_id('fe20d9f9-346c-4a20-bbfa-d9ca390f4dc6')
     def test_create_port_when_quotas_is_full(self):
         tenant_id = self.create_project()['id']
-        new_quotas = {'port': 1}
-        self._setup_quotas(tenant_id, **new_quotas)
-
         net_args = {'tenant_id': tenant_id}
         net = self.admin_client.create_network(**net_args)['network']
         self.addCleanup(self.admin_client.delete_network, net['id'])
@@ -77,6 +74,11 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
                        'ip_version': '4'}
         subnet = self.admin_client.create_subnet(**subnet_args)['subnet']
         self.addCleanup(self.admin_client.delete_subnet, subnet['id'])
+
+        ports = self.admin_client.list_ports(tenant_id=tenant_id)
+        quota_limit = len(ports['ports']) + 1
+        new_quotas = {'port': quota_limit}
+        self._setup_quotas(tenant_id, **new_quotas)
 
         port_args = {'tenant_id': tenant_id,
                      'network_id': net['id']}

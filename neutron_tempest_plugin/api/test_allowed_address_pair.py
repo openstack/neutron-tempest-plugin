@@ -13,11 +13,9 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import netaddr
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin import config
 
 
 class AllowedAddressPairTestJSON(base.BaseNetworkTest):
@@ -94,9 +92,7 @@ class AllowedAddressPairTestJSON(base.BaseNetworkTest):
     @decorators.idempotent_id('4d6d178f-34f6-4bff-a01c-0a2f8fe909e4')
     def test_update_port_with_cidr_address_pair(self):
         # Update allowed address pair with cidr
-        cidr = str(
-            netaddr.IPNetwork(config.safe_get_config_value(
-                'network', 'project_network_cidr')))
+        cidr = str(next(self.get_subnet_cidrs()))
         self._update_port_with_address(cidr)
 
     @decorators.idempotent_id('b3f20091-6cd5-472b-8487-3516137df933')

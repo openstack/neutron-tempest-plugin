@@ -58,7 +58,7 @@ class BaseNetworkTest(test.BaseTestCase):
     credentials = ['primary']
 
     # Default to ipv4.
-    _ip_version = 4
+    _ip_version = const.IP_VERSION_4
 
     @classmethod
     def get_client_manager(cls, credential_type=None, roles=None,
@@ -79,7 +79,8 @@ class BaseNetworkTest(test.BaseTestCase):
         super(BaseNetworkTest, cls).skip_checks()
         if not CONF.service_available.neutron:
             raise cls.skipException("Neutron support is required")
-        if cls._ip_version == 6 and not CONF.network_feature_enabled.ipv6:
+        if (cls._ip_version == const.IP_VERSION_6 and
+                not CONF.network_feature_enabled.ipv6):
             raise cls.skipException("IPv6 Tests are disabled.")
         for req_ext in getattr(cls, 'required_extensions', []):
             if not tutils.is_extension_enabled(req_ext, 'network'):
@@ -122,6 +123,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.security_groups = []
         cls.projects = []
         cls.log_objects = []
+        cls.reserved_subnet_cidrs = set()
 
     @classmethod
     def resource_cleanup(cls):
@@ -282,50 +284,73 @@ class BaseNetworkTest(test.BaseTestCase):
         return network
 
     @classmethod
-    def create_subnet(cls, network, gateway='', cidr=None, mask_bits=None,
+    def create_subnet(cls, network, gateway=None, cidr=None, mask_bits=None,
                       ip_version=None, client=None, **kwargs):
-        """Wrapper utility that returns a test subnet."""
+        """Wrapper utility that returns a test subnet.
+
+        Convenient wrapper for client.create_subnet method. It reserves and
+        allocates CIDRs to avoid creating overlapping subnets.
+
+        :param network: network where to create the subnet
+        network['id'] must contain the ID of the network
+
+        :param gateway: gateway IP address
+        It can be a str or a netaddr.IPAddress
+        If gateway is not given, then it will use default address for
+        given subnet CIDR, like "192.168.0.1" for "192.168.0.0/24" CIDR
+
+        :param cidr: CIDR of the subnet to create
+        It can be either None, a str or a netaddr.IPNetwork instance
+
+        :param mask_bits: CIDR prefix length
+        It can be either None or a numeric value.
+        If cidr parameter is given then mask_bits is used to determinate a
+        sequence of valid CIDR to use as generated.
+        Please see netaddr.IPNetwork.subnet method documentation[1]
+
+        :param ip_version: ip version of generated subnet CIDRs
+        It can be None, IP_VERSION_4 or IP_VERSION_6
+        It has to match given either given CIDR and gateway
+
+        :param ip_version: numeric value (either IP_VERSION_4 or IP_VERSION_6)
+        this value must match CIDR and gateway IP versions if any of them is
+        given
+
+        :param client: client to be used to connect to network service
+
+        :param **kwargs: optional parameters to be forwarded to wrapped method
+
+        [1] http://netaddr.readthedocs.io/en/latest/tutorial_01.html#supernets-and-subnets  # noqa
+        """
 
         # allow tests to use admin client
         if not client:
             client = cls.client
 
-        # The cidr and mask_bits depend on the ip version.
-        ip_version = ip_version if ip_version is not None else cls._ip_version
-        gateway_not_set = gateway == ''
-        if ip_version == 4:
-            cidr = cidr or netaddr.IPNetwork(
-                config.safe_get_config_value(
-                    'network', 'project_network_cidr'))
-            mask_bits = (
-                mask_bits or config.safe_get_config_value(
-                    'network', 'project_network_mask_bits'))
-        elif ip_version == 6:
-            cidr = (
-                cidr or netaddr.IPNetwork(
-                    config.safe_get_config_value(
-                        'network', 'project_network_v6_cidr')))
-            mask_bits = (
-                mask_bits or config.safe_get_config_value(
-                    'network', 'project_network_v6_mask_bits'))
-        # Find a cidr that is not in use yet and create a subnet with it
-        for subnet_cidr in cidr.subnet(mask_bits):
-            if gateway_not_set:
-                gateway_ip = str(netaddr.IPAddress(subnet_cidr) + 1)
+        if gateway:
+            gateway_ip = netaddr.IPAddress(gateway)
+            if ip_version:
+                if ip_version != gateway_ip.version:
+                    raise ValueError(
+                        "Gateway IP version doesn't match IP version")
             else:
-                gateway_ip = gateway
-            try:
-                body = client.create_subnet(
-                    network_id=network['id'],
-                    cidr=str(subnet_cidr),
-                    ip_version=ip_version,
-                    gateway_ip=gateway_ip,
-                    **kwargs)
-                break
-            except lib_exc.BadRequest as e:
-                is_overlapping_cidr = 'overlaps with another subnet' in str(e)
-                if not is_overlapping_cidr:
-                    raise
+                ip_version = gateway_ip.version
+
+        for subnet_cidr in cls.get_subnet_cidrs(
+                ip_version=ip_version, cidr=cidr, mask_bits=mask_bits):
+            if cls.try_reserve_subnet_cidr(subnet_cidr):
+                gateway_ip = gateway or str(subnet_cidr.ip + 1)
+                try:
+                    body = client.create_subnet(
+                        network_id=network['id'],
+                        cidr=str(subnet_cidr),
+                        ip_version=subnet_cidr.version,
+                        gateway_ip=str(gateway_ip),
+                        **kwargs)
+                    break
+                except lib_exc.BadRequest as e:
+                    if 'overlaps with another subnet' not in str(e):
+                        raise
         else:
             message = 'Available CIDR for subnet creation could not be found'
             raise ValueError(message)
@@ -335,6 +360,93 @@ class BaseNetworkTest(test.BaseTestCase):
         else:
             cls.admin_subnets.append(subnet)
         return subnet
+
+    @classmethod
+    def reserve_subnet_cidr(cls, addr, **ipnetwork_kwargs):
+        """Reserve given subnet CIDR making sure it is not used by create_subnet
+
+        :param addr: the CIDR address to be reserved
+        It can be a str or netaddr.IPNetwork instance
+
+        :param **ipnetwork_kwargs: optional netaddr.IPNetwork constructor
+        parameters
+        """
+
+        if not cls.try_reserve_subnet_cidr(addr, **ipnetwork_kwargs):
+            raise ValueError('Subnet CIDR already reserved: %r'.format(
+                addr))
+
+    @classmethod
+    def try_reserve_subnet_cidr(cls, addr, **ipnetwork_kwargs):
+        """Reserve given subnet CIDR if it hasn't been reserved before
+
+        :param addr: the CIDR address to be reserved
+        It can be a str or netaddr.IPNetwork instance
+
+        :param **ipnetwork_kwargs: optional netaddr.IPNetwork constructor
+        parameters
+
+        :return: True if it wasn't reserved before, False elsewhere.
+        """
+
+        subnet_cidr = netaddr.IPNetwork(addr, **ipnetwork_kwargs)
+        if subnet_cidr in cls.reserved_subnet_cidrs:
+            return False
+        else:
+            cls.reserved_subnet_cidrs.add(subnet_cidr)
+            return True
+
+    @classmethod
+    def get_subnet_cidrs(
+            cls, cidr=None, mask_bits=None, ip_version=None):
+        """Iterate over a sequence of unused subnet CIDR for IP version
+
+        :param cidr: CIDR of the subnet to create
+        It can be either None, a str or a netaddr.IPNetwork instance
+
+        :param mask_bits: CIDR prefix length
+        It can be either None or a numeric value.
+        If cidr parameter is given then mask_bits is used to determinate a
+        sequence of valid CIDR to use as generated.
+        Please see netaddr.IPNetwork.subnet method documentation[1]
+
+        :param ip_version: ip version of generated subnet CIDRs
+        It can be None, IP_VERSION_4 or IP_VERSION_6
+        It has to match given CIDR if given
+
+        :return: iterator over reserved CIDRs of type netaddr.IPNetwork
+
+        [1] http://netaddr.readthedocs.io/en/latest/tutorial_01.html#supernets-and-subnets  # noqa
+        """
+
+        if cidr:
+            # Generate subnet CIDRs starting from given CIDR
+            # checking it is of requested IP version
+            cidr = netaddr.IPNetwork(cidr, version=ip_version)
+        else:
+            # Generate subnet CIDRs starting from configured values
+            ip_version = ip_version or cls._ip_version
+            if ip_version == const.IP_VERSION_4:
+                mask_bits = mask_bits or config.safe_get_config_value(
+                    'network', 'project_network_mask_bits')
+                cidr = netaddr.IPNetwork(config.safe_get_config_value(
+                    'network', 'project_network_cidr'))
+            elif ip_version == const.IP_VERSION_6:
+                mask_bits = config.safe_get_config_value(
+                    'network', 'project_network_v6_mask_bits')
+                cidr = netaddr.IPNetwork(config.safe_get_config_value(
+                    'network', 'project_network_v6_cidr'))
+            else:
+                raise ValueError('Invalid IP version: {!r}'.format(ip_version))
+
+        if mask_bits:
+            subnet_cidrs = cidr.subnet(mask_bits)
+        else:
+            subnet_cidrs = iter([cidr])
+
+        for subnet_cidr in subnet_cidrs:
+            if subnet_cidr not in cls.reserved_subnet_cidrs:
+                yield subnet_cidr
 
     @classmethod
     def create_port(cls, network, **kwargs):

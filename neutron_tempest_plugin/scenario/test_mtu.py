@@ -12,7 +12,6 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import netaddr
 
 from neutron_lib.api.definitions import provider_net
 from tempest.common import utils
@@ -83,16 +82,14 @@ class NetworkMtuTest(NetworkMtuBaseTest):
     def _create_setup(self):
         self.admin_client = self.os_admin.network_client
         net_kwargs = {'tenant_id': self.client.tenant_id}
-        for sub, net_type in (
-                ('10.100.0.0/16', 'vxlan'), ('10.200.0.0/16', 'gre')):
+        for net_type in ['vxlan', 'gre']:
             net_kwargs['name'] = '-'.join([net_type, 'net'])
             net_kwargs['provider:network_type'] = net_type
             network = self.admin_client.create_network(**net_kwargs)[
                 'network']
             self.networks.append(network)
             self.addCleanup(self.admin_client.delete_network, network['id'])
-            cidr = netaddr.IPNetwork(sub)
-            subnet = self.create_subnet(network, cidr=cidr)
+            subnet = self.create_subnet(network)
             self.create_router_interface(self.router['id'], subnet['id'])
             self.addCleanup(self.client.remove_router_interface_with_subnet_id,
                             self.router['id'], subnet['id'])
@@ -165,14 +162,13 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
         self.admin_client = self.os_admin.network_client
         net_kwargs = {'tenant_id': self.client.tenant_id,
                       'provider:network_type': 'vxlan'}
-        for sub in ('10.100.0.0/16', '10.200.0.0/16'):
+        for _ in range(2):
             net_kwargs['name'] = data_utils.rand_name('net')
             network = self.admin_client.create_network(**net_kwargs)[
                 'network']
             self.networks.append(network)
             self.addCleanup(self.admin_client.delete_network, network['id'])
-            cidr = netaddr.IPNetwork(sub)
-            subnet = self.create_subnet(network, cidr=cidr)
+            subnet = self.create_subnet(network)
             self.create_router_interface(self.router['id'], subnet['id'])
             self.addCleanup(self.client.remove_router_interface_with_subnet_id,
                             self.router['id'], subnet['id'])

@@ -22,7 +22,6 @@ from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin import config
 
 from neutron_lib import constants as lib_constants
 
@@ -76,25 +75,6 @@ class NetworksIpAvailabilityTest(base.BaseAdminNetworkTest):
                     self.assertEqual(expected_total, availability['total_ips'])
                     self.assertEqual(expected_used, availability['used_ips'])
 
-    def _create_subnet(self, network, ip_version):
-        if ip_version == lib_constants.IP_VERSION_4:
-            cidr = netaddr.IPNetwork('20.0.0.0/24')
-            mask_bits = config.safe_get_config_value(
-                'network', 'project_network_mask_bits')
-        elif ip_version == lib_constants.IP_VERSION_6:
-            cidr = netaddr.IPNetwork('20:db8::/64')
-            mask_bits = config.safe_get_config_value(
-                'network', 'project_network_v6_mask_bits')
-
-        subnet_cidr = next(cidr.subnet(mask_bits))
-        prefix_len = subnet_cidr.prefixlen
-        subnet = self.create_subnet(network,
-                                    cidr=subnet_cidr,
-                                    enable_dhcp=False,
-                                    mask_bits=mask_bits,
-                                    ip_version=ip_version)
-        return subnet, prefix_len
-
 
 def calc_total_ips(prefix, ip_version):
     # will calculate total ips after removing reserved.
@@ -122,7 +102,8 @@ class NetworksIpAvailabilityIPv4Test(NetworksIpAvailabilityTest):
         net_name = data_utils.rand_name('network')
         network = self.create_network(network_name=net_name)
         self.addCleanup(self.client.delete_network, network['id'])
-        subnet, prefix = self._create_subnet(network, self._ip_version)
+        subnet = self.create_subnet(network, enable_dhcp=False)
+        prefix = netaddr.IPNetwork(subnet['cidr']).prefixlen
         self.addCleanup(self.client.delete_subnet, subnet['id'])
         body = self.admin_client.list_network_ip_availabilities()
         used_ip = self._get_used_ips(network, body)
@@ -141,7 +122,7 @@ class NetworksIpAvailabilityIPv4Test(NetworksIpAvailabilityTest):
         net_name = data_utils.rand_name('network')
         network = self.create_network(network_name=net_name)
         self.addCleanup(self.client.delete_network, network['id'])
-        subnet, prefix = self._create_subnet(network, self._ip_version)
+        subnet = self.create_subnet(network, enable_dhcp=False)
         self.addCleanup(self.client.delete_subnet, subnet['id'])
         port = self.client.create_port(network_id=network['id'])
         self.addCleanup(self._cleanUp_port, port['port']['id'])

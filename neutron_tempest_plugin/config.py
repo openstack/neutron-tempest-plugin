@@ -65,6 +65,12 @@ NeutronPluginOptions = [
                choices=['None', 'linuxbridge', 'ovs', 'sriov'],
                help='Agent used for devstack@q-agt.service'),
 
+    # Multicast tests settings
+    cfg.StrOpt('multicast_group_range',
+               default='224.0.0.120-224.0.0.250',
+               help='Unallocated multi-cast IPv4 range, which will be used to '
+                    'test the multi-cast support.'),
+
     # Option for feature to connect via SSH to VMs using an intermediate SSH
     # server
     cfg.StrOpt('ssh_proxy_jump_host',

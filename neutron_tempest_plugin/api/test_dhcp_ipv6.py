@@ -50,8 +50,8 @@ class NetworksTestDHCPv6(base.BaseNetworkTest):
     def _remove_from_list_by_index(self, things_list, elem):
         for index, i in enumerate(things_list):
             if i['id'] == elem['id']:
-                break
-        del things_list[index]
+                del things_list[index]
+                return
 
     def _clean_network(self):
         body = self.client.list_ports()

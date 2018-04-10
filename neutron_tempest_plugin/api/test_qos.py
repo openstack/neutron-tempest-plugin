@@ -585,7 +585,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
 
 class QosBandwidthLimitRuleWithDirectionTestJSON(
-    QosBandwidthLimitRuleTestJSON):
+        QosBandwidthLimitRuleTestJSON):
 
     required_extensions = (
         QosBandwidthLimitRuleTestJSON.required_extensions +

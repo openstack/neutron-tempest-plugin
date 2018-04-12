@@ -35,7 +35,8 @@ class Manager(manager.Manager):
         'disable_ssl_certificate_validation':
             CONF.identity.disable_ssl_certificate_validation,
         'ca_certs': CONF.identity.ca_certificates_file,
-        'trace_requests': CONF.debug.trace_requests
+        'trace_requests': CONF.debug.trace_requests,
+        'proxy_url': CONF.service_clients.proxy_url
     }
 
     # NOTE: Tempest uses timeout values of compute API if project specific

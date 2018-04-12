@@ -52,9 +52,9 @@ class SubnetPoolsTestBase(base.BaseAdminNetworkTest):
 class SubnetPoolsTest(SubnetPoolsTestBase):
 
     min_prefixlen = '28'
-    max_prefixlen = '31'
+    max_prefixlen = '30'
     _ip_version = 4
-    subnet_cidr = u'10.11.12.0/31'
+    subnet_cidr = u'10.11.12.0/29'
     new_prefix = u'10.11.15.0/24'
     larger_prefix = u'10.11.0.0/16'
 

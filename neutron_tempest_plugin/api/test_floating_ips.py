@@ -105,3 +105,38 @@ class FloatingIPTestJSON(base.BaseNetworkTest):
         body = self.client.update_floatingip(body['floatingip']['id'],
                                              port_id=None)
         self.assertIsNone(body['floatingip']['port_id'])
+
+    @decorators.idempotent_id('cecae820-ebaa-4f96-b386-6a9fbf25c552')
+    @utils.requires_ext(extension="standard-attr-description",
+                        service="network")
+    @utils.requires_ext(extension="fip-port-details", service="network")
+    def test_create_update_floatingip_port_details(self):
+
+        body = self.client.create_floatingip(
+            floating_network_id=self.ext_net_id,
+            port_id=self.ports[0]['id'],
+            description='d1'
+        )['floatingip']
+        self.floating_ips.append(body)
+        self._assert_port_details(self.ports[0], body)
+        body = self.client.show_floatingip(body['id'])['floatingip']
+        self._assert_port_details(self.ports[0], body)
+        body = self.client.update_floatingip(body['id'], description='d2')
+        self._assert_port_details(self.ports[0], body['floatingip'])
+        # disassociate
+        body = self.client.update_floatingip(body['floatingip']['id'],
+                                             port_id=None)
+        self.assertIn('port_details', body['floatingip'])
+        self.assertIsNone(body['floatingip']['port_details'])
+
+    def _assert_port_details(self, port, body):
+        self.assertIn('port_details', body)
+        port_details = body['port_details']
+        self.assertEqual(port['name'], port_details['name'])
+        self.assertEqual(port['network_id'], port_details['network_id'])
+        self.assertEqual(port['mac_address'], port_details['mac_address'])
+        self.assertEqual(port['admin_state_up'],
+                         port_details['admin_state_up'])
+        self.assertEqual(port['status'], port_details['status'])
+        self.assertEqual(port['device_id'], port_details['device_id'])
+        self.assertEqual(port['device_owner'], port_details['device_owner'])

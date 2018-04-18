@@ -34,7 +34,7 @@
           export DEVSTACK_GATE_EXERCISES=0
           export DEVSTACK_GATE_TEMPEST_REGEX="neutron_tempest_plugin.api"
           export DEVSTACK_LOCAL_CONFIG="enable_plugin neutron-tempest-plugin git://git.openstack.org/openstack/neutron-tempest-plugin"
-          export BRANCH_OVERRIDE=default
+          export BRANCH_OVERRIDE="{{ branch_override | default('default') }}"
           if [ "$BRANCH_OVERRIDE" != "default" ] ; then
               export OVERRIDE_ZUUL_BRANCH=$BRANCH_OVERRIDE
           fi

@@ -12,6 +12,7 @@
 
 import copy
 
+from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
@@ -178,6 +179,7 @@ class TestTimeStamp(base.BaseAdminNetworkTest):
         self.assertEqual(sp['updated_at'], show_sp['updated_at'])
 
     @decorators.idempotent_id('396a97dc-b66c-4c46-9171-c39eefe6936c')
+    @utils.requires_ext(extension="standard-attr-segment", service="network")
     def test_segment_with_timestamp(self):
         network = self.create_network()
         segment = self.admin_client.list_segments(

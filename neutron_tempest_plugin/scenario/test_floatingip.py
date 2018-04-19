@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import netaddr
 from neutron_lib import constants as lib_constants
 from neutron_lib.services.qos import constants as qos_consts
 from tempest.common import utils
@@ -76,8 +75,7 @@ class FloatingIpTestCasesMixin(object):
     @classmethod
     def _create_dest_network(cls):
         network = cls.create_network()
-        subnet = cls.create_subnet(network,
-            cidr=netaddr.IPNetwork('10.10.0.0/24'))
+        subnet = cls.create_subnet(network)
         cls.create_router_interface(cls.router['id'], subnet['id'])
         return network
 

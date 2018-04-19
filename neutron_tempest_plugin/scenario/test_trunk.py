@@ -12,7 +12,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import netaddr
 from oslo_log import log as logging
 from tempest.common import utils as tutils
 from tempest.common import waiters
@@ -36,10 +35,6 @@ CONFIGURE_VLAN_INTERFACE_COMMANDS = (
     '"ip l a link $IFACE name $IFACE.%(tag)d type vlan id %(tag)d &&'
     'ip l s up dev $IFACE.%(tag)d && '
     'dhclient $IFACE.%(tag)d"')
-
-
-def get_next_subnet(cidr):
-    return netaddr.IPNetwork(cidr).next()
 
 
 class TrunkTest(base.BaseTempestTestCase):
@@ -233,9 +228,7 @@ class TrunkTest(base.BaseTempestTestCase):
         vlan_tag = 10
 
         vlan_network = self.create_network()
-        new_subnet_cidr = get_next_subnet(
-            config.safe_get_config_value('network', 'project_network_cidr'))
-        self.create_subnet(vlan_network, gateway=None, cidr=new_subnet_cidr)
+        self.create_subnet(vlan_network)
 
         servers = [
             self._create_server_with_port_and_subport(vlan_network, vlan_tag)

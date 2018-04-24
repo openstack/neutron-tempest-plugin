@@ -103,6 +103,13 @@
       - ^tox.ini$
 
 - job:
+    name: neutron-tempest-plugin-api-queens
+    parent: neutron-tempest-plugin-api
+    override-checkout: stable/queens
+    vars:
+      branch_override: stable/queens
+
+- job:
     name: neutron-tempest-plugin-scenario-linuxbridge
     parent: neutron-tempest-plugin-scenario
     timeout: 10000
@@ -117,6 +124,13 @@
               enable_dvr: false
             AGENT:
               debug_iptables_rules: true
+
+- job:
+    name: neutron-tempest-plugin-scenario-linuxbridge-queens
+    parent: neutron-tempest-plugin-scenario-linuxbridge
+    override-checkout: stable/queens
+    vars:
+      branch_override: stable/queens
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
@@ -141,6 +155,13 @@
       - ^tools/.*$
       - ^tox.ini$
     voting: false
+
+- job:
+    name: neutron-tempest-plugin-dvr-multinode-scenario-queens
+    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    override-checkout: stable/queens
+    vars:
+      branch_override: stable/queens
 
 - job:
     name: neutron-tempest-plugin-designate-scenario
@@ -168,6 +189,13 @@
       - ^setup.cfg$
     voting: false
 
+- job:
+    name: neutron-tempest-plugin-designate-scenario-queens
+    parent: neutron-tempest-plugin-designate-scenario
+    override-checkout: stable/queens
+    vars:
+      branch_override: stable/queens
+
 - project-template:
     name: neutron-tempest-plugin-jobs
     check:
@@ -182,6 +210,19 @@
         - neutron-tempest-plugin-api
         - build-openstack-sphinx-docs
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-stable
+    check:
+      jobs:
+        - neutron-tempest-plugin-api-queens
+        - neutron-tempest-plugin-designate-scenario-queens
+        - neutron-tempest-plugin-dvr-multinode-scenario-queens
+        - neutron-tempest-plugin-scenario-linuxbridge-queens
+    gate:
+      jobs:
+        - neutron-tempest-plugin-api-queens
+
 - project:
     templates:
       - neutron-tempest-plugin-jobs
+      - neutron-tempest-plugin-jobs-stable

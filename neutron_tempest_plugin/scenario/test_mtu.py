@@ -69,8 +69,8 @@ class NetworkMtuTest(NetworkMtuBaseTest):
     def skip_checks(cls):
         super(NetworkMtuTest, cls).skip_checks()
         if ("vxlan" not in
-                config.CONF.neutron_plugin_options.available_type_drivers
-            or "gre" not in
+                config.CONF.neutron_plugin_options.available_type_drivers or
+            "gre" not in
                 config.CONF.neutron_plugin_options.available_type_drivers):
             raise cls.skipException("GRE or VXLAN type_driver is not enabled")
 

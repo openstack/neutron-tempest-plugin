@@ -18,10 +18,11 @@
 
 """Utilities and helper functions."""
 
-import eventlet
 import functools
 import threading
 import time
+
+import eventlet
 
 
 class classproperty(object):

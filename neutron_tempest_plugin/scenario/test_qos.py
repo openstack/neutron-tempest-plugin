@@ -75,8 +75,8 @@ class QoSTest(base.BaseTempestTestCase):
     BS = 512
     COUNT = BUFFER_SIZE / BS
     FILE_SIZE = BS * COUNT
-    LIMIT_BYTES_SEC = (constants.LIMIT_KILO_BITS_PER_SECOND * 1024
-                       * TOLERANCE_FACTOR / 8.0)
+    LIMIT_BYTES_SEC = (constants.LIMIT_KILO_BITS_PER_SECOND * 1024 *
+                       TOLERANCE_FACTOR / 8.0)
     FILE_PATH = "/tmp/img"
 
     NC_PORT = 1234

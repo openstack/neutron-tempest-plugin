@@ -121,16 +121,25 @@ class QuotasTest(QuotasTestBase):
         new_quotas = {'network': {'used': 1, 'limit': 2, 'reserved': 0},
                       'port': {'used': 1, 'limit': 2, 'reserved': 0}}
 
-        # update quota limit for tenant
-        new_quota = {'network': new_quotas['network']['limit'], 'port':
-                     new_quotas['port']['limit']}
-        quota_set = self._setup_quotas(tenant_id, **new_quota)
-
         # create test resources
         network = self._create_network(tenant_id)
         post_body = {"network_id": network['id'],
                      "tenant_id": tenant_id}
+
+        # NOTE(lucasagomes): Some backends such as OVN will create a port
+        # to be used by the metadata agent upon creating a network. In
+        # order to make this test more generic we need to calculate the
+        # number of expected used ports after the network is created and
+        # prior for the port being created
+        ports = self.admin_client.list_ports(tenant_id=tenant_id)
+        new_quotas['port']['used'] += len(ports['ports'])
+
         self._create_port(**post_body)
+
+        # update quota limit for tenant
+        new_quota = {'network': new_quotas['network']['limit'], 'port':
+                     new_quotas['port']['limit']}
+        quota_set = self._setup_quotas(tenant_id, **new_quota)
 
         # confirm from extended API quotas were changed
         # as requested for tenant

@@ -68,8 +68,8 @@ class FloatingIpTestCasesMixin(object):
                 network_id=CONF.network.public_network_id)
 
             for subnet in subnets['subnets']:
-                if (subnet['gateway_ip']
-                    and subnet['ip_version'] == lib_constants.IP_VERSION_4):
+                if (subnet['gateway_ip'] and
+                    subnet['ip_version'] == lib_constants.IP_VERSION_4):
                     return subnet['gateway_ip']
 
     @classmethod

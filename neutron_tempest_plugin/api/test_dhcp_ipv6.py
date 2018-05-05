@@ -58,8 +58,8 @@ class NetworksTestDHCPv6(base.BaseNetworkTest):
         ports = body['ports']
         for port in ports:
             if (port['device_owner'].startswith(
-                    constants.DEVICE_OWNER_ROUTER_INTF)
-                and port['device_id'] in [r['id'] for r in self.routers]):
+                    constants.DEVICE_OWNER_ROUTER_INTF) and
+                port['device_id'] in [r['id'] for r in self.routers]):
                 self.client.remove_router_interface_with_port_id(
                     port['device_id'], port['id']
                 )

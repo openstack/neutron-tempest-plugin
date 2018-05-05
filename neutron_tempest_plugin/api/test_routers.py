@@ -159,9 +159,12 @@ class RoutersTest(base_routers.BaseRouterTest):
         # Add router interface with subnet id
         router = self._create_router(data_utils.rand_name('router'), True)
         intf = self.create_router_interface(router['id'], subnet['id'])
-        status_active = lambda: self.client.show_port(
-            intf['port_id'])['port']['status'] == 'ACTIVE'
-        utils.wait_until_true(status_active, exception=AssertionError)
+
+        def _status_active():
+            return self.client.show_port(
+                intf['port_id'])['port']['status'] == 'ACTIVE'
+
+        utils.wait_until_true(_status_active, exception=AssertionError)
 
     @decorators.idempotent_id('c86ac3a8-50bd-4b00-a6b8-62af84a0765c')
     @tutils.requires_ext(extension='extraroute', service='network')

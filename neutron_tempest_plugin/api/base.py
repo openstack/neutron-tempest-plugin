@@ -284,7 +284,7 @@ class BaseNetworkTest(test.BaseTestCase):
         return network
 
     @classmethod
-    def create_subnet(cls, network, gateway=None, cidr=None, mask_bits=None,
+    def create_subnet(cls, network, gateway='', cidr=None, mask_bits=None,
                       ip_version=None, client=None, **kwargs):
         """Wrapper utility that returns a test subnet.
 
@@ -298,6 +298,7 @@ class BaseNetworkTest(test.BaseTestCase):
         It can be a str or a netaddr.IPAddress
         If gateway is not given, then it will use default address for
         given subnet CIDR, like "192.168.0.1" for "192.168.0.0/24" CIDR
+        if gateway is given as None then no gateway will be assigned
 
         :param cidr: CIDR of the subnet to create
         It can be either None, a str or a netaddr.IPNetwork instance
@@ -335,17 +336,19 @@ class BaseNetworkTest(test.BaseTestCase):
                         "Gateway IP version doesn't match IP version")
             else:
                 ip_version = gateway_ip.version
+        else:
+            ip_version = ip_version or cls._ip_version
 
         for subnet_cidr in cls.get_subnet_cidrs(
                 ip_version=ip_version, cidr=cidr, mask_bits=mask_bits):
             if cls.try_reserve_subnet_cidr(subnet_cidr):
-                gateway_ip = gateway or str(subnet_cidr.ip + 1)
+                if gateway is not None:
+                    kwargs['gateway_ip'] = str(gateway or (subnet_cidr.ip + 1))
                 try:
                     body = client.create_subnet(
                         network_id=network['id'],
                         cidr=str(subnet_cidr),
                         ip_version=subnet_cidr.version,
-                        gateway_ip=str(gateway_ip),
                         **kwargs)
                     break
                 except lib_exc.BadRequest as e:

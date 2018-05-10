@@ -230,7 +230,7 @@ class TrunkTest(base.BaseTempestTestCase):
         vlan_tag = 10
 
         vlan_network = self.create_network()
-        self.create_subnet(vlan_network)
+        self.create_subnet(vlan_network, gateway=None)
 
         servers = [
             self._create_server_with_port_and_subport(vlan_network, vlan_tag)

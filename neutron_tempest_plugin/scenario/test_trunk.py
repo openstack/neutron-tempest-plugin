@@ -34,7 +34,8 @@ CONFIGURE_VLAN_INTERFACE_COMMANDS = (
     'sudo su -c '
     '"ip l a link $IFACE name $IFACE.%(tag)d type vlan id %(tag)d &&'
     'ip l s up dev $IFACE.%(tag)d && '
-    'dhclient $IFACE.%(tag)d"')
+    '{ ps -ef | grep -q "dhclient .*$IFACE.%(tag)d" || '
+    'dhclient $IFACE.%(tag)d"; }')
 
 
 class TrunkTest(base.BaseTempestTestCase):

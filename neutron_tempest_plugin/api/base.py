@@ -285,7 +285,8 @@ class BaseNetworkTest(test.BaseTestCase):
 
     @classmethod
     def create_subnet(cls, network, gateway='', cidr=None, mask_bits=None,
-                      ip_version=None, client=None, **kwargs):
+                      ip_version=None, client=None, reserve_cidr=True,
+                      **kwargs):
         """Wrapper utility that returns a test subnet.
 
         Convenient wrapper for client.create_subnet method. It reserves and
@@ -319,6 +320,10 @@ class BaseNetworkTest(test.BaseTestCase):
 
         :param client: client to be used to connect to network service
 
+        :param reserve_cidr: if True then it reserves assigned CIDR to avoid
+        using the same CIDR for further subnets in the scope of the same
+        test case class
+
         :param **kwargs: optional parameters to be forwarded to wrapped method
 
         [1] http://netaddr.readthedocs.io/en/latest/tutorial_01.html#supernets-and-subnets  # noqa
@@ -341,19 +346,18 @@ class BaseNetworkTest(test.BaseTestCase):
 
         for subnet_cidr in cls.get_subnet_cidrs(
                 ip_version=ip_version, cidr=cidr, mask_bits=mask_bits):
-            if cls.try_reserve_subnet_cidr(subnet_cidr):
-                if gateway is not None:
-                    kwargs['gateway_ip'] = str(gateway or (subnet_cidr.ip + 1))
-                try:
-                    body = client.create_subnet(
-                        network_id=network['id'],
-                        cidr=str(subnet_cidr),
-                        ip_version=subnet_cidr.version,
-                        **kwargs)
-                    break
-                except lib_exc.BadRequest as e:
-                    if 'overlaps with another subnet' not in str(e):
-                        raise
+            if gateway is not None:
+                kwargs['gateway_ip'] = str(gateway or (subnet_cidr.ip + 1))
+            try:
+                body = client.create_subnet(
+                    network_id=network['id'],
+                    cidr=str(subnet_cidr),
+                    ip_version=subnet_cidr.version,
+                    **kwargs)
+                break
+            except lib_exc.BadRequest as e:
+                if 'overlaps with another subnet' not in str(e):
+                    raise
         else:
             message = 'Available CIDR for subnet creation could not be found'
             raise ValueError(message)
@@ -362,6 +366,8 @@ class BaseNetworkTest(test.BaseTestCase):
             cls.subnets.append(subnet)
         else:
             cls.admin_subnets.append(subnet)
+        if reserve_cidr:
+            cls.reserve_subnet_cidr(subnet_cidr)
         return subnet
 
     @classmethod

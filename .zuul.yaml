@@ -208,6 +208,7 @@
     gate:
       jobs:
         - neutron-tempest-plugin-api
+        - neutron-tempest-plugin-scenario-linuxbridge
         - build-openstack-sphinx-docs
 
 - project-template:

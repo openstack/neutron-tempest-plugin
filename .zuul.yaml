@@ -187,7 +187,6 @@
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
       - ^setup.cfg$
-    voting: false
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-queens

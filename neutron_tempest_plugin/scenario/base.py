@@ -302,9 +302,18 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                                           1)
 
     def check_remote_connectivity(self, source, dest, should_succeed=True,
-                                  nic=None, mtu=None, fragmentation=True):
-        self.assertTrue(self._check_remote_connectivity(
-            source, dest, should_succeed, nic, mtu, fragmentation))
+                                  nic=None, mtu=None, fragmentation=True,
+                                  servers=None):
+        try:
+            self.assertTrue(self._check_remote_connectivity(
+                source, dest, should_succeed, nic, mtu, fragmentation))
+        except lib_exc.SSHTimeout as ssh_e:
+            LOG.debug(ssh_e)
+            self._log_console_output(servers)
+            raise
+        except AssertionError:
+            self._log_console_output(servers)
+            raise
 
     def ping_ip_address(self, ip_address, should_succeed=True,
                         ping_timeout=None, mtu=None):

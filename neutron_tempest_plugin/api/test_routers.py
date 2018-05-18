@@ -14,6 +14,7 @@
 #    under the License.
 
 import netaddr
+
 from tempest.common import utils as tutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -243,6 +244,11 @@ class DvrRoutersTest(base_routers.BaseRouterTest):
                         create_body['router']['id'],
                         self.admin_client)
         self.assertTrue(create_body['router']['distributed'])
+
+
+class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
+
+    required_extensions = ['dvr', 'l3-ha']
 
     @decorators.idempotent_id('644d7a4a-01a1-4b68-bb8d-0c0042cb1729')
     def test_convert_centralized_router(self):

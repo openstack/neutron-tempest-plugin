@@ -11,7 +11,6 @@
 #    under the License.
 
 from oslo_config import cfg
-
 from tempest import config
 
 
@@ -47,6 +46,17 @@ NeutronPluginOptions = [
                help='The agent mode for L3 agents in the deployment. '
                     'Configure this only when the single value is used by '
                     'all agents in the deployment.'),
+    cfg.StrOpt('test_mtu_networks',
+               default='[{"provider:network_type":"vxlan",'
+                       '"mtu":1200, "cidr":"10.100.0.0/16"}'
+                       ','
+                       '{"provider:network_type":"vxlan",'
+                       '"mtu":1300, "cidr":"10.200.0.0/16"}]',
+               help='Configuration for test networks. The format is JSON. '
+                    '"provider:network_type":<TYPE> - string '
+                    '"mtu":<MTU> - integer '
+                    '"cidr"<SUBNET/MASK> - string '
+                    '"provider:segmentation_id":<VLAN_ID> - integer')
 ]
 
 # TODO(amuller): Redo configuration options registration as part of the planned

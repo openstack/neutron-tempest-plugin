@@ -31,8 +31,11 @@ function customize_image {
     chown _apt.root -fR "${apt_user_folders[@]}"
 
     # Install desired packages to Ubuntu guest image
-    apt-get update -y
-    apt-get install -y "${INSTALL_GUEST_PACKAGES[@]}"
+    (
+        DEBIAN_FRONTEND=noninteractive
+        apt-get update -y
+        apt-get install -y "${INSTALL_GUEST_PACKAGES[@]}"
+    )
 }
 
 function main {
@@ -64,9 +67,12 @@ function chroot_image {
     bind_dir "${temp_dir}/tmp" "${mount_dir}/var/tmp"
     bind_dir "${temp_dir}/apt" "${mount_dir}/var/lib/apt"
 
-    # Replace /etc/resolv.conf symlink to use the same DNS as this host
-    sudo rm -f "${mount_dir}/etc/resolv.conf"
-    sudo cp /etc/resolv.conf "${mount_dir}/etc/resolv.conf"
+    # Temporarly replace /etc/resolv.conf symlink to use the same DNS as this
+    # host
+    local resolv_file=${mount_dir}/etc/resolv.conf
+    sudo mv -f "${resolv_file}" "${resolv_file}.orig"
+    sudo cp /etc/resolv.conf "${resolv_file}"
+    add_cleanup sudo mv -f "${resolv_file}.orig" "${resolv_file}"
 
     # Makesure /etc/fstab exists and it is readable because it is required by
     # /sbin/dhclient-script

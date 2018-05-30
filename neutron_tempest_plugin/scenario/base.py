@@ -218,9 +218,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             key_name=self.keypair['name'],
             networks=[{'uuid': self.network['id']}],
             security_groups=[{'name': secgroup['security_group']['name']}])
-        waiters.wait_for_server_status(self.os_primary.servers_client,
-                                       self.server['server']['id'],
-                                       constants.SERVER_STATUS_ACTIVE)
+        self.wait_for_server_active(self.server['server'])
         self.port = self.client.list_ports(network_id=self.network['id'],
                                            device_id=self.server[
                                                'server']['id'])['ports'][0]
@@ -352,3 +350,25 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                       'result': 'expected' if result else 'unexpected'
                   })
         return result
+
+    def wait_for_server_status(self, server, status, client=None, **kwargs):
+        """Waits for a server to reach a given status.
+
+        :param server:  mapping having schema {'id': <server_id>}
+        :param status: string status to wait for (es: 'ACTIVE')
+        :param clien:  servers client (self.os_primary.servers_client as
+                       default value)
+        """
+
+        client = client or self.os_primary.servers_client
+        waiters.wait_for_server_status(client, server['id'], status, **kwargs)
+
+    def wait_for_server_active(self, server, client=None):
+        """Waits for a server to reach active status.
+
+        :param server:  mapping having schema {'id': <server_id>}
+        :param clien:  servers client (self.os_primary.servers_client as
+                       default value)
+        """
+        self.wait_for_server_status(
+            server, constants.SERVER_STATUS_ACTIVE, client)

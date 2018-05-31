@@ -176,13 +176,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         client.delete_interface(server_id, port_id=port_id)
 
     def setup_network_and_server(
-        self, router=None, server_name=None, **kwargs):
+        self, router=None, server_name=None, network=None, **kwargs):
         """Create network resources and a server.
 
         Creating a network, subnet, router, keypair, security group
         and a server.
         """
-        self.network = self.create_network()
+        self.network = network or self.create_network()
         LOG.debug("Created network %s", self.network['name'])
         self.subnet = self.create_subnet(self.network)
         LOG.debug("Created subnet %s", self.subnet['id'])

@@ -1,0 +1,172 @@
+#!/bin/bash
+
+# IMPLEMENTATION NOTE: It was not possible to implement this script using
+# virt-customize because of below ubuntu bugs:
+#  - https://bugs.launchpad.net/ubuntu/+source/libguestfs/+bug/1632405
+#  - https://bugs.launchpad.net/ubuntu/+source/isc-dhcp/+bug/1650740
+#
+# It has therefore been adopted a more low level strategy performing below
+# steps:
+#  - mount guest image to a temporary folder
+#  - set up an environment suitable for executing chroot
+#  - execute customize_image function inside chroot environment
+#  - cleanup chroot environment
+
+# Array of packages to be installed of guest image
+INSTALL_GUEST_PACKAGES=(
+   socat  # used to replace nc for testing advanced network features like
+          # multicast
+)
+
+# Function to be executed once after chroot on guest image
+# Add more customization steps here
+function customize_image {
+    # dhclient-script requires to read /etc/fstab for setting up network
+    touch /etc/fstab
+    chmod ugo+r /etc/fstab
+
+    # Ubuntu guest image _apt user could require access to below folders
+    local apt_user_folders=( /var/lib/apt/lists/partial )
+    mkdir -p "${apt_user_folders[@]}"
+    chown _apt.root -fR "${apt_user_folders[@]}"
+
+    # Install desired packages to Ubuntu guest image
+    apt-get update -y
+    apt-get install -y "${INSTALL_GUEST_PACKAGES[@]}"
+}
+
+function main {
+    set -eux
+    trap cleanup EXIT
+    "${ENTRY_POINT:-chroot_image}" "$@"
+}
+
+# Chroot to guest image then executes customize_image function inside it
+function chroot_image {
+    local image_file=$1
+    local temp_dir=${TEMP_DIR:-$(make_temp -d)}
+
+    # Mount guest image into a temporary directory
+    local mount_dir=${temp_dir}/mount
+    mkdir -p "${mount_dir}"
+    mount_image "${mount_dir}" "${temp_dir}/pid"
+
+    # Mount system directories
+    bind_dir "/dev" "${mount_dir}/dev"
+    bind_dir "/dev/pts" "${mount_dir}/dev/pts"
+    bind_dir "/proc" "${mount_dir}/proc"
+    bind_dir "/sys" "${mount_dir}/sys"
+
+    # Mount to keep temporary files out of guest image
+    mkdir -p "${temp_dir}/apt" "${temp_dir}/cache" "${temp_dir}/tmp"
+    bind_dir "${temp_dir}/cache" "${mount_dir}/var/cache"
+    bind_dir "${temp_dir}/tmp" "${mount_dir}/tmp"
+    bind_dir "${temp_dir}/tmp" "${mount_dir}/var/tmp"
+    bind_dir "${temp_dir}/apt" "${mount_dir}/var/lib/apt"
+
+    # Replace /etc/resolv.conf symlink to use the same DNS as this host
+    sudo rm -f "${mount_dir}/etc/resolv.conf"
+    sudo cp /etc/resolv.conf "${mount_dir}/etc/resolv.conf"
+
+    # Makesure /etc/fstab exists and it is readable because it is required by
+    # /sbin/dhclient-script
+    sudo touch /etc/fstab
+    sudo chmod 644 /etc/fstab
+
+    # Copy this script to mount dir
+    local script_name=$(basename "$0")
+    local script_file=${mount_dir}/${script_name}
+    sudo cp "$0" "${script_file}"
+    sudo chmod 500 "${script_file}"
+    add_cleanup sudo rm -f "'${script_file}'"
+
+    # Execute customize_image inside chroot environment
+    local command_line=( ${CHROOT_COMMAND:-customize_image} )
+    local entry_point=${command_line[0]}
+    unset command_line[0]
+    sudo -E "ENTRY_POINT=${entry_point}" \
+        chroot "${mount_dir}" "/${script_name}" "${command_line[@]:-}"
+}
+
+# Mounts guest image to $1 directory writing pid to $1 pid file
+# Then registers umount of such directory for final cleanup
+function mount_image {
+    local mount_dir=$1
+    local pid_file=$2
+
+    # export libguest settings
+    export LIBGUESTFS_BACKEND=${LIBGUESTFS_BACKEND:-direct}
+    export LIBGUESTFS_BACKEND_SETTINGS=${LIBGUESTFS_BACKEND_SETTINGS:-force_tcg}
+
+    # Mount guest image
+    sudo -E guestmount -i \
+        --add "${image_file}" \
+        --pid-file "${pid_file}" \
+        "${mount_dir}"
+
+    add_cleanup \
+        'ENTRY_POINT=umount_image' \
+        "'$0'" "'${mount_dir}'" "'${pid_file}'"
+}
+
+# Unmounts guest image directory
+function umount_image {
+    local mount_dir=$1
+    local pid_file=$2
+    local timeout=10
+
+    # Take PID just before unmounting
+    local pid=$(cat ${pid_file} || true)
+    sudo -E guestunmount "${mount_dir}"
+
+    if [ "${pid:-}" != "" ]; then
+        # Make sure guestmount process is not running before using image
+        # file again
+        local count=${timeout}
+        while sudo kill -0 "${pid}" 2> /dev/null && (( count-- > 0 )); do
+            sleep 1
+        done
+        if [ ${count} == 0 ]; then
+            # It is not safe to use image file at this point
+            echo "Wait for guestmount to exit failed after ${timeout} seconds"
+        fi
+    fi
+}
+
+# Creates a temporary file or directory and register removal for final cleanup
+function make_temp {
+    local temporary=$(mktemp "$@")
+    add_cleanup sudo rm -fR "'${temporary}'"
+    echo "${temporary}"
+}
+
+# Bind directory $1 to directory $2 and register umount for final cleanup
+function bind_dir {
+    local source_dir=$1
+    local target_dir=$2
+    sudo mount --bind "${source_dir}" "${target_dir}"
+    add_cleanup sudo umount "'${target_dir}'"
+}
+
+# Registers a command line to be executed for final cleanup
+function add_cleanup {
+    CLEANUP_FILE=${CLEANUP_FILE:-$(mktemp)}
+
+    echo -e "$*" >> ${CLEANUP_FILE}
+}
+
+# Execute command lines for final cleanup in reversed order
+function cleanup {
+    error=$?
+
+    local cleanup_file=${CLEANUP_FILE:-}
+    if [ -r "${cleanup_file}" ]; then
+        tac "${cleanup_file}" | bash +e -x
+        CLEANUP_FILE=
+        rm -fR "${cleanup_file}"
+    fi
+
+    exit ${error}
+}
+
+main "$@"

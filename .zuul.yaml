@@ -161,18 +161,126 @@
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
-    parent: legacy-dsvm-base-multinode
-    run: playbooks/neutron-tempest-plugin-dvr-multinode-scenario/run.yaml
-    post-run: playbooks/neutron-tempest-plugin-dvr-multinode-scenario/post.yaml
-    nodeset: legacy-ubuntu-xenial-2-node
-    timeout: 10800
+    parent: tempest-multinode-full
+    description: |
+        Perform setup for Neutron tempest tests in multinode with DVR scenario
+    roles:
+      - zuul: openstack-dev/devstack
     required-projects:
       - openstack-infra/devstack-gate
       - openstack/neutron
       - openstack/neutron-tempest-plugin
       - openstack/tempest
-    irrelevant-files: *tempest-irrelevant-files
+    pre-run: playbooks/dvr-multinode-scenario-pre-run.yaml
     voting: false
+    vars:
+      tempest_concurrency: 4
+      tox_envlist: all
+      tempest_test_regex: ^neutron_tempest_plugin\.scenario
+      devstack_localrc:
+        TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        NETWORK_API_EXTENSIONS: "address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-integration,dvr,empty-string-filtering,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,fip-port-details,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,qos-fip,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,port-security-groups-filtering,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-segment,standard-attr-timestamp,standard-attr-tag,subnet_allocation,trunk,trunk-details"
+        PHYSICAL_NETWORK: default
+        DOWNLOAD_DEFAULT_IMAGES: false
+        IMAGE_URLS: http://cloud-images.ubuntu.com/releases/16.04/release-20180622/ubuntu-16.04-server-cloudimg-amd64-disk1.img,
+        DEFAULT_INSTANCE_TYPE: ds512M
+        DEFAULT_INSTANCE_USER: ubuntu
+        BUILD_TIMEOUT: 784
+      devstack_plugins:
+        neutron: git://git.openstack.org/openstack/neutron.git
+        neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
+      devstack_services:
+        tls-proxy: false
+        tempest: true
+        neutron-dns: true
+        neutron-qos: true
+        neutron-segments: true
+        neutron-trunk: true
+        neutron-log: true
+        cinder: true
+      devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            quotas:
+              quota_router: 100
+              quota_floatingip: 500
+              quota_security_group: 100
+              quota_security_group_rule: 1000
+            DEFAULT:
+              router_distributed: True
+          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+          # devstack-tempest job will be switched to use lib/neutron instead of
+          # lib/neutron-legacy
+          "/$NEUTRON_CORE_PLUGIN_CONF":
+            ml2:
+              type_drivers: flat,geneve,vlan,gre,local,vxlan
+              mechanism_drivers: openvswitch,l2population
+            ml2_type_vlan:
+              network_vlan_ranges: foo:1:10
+            ml2_type_vxlan:
+              vni_ranges: 1:2000
+            ml2_type_gre:
+              tunnel_id_ranges: 1:1000
+            agent:
+              enable_distributed_routing: True
+              l2_population: True
+              tunnel_types: vxlan,gre
+            ovs:
+              tunnel_bridge: br-tun
+              bridge_mappings: public:br-ex
+          $NEUTRON_L3_CONF:
+            DEFAULT:
+              agent_mode: dvr_snat
+            agent:
+              availability_zone: nova
+          $NEUTRON_DHCP_CONF:
+            agent:
+              availability_zone: nova
+          "/etc/neutron/api-paste.ini":
+            "composite:neutronapi_v2_0":
+              use: "call:neutron.auth:pipeline_factory"
+              noauth: "cors request_id catch_errors osprofiler extensions neutronapiapp_v2_0"
+              keystone: "cors request_id catch_errors osprofiler authtoken keystonecontext extensions neutronapiapp_v2_0"
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_plugin_options:
+              provider_vlans: foo,
+              agent_availability_zone: nova
+              image_is_advanced: true
+              available_type_drivers: flat,geneve,vlan,gre,local,vxlan
+              l3_agent_mode: dvr_snat
+    group-vars:
+      subnode:
+        devstack_services:
+          tls-proxy: false
+          q-agt: true
+          q-l3: true
+          q-meta: true
+          neutron-qos: true
+          neutron-trunk: true
+          neutron-log: true
+        devstack_local_conf:
+          post-config:
+            $NEUTRON_CONF:
+              DEFAULT:
+                router_distributed: True
+            # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+            # devstack-tempest job will be switched to use lib/neutron instead of
+            # lib/neutron-legacy
+            "/$NEUTRON_CORE_PLUGIN_CONF":
+              agent:
+                enable_distributed_routing: True
+                l2_population: True
+                tunnel_types: vxlan,gre
+              ovs:
+                tunnel_bridge: br-tun
+                bridge_mappings: public:br-ex
+            $NEUTRON_L3_CONF:
+              DEFAULT:
+                agent_mode: dvr_snat
+              agent:
+                availability_zone: nova
+    irrelevant-files: *tempest-irrelevant-files
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-queens

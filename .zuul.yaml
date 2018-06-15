@@ -236,7 +236,7 @@
         - build-openstack-sphinx-docs
 
 - project-template:
-    name: neutron-tempest-plugin-jobs-stable
+    name: neutron-tempest-plugin-jobs-queens
     check:
       jobs:
         - neutron-tempest-plugin-api-queens
@@ -250,4 +250,4 @@
 - project:
     templates:
       - neutron-tempest-plugin-jobs
-      - neutron-tempest-plugin-jobs-stable
+      - neutron-tempest-plugin-jobs-queens

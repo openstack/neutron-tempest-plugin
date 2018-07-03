@@ -128,10 +128,15 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.log_objects = []
         cls.reserved_subnet_cidrs = set()
         cls.keypairs = []
+        cls.trunks = []
 
     @classmethod
     def resource_cleanup(cls):
         if CONF.service_available.neutron:
+            # Clean up trunks
+            for trunk in cls.trunks:
+                cls._try_delete_resource(cls.delete_trunk, trunk)
+
             # Clean up floating IPs
             for floating_ip in cls.floating_ips:
                 cls._try_delete_resource(cls.client.delete_floatingip,
@@ -679,6 +684,64 @@ class BaseNetworkTest(test.BaseTestCase):
         client = (client or keypair.get('client') or
                   cls.os_primary.keypairs_client)
         client.delete_keypair(keypair_name=keypair['name'])
+
+    @classmethod
+    def create_trunk(cls, port=None, subports=None, client=None, **kwargs):
+        """Create network trunk
+
+        :param port: dictionary containing parent port ID (port['id'])
+        :param client: client to be used for connecting to networking service
+        :param **kwargs: extra parameters to be forwarded to network service
+
+        :returns: dictionary containing created trunk details
+        """
+        client = client or cls.client
+
+        if port:
+            kwargs['port_id'] = port['id']
+
+        trunk = client.create_trunk(subports=subports, **kwargs)['trunk']
+        # Save client reference for later deletion
+        trunk['client'] = client
+        cls.trunks.append(trunk)
+        return trunk
+
+    @classmethod
+    def delete_trunk(cls, trunk, client=None):
+        """Delete network trunk
+
+        :param trunk: dictionary containing trunk ID (trunk['id'])
+
+        :param client: client to be used for connecting to networking service
+        """
+        client = client or trunk.get('client') or cls.client
+        trunk.update(client.show_trunk(trunk['id'])['trunk'])
+
+        if not trunk['admin_state_up']:
+            # Cannot touch trunk before admin_state_up is True
+            client.update_trunk(trunk['id'], admin_state_up=True)
+        if trunk['sub_ports']:
+            # Removes trunk ports before deleting it
+            cls._try_delete_resource(client.remove_subports, trunk['id'],
+                                     trunk['sub_ports'])
+
+        # we have to detach the interface from the server before
+        # the trunk can be deleted.
+        parent_port = {'id': trunk['port_id']}
+
+        def is_parent_port_detached():
+            parent_port.update(client.show_port(parent_port['id'])['port'])
+            return not parent_port['device_id']
+
+        if not is_parent_port_detached():
+            # this could probably happen when trunk is deleted and parent port
+            # has been assigned to a VM that is still running. Here we are
+            # assuming that device_id points to such VM.
+            cls.os_primary.compute.InterfacesClient().delete_interface(
+                parent_port['device_id'], parent_port['id'])
+            utils.wait_until_true(is_parent_port_detached)
+
+        client.delete_trunk(trunk['id'])
 
 
 class BaseAdminNetworkTest(BaseNetworkTest):

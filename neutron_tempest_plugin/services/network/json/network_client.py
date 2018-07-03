@@ -745,26 +745,23 @@ class NetworkClientJSON(service_client.RestClient):
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
 
-    def create_trunk(self, parent_port_id, subports,
+    def create_trunk(self, parent_port_id=None, subports=None,
                      tenant_id=None, name=None, admin_state_up=None,
-                     description=None):
+                     description=None, **kwargs):
         uri = '%s/trunks' % self.uri_prefix
-        post_data = {
-            'trunk': {
-                'port_id': parent_port_id,
-            }
-        }
+        if parent_port_id:
+            kwargs['port_id'] = parent_port_id
         if subports is not None:
-            post_data['trunk']['sub_ports'] = subports
+            kwargs['sub_ports'] = subports
         if tenant_id is not None:
-            post_data['trunk']['tenant_id'] = tenant_id
+            kwargs['tenant_id'] = tenant_id
         if name is not None:
-            post_data['trunk']['name'] = name
+            kwargs['name'] = name
         if description is not None:
-            post_data['trunk']['description'] = description
+            kwargs['description'] = description
         if admin_state_up is not None:
-            post_data['trunk']['admin_state_up'] = admin_state_up
-        resp, body = self.post(uri, self.serialize(post_data))
+            kwargs['admin_state_up'] = admin_state_up
+        resp, body = self.post(uri, self.serialize({'trunk': kwargs}))
         body = self.deserialize_single(body)
         self.expected_success(201, resp.status)
         return service_client.ResponseBody(resp, body)

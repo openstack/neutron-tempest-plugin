@@ -121,6 +121,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.subnetpools = []
         cls.admin_subnetpools = []
         cls.security_groups = []
+        cls.admin_security_groups = []
         cls.projects = []
         cls.log_objects = []
         cls.reserved_subnet_cidrs = set()
@@ -182,6 +183,12 @@ class BaseNetworkTest(test.BaseTestCase):
             for secgroup in cls.security_groups:
                 cls._try_delete_resource(cls.client.delete_security_group,
                                          secgroup['id'])
+
+            # Clean up admin security groups
+            for secgroup in cls.admin_security_groups:
+                cls._try_delete_resource(
+                    cls.admin_client.delete_security_group,
+                    secgroup['id'])
 
             for subnetpool in cls.subnetpools:
                 cls._try_delete_resource(cls.client.delete_subnetpool,
@@ -585,6 +592,12 @@ class BaseNetworkTest(test.BaseTestCase):
             name=test_project,
             description=test_description)['project']
         cls.projects.append(project)
+        # Create a project will create a default security group.
+        # We make these security groups into admin_security_groups.
+        sgs_list = cls.admin_client.list_security_groups(
+            tenant_id=project['id'])['security_groups']
+        for sg in sgs_list:
+            cls.admin_security_groups.append(sg)
         return project
 
     @classmethod

@@ -59,9 +59,8 @@ class TrunkTest(base.BaseTempestTestCase):
     def _create_server_with_trunk_port(self):
         port = self.create_port(self.network, security_groups=[
             self.secgroup['security_group']['id']])
-        trunk = self.client.create_trunk(port['id'], subports=[])['trunk']
+        trunk = self.create_trunk(port)
         server, fip = self._create_server_with_fip(port['id'])
-        self.addCleanup(self._detach_and_delete_trunk, server, trunk)
         return {'port': port, 'trunk': trunk, 'fip': fip,
                 'server': server}
 
@@ -77,18 +76,6 @@ class TrunkTest(base.BaseTempestTestCase):
                     'security_group']['name']}],
                 **server_kwargs)['server'],
             fip)
-
-    def _detach_and_delete_trunk(self, server, trunk):
-        # we have to detach the interface from the server before
-        # the trunk can be deleted.
-        self.os_primary.compute.InterfacesClient().delete_interface(
-            server['id'], trunk['port_id'])
-
-        def is_port_detached():
-            p = self.client.show_port(trunk['port_id'])['port']
-            return p['device_id'] == ''
-        utils.wait_until_true(is_port_detached)
-        self.client.delete_trunk(trunk['id'])
 
     def _is_port_down(self, port_id):
         p = self.client.show_port(port_id)['port']
@@ -113,11 +100,9 @@ class TrunkTest(base.BaseTempestTestCase):
             'port_id': port_for_subport['id'],
             'segmentation_type': 'vlan',
             'segmentation_id': vlan_tag}
-        trunk = self.client.create_trunk(
-            parent_port['id'], subports=[subport])['trunk']
+        self.create_trunk(parent_port, [subport])
 
         server, fip = self._create_server_with_fip(parent_port['id'])
-        self.addCleanup(self._detach_and_delete_trunk, server, trunk)
 
         server_ssh_client = ssh.Client(
             fip['floating_ip_address'],

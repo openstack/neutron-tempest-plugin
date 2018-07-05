@@ -14,7 +14,6 @@
 
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
-from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
@@ -22,18 +21,7 @@ from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin import config
 
 
-def trunks_cleanup(client, trunks):
-    for trunk in trunks:
-        # NOTE(armax): deleting a trunk with subports is permitted, however
-        # for testing purposes it is safer to be explicit and clean all the
-        # resources associated with the trunk beforehand.
-        subports = test_utils.call_and_ignore_notfound_exc(
-            client.get_subports, trunk['id'])
-        if subports:
-            client.remove_subports(
-                trunk['id'], subports['sub_ports'])
-        test_utils.call_and_ignore_notfound_exc(
-            client.delete_trunk, trunk['id'])
+CONF = config.CONF
 
 
 class TrunkTestJSONBase(base.BaseAdminNetworkTest):
@@ -41,51 +29,51 @@ class TrunkTestJSONBase(base.BaseAdminNetworkTest):
     required_extensions = ['trunk']
 
     def setUp(self):
+        base.BaseAdminNetworkTest.setUp(self)
+        # This avoids problems due to user quotas
+        self.resource_setup()
         self.addCleanup(self.resource_cleanup)
-        super(TrunkTestJSONBase, self).setUp()
-
-    @classmethod
-    def resource_setup(cls):
-        super(TrunkTestJSONBase, cls).resource_setup()
-        cls.trunks = []
-
-    @classmethod
-    def resource_cleanup(cls):
-        trunks_cleanup(cls.client, cls.trunks)
-        super(TrunkTestJSONBase, cls).resource_cleanup()
 
     @classmethod
     def is_type_driver_enabled(cls, type_driver):
         return (type_driver in
-                config.CONF.neutron_plugin_options.available_type_drivers)
+                CONF.neutron_plugin_options.available_type_drivers)
 
-    def _create_trunk_with_network_and_parent(
-            self, subports, parent_network_type=None, **kwargs):
+    @classmethod
+    def _create_trunk_with_network_and_parent(cls, subports=None,
+                                              parent_network_type=None,
+                                              **kwargs):
         client = None
         network_kwargs = {}
         if parent_network_type:
-            client = self.admin_client
+            client = cls.admin_client
             network_kwargs = {"provider:network_type": parent_network_type,
-                              "tenant_id": self.client.tenant_id}
-        network = self.create_network(client=client, **network_kwargs)
-        parent_port = self.create_port(network)
-        trunk = self.client.create_trunk(parent_port['id'], subports, **kwargs)
-        self.trunks.append(trunk['trunk'])
-        return trunk
+                              "tenant_id": cls.client.tenant_id}
+        network = cls.create_network(client=client, **network_kwargs)
+        parent_port = cls.create_port(network)
+        return cls.create_trunk(parent_port, subports, **kwargs)
 
-    def _show_trunk(self, trunk_id):
-        return self.client.show_trunk(trunk_id)
+    @classmethod
+    def _show_trunk(cls, trunk):
+        client = trunk.get('client') or cls.client
+        return client.show_trunk(trunk['id'])['trunk']
 
-    def _list_trunks(self):
-        return self.client.list_trunks()
+    @classmethod
+    def _update_trunk(cls, trunk, **kwargs):
+        client = trunk.get('client') or cls.client
+        return client.update_trunk(trunk['id'], **kwargs)['trunk']
+
+    @classmethod
+    def _list_trunks(cls):
+        return cls.client.list_trunks()['trunks']
 
 
 class TrunkTestJSON(TrunkTestJSONBase):
 
     def _test_create_trunk(self, subports):
         trunk = self._create_trunk_with_network_and_parent(subports)
-        observed_trunk = self._show_trunk(trunk['trunk']['id'])
-        self.assertEqual(trunk, observed_trunk)
+        observed_trunk = self._show_trunk(trunk)
+        self.assertEqual(trunk, dict(observed_trunk, client=trunk['client']))
 
     @decorators.idempotent_id('e1a6355c-4768-41f3-9bf8-0f1d192bd501')
     def test_create_trunk_empty_subports_list(self):
@@ -97,79 +85,69 @@ class TrunkTestJSON(TrunkTestJSONBase):
 
     @decorators.idempotent_id('7de46c22-e2b6-4959-ac5a-0e624632ab32')
     def test_create_show_delete_trunk(self):
-        trunk = self._create_trunk_with_network_and_parent(None)
-        trunk_id = trunk['trunk']['id']
-        parent_port_id = trunk['trunk']['port_id']
-        res = self._show_trunk(trunk_id)
-        self.assertEqual(trunk_id, res['trunk']['id'])
-        self.assertEqual(parent_port_id, res['trunk']['port_id'])
-        self.client.delete_trunk(trunk_id)
-        self.assertRaises(lib_exc.NotFound, self._show_trunk, trunk_id)
+        trunk = self._create_trunk_with_network_and_parent()
+        observed_trunk = self._show_trunk(trunk)
+        self.assertEqual(trunk, dict(observed_trunk, client=trunk['client']))
+        self.delete_trunk(trunk)
+        self.assertRaises(lib_exc.NotFound, self._show_trunk, trunk)
 
     @decorators.idempotent_id('8d83a6ca-662d-45b8-8062-d513077296aa')
     @utils.requires_ext(extension="project-id", service="network")
     def test_show_trunk_has_project_id(self):
-        trunk = self._create_trunk_with_network_and_parent(None)
-        body = self._show_trunk(trunk['trunk']['id'])
-        show_trunk = body['trunk']
-        self.assertIn('project_id', show_trunk)
-        self.assertIn('tenant_id', show_trunk)
-        self.assertEqual(self.client.tenant_id, show_trunk['project_id'])
-        self.assertEqual(self.client.tenant_id, show_trunk['tenant_id'])
+        trunk = self._create_trunk_with_network_and_parent()
+        observed_trunk = self._show_trunk(trunk)
+        for key in ['project_id', 'tenant_id']:
+            self.assertIn(key, observed_trunk)
+            self.assertEqual(self.client.tenant_id, observed_trunk[key])
 
     @decorators.idempotent_id('4ce46c22-a2b6-4659-bc5a-0ef2463cab32')
     def test_create_update_trunk(self):
-        trunk = self._create_trunk_with_network_and_parent(None)
-        rev = trunk['trunk']['revision_number']
-        trunk_id = trunk['trunk']['id']
-        res = self._show_trunk(trunk_id)
-        self.assertTrue(res['trunk']['admin_state_up'])
-        self.assertEqual(rev, res['trunk']['revision_number'])
-        self.assertEqual("", res['trunk']['name'])
-        self.assertEqual("", res['trunk']['description'])
-        res = self.client.update_trunk(
-            trunk_id, name='foo', admin_state_up=False)
-        self.assertFalse(res['trunk']['admin_state_up'])
-        self.assertEqual("foo", res['trunk']['name'])
-        self.assertGreater(res['trunk']['revision_number'], rev)
-        # enable the trunk so that it can be managed
-        self.client.update_trunk(trunk_id, admin_state_up=True)
+        trunk = self._create_trunk_with_network_and_parent()
+        observed_trunk = self._show_trunk(trunk)
+        self.assertTrue(observed_trunk['admin_state_up'])
+        self.assertEqual(trunk['revision_number'],
+                         observed_trunk['revision_number'])
+        self.assertEqual("", observed_trunk['name'])
+        self.assertEqual("", observed_trunk['description'])
+        updated_trunk = self._update_trunk(trunk, name='foo',
+                                           admin_state_up=False)
+        self.assertFalse(updated_trunk['admin_state_up'])
+        self.assertEqual("foo", updated_trunk['name'])
+        self.assertGreater(updated_trunk['revision_number'],
+                           trunk['revision_number'])
 
     @decorators.idempotent_id('5ff46c22-a2b6-5559-bc5a-0ef2463cab32')
     def test_create_update_trunk_with_description(self):
         trunk = self._create_trunk_with_network_and_parent(
-            None, description="foo description")
-        trunk_id = trunk['trunk']['id']
-        self.assertEqual("foo description", trunk['trunk']['description'])
-        trunk = self.client.update_trunk(trunk_id, description='')
-        self.assertEqual('', trunk['trunk']['description'])
+            description="foo description")
+        self.assertEqual("foo description", trunk['description'])
+        updated_trunk = self._update_trunk(trunk, description='')
+        self.assertEqual('', updated_trunk['description'])
 
     @decorators.idempotent_id('73365f73-bed6-42cd-960b-ec04e0c99d85')
     def test_list_trunks(self):
-        trunk1 = self._create_trunk_with_network_and_parent(None)
-        trunk2 = self._create_trunk_with_network_and_parent(None)
-        expected_trunks = {trunk1['trunk']['id']: trunk1['trunk'],
-                           trunk2['trunk']['id']: trunk2['trunk']}
-        trunk_list = self._list_trunks()['trunks']
-        matched_trunks = [x for x in trunk_list if x['id'] in expected_trunks]
-        self.assertEqual(2, len(matched_trunks))
-        for trunk in matched_trunks:
-            self.assertEqual(expected_trunks[trunk['id']], trunk)
+        trunk1 = self._create_trunk_with_network_and_parent()
+        trunk2 = self._create_trunk_with_network_and_parent()
+        expected_trunks = {trunk1['id']: trunk1,
+                           trunk2['id']: trunk2}
+        observed_trunks = {trunk['id']: dict(trunk, client=self.client)
+                           for trunk in self._list_trunks()
+                           if trunk['id'] in expected_trunks}
+        self.assertEqual(expected_trunks, observed_trunks)
 
     @decorators.idempotent_id('bb5fcead-09b5-484a-bbe6-46d1e06d6cc0')
-    def test_add_subport(self):
-        trunk = self._create_trunk_with_network_and_parent([])
+    def test_add_subports(self):
+        trunk = self._create_trunk_with_network_and_parent()
         network = self.create_network()
         port = self.create_port(network)
         subports = [{'port_id': port['id'],
                      'segmentation_type': 'vlan',
                      'segmentation_id': 2}]
-        self.client.add_subports(trunk['trunk']['id'], subports)
-        trunk = self._show_trunk(trunk['trunk']['id'])
-        observed_subports = trunk['trunk']['sub_ports']
-        self.assertEqual(1, len(observed_subports))
-        created_subport = observed_subports[0]
-        self.assertEqual(subports[0], created_subport)
+        added_subports = self.client.add_subports(trunk['id'],
+                                                  subports)['sub_ports']
+        self.assertEqual(subports, added_subports)
+        observed_trunk = self._show_trunk(trunk)
+        self.assertEqual(subports, observed_trunk['sub_ports'])
 
     @decorators.idempotent_id('ee5fcead-1abf-483a-bce6-43d1e06d6aa0')
     def test_delete_trunk_with_subport_is_allowed(self):
@@ -179,38 +157,27 @@ class TrunkTestJSON(TrunkTestJSONBase):
                      'segmentation_type': 'vlan',
                      'segmentation_id': 2}]
         trunk = self._create_trunk_with_network_and_parent(subports)
-        self.client.delete_trunk(trunk['trunk']['id'])
+        self.client.delete_trunk(trunk['id'])
 
     @decorators.idempotent_id('96eea398-a03c-4c3e-a99e-864392c2ca53')
     def test_remove_subport(self):
-        subport_parent1 = self.create_port(self.create_network())
-        subport_parent2 = self.create_port(self.create_network())
-        subports = [{'port_id': subport_parent1['id'],
-                     'segmentation_type': 'vlan',
-                     'segmentation_id': 2},
-                    {'port_id': subport_parent2['id'],
-                     'segmentation_type': 'vlan',
-                     'segmentation_id': 4}]
-        trunk = self._create_trunk_with_network_and_parent(subports)
-        removed_subport = trunk['trunk']['sub_ports'][0]
-        expected_subport = None
-
-        for subport in subports:
-            if subport['port_id'] != removed_subport['port_id']:
-                expected_subport = subport
-                break
+        subport1 = {'port_id': self.create_port(self.create_network())['id'],
+                    'segmentation_type': 'vlan',
+                    'segmentation_id': 2}
+        subport2 = {'port_id': self.create_port(self.create_network())['id'],
+                    'segmentation_type': 'vlan',
+                    'segmentation_id': 4}
+        trunk = self._create_trunk_with_network_and_parent([subport1,
+                                                            subport2])
 
         # Remove the subport and validate PUT response
-        res = self.client.remove_subports(trunk['trunk']['id'],
-                                          [removed_subport])
-        self.assertEqual(1, len(res['sub_ports']))
-        self.assertEqual(expected_subport, res['sub_ports'][0])
+        subports_after_remove = self.client.remove_subports(
+            trunk['id'], [subport2])['sub_ports']
+        self.assertEqual([subport1], subports_after_remove)
 
         # Validate the results of a subport list
-        trunk = self._show_trunk(trunk['trunk']['id'])
-        observed_subports = trunk['trunk']['sub_ports']
-        self.assertEqual(1, len(observed_subports))
-        self.assertEqual(expected_subport, observed_subports[0])
+        observed_trunk = self._show_trunk(trunk)
+        self.assertEqual([subport1], observed_trunk['sub_ports'])
 
     @decorators.idempotent_id('bb5fcaad-09b5-484a-dde6-4cd1ea6d6ff0')
     def test_get_subports(self):
@@ -220,9 +187,8 @@ class TrunkTestJSON(TrunkTestJSONBase):
                      'segmentation_type': 'vlan',
                      'segmentation_id': 2}]
         trunk = self._create_trunk_with_network_and_parent(subports)
-        trunk = self.client.get_subports(trunk['trunk']['id'])
-        observed_subports = trunk['sub_ports']
-        self.assertEqual(1, len(observed_subports))
+        observed_subports = self.client.get_subports(trunk['id'])['sub_ports']
+        self.assertEqual(subports, observed_subports)
 
 
 class TrunkTestInheritJSONBase(TrunkTestJSONBase):
@@ -233,41 +199,43 @@ class TrunkTestInheritJSONBase(TrunkTestJSONBase):
     def skip_checks(cls):
         super(TrunkTestInheritJSONBase, cls).skip_checks()
         if ("vlan" not in
-                config.CONF.neutron_plugin_options.available_type_drivers):
+                CONF.neutron_plugin_options.available_type_drivers):
             raise cls.skipException("VLAN type_driver is not enabled")
-        if not config.CONF.neutron_plugin_options.provider_vlans:
+        if not CONF.neutron_plugin_options.provider_vlans:
             raise cls.skipException("No provider VLAN networks available")
 
     def create_provider_network(self):
-        foo_net = config.CONF.neutron_plugin_options.provider_vlans[0]
+        foo_net = CONF.neutron_plugin_options.provider_vlans[0]
         return self.create_network(name=data_utils.rand_name('vlan-net'),
                                    provider_network_type='vlan',
                                    provider_physical_network=foo_net)
 
     @decorators.idempotent_id('0f05d98e-41f5-4629-dada-9aee269c9602')
     def test_add_subport(self):
-        trunk_network = self.create_provider_network()
-        trunk_port = self.create_port(trunk_network)
-        subport_networks = [
-            self.create_provider_network(),
-            self.create_provider_network(),
-        ]
-        subport1 = self.create_port(subport_networks[0])
-        subport2 = self.create_port(subport_networks[1])
+        parent_network = self.create_provider_network()
+        parent_port = self.create_port(parent_network)
+        subport_network1 = self.create_provider_network()
+        segmentation_id1 = subport_network1['provider:segmentation_id']
+        subport_network2 = self.create_provider_network()
+        segmentation_id2 = subport_network2['provider:segmentation_id']
+        subport1 = self.create_port(subport_network1)
+        subport2 = self.create_port(subport_network2)
         subports = [{'port_id': subport1['id'],
-                     'segmentation_type': 'inherit',
-                     'segmentation_id': subport1['id']},
+                     'segmentation_type': 'inherit'},
                     {'port_id': subport2['id'],
-                     'segmentation_type': 'inherit',
-                     'segmentation_id': subport2['id']}]
-        trunk = self.client.create_trunk(trunk_port['id'], subports)['trunk']
-        self.trunks.append(trunk)
+                     'segmentation_type': 'inherit'}]
+
+        trunk = self.create_trunk(parent_port, subports)
+
+        expected_subports = [{'port_id': subport1['id'],
+                              'segmentation_type': 'vlan',
+                              'segmentation_id': segmentation_id1},
+                             {'port_id': subport2['id'],
+                              'segmentation_type': 'vlan',
+                              'segmentation_id': segmentation_id2}]
+
         # Validate that subport got segmentation details from the network
-        for i in range(2):
-            self.assertEqual(subport_networks[i]['provider:network_type'],
-                             trunk['sub_ports'][i]['segmentation_type'])
-            self.assertEqual(subport_networks[i]['provider:segmentation_id'],
-                             trunk['sub_ports'][i]['segmentation_id'])
+        self.assertEqual(expected_subports, trunk['sub_ports'])
 
 
 class TrunkTestMtusJSONBase(TrunkTestJSONBase):
@@ -306,19 +274,16 @@ class TrunkTestMtusJSON(TrunkTestMtusJSONBase):
                      'segmentation_type': 'vlan',
                      'segmentation_id': 2}]
 
-        trunk = self.client.create_trunk(self.larger_mtu_port['id'], subports)
-        self.trunks.append(trunk['trunk'])
+        self.create_trunk(self.larger_mtu_port, subports)
 
     @decorators.idempotent_id('2004c5c6-e557-4c43-8100-c820ad4953e8')
-    def test_add_subport_with_mtu_smaller_than_trunk(self):
+    def test_add_subport_with_mtu_greater_than_subport(self):
         subports = [{'port_id': self.smaller_mtu_port['id'],
                      'segmentation_type': 'vlan',
                      'segmentation_id': 2}]
 
-        trunk = self.client.create_trunk(self.larger_mtu_port['id'], None)
-        self.trunks.append(trunk['trunk'])
-
-        self.client.add_subports(trunk['trunk']['id'], subports)
+        trunk = self.create_trunk(self.larger_mtu_port)
+        self.client.add_subports(trunk['id'], subports)
 
     @decorators.idempotent_id('22725101-f4bc-4e00-84ec-4e02cd7e0500')
     def test_create_trunk_with_mtu_equal_to_subport(self):
@@ -326,9 +291,7 @@ class TrunkTestMtusJSON(TrunkTestMtusJSONBase):
                      'segmentation_type': 'vlan',
                      'segmentation_id': 2}]
 
-        trunk = self.client.create_trunk(self.smaller_mtu_port_2['id'],
-                                         subports)
-        self.trunks.append(trunk['trunk'])
+        self.create_trunk(self.smaller_mtu_port_2, subports)
 
     @decorators.idempotent_id('175b05ae-66ad-44c7-857a-a12d16f1058f')
     def test_add_subport_with_mtu_equal_to_trunk(self):
@@ -336,10 +299,8 @@ class TrunkTestMtusJSON(TrunkTestMtusJSONBase):
                      'segmentation_type': 'vlan',
                      'segmentation_id': 2}]
 
-        trunk = self.client.create_trunk(self.smaller_mtu_port_2['id'], None)
-        self.trunks.append(trunk['trunk'])
-
-        self.client.add_subports(trunk['trunk']['id'], subports)
+        trunk = self.create_trunk(self.smaller_mtu_port_2)
+        self.client.add_subports(trunk['id'], subports)
 
 
 class TrunksSearchCriteriaTest(base.BaseSearchCriteriaTest):
@@ -350,17 +311,10 @@ class TrunksSearchCriteriaTest(base.BaseSearchCriteriaTest):
     @classmethod
     def resource_setup(cls):
         super(TrunksSearchCriteriaTest, cls).resource_setup()
-        cls.trunks = []
         net = cls.create_network(network_name='trunk-search-test-net')
         for name in cls.resource_names:
             parent_port = cls.create_port(net)
-            trunk = cls.client.create_trunk(parent_port['id'], [], name=name)
-            cls.trunks.append(trunk['trunk'])
-
-    @classmethod
-    def resource_cleanup(cls):
-        trunks_cleanup(cls.client, cls.trunks)
-        super(TrunksSearchCriteriaTest, cls).resource_cleanup()
+            cls.create_trunk(parent_port, name=name)
 
     @decorators.idempotent_id('fab73df4-960a-4ae3-87d3-60992b8d3e2d')
     def test_list_sorts_asc(self):

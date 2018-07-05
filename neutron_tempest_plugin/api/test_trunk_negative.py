@@ -19,6 +19,9 @@ from tempest.lib import exceptions as lib_exc
 import testtools
 
 from neutron_tempest_plugin.api import test_trunk
+from neutron_tempest_plugin import config
+
+CONF = config.CONF
 
 
 class TrunkTestJSON(test_trunk.TrunkTestJSONBase):
@@ -43,9 +46,9 @@ class TrunkTestJSON(test_trunk.TrunkTestJSONBase):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('a5c5200a-72a0-43c5-a11a-52f808490344')
     def test_create_subport_nonexistent_port_id(self):
-        trunk = self._create_trunk_with_network_and_parent([])
+        trunk = self._create_trunk_with_network_and_parent()
         self.assertRaises(lib_exc.NotFound, self.client.add_subports,
-                          trunk['trunk']['id'],
+                          trunk['id'],
                           [{'port_id': uuidutils.generate_uuid(),
                             'segmentation_type': 'vlan',
                             'segmentation_id': 2}])
@@ -64,11 +67,11 @@ class TrunkTestJSON(test_trunk.TrunkTestJSONBase):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('7e0f99ab-fe37-408b-a889-9e44ef300084')
     def test_create_subport_missing_segmentation_id(self):
-        trunk = self._create_trunk_with_network_and_parent([])
+        trunk = self._create_trunk_with_network_and_parent()
         subport_network = self.create_network()
         parent_port = self.create_port(subport_network)
         self.assertRaises(lib_exc.BadRequest, self.client.add_subports,
-                          trunk['trunk']['id'],
+                          trunk['id'],
                           [{'port_id': parent_port['id'],
                             'segmentation_type': 'vlan'}])
 
@@ -109,41 +112,43 @@ class TrunkTestJSON(test_trunk.TrunkTestJSONBase):
         if not self.is_type_driver_enabled('vxlan'):
             msg = "Vxlan type driver must be enabled for this test."
             raise self.skipException(msg)
+        if not CONF.neutron_plugin_options.provider_vlans:
+            raise self.skipException("No provider VLAN networks available")
 
         trunk = self._create_trunk_with_network_and_parent(
-            subports=[], parent_network_type='vxlan')
+            parent_network_type='vxlan')
         subport_network = self.create_network()
-        parent_port = self.create_port(subport_network)
+        subport = self.create_port(subport_network)
         self.assertRaises(lib_exc.BadRequest, self.client.add_subports,
-                          trunk['trunk']['id'],
-                          [{'port_id': parent_port['id'],
+                          trunk['id'],
+                          [{'port_id': subport['id'],
                             'segmentation_type': 'inherit',
                             'segmentation_id': -1}])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('40aed9be-e976-47d0-a555-bde2c7e74e57')
     def test_create_trunk_duplicate_subport_segmentation_ids(self):
-        trunk = self._create_trunk_with_network_and_parent([])
+        trunk = self._create_trunk_with_network_and_parent()
         subport_network1 = self.create_network()
         subport_network2 = self.create_network()
-        parent_port1 = self.create_port(subport_network1)
-        parent_port2 = self.create_port(subport_network2)
+        subport1 = self.create_port(subport_network1)
+        subport2 = self.create_port(subport_network2)
         self.assertRaises(lib_exc.BadRequest, self.client.create_trunk,
-                          trunk['trunk']['id'],
-                          [{'port_id': parent_port1['id'],
+                          trunk['id'],
+                          [{'port_id': subport1['id'],
                             'segmentation_id': 2,
                             'segmentation_type': 'vlan'},
-                           {'port_id': parent_port2['id'],
+                           {'port_id': subport2['id'],
                             'segmentation_id': 2,
                             'segmentation_type': 'vlan'}])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('6f132ccc-1380-42d8-9c44-50411612bd01')
-    def test_add_subport_port_id_uses_trunk_port_id(self):
-        trunk = self._create_trunk_with_network_and_parent(None)
+    def test_add_subport_port_id_uses_parent_port_id(self):
+        trunk = self._create_trunk_with_network_and_parent()
         self.assertRaises(lib_exc.Conflict, self.client.add_subports,
-                          trunk['trunk']['id'],
-                          [{'port_id': trunk['trunk']['port_id'],
+                          trunk['id'],
+                          [{'port_id': trunk['port_id'],
                             'segmentation_type': 'vlan',
                             'segmentation_id': 2}])
 
@@ -151,67 +156,54 @@ class TrunkTestJSON(test_trunk.TrunkTestJSONBase):
     @decorators.idempotent_id('7f132ccc-1380-42d8-9c44-50411612bd01')
     def test_add_subport_port_id_disabled_trunk(self):
         trunk = self._create_trunk_with_network_and_parent(
-            None, admin_state_up=False)
-        self.assertRaises(lib_exc.Conflict,
-            self.client.add_subports,
-            trunk['trunk']['id'],
-            [{'port_id': trunk['trunk']['port_id'],
-              'segmentation_type': 'vlan',
-              'segmentation_id': 2}])
-        self.client.update_trunk(
-            trunk['trunk']['id'], admin_state_up=True)
+            admin_state_up=False)
+        self.assertRaises(lib_exc.Conflict, self.client.add_subports,
+                          trunk['id'], [{'port_id': trunk['port_id'],
+                                         'segmentation_type': 'vlan',
+                                         'segmentation_id': 2}])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('8f132ccc-1380-42d8-9c44-50411612bd01')
     def test_remove_subport_port_id_disabled_trunk(self):
         trunk = self._create_trunk_with_network_and_parent(
-            None, admin_state_up=False)
-        self.assertRaises(lib_exc.Conflict,
-            self.client.remove_subports,
-            trunk['trunk']['id'],
-            [{'port_id': trunk['trunk']['port_id'],
-              'segmentation_type': 'vlan',
-              'segmentation_id': 2}])
-        self.client.update_trunk(
-            trunk['trunk']['id'], admin_state_up=True)
+            admin_state_up=False)
+        self.assertRaises(lib_exc.Conflict, self.client.remove_subports,
+                          trunk['id'], [{'port_id': trunk['port_id'],
+                                         'segmentation_type': 'vlan',
+                                         'segmentation_id': 2}])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('9f132ccc-1380-42d8-9c44-50411612bd01')
     def test_delete_trunk_disabled_trunk(self):
         trunk = self._create_trunk_with_network_and_parent(
-            None, admin_state_up=False)
-        self.assertRaises(lib_exc.Conflict,
-            self.client.delete_trunk,
-            trunk['trunk']['id'])
-        self.client.update_trunk(
-            trunk['trunk']['id'], admin_state_up=True)
+            admin_state_up=False)
+        self.assertRaises(lib_exc.Conflict, self.client.delete_trunk,
+                          trunk['id'])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('00cb40bb-1593-44c8-808c-72b47e64252f')
     def test_add_subport_duplicate_segmentation_details(self):
-        trunk = self._create_trunk_with_network_and_parent(None)
+        trunk = self._create_trunk_with_network_and_parent()
         network = self.create_network()
-        parent_port1 = self.create_port(network)
-        parent_port2 = self.create_port(network)
-        self.client.add_subports(trunk['trunk']['id'],
-                                 [{'port_id': parent_port1['id'],
+        subport1 = self.create_port(network)
+        subport2 = self.create_port(network)
+        self.client.add_subports(trunk['id'],
+                                 [{'port_id': subport1['id'],
                                    'segmentation_type': 'vlan',
                                    'segmentation_id': 2}])
         self.assertRaises(lib_exc.Conflict, self.client.add_subports,
-                          trunk['trunk']['id'],
-                          [{'port_id': parent_port2['id'],
-                            'segmentation_type': 'vlan',
-                            'segmentation_id': 2}])
+                          trunk['id'], [{'port_id': subport2['id'],
+                                         'segmentation_type': 'vlan',
+                                         'segmentation_id': 2}])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('4eac8c25-83ee-4051-9620-34774f565730')
     def test_add_subport_passing_dict(self):
-        trunk = self._create_trunk_with_network_and_parent(None)
+        trunk = self._create_trunk_with_network_and_parent()
         self.assertRaises(lib_exc.BadRequest, self.client.add_subports,
-                          trunk['trunk']['id'],
-                          {'port_id': trunk['trunk']['port_id'],
-                           'segmentation_type': 'vlan',
-                           'segmentation_id': 2})
+                          trunk['id'], {'port_id': trunk['port_id'],
+                                        'segmentation_type': 'vlan',
+                                        'segmentation_id': 2})
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('17ca7dd7-96a8-445a-941e-53c0c86c2fe2')
@@ -223,7 +215,7 @@ class TrunkTestJSON(test_trunk.TrunkTestJSONBase):
                         'segmentation_id': 2}
         trunk = self._create_trunk_with_network_and_parent([subport_data])
         self.assertRaises(lib_exc.BadRequest, self.client.remove_subports,
-                          trunk['trunk']['id'], subport_data)
+                          trunk['id'], subport_data)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('aaca7dd7-96b8-445a-931e-63f0d86d2fe2')
@@ -233,16 +225,16 @@ class TrunkTestJSON(test_trunk.TrunkTestJSONBase):
         subport_data = {'port_id': parent_port['id'],
                         'segmentation_type': 'vlan',
                         'segmentation_id': 2}
-        trunk = self._create_trunk_with_network_and_parent([])
+        trunk = self._create_trunk_with_network_and_parent()
         self.assertRaises(lib_exc.NotFound, self.client.remove_subports,
-                          trunk['trunk']['id'], [subport_data])
+                          trunk['id'], [subport_data])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('6c9c5126-4f61-11e6-8248-40a8f063c891')
     def test_delete_port_in_use_by_trunk(self):
-        trunk = self._create_trunk_with_network_and_parent(None)
+        trunk = self._create_trunk_with_network_and_parent()
         self.assertRaises(lib_exc.Conflict, self.client.delete_port,
-                          trunk['trunk']['port_id'])
+                          trunk['port_id'])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('343a03d0-4f7c-11e6-97fa-40a8f063c891')

@@ -212,13 +212,7 @@ class TagTrunkTestJSON(TagTestJSON):
     def _create_resource(cls):
         network = cls.create_network()
         parent_port = cls.create_port(network)
-        trunk = cls.client.create_trunk(parent_port['id'], None)
-        return trunk['trunk']['id']
-
-    @classmethod
-    def resource_cleanup(cls):
-        cls.client.delete_trunk(cls.res_id)
-        super(TagTrunkTestJSON, cls).resource_cleanup()
+        return cls.create_trunk(parent_port)['id']
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('4c63708b-c4c3-407c-8101-7a9593882f5f')
@@ -467,14 +461,7 @@ class TagFilterTrunkTestJSON(TagFilterTestJSON):
     def _create_resource(cls):
         network = cls.create_network()
         parent_port = cls.create_port(network)
-        trunk = cls.client.create_trunk(parent_port['id'], None)
-        return trunk['trunk']['id']
-
-    @classmethod
-    def resource_cleanup(cls):
-        for res_id in cls.res_ids:
-            cls.client.delete_trunk(res_id)
-        super(TagFilterTrunkTestJSON, cls).resource_cleanup()
+        return cls.create_trunk(parent_port)['id']
 
     def _list_resource(self, filters):
         res = self.client.list_trunks(**filters)

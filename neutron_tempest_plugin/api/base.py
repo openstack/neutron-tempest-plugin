@@ -63,6 +63,8 @@ class BaseNetworkTest(test.BaseTestCase):
     # Derive from BaseAdminNetworkTest class to have this initialized
     admin_client = None
 
+    external_network_id = CONF.network.public_network_id
+
     @classmethod
     def get_client_manager(cls, credential_type=None, roles=None,
                            force_new=None):
@@ -139,8 +141,8 @@ class BaseNetworkTest(test.BaseTestCase):
 
             # Clean up floating IPs
             for floating_ip in cls.floating_ips:
-                cls._try_delete_resource(cls.client.delete_floatingip,
-                                         floating_ip['id'])
+                cls._try_delete_resource(cls.delete_floatingip, floating_ip)
+
             # Clean up routers
             for router in cls.routers:
                 cls._try_delete_resource(cls.delete_router,
@@ -577,13 +579,54 @@ class BaseNetworkTest(test.BaseTestCase):
                                               *args, **kwargs)
 
     @classmethod
-    def create_floatingip(cls, external_network_id):
-        """Wrapper utility that returns a test floating IP."""
-        body = cls.client.create_floatingip(
-            floating_network_id=external_network_id)
-        fip = body['floatingip']
+    def create_floatingip(cls, external_network_id=None, port=None,
+                          client=None, **kwargs):
+        """Creates a floating IP.
+
+        Create a floating IP and schedule it for later deletion.
+        If a client is passed, then it is used for deleting the IP too.
+
+        :param external_network_id: network ID where to create
+        By default this is 'CONF.network.public_network_id'.
+
+        :param port: port to bind floating IP to
+        This is translated to 'port_id=port['id']'
+        By default it is None.
+
+        :param client: network client to be used for creating and cleaning up
+        the floating IP.
+
+        :param **kwargs: additional creation parameters to be forwarded to
+        networking server.
+        """
+
+        client = client or cls.client
+        external_network_id = (external_network_id or
+                               cls.external_network_id)
+
+        if port:
+            kwargs['port_id'] = port['id']
+
+        fip = client.create_floatingip(external_network_id,
+                                       **kwargs)['floatingip']
+
+        # save client to be used later in cls.delete_floatingip
+        # for final cleanup
+        fip['client'] = client
         cls.floating_ips.append(fip)
         return fip
+
+    @classmethod
+    def delete_floatingip(cls, floating_ip, client=None):
+        """Delete floating IP
+
+        :param client: Client to be used
+        If client is not given it will use the client used to create
+        the floating IP, or cls.client if unknown.
+        """
+
+        client = client or floating_ip.get('client') or cls.client
+        client.delete_floatingip(floating_ip['id'])
 
     @classmethod
     def create_router_interface(cls, router_id, subnet_id):

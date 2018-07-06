@@ -13,9 +13,12 @@
 #    under the License.
 
 import os
+import time
 
 from oslo_log import log
+import paramiko
 from tempest.lib.common import ssh
+from tempest.lib import exceptions
 
 from neutron_tempest_plugin import config
 
@@ -25,6 +28,8 @@ LOG = log.getLogger(__name__)
 
 
 class Client(ssh.Client):
+
+    default_ssh_lang = 'en_US.UTF-8'
 
     timeout = CONF.validation.ssh_timeout
 
@@ -112,3 +117,142 @@ class Client(ssh.Client):
             host=host, username=username, password=password,
             look_for_keys=look_for_keys, key_filename=key_file,
             port=port, proxy_client=None, **kwargs)
+
+    # attribute used to keep reference to opened client connection
+    _client = None
+
+    def connect(self, *args, **kwargs):
+        """Creates paramiko.SSHClient and connect it to remote SSH server
+
+        In case this method is called more times it returns the same client
+        and no new SSH connection is created until close method is called.
+
+        :returns: paramiko.Client connected to remote server.
+
+        :raises tempest.lib.exceptions.SSHTimeout: in case it fails to connect
+        to remote server.
+        """
+        client = self._client
+        if client is None:
+            client = super(Client, self)._get_ssh_connection(
+                *args, **kwargs)
+            self._client = client
+
+        return client
+
+    # This overrides superclass protected method to make sure exec_command
+    # method is going to reuse the same SSH client and connection if called
+    # more times
+    _get_ssh_connection = connect
+
+    def close(self):
+        """Closes connection to SSH server and cleanup resources.
+        """
+        client = self._client
+        if client is not None:
+            client.close()
+            self._client = None
+
+    def open_session(self):
+        """Gets connection to SSH server and open a new paramiko.Channel
+
+        :returns: new paramiko.Channel
+        """
+
+        client = self.connect()
+
+        try:
+            return client.get_transport().open_session()
+        except paramiko.SSHException:
+            # the request is rejected, the session ends prematurely or
+            # there is a timeout opening a channel
+            LOG.exception("Unable to open SSH session")
+            raise exceptions.SSHTimeout(host=self.host,
+                                        user=self.username,
+                                        password=self.password)
+
+    def execute_script(self, script, become_root=False,
+                       combine_stderr=True, shell='sh -eux'):
+        """Connect to remote machine and executes script.
+
+        Implementation note: it passes script lines to shell interpreter via
+        STDIN. Therefore script line number could be not available to some
+        script interpreters for debugging porposes.
+
+        :param script: script lines to be executed.
+
+        :param become_root: executes interpreter as root with sudo.
+
+        :param combine_stderr (bool): whenever to redirect STDERR to STDOUT so
+        that output from both streams are returned together. True by default.
+
+        :param shell: command line used to launch script interpreter. By
+        default it executes Bash with -eux options enabled. This means that
+        any command returning non-zero exist status or any any undefined
+        variable would interrupt script execution with an error and every
+        command executed by the script is going to be traced to STDERR.
+
+        :returns output written by script to STDOUT.
+
+        :raises tempest.lib.exceptions.SSHTimeout: in case it fails to connect
+        to remote server or it fails to open a channel.
+
+        :raises tempest.lib.exceptions.SSHExecCommandFailed: in case command
+        script exits with non zero exit status.
+        """
+
+        channel = self.open_session()
+        with channel:
+
+            # Combine STOUT and STDERR to have to handle with only one stream
+            channel.set_combine_stderr(combine_stderr)
+
+            # Set default environment
+            channel.update_environment({
+                # Language and encoding
+                'LC_ALL': os.environ.get('LC_ALL') or self.default_ssh_lang,
+                'LANG': os.environ.get('LANG') or self.default_ssh_lang
+            })
+
+            if become_root:
+                shell = 'sudo ' + shell
+            # Spawn a Bash
+            channel.exec_command(shell)
+
+            lines_iterator = iter(script.splitlines())
+            output_data = b''
+            error_data = b''
+
+            while not channel.exit_status_ready():
+                # Drain incoming data buffers
+                while channel.recv_ready():
+                    output_data += channel.recv(self.buf_size)
+                while channel.recv_stderr_ready():
+                    error_data += channel.recv_stderr(self.buf_size)
+
+                if channel.send_ready():
+                    try:
+                        line = next(lines_iterator)
+                    except StopIteration:
+                        # Finalize Bash script execution
+                        channel.shutdown_write()
+                    else:
+                        # Send script to Bash STDIN line by line
+                        channel.send((line + '\n').encode('utf-8'))
+                else:
+                    time.sleep(.1)
+
+            # Get exit status and drain incoming data buffers
+            exit_status = channel.recv_exit_status()
+            while channel.recv_ready():
+                output_data += channel.recv(self.buf_size)
+            while channel.recv_stderr_ready():
+                error_data += channel.recv_stderr(self.buf_size)
+
+        if exit_status != 0:
+            raise exceptions.SSHExecCommandFailed(
+                command='bash', exit_status=exit_status,
+                stderr=error_data.decode('utf-8'),
+                stdout=output_data.decode('utf-8'))
+
+        return output_data.decode('utf-8')

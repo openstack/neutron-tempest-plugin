@@ -209,8 +209,8 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=False)
-        network = self.create_shared_network('test network',
-                                             qos_policy_id=policy['id'])
+        network = self.create_network('test network', shared=True,
+                                      qos_policy_id=policy['id'])
 
         retrieved_network = self.admin_client.show_network(network['id'])
         self.assertEqual(
@@ -251,7 +251,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=False)
-        network = self.create_shared_network('test network')
+        network = self.create_network('test network', shared=True)
         retrieved_network = self.admin_client.show_network(network['id'])
         self.assertIsNone(retrieved_network['network']['qos_policy_id'])
 
@@ -266,7 +266,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=True)
-        network = self.create_shared_network('test network')
+        network = self.create_network('test network', shared=True)
         port = self.create_port(network, qos_policy_id=policy['id'])
 
         retrieved_port = self.admin_client.show_port(port['id'])
@@ -275,7 +275,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('49e02f5a-e1dd-41d5-9855-cfa37f2d195e')
     def test_policy_association_with_port_nonexistent_policy(self):
-        network = self.create_shared_network('test network')
+        network = self.create_network('test network', shared=True)
         self.assertRaises(
             exceptions.NotFound,
             self.create_port,
@@ -287,7 +287,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=False)
-        network = self.create_shared_network('test network')
+        network = self.create_network('test network', shared=True)
         self.assertRaises(
             exceptions.NotFound,
             self.create_port,
@@ -298,7 +298,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=True)
-        network = self.create_shared_network('test network')
+        network = self.create_network('test network', shared=True)
         port = self.create_port(network)
         retrieved_port = self.admin_client.show_port(port['id'])
         self.assertIsNone(retrieved_port['port']['qos_policy_id'])
@@ -313,7 +313,8 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=True)
-        self.create_shared_network('test network', qos_policy_id=policy['id'])
+        self.create_network('test network', qos_policy_id=policy['id'],
+                            shared=True)
         self.assertRaises(
             exceptions.Conflict,
             self.admin_client.delete_qos_policy, policy['id'])
@@ -323,7 +324,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=True)
-        network = self.create_shared_network('test network')
+        network = self.create_network('test network', shared=True)
         self.create_port(network, qos_policy_id=policy['id'])
         self.assertRaises(
             exceptions.Conflict,

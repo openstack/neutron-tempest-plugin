@@ -28,7 +28,7 @@ class PortSecurityAdminTests(base_security.BaseSecGroupTest,
     @decorators.attr(type='negative')
     @decorators.idempotent_id('d39a96e2-2dea-4feb-8093-e7ac991ce6f8')
     def test_create_port_security_false_on_shared_network(self):
-        network = self.create_shared_network()
+        network = self.create_network(shared=True)
         self.assertTrue(network['shared'])
         self.create_subnet(network, client=self.admin_client)
         self.assertRaises(lib_exc.Forbidden, self.create_port,

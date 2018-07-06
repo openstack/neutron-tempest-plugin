@@ -240,10 +240,9 @@ class TrunkTestInheritJSONBase(TrunkTestJSONBase):
 
     def create_provider_network(self):
         foo_net = config.CONF.neutron_plugin_options.provider_vlans[0]
-        post_body = {'network_name': data_utils.rand_name('vlan-net'),
-                     'provider:network_type': 'vlan',
-                     'provider:physical_network': foo_net}
-        return self.create_shared_network(**post_body)
+        return self.create_network(name=data_utils.rand_name('vlan-net'),
+                                   provider_network_type='vlan',
+                                   provider_physical_network=foo_net)
 
     @decorators.idempotent_id('0f05d98e-41f5-4629-dada-9aee269c9602')
     def test_add_subport(self):
@@ -286,13 +285,13 @@ class TrunkTestMtusJSONBase(TrunkTestJSONBase):
         super(TrunkTestMtusJSONBase, self).setUp()
 
         # VXLAN autocomputed MTU (1450) is smaller than that of GRE (1458)
-        vxlan_kwargs = {'network_name': data_utils.rand_name('vxlan-net'),
-                        'provider:network_type': 'vxlan'}
-        self.smaller_mtu_net = self.create_shared_network(**vxlan_kwargs)
+        self.smaller_mtu_net = self.create_network(
+            name=data_utils.rand_name('vxlan-net'),
+            provider_network_type='vxlan')
 
-        gre_kwargs = {'network_name': data_utils.rand_name('gre-net'),
-                      'provider:network_type': 'gre'}
-        self.larger_mtu_net = self.create_shared_network(**gre_kwargs)
+        self.larger_mtu_net = self.create_network(
+            name=data_utils.rand_name('gre-net'),
+            provider_network_type='gre')
 
         self.smaller_mtu_port = self.create_port(self.smaller_mtu_net)
         self.smaller_mtu_port_2 = self.create_port(self.smaller_mtu_net)

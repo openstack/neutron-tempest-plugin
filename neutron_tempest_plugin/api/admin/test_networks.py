@@ -24,50 +24,51 @@ class NetworksTestAdmin(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('d3c76044-d067-4cb0-ae47-8cdd875c7f67')
     @utils.requires_ext(extension="project-id", service="network")
-    def test_admin_create_network_keystone_v3(self):
+    def test_create_network_with_project(self):
         project_id = self.client.tenant_id  # non-admin
 
         name = 'admin-created-with-project_id'
-        new_net = self.create_network_keystone_v3(name, project_id,
-            client=self.admin_client)
-        self.assertEqual(name, new_net['name'])
-        self.assertEqual(project_id, new_net['project_id'])
-        self.assertEqual(project_id, new_net['tenant_id'])
+        network = self.create_network(name, project_id=project_id,
+                                      client=self.admin_client)
+        self.assertEqual(name, network['name'])
+        self.assertEqual(project_id, network['project_id'])
+        self.assertEqual(project_id, network['tenant_id'])
 
-        body = self.client.list_networks(id=new_net['id'])
-        lookup_net = body['networks'][0]
-        self.assertEqual(name, lookup_net['name'])
-        self.assertEqual(project_id, lookup_net['project_id'])
-        self.assertEqual(project_id, lookup_net['tenant_id'])
+        observed_network = self.client.list_networks(
+            id=network['id'])['networks'][0]
+        self.assertEqual(name, observed_network['name'])
+        self.assertEqual(project_id, observed_network['project_id'])
+        self.assertEqual(project_id, observed_network['tenant_id'])
 
     @decorators.idempotent_id('8d21aaca-4364-4eb9-8b79-44b4fff6373b')
     @utils.requires_ext(extension="project-id", service="network")
-    def test_admin_create_network_keystone_v3_and_tenant(self):
+    def test_create_network_with_project_and_tenant(self):
         project_id = self.client.tenant_id  # non-admin
 
         name = 'created-with-project-and-tenant'
-        new_net = self.create_network_keystone_v3(
-            name, project_id, tenant_id=project_id, client=self.admin_client)
-        self.assertEqual(name, new_net['name'])
-        self.assertEqual(project_id, new_net['project_id'])
-        self.assertEqual(project_id, new_net['tenant_id'])
+        network = self.create_network(name, project_id=project_id,
+                                      tenant_id=project_id,
+                                      client=self.admin_client)
+        self.assertEqual(name, network['name'])
+        self.assertEqual(project_id, network['project_id'])
+        self.assertEqual(project_id, network['tenant_id'])
 
-        body = self.client.list_networks(id=new_net['id'])
-        lookup_net = body['networks'][0]
-        self.assertEqual(name, lookup_net['name'])
-        self.assertEqual(project_id, lookup_net['project_id'])
-        self.assertEqual(project_id, lookup_net['tenant_id'])
+        observed_network = self.client.list_networks(
+            id=network['id'])['networks'][0]
+        self.assertEqual(name, observed_network['name'])
+        self.assertEqual(project_id, observed_network['project_id'])
+        self.assertEqual(project_id, observed_network['tenant_id'])
 
     @decorators.idempotent_id('08b92179-669d-45ee-8233-ef6611190809')
     @utils.requires_ext(extension="project-id", service="network")
-    def test_admin_create_network_keystone_v3_and_other_tenant(self):
+    def test_create_network_with_project_and_other_tenant(self):
         project_id = self.client.tenant_id  # non-admin
         other_tenant = uuidutils.generate_uuid()
 
         name = 'created-with-project-and-other-tenant'
         e = self.assertRaises(lib_exc.BadRequest,
-                              self.create_network_keystone_v3, name,
-                              project_id, tenant_id=other_tenant,
+                              self.create_network, name,
+                              project_id=project_id, tenant_id=other_tenant,
                               client=self.admin_client)
         expected_message = "'project_id' and 'tenant_id' do not match"
         self.assertEqual(expected_message, e.resp_body['message'])

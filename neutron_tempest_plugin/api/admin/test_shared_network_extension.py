@@ -29,7 +29,7 @@ class SharedNetworksTest(base.BaseAdminNetworkTest):
     @classmethod
     def resource_setup(cls):
         super(SharedNetworksTest, cls).resource_setup()
-        cls.shared_network = cls.create_shared_network()
+        cls.shared_network = cls.create_network(shared=True)
 
     @decorators.idempotent_id('6661d219-b96d-4597-ad10-55766123421a')
     def test_filtering_shared_networks(self):
@@ -84,7 +84,7 @@ class SharedNetworksTest(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('6661d219-b96d-4597-ad10-55766ce4abf7')
     def test_create_update_shared_network(self):
-        shared_network = self.create_shared_network()
+        shared_network = self.create_network(shared=True)
         net_id = shared_network['id']
         self.assertEqual('ACTIVE', shared_network['status'])
         self.assertIsNotNone(shared_network['id'])
@@ -156,7 +156,7 @@ class AllowedAddressPairSharedNetworkTest(base.BaseAdminNetworkTest):
     @classmethod
     def resource_setup(cls):
         super(AllowedAddressPairSharedNetworkTest, cls).resource_setup()
-        cls.network = cls.create_shared_network()
+        cls.network = cls.create_network(shared=True)
         cls.create_subnet(cls.network, client=cls.admin_client)
 
     @decorators.idempotent_id('86c3529b-1231-40de-803c-ffffffff1fff')

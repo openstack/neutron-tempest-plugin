@@ -15,7 +15,6 @@ from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin import config
 
 
 class TagTestJSON(base.BaseAdminNetworkTest):
@@ -177,9 +176,7 @@ class TagFloatingIpTestJSON(TagTestJSON):
     @classmethod
     @utils.requires_ext(extension="router", service="network")
     def _create_resource(cls):
-        cls.ext_net_id = config.CONF.network.public_network_id
-        floatingip = cls.create_floatingip(cls.ext_net_id)
-        return floatingip['id']
+        return cls.create_floatingip()['id']
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('53f6c2bf-e272-4e9e-b9a9-b165eb7be807')
@@ -418,9 +415,7 @@ class TagFilterFloatingIpTestJSON(TagFilterTestJSON):
     @classmethod
     @utils.requires_ext(extension="router", service="network")
     def _create_resource(cls):
-        cls.ext_net_id = config.CONF.network.public_network_id
-        floatingip = cls.create_floatingip(cls.ext_net_id)
-        return floatingip['id']
+        return cls.create_floatingip()['id']
 
     def _list_resource(self, filters):
         res = self.client.list_floatingips(**filters)

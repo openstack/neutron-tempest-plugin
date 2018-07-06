@@ -58,7 +58,7 @@ class NetworkMtuBaseTest(base.BaseTempestTestCase):
             constants.SERVER_STATUS_ACTIVE)
         port = self.client.list_ports(
             network_id=net['id'], device_id=server['server']['id'])['ports'][0]
-        fip = self.create_and_associate_floatingip(port['id'])
+        fip = self.create_floatingip(port=port)
         return server, fip
 
     def _get_network_params(self):

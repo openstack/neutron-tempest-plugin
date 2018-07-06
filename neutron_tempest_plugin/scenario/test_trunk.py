@@ -65,7 +65,7 @@ class TrunkTest(base.BaseTempestTestCase):
                 'server': server}
 
     def _create_server_with_fip(self, port_id, **server_kwargs):
-        fip = self.create_and_associate_floatingip(port_id)
+        fip = self.create_floatingip(port_id=port_id)
         return (
             self.create_server(
                 flavor_ref=CONF.compute.flavor_ref,

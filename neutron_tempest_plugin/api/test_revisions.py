@@ -309,7 +309,7 @@ class TestRevisions(base.BaseAdminNetworkTest, bsg.BaseSecGroupTest):
     @decorators.idempotent_id('9de71ebc-f5df-4cd0-80bc-60299fce3ce9')
     @utils.requires_ext(extension="router", service="network")
     @utils.requires_ext(extension="standard-attr-description",
-                       service="network")
+                        service="network")
     def test_update_floatingip_bumps_revision(self):
         ext_id = config.CONF.network.public_network_id
         net = self.create_network()
@@ -325,12 +325,7 @@ class TestRevisions(base.BaseAdminNetworkTest, bsg.BaseSecGroupTest):
             subnet['id'])
         port = self.create_port(net)
         self.addCleanup(self.client.delete_port, port['id'])
-        body = self.client.create_floatingip(
-            floating_network_id=ext_id,
-            port_id=port['id'],
-            description='d1'
-        )['floatingip']
-        self.floating_ips.append(body)
+        body = self.create_floatingip(port=port, description='d1')
         self.assertIn('revision_number', body)
         b2 = self.client.update_floatingip(body['id'], description='d2')
         self.assertGreater(b2['floatingip']['revision_number'],

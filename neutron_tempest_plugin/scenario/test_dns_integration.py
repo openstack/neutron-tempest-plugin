@@ -76,11 +76,9 @@ class DNSIntegrationTests(base.BaseTempestTestCase, DNSMixin):
         cls.keypair = cls.create_keypair()
 
     def _create_floatingip_with_dns(self, dns_name):
-        fip = self.os_primary.network_client.create_floatingip(
-            CONF.network.public_network_id, dns_name=dns_name,
-            dns_domain=self.zone['name'])['floatingip']
-        self.floating_ips.append(fip)
-        return fip
+        return self.create_floatingip(client=self.os_primary.network_client,
+                                      dns_name=dns_name,
+                                      dns_domain=self.zone['name'])
 
     def _create_server(self, name=None):
         port = self.create_port(self.network)
@@ -92,7 +90,7 @@ class DNSIntegrationTests(base.BaseTempestTestCase, DNSMixin):
         waiters.wait_for_server_status(self.os_primary.servers_client,
                                        server['id'],
                                        constants.SERVER_STATUS_ACTIVE)
-        fip = self.create_and_associate_floatingip(port['id'])
+        fip = self.create_floatingip(port=port)
         return {'port': port, 'fip': fip, 'server': server}
 
     def _verify_dns_records(self, address, name):

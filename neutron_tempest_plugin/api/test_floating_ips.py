@@ -48,11 +48,7 @@ class FloatingIPTestJSON(base.BaseNetworkTest):
         # originally the floating IP had no attributes other than its
         # association, so an update with an empty body was a signal to
         # clear the association. This test ensures we maintain that behavior.
-        body = self.client.create_floatingip(
-            floating_network_id=self.ext_net_id,
-            port_id=self.ports[0]['id'],
-        )['floatingip']
-        self.floating_ips.append(body)
+        body = self.create_floatingip(port=self.ports[0])
         self.assertEqual(self.ports[0]['id'], body['port_id'])
         body = self.client.update_floatingip(body['id'])['floatingip']
         self.assertFalse(body['port_id'])
@@ -61,12 +57,7 @@ class FloatingIPTestJSON(base.BaseNetworkTest):
     @utils.requires_ext(extension="standard-attr-description",
                        service="network")
     def test_create_update_floatingip_description(self):
-        body = self.client.create_floatingip(
-            floating_network_id=self.ext_net_id,
-            port_id=self.ports[0]['id'],
-            description='d1'
-        )['floatingip']
-        self.floating_ips.append(body)
+        body = self.create_floatingip(port=self.ports[0], description='d1')
         self.assertEqual('d1', body['description'])
         body = self.client.show_floatingip(body['id'])['floatingip']
         self.assertEqual('d1', body['description'])
@@ -84,12 +75,7 @@ class FloatingIPTestJSON(base.BaseNetworkTest):
                        service="network")
     def test_floatingip_update_extra_attributes_port_id_not_changed(self):
         port_id = self.ports[1]['id']
-        body = self.client.create_floatingip(
-            floating_network_id=self.ext_net_id,
-            port_id=port_id,
-            description='d1'
-        )['floatingip']
-        self.floating_ips.append(body)
+        body = self.create_floatingip(port_id=port_id, description='d1')
         self.assertEqual('d1', body['description'])
         body = self.client.show_floatingip(body['id'])['floatingip']
         self.assertEqual(port_id, body['port_id'])
@@ -112,12 +98,7 @@ class FloatingIPTestJSON(base.BaseNetworkTest):
     @utils.requires_ext(extension="fip-port-details", service="network")
     def test_create_update_floatingip_port_details(self):
 
-        body = self.client.create_floatingip(
-            floating_network_id=self.ext_net_id,
-            port_id=self.ports[0]['id'],
-            description='d1'
-        )['floatingip']
-        self.floating_ips.append(body)
+        body = self.create_floatingip(port=self.ports[0], description='d1')
         self._assert_port_details(self.ports[0], body)
         body = self.client.show_floatingip(body['id'])['floatingip']
         self._assert_port_details(self.ports[0], body)

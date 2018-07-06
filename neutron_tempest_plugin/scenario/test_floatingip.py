@@ -87,7 +87,7 @@ class FloatingIpTestCasesMixin(object):
             network = self.network
         port = self.create_port(network, security_groups=[self.secgroup['id']])
         if create_floating_ip:
-            fip = self.create_and_associate_floatingip(port['id'])
+            fip = self.create_floatingip(port=port)
         else:
             fip = None
         server = self.create_server(

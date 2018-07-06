@@ -162,14 +162,12 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
             target_tenant=self.admin_client.tenant_id)
         self.create_subnet(net, client=self.admin_client, enable_dhcp=False)
         with testtools.ExpectedException(lib_exc.NotFound):
-            self.client2.create_floatingip(
-                floating_network_id=net['id'])
+            self.create_floatingip(net['id'], client=self.client2)
         self.admin_client.create_rbac_policy(
             object_type='network', object_id=net['id'],
             action='access_as_external',
             target_tenant=self.client2.tenant_id)
-        self.client2.create_floatingip(
-            floating_network_id=net['id'])
+        self.create_floatingip(net['id'], client=self.client2)
 
     @decorators.idempotent_id('476be1e0-f72e-47dc-9a14-4435926bbe82')
     def test_policy_allows_tenant_to_attach_ext_gw(self):

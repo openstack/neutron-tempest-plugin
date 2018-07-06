@@ -167,11 +167,7 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
         new_quotas = {'floatingip': 1}
         self._setup_quotas(tenant_id, **new_quotas)
 
-        ext_net_id = CONF.network.public_network_id
-        fip_args = {'tenant_id': tenant_id,
-                    'floating_network_id': ext_net_id}
-        fip = self.admin_client.create_floatingip(**fip_args)['floatingip']
-        self.addCleanup(self.admin_client.delete_floatingip, fip['id'])
+        self.create_floatingip(client=self.admin_client, tenant_id=tenant_id)
 
-        self.assertRaises(lib_exc.Conflict,
-                          self.admin_client.create_floatingip, **fip_args)
+        self.assertRaises(lib_exc.Conflict, self.create_floatingip,
+                          client=self.admin_client, tenant_id=tenant_id)

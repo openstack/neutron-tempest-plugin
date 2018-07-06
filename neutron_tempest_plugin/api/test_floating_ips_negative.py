@@ -53,14 +53,8 @@ class FloatingIPNegativeTestJSON(base.BaseNetworkTest):
         self.addCleanup(self.client.update_router, self.router['id'],
                         external_gateway_info={})
         port = self.create_port(net)
-        body1 = self.client.create_floatingip(
-            floating_network_id=self.ext_net_id)
-        floating_ip1 = body1['floatingip']
-        self.addCleanup(self.client.delete_floatingip, floating_ip1['id'])
-        body2 = self.client.create_floatingip(
-            floating_network_id=self.ext_net_id)
-        floating_ip2 = body2['floatingip']
-        self.addCleanup(self.client.delete_floatingip, floating_ip2['id'])
+        floating_ip1 = self.create_floatingip()
+        floating_ip2 = self.create_floatingip()
         self.client.update_floatingip(floating_ip1['id'],
                                       port_id=port['id'])
         self.assertRaises(lib_exc.Conflict, self.client.update_floatingip,

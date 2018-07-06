@@ -67,7 +67,7 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
             port = self.client.list_ports(
                 network_id=self.network['id'], device_id=server['server'][
                     'id'])['ports'][0]
-            fips.append(self.create_and_associate_floatingip(port['id']))
+            fips.append(self.create_floatingip(port=port))
             server_ssh_clients.append(ssh.Client(
                 fips[i]['floating_ip_address'], CONF.validation.image_ssh_user,
                 pkey=self.keypair['private_key']))

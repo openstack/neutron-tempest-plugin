@@ -247,14 +247,14 @@ class TestTimeStampWithL3(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('8ae55186-464f-4b87-1c9f-eb2765ee81ac')
     def test_create_floatingip_with_timestamp(self):
-        fip = self.create_floatingip(self.ext_net_id)
+        fip = self.create_floatingip()
         # Verifies body contains timestamp fields
         self.assertIsNotNone(fip['created_at'])
         self.assertIsNotNone(fip['updated_at'])
 
     @decorators.idempotent_id('a3ac215a-61ac-13f9-9d3c-57c51f11afa1')
     def test_update_floatingip_with_timestamp(self):
-        fip = self.create_floatingip(self.ext_net_id)
+        fip = self.create_floatingip()
         origin_updated_at = fip['updated_at']
         update_body = {'description': 'new'}
         body = self.client.update_floatingip(fip['id'], **update_body)
@@ -266,7 +266,7 @@ class TestTimeStampWithL3(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('32a6a086-e1ef-413b-b13a-0cfe13ef051e')
     def test_show_floatingip_attribute_with_timestamp(self):
-        fip = self.create_floatingip(self.ext_net_id)
+        fip = self.create_floatingip()
         body = self.client.show_floatingip(fip['id'])
         show_fip = body['floatingip']
         # verify the timestamp from creation and showed is same

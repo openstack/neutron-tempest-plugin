@@ -32,7 +32,7 @@ class FloatingIPAdminTestJSON(base.BaseAdminNetworkTest):
     def resource_setup(cls):
         super(FloatingIPAdminTestJSON, cls).resource_setup()
         cls.ext_net_id = CONF.network.public_network_id
-        cls.floating_ip = cls.create_floatingip(cls.ext_net_id)
+        cls.floating_ip = cls.create_floatingip()
         cls.alt_client = cls.os_alt.network_client
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
@@ -44,10 +44,7 @@ class FloatingIPAdminTestJSON(base.BaseAdminNetworkTest):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('11116ee9-4e99-5b15-b8e1-aa7df92ca589')
     def test_associate_floating_ip_with_port_from_another_project(self):
-        body = self.client.create_floatingip(
-            floating_network_id=self.ext_net_id)
-        floating_ip = body['floatingip']
-        self.addCleanup(self.client.delete_floatingip, floating_ip['id'])
+        floating_ip = self.create_floatingip()
         project_id = self.create_project()['id']
 
         port = self.admin_client.create_port(network_id=self.network['id'],
@@ -65,20 +62,17 @@ class FloatingIPAdminTestJSON(base.BaseAdminNetworkTest):
         # other tests may end up stealing the IP before we can use it
         # since it's on the external network so we need to retry if it's
         # in use.
-        for i in range(100):
+        for _ in range(100):
             fip = self.get_unused_ip(self.ext_net_id, ip_version=4)
             try:
-                body = self.admin_client.create_floatingip(
-                    floating_network_id=self.ext_net_id,
-                    floating_ip_address=fip)
+                created_floating_ip = self.create_floatingip(
+                    floating_ip_address=fip,
+                    client=self.admin_client)
                 break
             except lib_exc.Conflict:
                 pass
         else:
             self.fail("Could not get an unused IP after 100 attempts")
-        created_floating_ip = body['floatingip']
-        self.addCleanup(self.admin_client.delete_floatingip,
-                        created_floating_ip['id'])
         self.assertIsNotNone(created_floating_ip['id'])
         self.assertIsNotNone(created_floating_ip['tenant_id'])
         self.assertEqual(created_floating_ip['floating_ip_address'], fip)

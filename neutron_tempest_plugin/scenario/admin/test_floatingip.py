@@ -85,13 +85,12 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
                 network_id=self.network['id'],
                 device_id=server['server']['id']
             )['ports'][0]
-            fips.append(self.create_and_associate_floatingip(
-                port['id'], client=self.os_admin.network_client))
+            fip = self.create_floatingip(port=port,
+                                         client=self.os_admin.network_client)
+            fips.append(fip)
             server_ssh_clients.append(ssh.Client(
                 fips[i]['floating_ip_address'], CONF.validation.image_ssh_user,
                 pkey=self.keypair['private_key']))
-            self.addCleanup(self.os_admin.network_client.delete_floatingip,
-                            fips[i]['id'])
         return server_ssh_clients, fips
 
     @decorators.idempotent_id('6bba729b-3fb6-494b-9e1e-82bbd89a1045')

@@ -63,7 +63,7 @@ class TestAutoAllocatedTopology(base.BaseAdminNetworkTest):
 
         up = {'admin_state_up': True}
         networks = _count(self.client.list_networks(**up)['networks'])
-        subnets = _count(self.client.list_subnets(**up)['subnets'])
+        subnets = _count(self.client.list_subnets()['subnets'])
         routers = _count(self.client.list_routers(**up)['routers'])
         return networks, subnets, routers
 

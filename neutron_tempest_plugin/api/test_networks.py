@@ -209,7 +209,8 @@ class NetworksSearchCriteriaTest(base.BaseSearchCriteriaTest):
     def test_list_no_pagination_limit_0(self):
         self._test_list_no_pagination_limit_0()
 
-    @decorators.skip_because(bug="1749820")
     @decorators.idempotent_id('3574ec9b-a8b8-43e3-9c11-98f5875df6a9')
     def test_list_validation_filters(self):
-        self._test_list_validation_filters()
+        self._test_list_validation_filters(self.list_kwargs)
+        self._test_list_validation_filters({
+            'unknown_filter': 'value'}, filter_is_valid=False)

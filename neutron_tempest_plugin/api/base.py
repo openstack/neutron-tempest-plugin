@@ -1167,11 +1167,14 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
             expected_resources[:-1],
             self._extract_resources(body))
 
-    def _test_list_validation_filters(self):
-        validation_args = {
-            'unknown_filter': 'value',
-        }
-        body = self.list_method(**validation_args)
-        resources = self._extract_resources(body)
-        for resource in resources:
-            self.assertIn(resource['name'], self.resource_names)
+    @tutils.requires_ext(extension="filter-validation", service="network")
+    def _test_list_validation_filters(
+            self, validation_args, filter_is_valid=True):
+        if not filter_is_valid:
+            self.assertRaises(lib_exc.BadRequest, self.list_method,
+                              **validation_args)
+        else:
+            body = self.list_method(**validation_args)
+            resources = self._extract_resources(body)
+            for resource in resources:
+                self.assertIn(resource['name'], self.resource_names)

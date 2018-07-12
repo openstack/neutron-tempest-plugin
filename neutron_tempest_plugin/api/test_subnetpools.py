@@ -414,7 +414,8 @@ class SubnetPoolsSearchCriteriaTest(base.BaseSearchCriteriaTest,
     def test_list_no_pagination_limit_0(self):
         self._test_list_no_pagination_limit_0()
 
-    @decorators.skip_because(bug="1749820")
     @decorators.idempotent_id('27feb3f8-40f4-4e50-8cd2-7d0096a98682')
     def test_list_validation_filters(self):
-        self._test_list_validation_filters()
+        self._test_list_validation_filters(self.list_kwargs)
+        self._test_list_validation_filters({
+            'unknown_filter': 'value'}, filter_is_valid=False)

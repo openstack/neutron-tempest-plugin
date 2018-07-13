@@ -124,6 +124,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.projects = []
         cls.log_objects = []
         cls.reserved_subnet_cidrs = set()
+        cls.keypairs = []
 
     @classmethod
     def resource_cleanup(cls):
@@ -220,6 +221,9 @@ class BaseNetworkTest(test.BaseTestCase):
             for log_object in cls.log_objects:
                 cls._try_delete_resource(cls.admin_client.delete_log,
                                          log_object['id'])
+
+            for keypair in cls.keypairs:
+                cls._try_delete_resource(cls.delete_keypair, keypair)
 
         super(BaseNetworkTest, cls).resource_cleanup()
 
@@ -592,6 +596,23 @@ class BaseNetworkTest(test.BaseTestCase):
         body = cls.client.create_security_group(name=name, **kwargs)
         cls.security_groups.append(body['security_group'])
         return body['security_group']
+
+    @classmethod
+    def create_keypair(cls, client=None, name=None, **kwargs):
+        client = client or cls.os_primary.keypairs_client
+        name = name or data_utils.rand_name('keypair-test')
+        keypair = client.create_keypair(name=name, **kwargs)['keypair']
+
+        # save client for later cleanup
+        keypair['client'] = client
+        cls.keypairs.append(keypair)
+        return keypair
+
+    @classmethod
+    def delete_keypair(cls, keypair, client=None):
+        client = (client or keypair.get('client') or
+                  cls.os_primary.keypairs_client)
+        client.delete_keypair(keypair_name=keypair['name'])
 
 
 class BaseAdminNetworkTest(BaseNetworkTest):

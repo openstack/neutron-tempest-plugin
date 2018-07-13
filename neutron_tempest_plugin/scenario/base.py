@@ -33,20 +33,6 @@ LOG = log.getLogger(__name__)
 
 
 class BaseTempestTestCase(base_api.BaseNetworkTest):
-    @classmethod
-    def resource_setup(cls):
-        super(BaseTempestTestCase, cls).resource_setup()
-
-        cls.keypairs = []
-
-    @classmethod
-    def resource_cleanup(cls):
-        for keypair in cls.keypairs:
-            client = keypair['client']
-            client.delete_keypair(
-                keypair_name=keypair['keypair']['name'])
-
-        super(BaseTempestTestCase, cls).resource_cleanup()
 
     def create_server(self, flavor_ref, image_ref, key_name, networks,
                       **kwargs):
@@ -103,17 +89,6 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                         client.delete_server,
                         server['server']['id'])
         return server
-
-    @classmethod
-    def create_keypair(cls, client=None):
-        client = client or cls.os_primary.keypairs_client
-        name = data_utils.rand_name('keypair-test')
-        body = client.create_keypair(name=name)
-        body.update(client=client)
-        if client is cls.os_primary.keypairs_client:
-            cls.keypairs.append(body)
-
-        return body['keypair']
 
     @classmethod
     def create_secgroup_rules(cls, rule_list, secgroup_id=None,

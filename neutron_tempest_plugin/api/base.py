@@ -60,6 +60,9 @@ class BaseNetworkTest(test.BaseTestCase):
     # Default to ipv4.
     _ip_version = const.IP_VERSION_4
 
+    # Derive from BaseAdminNetworkTest class to have this initialized
+    admin_client = None
+
     @classmethod
     def get_client_manager(cls, credential_type=None, roles=None,
                            force_new=None):
@@ -171,8 +174,7 @@ class BaseNetworkTest(test.BaseTestCase):
                                          subnet['id'])
             # Clean up networks
             for network in cls.networks:
-                cls._try_delete_resource(cls.client.delete_network,
-                                         network['id'])
+                cls._try_delete_resource(cls.delete_network, network)
 
             # Clean up admin networks
             for network in cls.admin_networks:
@@ -248,44 +250,108 @@ class BaseNetworkTest(test.BaseTestCase):
             pass
 
     @classmethod
-    def create_network(cls, network_name=None, client=None, **kwargs):
-        """Wrapper utility that returns a test network."""
-        network_name = network_name or data_utils.rand_name('test-network-')
+    def create_network(cls, network_name=None, client=None, external=None,
+                       shared=None, provider_network_type=None,
+                       provider_physical_network=None,
+                       provider_segmentation_id=None, **kwargs):
+        """Create a network.
 
-        client = client or cls.client
-        body = client.create_network(name=network_name, **kwargs)
-        network = body['network']
-        if client is cls.client:
-            cls.networks.append(network)
-        else:
-            cls.admin_networks.append(network)
+        When client is not provider and admin_client is attribute is not None
+        (for example when using BaseAdminNetworkTest base class) and using any
+        of the convenience parameters (external, shared, provider_network_type,
+        provider_physical_network and provider_segmentation_id) it silently
+        uses admin_client. If the network is not shared then it uses the same
+        project_id as regular client.
+
+        :param network_name: Human-readable name of the network
+
+        :param client: client to be used for connecting to network service
+
+        :param external: indicates whether the network has an external routing
+        facility that's not managed by the networking service.
+
+        :param shared: indicates whether this resource is shared across all
+        projects. By default, only administrative users can change this value.
+        If True and admin_client attribute is not None, then the network is
+        created under administrative project.
+
+        :param provider_network_type: the type of physical network that this
+        network should be mapped to. For example, 'flat', 'vlan', 'vxlan', or
+        'gre'. Valid values depend on a networking back-end.
+
+        :param provider_physical_network: the physical network where this
+        network should be implemented. The Networking API v2.0 does not provide
+        a way to list available physical networks. For example, the Open
+        vSwitch plug-in configuration file defines a symbolic name that maps to
+        specific bridges on each compute host.
+
+        :param provider_segmentation_id: The ID of the isolated segment on the
+        physical network. The network_type attribute defines the segmentation
+        model. For example, if the network_type value is 'vlan', this ID is a
+        vlan identifier. If the network_type value is 'gre', this ID is a gre
+        key.
+
+        :param **kwargs: extra parameters to be forwarded to network service
+        """
+
+        name = (network_name or kwargs.pop('name', None) or
+                data_utils.rand_name('test-network-'))
+
+        # translate convenience parameters
+        admin_client_required = False
+        if provider_network_type:
+            admin_client_required = True
+            kwargs['provider:network_type'] = provider_network_type
+        if provider_physical_network:
+            admin_client_required = True
+            kwargs['provider:physical_network'] = provider_physical_network
+        if provider_segmentation_id:
+            admin_client_required = True
+            kwargs['provider:segmentation_id'] = provider_segmentation_id
+        if external is not None:
+            admin_client_required = True
+            kwargs['router:external'] = bool(external)
+        if shared is not None:
+            admin_client_required = True
+            kwargs['shared'] = bool(shared)
+
+        if not client:
+            if admin_client_required and cls.admin_client:
+                # For convenience silently switch to admin client
+                client = cls.admin_client
+                if not shared:
+                    # Keep this network visible from current project
+                    project_id = (kwargs.get('project_id') or
+                                  kwargs.get('tenant_id') or
+                                  cls.client.tenant_id)
+                    kwargs.update(project_id=project_id, tenant_id=project_id)
+            else:
+                # Use default client
+                client = cls.client
+
+        network = client.create_network(name=name, **kwargs)['network']
+        network['client'] = client
+        cls.networks.append(network)
         return network
 
     @classmethod
-    def create_shared_network(cls, network_name=None, **post_body):
-        network_name = network_name or data_utils.rand_name('sharednetwork-')
-        post_body.update({'name': network_name, 'shared': True})
-        body = cls.admin_client.create_network(**post_body)
-        network = body['network']
-        cls.admin_networks.append(network)
-        return network
+    def delete_network(cls, network, client=None):
+        client = client or network.get('client') or cls.client
+        client.delete_network(network['id'])
+
+    @classmethod
+    def create_shared_network(cls, network_name=None, **kwargs):
+        return cls.create_network(name=network_name, shared=True, **kwargs)
 
     @classmethod
     def create_network_keystone_v3(cls, network_name=None, project_id=None,
                                    tenant_id=None, client=None):
-        """Wrapper utility that creates a test network with project_id."""
-        client = client or cls.client
-        network_name = network_name or data_utils.rand_name(
-            'test-network-with-project_id')
-        project_id = cls.client.tenant_id
-        body = client.create_network_keystone_v3(network_name, project_id,
-            tenant_id)
-        network = body['network']
-        if client is cls.client:
-            cls.networks.append(network)
-        else:
-            cls.admin_networks.append(network)
-        return network
+        params = {}
+        if project_id:
+            params['project_id'] = project_id
+        if tenant_id:
+            params['tenant_id'] = tenant_id
+        return cls.create_network(name=network_name, client=client, **params)
 
     @classmethod
     def create_subnet(cls, network, gateway='', cidr=None, mask_bits=None,

@@ -75,28 +75,29 @@ class NetworksTestJSON(base.BaseNetworkTest):
 
     @decorators.idempotent_id('0cc0552f-afaf-4231-b7a7-c2a1774616da')
     @utils.requires_ext(extension="project-id", service="network")
-    def test_create_network_keystone_v3(self):
+    def test_create_network_with_project(self):
         project_id = self.client.tenant_id
 
         name = 'created-with-project_id'
-        new_net = self.create_network_keystone_v3(name, project_id)
-        self.assertEqual(name, new_net['name'])
-        self.assertEqual(project_id, new_net['project_id'])
-        self.assertEqual(project_id, new_net['tenant_id'])
+        network = self.create_network(name, project_id=project_id)
+        self.assertEqual(name, network['name'])
+        self.assertEqual(project_id, network['project_id'])
+        self.assertEqual(project_id, network['tenant_id'])
 
-        body = self.client.list_networks(id=new_net['id'])['networks'][0]
-        self.assertEqual(name, body['name'])
+        observed_network = self.client.list_networks(
+            id=network['id'])['networks'][0]
+        self.assertEqual(name, observed_network['name'])
 
         new_name = 'create-with-project_id-2'
-        body = self.client.update_network(new_net['id'], name=new_name)
-        new_net = body['network']
-        self.assertEqual(new_name, new_net['name'])
-        self.assertEqual(project_id, new_net['project_id'])
-        self.assertEqual(project_id, new_net['tenant_id'])
+        updated_network = self.client.update_network(
+            network['id'], name=new_name)['network']
+        self.assertEqual(new_name, updated_network['name'])
+        self.assertEqual(project_id, updated_network['project_id'])
+        self.assertEqual(project_id, updated_network['tenant_id'])
 
     @decorators.idempotent_id('94e2a44c-3367-4253-8c2a-22deaf59e96c')
     @utils.requires_ext(extension="dns-integration",
-                       service="network")
+                        service="network")
     def test_create_update_network_dns_domain(self):
         domain1 = 'test.org.'
         body = self.create_network(dns_domain=domain1)

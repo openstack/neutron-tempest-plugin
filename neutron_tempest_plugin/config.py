@@ -56,7 +56,25 @@ NeutronPluginOptions = [
                     '"provider:network_type":<TYPE> - string '
                     '"mtu":<MTU> - integer '
                     '"cidr"<SUBNET/MASK> - string '
-                    '"provider:segmentation_id":<VLAN_ID> - integer')
+                    '"provider:segmentation_id":<VLAN_ID> - integer'),
+
+    # Option for feature to connect via SSH to VMs using an intermediate SSH
+    # server
+    cfg.StrOpt('ssh_proxy_jump_host',
+               default=None,
+               help='Proxy jump host used to connect via SSH to VMs..'),
+    cfg.StrOpt('ssh_proxy_jump_username',
+               default='root',
+               help='User name used to connect to "ssh_proxy_jump_host".'),
+    cfg.StrOpt('ssh_proxy_jump_password',
+               default=None,
+               help='Password used to connect to "ssh_proxy_jump_host".'),
+    cfg.StrOpt('ssh_proxy_jump_keyfile',
+               default=None,
+               help='Keyfile used to connect to "ssh_proxy_jump_host".'),
+    cfg.IntOpt('ssh_proxy_jump_port',
+               default=22,
+               help='Port used to connect to "ssh_proxy_jump_host".'),
 ]
 
 # TODO(amuller): Redo configuration options registration as part of the planned

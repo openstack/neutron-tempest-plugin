@@ -251,7 +251,8 @@ class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
     required_extensions = ['dvr', 'l3-ha']
 
     @decorators.idempotent_id('644d7a4a-01a1-4b68-bb8d-0c0042cb1729')
-    def test_convert_centralized_router(self):
+    def test_convert_distributed_router_back_to_centralized(self):
+        # Convert a centralized router to distributed firstly
         router_args = {'tenant_id': self.client.tenant_id,
                        'distributed': False, 'ha': False}
         router = self.admin_client.create_router(
@@ -266,6 +267,14 @@ class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
         self.assertTrue(update_body['router']['distributed'])
         show_body = self.admin_client.show_router(router['id'])
         self.assertTrue(show_body['router']['distributed'])
+        self.assertFalse(show_body['router']['ha'])
+        # Then convert the distributed router back to centralized
+        update_body = self.admin_client.update_router(router['id'],
+                                                      distributed=False)
+        self.assertFalse(update_body['router']['distributed'])
+        show_body = self.admin_client.show_router(router['id'])
+        self.assertFalse(show_body['router']['distributed'])
+        self.assertFalse(show_body['router']['ha'])
         show_body = self.client.show_router(router['id'])
         self.assertNotIn('distributed', show_body['router'])
         self.assertNotIn('ha', show_body['router'])

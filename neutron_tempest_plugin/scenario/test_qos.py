@@ -66,7 +66,7 @@ def _connect_socket(host, port):
                                                                port=port)
 
 
-class QoSTest(base.BaseTempestTestCase):
+class QoSTestMixin(object):
     credentials = ['primary', 'admin']
     force_tenant_isolation = False
 
@@ -81,22 +81,16 @@ class QoSTest(base.BaseTempestTestCase):
 
     NC_PORT = 1234
 
-    @classmethod
-    @tutils.requires_ext(extension="qos", service="network")
-    @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
-    def resource_setup(cls):
-        super(QoSTest, cls).resource_setup()
-
     def _create_file_for_bw_tests(self, ssh_client):
         cmd = ("(dd if=/dev/zero bs=%(bs)d count=%(count)d of=%(file_path)s) "
-               % {'bs': QoSTest.BS, 'count': QoSTest.COUNT,
-               'file_path': QoSTest.FILE_PATH})
+               % {'bs': QoSTestMixin.BS, 'count': QoSTestMixin.COUNT,
+               'file_path': QoSTestMixin.FILE_PATH})
         ssh_client.exec_command(cmd)
-        cmd = "stat -c %%s %s" % QoSTest.FILE_PATH
+        cmd = "stat -c %%s %s" % QoSTestMixin.FILE_PATH
         filesize = ssh_client.exec_command(cmd)
-        if int(filesize.strip()) != QoSTest.FILE_SIZE:
+        if int(filesize.strip()) != QoSTestMixin.FILE_SIZE:
             raise sc_exceptions.FileCreationFailedException(
-                file=QoSTest.FILE_PATH)
+                file=QoSTestMixin.FILE_PATH)
 
     def _check_bw(self, ssh_client, host, port):
         cmd = "killall -q nc"
@@ -105,15 +99,15 @@ class QoSTest(base.BaseTempestTestCase):
         except exceptions.SSHExecCommandFailed:
             pass
         cmd = ("(nc -ll -p %(port)d < %(file_path)s > /dev/null &)" % {
-                'port': port, 'file_path': QoSTest.FILE_PATH})
+                'port': port, 'file_path': QoSTestMixin.FILE_PATH})
         ssh_client.exec_command(cmd)
 
         start_time = time.time()
         client_socket = _connect_socket(host, port)
         total_bytes_read = 0
 
-        while total_bytes_read < QoSTest.FILE_SIZE:
-            data = client_socket.recv(QoSTest.BUFFER_SIZE)
+        while total_bytes_read < QoSTestMixin.FILE_SIZE:
+            data = client_socket.recv(QoSTestMixin.BUFFER_SIZE)
             total_bytes_read += len(data)
 
         time_elapsed = time.time() - start_time
@@ -126,7 +120,7 @@ class QoSTest(base.BaseTempestTestCase):
                    'total_bytes_read': total_bytes_read,
                    'bytes_per_second': bytes_per_second})
 
-        return bytes_per_second <= QoSTest.LIMIT_BYTES_SEC
+        return bytes_per_second <= QoSTestMixin.LIMIT_BYTES_SEC
 
     def _create_ssh_client(self):
         return ssh.Client(self.fip['floating_ip_address'],
@@ -152,6 +146,14 @@ class QoSTest(base.BaseTempestTestCase):
                                         description='test-qos-policy',
                                         shared=True)
         return policy['policy']['id']
+
+
+class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
+    @classmethod
+    @tutils.requires_ext(extension="qos", service="network")
+    @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
+    def resource_setup(cls):
+        super(QoSTest, cls).resource_setup()
 
     @decorators.idempotent_id('1f7ed39b-428f-410a-bd2b-db9f465680df')
     def test_qos(self):

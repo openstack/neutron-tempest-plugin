@@ -200,7 +200,8 @@ class DefaultSnatToExternal(FloatingIpTestCasesMixin,
 
 
 class FloatingIPQosTest(FloatingIpTestCasesMixin,
-                        test_qos.QoSTest):
+                        test_qos.QoSTestMixin,
+                        base.BaseTempestTestCase):
 
     same_network = True
 

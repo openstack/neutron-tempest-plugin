@@ -19,6 +19,7 @@ from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+import testtools
 
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
@@ -118,6 +119,9 @@ class NetworkMtuTest(NetworkMtuBaseTest):
                                     self.keypair['private_key'])
         return server_ssh_client1, fip1, server_ssh_client2, fip2
 
+    @testtools.skipUnless(
+          CONF.neutron_plugin_options.image_is_advanced,
+          "Advanced image is required to run this test.")
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a273d9d344')
     def test_connectivity_min_max_mtu(self):
         server_ssh_client, _, _, fip2 = self._create_setup()
@@ -207,6 +211,9 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
                                     self.keypair['private_key'])
         return server_ssh_client1, fip1, server_ssh_client2, fip2
 
+    @testtools.skipUnless(
+          CONF.neutron_plugin_options.image_is_advanced,
+          "Advanced image is required to run this test.")
     @decorators.idempotent_id('bc470200-d8f4-4f07-b294-1b4cbaaa35b9')
     def test_connectivity_min_max_mtu(self):
         server_ssh_client, _, _, fip2 = self._create_setup()

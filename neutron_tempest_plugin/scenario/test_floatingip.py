@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import time
+
 from neutron_lib import constants as lib_constants
 from neutron_lib.services.qos import constants as qos_consts
 from tempest.common import utils
@@ -26,6 +28,7 @@ from neutron_tempest_plugin.api import base as base_api
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils as common_utils
 from neutron_tempest_plugin import config
+from neutron_tempest_plugin import exceptions
 from neutron_tempest_plugin.scenario import base
 from neutron_tempest_plugin.scenario import constants
 from neutron_tempest_plugin.scenario import test_qos
@@ -197,6 +200,92 @@ class DefaultSnatToExternal(FloatingIpTestCasesMixin,
                                 proxy_client=proxy_client)
         self.check_remote_connectivity(ssh_client,
                                        gateway_external_ip)
+
+
+class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
+                                base.BaseTempestTestCase):
+    same_network = True
+
+    @classmethod
+    @utils.requires_ext(extension="router", service="network")
+    @utils.requires_ext(extension="fip-port-details", service="network")
+    def resource_setup(cls):
+        super(FloatingIPPortDetailsTest, cls).resource_setup()
+
+    @decorators.idempotent_id('a663aeee-dd81-492b-a207-354fd6284dbe')
+    def test_floatingip_port_details(self):
+        """Tests the following:
+
+        1. Create a port with floating ip in Neutron.
+        2. Create two servers in Nova.
+        3. Attach the port to the server.
+        4. Detach the port from the server.
+        5. Attach the port to the second server.
+        6. Detach the port from the second server.
+        """
+        port = self.create_port(self.network)
+        fip = self.create_and_associate_floatingip(port['id'])
+        server1 = self._create_server(create_floating_ip=False)
+        server2 = self._create_server(create_floating_ip=False)
+
+        for server in [server1, server2]:
+            # attach the port to the server
+            self.create_interface(
+                server['server']['id'], port_id=port['id'])
+            waiters.wait_for_interface_status(
+                self.os_primary.interfaces_client, server['server']['id'],
+                port['id'], 'ACTIVE')
+            fip = self.client.show_floatingip(fip['id'])['floatingip']
+            self._check_port_details(
+                fip, port, status='ACTIVE',
+                device_id=server['server']['id'], device_owner='compute:nova')
+
+            # detach the port from the server; this is a cast in the compute
+            # API so we have to poll the port until the device_id is unset.
+            self.delete_interface(server['server']['id'], port['id'])
+            self._wait_for_port_detach(port['id'])
+            fip = self.client.show_floatingip(fip['id'])['floatingip']
+            self._check_port_details(
+                fip, port, status='DOWN', device_id='', device_owner='')
+
+    def _check_port_details(self, fip, port, status, device_id, device_owner):
+        self.assertIn('port_details', fip)
+        port_details = fip['port_details']
+        self.assertEqual(port['name'], port_details['name'])
+        self.assertEqual(port['network_id'], port_details['network_id'])
+        self.assertEqual(port['mac_address'], port_details['mac_address'])
+        self.assertEqual(port['admin_state_up'],
+                         port_details['admin_state_up'])
+        self.assertEqual(status, port_details['status'])
+        self.assertEqual(device_id, port_details['device_id'])
+        self.assertEqual(device_owner, port_details['device_owner'])
+
+    def _wait_for_port_detach(self, port_id, timeout=120, interval=10):
+        """Waits for the port's device_id to be unset.
+
+        :param port_id: The id of the port being detached.
+        :returns: The final port dict from the show_port response.
+        """
+        port = self.client.show_port(port_id)['port']
+        device_id = port['device_id']
+        start = int(time.time())
+
+        # NOTE(mriedem): Nova updates the port's device_id to '' rather than
+        # None, but it's not contractual so handle Falsey either way.
+        while device_id:
+            time.sleep(interval)
+            port = self.client.show_port(port_id)['port']
+            device_id = port['device_id']
+
+            timed_out = int(time.time()) - start >= timeout
+
+            if device_id and timed_out:
+                message = ('Port %s failed to detach (device_id %s) within '
+                           'the required time (%s s).' %
+                           (port_id, device_id, timeout))
+                raise exceptions.TimeoutException(message)
+
+        return port
 
 
 class FloatingIPQosTest(FloatingIpTestCasesMixin,

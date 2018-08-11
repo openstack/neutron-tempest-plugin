@@ -15,6 +15,7 @@
 
 from tempest.lib.services.compute import availability_zone_client
 from tempest.lib.services.compute import hypervisor_client
+from tempest.lib.services.compute import interfaces_client
 from tempest.lib.services.compute import keypairs_client
 from tempest.lib.services.compute import servers_client
 from tempest.lib.services.identity.v2 import tenants_client
@@ -75,6 +76,8 @@ class Manager(manager.Manager):
             enable_instance_password=CONF.compute_feature_enabled
                 .enable_instance_password,
             **params)
+        self.interfaces_client = interfaces_client.InterfacesClient(
+            self.auth_provider, **params)
         self.keypairs_client = keypairs_client.KeyPairsClient(
             self.auth_provider, **params)
         self.hv_client = hypervisor_client.HypervisorClient(

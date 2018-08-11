@@ -167,6 +167,15 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             self.floating_ips.append(fip)
         return fip
 
+    def create_interface(cls, server_id, port_id, client=None):
+        client = client or cls.os_primary.interfaces_client
+        body = client.create_interface(server_id, port_id=port_id)
+        return body['interfaceAttachment']
+
+    def delete_interface(cls, server_id, port_id, client=None):
+        client = client or cls.os_primary.interfaces_client
+        client.delete_interface(server_id, port_id=port_id)
+
     def setup_network_and_server(
         self, router=None, server_name=None, **kwargs):
         """Create network resources and a server.

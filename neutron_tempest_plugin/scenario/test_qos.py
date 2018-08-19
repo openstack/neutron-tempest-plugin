@@ -80,6 +80,7 @@ class QoSTestMixin(object):
     FILE_PATH = "/tmp/img"
 
     NC_PORT = 1234
+    FILE_DOWNLOAD_TIMEOUT = 120
 
     def _create_file_for_bw_tests(self, ssh_client):
         cmd = ("(dd if=/dev/zero bs=%(bs)d count=%(count)d of=%(file_path)s) "
@@ -92,7 +93,7 @@ class QoSTestMixin(object):
             raise sc_exceptions.FileCreationFailedException(
                 file=QoSTestMixin.FILE_PATH)
 
-    def _check_bw(self, ssh_client, host, port):
+    def _check_bw(self, ssh_client, host, port, expected_bw=LIMIT_BYTES_SEC):
         cmd = "killall -q nc"
         try:
             ssh_client.exec_command(cmd)
@@ -102,14 +103,15 @@ class QoSTestMixin(object):
                 'port': port, 'file_path': QoSTestMixin.FILE_PATH})
         ssh_client.exec_command(cmd)
 
+        # Open TCP socket to remote VM and download big file
         start_time = time.time()
         client_socket = _connect_socket(host, port)
         total_bytes_read = 0
-
         while total_bytes_read < QoSTestMixin.FILE_SIZE:
             data = client_socket.recv(QoSTestMixin.BUFFER_SIZE)
             total_bytes_read += len(data)
 
+        # Calculate and return actual BW + logging result
         time_elapsed = time.time() - start_time
         bytes_per_second = total_bytes_read / time_elapsed
 
@@ -119,8 +121,7 @@ class QoSTestMixin(object):
                   {'time_elapsed': time_elapsed,
                    'total_bytes_read': total_bytes_read,
                    'bytes_per_second': bytes_per_second})
-
-        return bytes_per_second <= QoSTestMixin.LIMIT_BYTES_SEC
+        return bytes_per_second <= expected_bw
 
     def _create_ssh_client(self):
         return ssh.Client(self.fip['floating_ip_address'],
@@ -155,30 +156,118 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
     def resource_setup(cls):
         super(QoSTest, cls).resource_setup()
 
-    @decorators.idempotent_id('1f7ed39b-428f-410a-bd2b-db9f465680df')
-    def test_qos(self):
-        """This is a basic test that check that a QoS policy with
+    @decorators.idempotent_id('00682a0c-b72e-11e8-b81e-8c16450ea513')
+    def test_qos_basic_and_update(self):
+        """This test covers both:
 
-           a bandwidth limit rule is applied correctly by sending
-           a file from the instance to the test node.
-           Then calculating the bandwidth every ~1 sec by the number of bits
-           received / elapsed time.
+            1) Basic QoS functionality
+            This is a basic test that check that a QoS policy with
+            a bandwidth limit rule is applied correctly by sending
+            a file from the instance to the test node.
+            Then calculating the bandwidth every ~1 sec by the number of bits
+            received / elapsed time.
+
+            2) Update QoS policy
+            Administrator has the ability to update existing QoS policy,
+            this test is planned to verify that:
+            - actual BW is affected as expected after updating QoS policy.
+            Test scenario:
+            1) Associating QoS Policy with "Original_bandwidth"
+               to the test node
+            2) BW validation - by downloading file on test node.
+               ("Original_bandwidth" is expected)
+            3) Updating existing QoS Policy to a new BW value
+               "Updated_bandwidth"
+            4) BW validation - by downloading file on test node.
+               ("Updated_bandwidth" is expected)
+            Note:
+            There are two options to associate QoS policy to VM:
+            "Neutron Port" or "Network", in this test
+            both options are covered.
         """
+
+        # Setup resources
         self._test_basic_resources()
-        policy_id = self._create_qos_policy()
         ssh_client = self._create_ssh_client()
-        self.os_admin.network_client.create_bandwidth_limit_rule(
-            policy_id, max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
-            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)
-        port = self.client.list_ports(network_id=self.network['id'],
-                                      device_id=self.server[
-                                      'server']['id'])['ports'][0]
-        self.os_admin.network_client.update_port(port['id'],
-                                                 qos_policy_id=policy_id)
+
+        # Create QoS policy
+        bw_limit_policy_id = self._create_qos_policy()
+
+        # As admin user create QoS rule
+        rule_id = self.os_admin.network_client.create_bandwidth_limit_rule(
+            policy_id=bw_limit_policy_id,
+            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
+            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)[
+                'bandwidth_limit_rule']['id']
+
+        # Associate QoS to the network
+        self.os_admin.network_client.update_network(
+            self.network['id'], qos_policy_id=bw_limit_policy_id)
+
+        # Create file on VM
         self._create_file_for_bw_tests(ssh_client)
+
+        # Basic test, Check that actual BW while downloading file
+        # is as expected (Original BW)
         utils.wait_until_true(lambda: self._check_bw(
             ssh_client,
             self.fip['floating_ip_address'],
             port=self.NC_PORT),
-            timeout=120,
+            timeout=self.FILE_DOWNLOAD_TIMEOUT,
+            sleep=1)
+
+        # As admin user update QoS rule
+        self.os_admin.network_client.update_bandwidth_limit_rule(
+            bw_limit_policy_id,
+            rule_id,
+            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 2,
+            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 2)
+
+        # Check that actual BW while downloading file
+        # is as expected (Update BW)
+        utils.wait_until_true(lambda: self._check_bw(
+            ssh_client,
+            self.fip['floating_ip_address'],
+            port=self.NC_PORT,
+            expected_bw=QoSTest.LIMIT_BYTES_SEC * 2),
+            timeout=self.FILE_DOWNLOAD_TIMEOUT,
+            sleep=1)
+
+        # Create a new QoS policy
+        bw_limit_policy_id_new = self._create_qos_policy()
+
+        # As admin user create a new QoS rule
+        rule_id_new = self.os_admin.network_client.create_bandwidth_limit_rule(
+            policy_id=bw_limit_policy_id_new,
+            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
+            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)[
+                'bandwidth_limit_rule']['id']
+
+        # Associate a new QoS policy to Neutron port
+        self.os_admin.network_client.update_port(
+            self.port['id'], qos_policy_id=bw_limit_policy_id_new)
+
+        # Check that actual BW while downloading file
+        # is as expected (Original BW)
+        utils.wait_until_true(lambda: self._check_bw(
+            ssh_client,
+            self.fip['floating_ip_address'],
+            port=self.NC_PORT),
+            timeout=self.FILE_DOWNLOAD_TIMEOUT,
+            sleep=1)
+
+        # As admin user update QoS rule
+        self.os_admin.network_client.update_bandwidth_limit_rule(
+            bw_limit_policy_id_new,
+            rule_id_new,
+            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 3,
+            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 3)
+
+        # Check that actual BW while downloading file
+        # is as expected (Update BW)
+        utils.wait_until_true(lambda: self._check_bw(
+            ssh_client,
+            self.fip['floating_ip_address'],
+            port=self.NC_PORT, expected_bw=QoSTest.LIMIT_BYTES_SEC * 3),
+            timeout=self.FILE_DOWNLOAD_TIMEOUT,
             sleep=1)

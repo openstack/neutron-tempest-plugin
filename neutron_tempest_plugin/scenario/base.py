@@ -14,6 +14,7 @@
 #    under the License.
 import subprocess
 
+from debtcollector import removals
 import netaddr
 from neutron_lib.api import validators
 from neutron_lib import constants as neutron_lib_constants
@@ -158,14 +159,12 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         cls.routers.append(router)
         return router
 
+    @removals.remove(version='Stein',
+                     message="Please use create_floatingip method instead of "
+                             "create_and_associate_floatingip.")
     def create_and_associate_floatingip(self, port_id, client=None):
         client = client or self.os_primary.network_client
-        fip = client.create_floatingip(
-            CONF.network.public_network_id,
-            port_id=port_id)['floatingip']
-        if client is self.os_primary.network_client:
-            self.floating_ips.append(fip)
-        return fip
+        return self.create_floatingip(port_id=port_id, client=client)
 
     def create_interface(cls, server_id, port_id, client=None):
         client = client or cls.os_primary.interfaces_client
@@ -215,7 +214,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         self.port = self.client.list_ports(network_id=self.network['id'],
                                            device_id=self.server[
                                                'server']['id'])['ports'][0]
-        self.fip = self.create_and_associate_floatingip(self.port['id'])
+        self.fip = self.create_floatingip(port=self.port)
 
     def check_connectivity(self, host, ssh_user, ssh_key, servers=None):
         ssh_client = ssh.Client(host, ssh_user, pkey=ssh_key)

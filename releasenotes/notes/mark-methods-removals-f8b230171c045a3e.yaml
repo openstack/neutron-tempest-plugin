@@ -1,0 +1,11 @@
+---
+
+features:
+  - |
+    Add new 'debtcollector' dependency with the purpose of deprecating methods
+    that are going to be removed.
+
+deprecations:
+  - |
+    Deprecate method BaseTempestTestCase.create_and_associate_floatingip after
+    replacing it with method BaseNetworkTest.create_floatingip.

@@ -107,6 +107,18 @@
         NETWORK_API_EXTENSIONS: address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-domain-ports,dns-integration,dvr,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-timestamp,standard-attr-tag,subnet_allocation,tag,tag-ext,trunk,trunk-details
 
 - job:
+    name: neutron-tempest-plugin-api-rocky
+    parent: neutron-tempest-plugin-api
+    override-checkout: stable/rocky
+    vars:
+      branch_override: stable/rocky
+      devstack_localrc:
+        # TODO(slaweq): find a way to put this list of extensions in
+        # neutron repository and keep it different per branch,
+        # then it could be removed from here
+        NETWORK_API_EXTENSIONS: address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-domain-ports,dns-integration,dvr,empty-string-filtering,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,fip-port-details,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,qos-fip,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,port-mac-address-regenerate,port-security-groups-filtering,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-segment,standard-attr-timestamp,standard-attr-tag,subnet_allocation,trunk,trunk-details
+
+- job:
     name: neutron-tempest-plugin-scenario
     parent: neutron-tempest-plugin
     abstract: true
@@ -161,6 +173,15 @@
         NETWORK_API_EXTENSIONS: address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-integration,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,qos-fip,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,port-security-groups-filtering,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-timestamp,standard-attr-tag,subnet_allocation,tag,tag-ext,trunk,trunk-details
 
 - job:
+    name: neutron-tempest-plugin-scenario-linuxbridge-rocky
+    parent: neutron-tempest-plugin-scenario-linuxbridge
+    override-checkout: stable/rocky
+    vars:
+      branch_override: stable/rocky
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-domain-ports,dns-integration,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,fip-port-details,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,qos-fip,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,port-security-groups-filtering,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-timestamp,standard-attr-tag,subnet_allocation,tag,tag-ext,trunk,trunk-details
+
+- job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
     parent: legacy-dsvm-base-multinode
     run: playbooks/neutron-tempest-plugin-dvr-multinode-scenario/run.yaml
@@ -181,6 +202,13 @@
     override-checkout: stable/queens
     vars:
       branch_override: stable/queens
+
+- job:
+    name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
+    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    override-checkout: stable/rocky
+    vars:
+      branch_override: stable/rocky
 
 - job:
     name: neutron-tempest-plugin-designate-scenario
@@ -210,6 +238,13 @@
     vars:
       branch_override: stable/queens
 
+- job:
+    name: neutron-tempest-plugin-designate-scenario-rocky
+    parent: neutron-tempest-plugin-designate-scenario
+    override-checkout: stable/rocky
+    vars:
+      branch_override: stable/rocky
+
 - project-template:
     name: neutron-tempest-plugin-jobs
     check:
@@ -237,9 +272,22 @@
       jobs:
         - neutron-tempest-plugin-api-queens
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-rocky
+    check:
+      jobs:
+        - neutron-tempest-plugin-api-rocky
+        - neutron-tempest-plugin-designate-scenario-rocky
+        - neutron-tempest-plugin-dvr-multinode-scenario-rocky
+        - neutron-tempest-plugin-scenario-linuxbridge-rocky
+    gate:
+      jobs:
+        - neutron-tempest-plugin-api-rocky
+
 - project:
     templates:
       - neutron-tempest-plugin-jobs
       - neutron-tempest-plugin-jobs-queens
+      - neutron-tempest-plugin-jobs-rocky
       - check-requirements
       - tempest-plugin-jobs

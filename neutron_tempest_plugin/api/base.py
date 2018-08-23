@@ -14,10 +14,13 @@
 #    under the License.
 
 import functools
+import itertools
 import math
+import time
 
 import netaddr
 from neutron_lib import constants as const
+from oslo_log import log
 from tempest.common import utils as tutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import exceptions as lib_exc
@@ -30,6 +33,8 @@ from neutron_tempest_plugin import config
 from neutron_tempest_plugin import exceptions
 
 CONF = config.CONF
+
+LOG = log.getLogger(__name__)
 
 
 class BaseNetworkTest(test.BaseTestCase):
@@ -674,6 +679,16 @@ class BaseNetworkTest(test.BaseTestCase):
         return qos_rule
 
     @classmethod
+    def create_qos_minimum_bandwidth_rule(cls, policy_id, min_kbps,
+                                          direction=const.EGRESS_DIRECTION):
+        """Wrapper utility that creates and returns a QoS min bw rule."""
+        body = cls.admin_client.create_minimum_bandwidth_rule(
+            policy_id, direction, min_kbps)
+        qos_rule = body['minimum_bandwidth_rule']
+        cls.qos_rules.append(qos_rule)
+        return qos_rule
+
+    @classmethod
     def delete_router(cls, router, client=None):
         client = client or cls.client
         if 'routes' in router:
@@ -973,6 +988,32 @@ class BaseAdminNetworkTest(BaseNetworkTest):
         message = (
             "net(%s) has no usable IP address in allocation pools" % net_id)
         raise exceptions.InvalidConfiguration(message)
+
+    @classmethod
+    def create_provider_network(cls, physnet_name, start_segmentation_id,
+                                max_attempts=30):
+        segmentation_id = start_segmentation_id
+        for attempts in itertools.count():
+            try:
+                prov_network = cls.create_network(
+                    name=data_utils.rand_name('test_net'),
+                    shared=True,
+                    provider_network_type='vlan',
+                    provider_physical_network=physnet_name,
+                    provider_segmentation_id=segmentation_id)
+                break
+            except lib_exc.Conflict:
+                if attempts > max_attempts:
+                    LOG.exception("Failed to create provider network after "
+                                  "%d attempts", attempts)
+                    raise lib_exc.TimeoutException
+                segmentation_id += 1
+                if segmentation_id > 4095:
+                    raise lib_exc.TempestException(
+                        "No free segmentation id was found for provider "
+                        "network creation!")
+                time.sleep(CONF.network.build_interval)
+        return prov_network
 
 
 def require_qos_rule_type(rule_type):

@@ -214,7 +214,13 @@
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
+      - ^doc/.*$
       - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-queens

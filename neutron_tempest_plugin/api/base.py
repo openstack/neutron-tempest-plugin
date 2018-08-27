@@ -670,6 +670,7 @@ class BaseNetworkTest(test.BaseTestCase):
     @classmethod
     def delete_router(cls, router, client=None):
         client = client or cls.client
+        client.remove_router_extra_routes(router['id'])
         body = client.list_router_interfaces(router['id'])
         interfaces = [port for port in body['ports']
                       if port['device_owner'] in const.ROUTER_INTERFACE_OWNERS]

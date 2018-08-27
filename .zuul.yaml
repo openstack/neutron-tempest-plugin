@@ -65,7 +65,7 @@
               agent_availability_zone: nova
               image_is_advanced: true
               available_type_drivers: flat,geneve,vlan,gre,local,vxlan
-    irrelevant-files:
+    irrelevant-files: &tempest-irrelevant-files
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
@@ -172,16 +172,7 @@
       - openstack/neutron
       - openstack/neutron-tempest-plugin
       - openstack/tempest
-    irrelevant-files:
-      - ^(test-|)requirements.txt$
-      - ^releasenotes/.*$
-      - ^doc/.*$
-      - ^setup.cfg$
-      - ^.*\.rst$
-      - ^neutron/locale/.*$
-      - ^neutron/tests/unit/.*$
-      - ^tools/.*$
-      - ^tox.ini$
+    irrelevant-files: *tempest-irrelevant-files
     voting: false
 
 - job:
@@ -211,16 +202,7 @@
         cinder: false
         designate: true
       tempest_test_regex: ^neutron_tempest_plugin\.scenario\.test_dns_integration
-    irrelevant-files:
-      - ^(test-|)requirements.txt$
-      - ^releasenotes/.*$
-      - ^doc/.*$
-      - ^setup.cfg$
-      - ^.*\.rst$
-      - ^neutron/locale/.*$
-      - ^neutron/tests/unit/.*$
-      - ^tools/.*$
-      - ^tox.ini$
+    irrelevant-files: *tempest-irrelevant-files
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-queens

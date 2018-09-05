@@ -63,7 +63,7 @@ class RoutersTestHA(base.BaseRouterTest):
         as opposed to a "High Availability Router"
         """
         name = data_utils.rand_name('router')
-        router = self.create_admin_router(name, ha=False)
+        router = self._create_admin_router(name, ha=False)
         self.assertFalse(router['ha'])
 
     @decorators.idempotent_id('5a6bfe82-5b23-45a4-b027-5160997d4753')

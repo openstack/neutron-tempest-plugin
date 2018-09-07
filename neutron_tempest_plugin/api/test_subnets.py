@@ -64,7 +64,8 @@ class SubnetsSearchCriteriaTest(base.BaseSearchCriteriaTest):
     def test_list_no_pagination_limit_0(self):
         self._test_list_no_pagination_limit_0()
 
-    @decorators.skip_because(bug="1749820")
     @decorators.idempotent_id('c0f9280b-9d81-4728-a967-6be22659d4c8')
     def test_list_validation_filters(self):
-        self._test_list_validation_filters()
+        self._test_list_validation_filters(self.list_kwargs)
+        self._test_list_validation_filters({
+            'unknown_filter': 'value'}, filter_is_valid=False)

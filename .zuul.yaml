@@ -121,7 +121,6 @@
         DEFAULT_INSTANCE_TYPE: ds512M
         DEFAULT_INSTANCE_USER: ubuntu
         BUILD_TIMEOUT: 784
-        LIBVIRT_TYPE: kvm
       devstack_services:
         cinder: true
 

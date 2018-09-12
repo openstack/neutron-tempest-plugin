@@ -29,13 +29,11 @@ LOG = logging.getLogger(__name__)
 CONF = config.CONF
 
 CONFIGURE_VLAN_INTERFACE_COMMANDS = (
-    'IFACE=$(PATH=$PATH:/usr/sbin ip l | grep "^[0-9]*: e" |'
-    'cut -d \: -f 2) && '
-    'sudo su -c '
-    '"ip l a link $IFACE name $IFACE.%(tag)d type vlan id %(tag)d &&'
-    'ip l s up dev $IFACE.%(tag)d && '
-    '{ ps -ef | grep -q "dhclient .*$IFACE.%(tag)d" || '
-    'dhclient $IFACE.%(tag)d"; }')
+    'IFACE=$(PATH=$PATH:/usr/sbin ip l | grep "^[0-9]*: e"|cut -d \: -f 2) &&'
+    'sudo ip l a link $IFACE name $IFACE.%(tag)d type vlan id %(tag)d &&'
+    'sudo ip l s up dev $IFACE.%(tag)d && '
+    'ps -ef | grep -q "[d]hclient .*$IFACE.%(tag)d" || '
+    'sudo dhclient $IFACE.%(tag)d;')
 
 
 class TrunkTest(base.BaseTempestTestCase):
@@ -141,7 +139,6 @@ class TrunkTest(base.BaseTempestTestCase):
                                 CONF.validation.image_ssh_user,
                                 self.keypair['private_key'])
 
-    @utils.unstable_test("bug 1766701")
     @decorators.idempotent_id('bb13fe28-f152-4000-8131-37890a40c79e')
     def test_trunk_subport_lifecycle(self):
         """Test trunk creation and subport transition to ACTIVE status.
@@ -222,7 +219,6 @@ class TrunkTest(base.BaseTempestTestCase):
                                 CONF.validation.image_ssh_user,
                                 self.keypair['private_key'])
 
-    @utils.unstable_test('bug 1766701')
     @testtools.skipUnless(
           CONF.neutron_plugin_options.image_is_advanced,
           "Advanced image is required to run this test.")

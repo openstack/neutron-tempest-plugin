@@ -242,3 +242,4 @@
       - neutron-tempest-plugin-jobs-queens
       - check-requirements
       - tempest-plugin-jobs
+      - release-notes-jobs-python3

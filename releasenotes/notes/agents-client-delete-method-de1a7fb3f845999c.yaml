@@ -1,0 +1,7 @@
+---
+features:
+  - |
+    Added a new method ``delete_agent`` to the AgentsClient class that
+    implements agent deletion according to the neutron API.
+    https://developer.openstack.org/api-ref/network/v2/index.html#delete-agent
+

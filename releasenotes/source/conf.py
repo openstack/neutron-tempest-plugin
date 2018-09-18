@@ -52,12 +52,12 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'neutron_tempest_plugin Release Notes'
-copyright = u'2017, OpenStack Developers'
+project = u'Neutron Tempest Plugin Release Notes'
+copyright = u'2017, Neutron Tempest Plugin Developers'
 
 # openstackdocstheme options
-repository_name = 'openstack/openstack'
-bug_project = 'neutron_tempest_plugin'
+repository_name = 'openstack/neutron-tempest-plugin'
+bug_project = 'neutron'
 bug_tag = ''
 
 # The version info for the project you're documenting, acts as replacement for
@@ -191,7 +191,7 @@ html_static_path = ['_static']
 # html_file_suffix = None
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'neutron_tempest_pluginReleaseNotesdoc'
+htmlhelp_basename = 'NeutronTempestPluginReleaseNotesdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
@@ -211,9 +211,9 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    ('index', 'neutron_tempest_pluginReleaseNotes.tex',
-     u'neutron_tempest_plugin  Release Notes Documentation',
-     u'OpenStack Foundation', 'manual'),
+    ('index', 'NeutronTempestPluginReleaseNotes.tex',
+     u'Neutron Tempest Plugin Release Notes Documentation',
+     u'Neutron Tempest Plugin Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -242,9 +242,9 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    ('index', 'neutron_tempest_pluginrereleasenotes',
-     u'neutron_tempest_plugin  Release Notes Documentation',
-     [u'OpenStack Foundation'], 1)
+    ('index', 'NeutronTempestPluginrereleasenotes',
+     u'Neutron Tempest Plugin Release Notes Documentation',
+     [u'Neutron Tempest Plugin Developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -257,9 +257,10 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    ('index', 'neutron_tempest_plugin ReleaseNotes',
-     u'neutron_tempest_plugin Release Notes Documentation',
-     u'OpenStack Foundation', 'neutron_tempest_pluginReleaseNotes',
+    ('index', 'Neutron Tempest Plugin ReleaseNotes',
+     u'Neutron Tempest Plugin Release Notes Documentation',
+     u'Neutron Tempest Plugin Developers',
+     'NeutronTempestPluginReleaseNotes',
      'One line description of project.',
      'Miscellaneous'),
 ]

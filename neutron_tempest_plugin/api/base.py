@@ -613,7 +613,11 @@ class BaseNetworkTest(test.BaseTestCase):
                                cls.external_network_id)
 
         if port:
-            kwargs['port_id'] = port['id']
+            port_id = kwargs.setdefault('port_id', port['id'])
+            if port_id != port['id']:
+                message = "Port ID specified twice: {!s} != {!s}".format(
+                    port_id, port['id'])
+                raise ValueError(message)
 
         fip = client.create_floatingip(external_network_id,
                                        **kwargs)['floatingip']

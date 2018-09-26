@@ -173,11 +173,13 @@ class NetworkMigrationFromLegacy(NetworkMigrationTestBase):
 
 class NetworkMigrationFromHA(NetworkMigrationTestBase):
 
+    @common_utils.unstable_test("bug 1789434")
     @decorators.idempotent_id('b4e68ac0-3b76-4306-ae8a-51cf4d363b22')
     def test_from_ha_to_legacy(self):
         self._test_migration(before_dvr=False, before_ha=True,
                              after_dvr=False, after_ha=False)
 
+    @common_utils.unstable_test("bug 1789434")
     @decorators.idempotent_id('42260eea-5d56-4d30-b62a-a62694dfe4d5')
     @testtools.skipUnless(
         CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',
@@ -186,6 +188,7 @@ class NetworkMigrationFromHA(NetworkMigrationTestBase):
         self._test_migration(before_dvr=False, before_ha=True,
                              after_dvr=True, after_ha=False)
 
+    @common_utils.unstable_test("bug 1789434")
     @decorators.idempotent_id('e4149576-248b-43fa-9d0b-a5c2f51967ce')
     @testtools.skipUnless(
         CONF.neutron_plugin_options.l3_agent_mode == 'dvr_snat',

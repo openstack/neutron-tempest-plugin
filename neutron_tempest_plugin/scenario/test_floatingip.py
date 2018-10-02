@@ -234,19 +234,20 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
                 server['server']['id'], port_id=port['id'])
             waiters.wait_for_interface_status(
                 self.os_primary.interfaces_client, server['server']['id'],
-                port['id'], 'ACTIVE')
+                port['id'], lib_constants.PORT_STATUS_ACTIVE)
             fip = self.client.show_floatingip(fip['id'])['floatingip']
             self._check_port_details(
-                fip, port, status='ACTIVE',
+                fip, port, status=lib_constants.PORT_STATUS_ACTIVE,
                 device_id=server['server']['id'], device_owner='compute:nova')
 
             # detach the port from the server; this is a cast in the compute
             # API so we have to poll the port until the device_id is unset.
             self.delete_interface(server['server']['id'], port['id'])
-            self._wait_for_port_detach(port['id'])
-            fip = self.client.show_floatingip(fip['id'])['floatingip']
+            port = self._wait_for_port_detach(port['id'])
+            fip = self._wait_for_fip_port_down(fip['id'])
             self._check_port_details(
-                fip, port, status='DOWN', device_id='', device_owner='')
+                fip, port, status=lib_constants.PORT_STATUS_DOWN,
+                device_id='', device_owner='')
 
     def _check_port_details(self, fip, port, status, device_id, device_owner):
         self.assertIn('port_details', fip)
@@ -286,6 +287,36 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
                 raise exceptions.TimeoutException(message)
 
         return port
+
+    def _wait_for_fip_port_down(self, fip_id, timeout=120, interval=10):
+        """Waits for the fip's attached port status to be 'DOWN'.
+
+        :param fip_id: The id of the floating IP.
+        :returns: The final fip dict from the show_floatingip response.
+        """
+        fip = self.client.show_floatingip(fip_id)['floatingip']
+        self.assertIn('port_details', fip)
+        port_details = fip['port_details']
+        status = port_details['status']
+        start = int(time.time())
+
+        while status != lib_constants.PORT_STATUS_DOWN:
+            time.sleep(interval)
+            fip = self.client.show_floatingip(fip_id)['floatingip']
+            self.assertIn('port_details', fip)
+            port_details = fip['port_details']
+            status = port_details['status']
+
+            timed_out = int(time.time()) - start >= timeout
+
+            if status != lib_constants.PORT_STATUS_DOWN and timed_out:
+                message = ('Floating IP %s attached port status failed to '
+                           'transition to DOWN (current status %s) within '
+                           'the required time (%s s).' %
+                           (fip_id, status, timeout))
+                raise exceptions.TimeoutException(message)
+
+        return fip
 
 
 class FloatingIPQosTest(FloatingIpTestCasesMixin,

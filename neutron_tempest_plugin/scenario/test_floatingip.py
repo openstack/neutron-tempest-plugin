@@ -21,6 +21,7 @@ from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+from tempest.lib import exceptions
 import testscenarios
 from testscenarios.scenarios import multiply_scenarios
 
@@ -28,7 +29,6 @@ from neutron_tempest_plugin.api import base as base_api
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils as common_utils
 from neutron_tempest_plugin import config
-from neutron_tempest_plugin import exceptions
 from neutron_tempest_plugin.scenario import base
 from neutron_tempest_plugin.scenario import constants
 from neutron_tempest_plugin.scenario import test_qos

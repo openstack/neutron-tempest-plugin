@@ -17,8 +17,6 @@ from six.moves.urllib import parse as urlparse
 from tempest.lib.common import rest_client as service_client
 from tempest.lib import exceptions as lib_exc
 
-from neutron_tempest_plugin import exceptions
-
 
 class NetworkClientJSON(service_client.RestClient):
 
@@ -280,7 +278,7 @@ class NetworkClientJSON(service_client.RestClient):
             if self.is_resource_deleted(resource_type, id):
                 return
             if int(time.time()) - start_time >= self.build_timeout:
-                raise exceptions.TimeoutException
+                raise lib_exc.TimeoutException
             time.sleep(self.build_interval)
 
     def is_resource_deleted(self, resource_type, id):

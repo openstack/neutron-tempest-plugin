@@ -1,0 +1,2 @@
+infra_bridge_name: br-infra
+neutron_external_bridge_name: br-ex

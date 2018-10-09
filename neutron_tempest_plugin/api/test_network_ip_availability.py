@@ -19,7 +19,7 @@ from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
-from tempest.lib import exceptions as lib_exc
+from tempest.lib import exceptions
 
 from neutron_tempest_plugin.api import base
 
@@ -53,27 +53,26 @@ class NetworksIpAvailabilityTest(base.BaseAdminNetworkTest):
     def skip_checks(cls):
         super(NetworksIpAvailabilityTest, cls).skip_checks()
 
-    def _get_used_ips(self, network, net_availability):
-        if network:
+    @staticmethod
+    def _get_availability(network, net_availability):
+        if 'network_ip_availabilities' in net_availability:
             for availability in net_availability['network_ip_availabilities']:
                 if availability['network_id'] == network['id']:
-                    return availability['used_ips']
+                    return availability
+            raise exceptions.TempestException('Network IP Availability not '
+                                              'found')
+        else:
+            return net_availability['network_ip_availability']
 
-    def _cleanUp_port(self, port_id):
-        # delete port, any way to avoid race
-        try:
-            self.client.delete_port(port_id)
-        # if port is not found, this means it was deleted in the test
-        except lib_exc.NotFound:
-            pass
+    def _get_used_ips(self, network, net_availability):
+        availability = self._get_availability(network, net_availability)
+        return availability and availability['used_ips']
 
     def _assert_total_and_used_ips(self, expected_used, expected_total,
                                    network, net_availability):
-        if network:
-            for availability in net_availability['network_ip_availabilities']:
-                if availability['network_id'] == network['id']:
-                    self.assertEqual(expected_total, availability['total_ips'])
-                    self.assertEqual(expected_used, availability['used_ips'])
+        availability = self._get_availability(network, net_availability)
+        self.assertEqual(expected_total, availability['total_ips'])
+        self.assertEqual(expected_used, availability['used_ips'])
 
 
 def calc_total_ips(prefix, ip_version):
@@ -89,56 +88,87 @@ def calc_total_ips(prefix, ip_version):
 
 class NetworksIpAvailabilityIPv4Test(NetworksIpAvailabilityTest):
 
-    @decorators.idempotent_id('0f33cc8c-1bf6-47d1-9ce1-010618240599')
-    def test_admin_network_availability_before_subnet(self):
+    def setUp(self):
+        super(NetworksIpAvailabilityIPv4Test, self).setUp()
         net_name = data_utils.rand_name('network')
-        network = self.create_network(network_name=net_name)
-        self.addCleanup(self.client.delete_network, network['id'])
+        self.network = self.create_network(network_name=net_name)
+
+    @decorators.idempotent_id('0f33cc8c-1bf6-47d1-9ce1-010618240599')
+    def test_list_ip_availability_before_subnet(self):
         net_availability = self.admin_client.list_network_ip_availabilities()
-        self._assert_total_and_used_ips(0, 0, network, net_availability)
+        self._assert_total_and_used_ips(0, 0, self.network, net_availability)
 
     @decorators.idempotent_id('3aecd3b2-16ed-4b87-a54a-91d7b3c2986b')
-    def test_net_ip_availability_after_subnet_and_ports(self):
-        net_name = data_utils.rand_name('network')
-        network = self.create_network(network_name=net_name)
-        self.addCleanup(self.client.delete_network, network['id'])
-        subnet = self.create_subnet(network, enable_dhcp=False)
+    def test_list_ip_availability_after_subnet_and_ports(self):
+        subnet = self.create_subnet(self.network, enable_dhcp=False)
         prefix = netaddr.IPNetwork(subnet['cidr']).prefixlen
-        self.addCleanup(self.client.delete_subnet, subnet['id'])
         body = self.admin_client.list_network_ip_availabilities()
-        used_ip = self._get_used_ips(network, body)
-        port1 = self.client.create_port(network_id=network['id'])
-        self.addCleanup(self.client.delete_port, port1['port']['id'])
-        port2 = self.client.create_port(network_id=network['id'])
-        self.addCleanup(self.client.delete_port, port2['port']['id'])
+        used_ips_before_port_create = self._get_used_ips(self.network, body)
+        self.create_port(self.network)
         net_availability = self.admin_client.list_network_ip_availabilities()
         self._assert_total_and_used_ips(
-            used_ip + 2,
+            used_ips_before_port_create + 1,
             calc_total_ips(prefix, self._ip_version),
-            network, net_availability)
+            self.network, net_availability)
 
     @decorators.idempotent_id('9f11254d-757b-492e-b14b-f52144e4ee7b')
-    def test_net_ip_availability_after_port_delete(self):
-        net_name = data_utils.rand_name('network')
-        network = self.create_network(network_name=net_name)
-        self.addCleanup(self.client.delete_network, network['id'])
-        subnet = self.create_subnet(network, enable_dhcp=False)
-        self.addCleanup(self.client.delete_subnet, subnet['id'])
-        port = self.client.create_port(network_id=network['id'])
-        self.addCleanup(self._cleanUp_port, port['port']['id'])
+    def test_list_ip_availability_after_port_delete(self):
+        self.create_subnet(self.network, enable_dhcp=False)
+        port = self.create_port(self.network)
         net_availability = self.admin_client.list_network_ip_availabilities()
-        used_ip = self._get_used_ips(network, net_availability)
-        self.client.delete_port(port['port']['id'])
+        used_ips = self._get_used_ips(self.network, net_availability)
+        self.client.delete_port(port['id'])
 
-        def get_net_availability():
+        def is_count_ip_availability_valid():
             availabilities = self.admin_client.list_network_ip_availabilities()
-            used_ip_after_port_delete = self._get_used_ips(network,
-                                                           availabilities)
-            return used_ip - 1 == used_ip_after_port_delete
+            used_ips_after_port_delete = self._get_used_ips(self.network,
+                                                            availabilities)
+            return used_ips - 1 == used_ips_after_port_delete
 
         self.assertTrue(
             test_utils.call_until_true(
-                get_net_availability, DELETE_TIMEOUT, DELETE_SLEEP),
+                is_count_ip_availability_valid, DELETE_TIMEOUT, DELETE_SLEEP),
+            msg="IP address did not become available after port delete")
+
+    @decorators.idempotent_id('da1fbed5-b4a9-45b3-bdcb-b1660710d565')
+    def test_show_ip_availability_after_subnet_and_ports_create(self):
+        net_availability = self.admin_client.show_network_ip_availability(
+            self.network['id'])
+        self._assert_total_and_used_ips(0, 0, self.network, net_availability)
+        subnet = self.create_subnet(self.network, enable_dhcp=False)
+        prefix = netaddr.IPNetwork(subnet['cidr']).prefixlen
+        net_availability = self.admin_client.show_network_ip_availability(
+            self.network['id'])
+        used_ips_before_port_create = self._get_used_ips(self.network,
+                                                         net_availability)
+        self.create_port(self.network)
+        net_availability = self.admin_client.show_network_ip_availability(
+            self.network['id'])
+        self._assert_total_and_used_ips(
+            used_ips_before_port_create + 1,
+            calc_total_ips(prefix, self._ip_version),
+            self.network,
+            net_availability)
+
+    @decorators.idempotent_id('a4d1e291-c152-4d62-9316-8c9bf1c6aee2')
+    def test_show_ip_availability_after_port_delete(self):
+        self.create_subnet(self.network, enable_dhcp=False)
+        port = self.create_port(self.network)
+        net_availability = self.admin_client.show_network_ip_availability(
+            self.network['id'])
+        used_ips = self._get_used_ips(self.network, net_availability)
+        self.client.delete_port(port['id'])
+
+        def is_count_ip_availability_valid():
+            availabilities = self.admin_client.show_network_ip_availability(
+                self.network['id'])
+            used_ips_after_port_delete = self._get_used_ips(self.network,
+                                                            availabilities)
+            return used_ips - 1 == used_ips_after_port_delete
+
+        self.assertTrue(
+            test_utils.call_until_true(
+                is_count_ip_availability_valid, DELETE_TIMEOUT, DELETE_SLEEP),
             msg="IP address did not become available after port delete")
 
 

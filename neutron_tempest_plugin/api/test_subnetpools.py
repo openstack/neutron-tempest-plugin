@@ -58,7 +58,8 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
     new_prefix = u'10.11.15.0/24'
     larger_prefix = u'10.11.0.0/16'
 
-    """
+    """Test Subnet Pools
+
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
 
@@ -327,9 +328,7 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
     @decorators.idempotent_id('4c6963c2-f54c-4347-b288-75d18421c4c4')
     @utils.requires_ext(extension='default-subnetpools', service='network')
     def test_tenant_create_non_default_subnetpool(self):
-        """
-        Test creates a subnetpool, the "is_default" attribute is False.
-        """
+        """Test creates a subnetpool, the "is_default" attribute is False."""
         created_subnetpool = self._create_subnetpool()
         self.assertFalse(created_subnetpool['is_default'])
 

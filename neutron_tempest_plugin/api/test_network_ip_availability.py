@@ -37,8 +37,8 @@ DELETE_SLEEP = 2
 
 
 class NetworksIpAvailabilityTest(base.BaseAdminNetworkTest):
+    """Tests Networks IP Availability
 
-    """
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
 

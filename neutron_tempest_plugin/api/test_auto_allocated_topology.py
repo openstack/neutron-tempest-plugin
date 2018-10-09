@@ -21,8 +21,8 @@ from neutron_tempest_plugin.api import base
 
 
 class TestAutoAllocatedTopology(base.BaseAdminNetworkTest):
+    """Tests Get-Me-A-Network
 
-    """
     Tests the Get-Me-A-Network operations in the Neutron API
     using the REST client for Neutron.
     """

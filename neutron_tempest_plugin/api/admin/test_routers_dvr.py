@@ -44,7 +44,8 @@ class RoutersTestDVR(RoutersTestDVRBase):
 
     @decorators.idempotent_id('08a2a0a8-f1e4-4b34-8e30-e522e836c44e')
     def test_distributed_router_creation(self):
-        """
+        """Test distributed router creation
+
         Test uses administrative credentials to creates a
         DVR (Distributed Virtual Routing) router using the
         distributed=True.
@@ -61,7 +62,8 @@ class RoutersTestDVR(RoutersTestDVRBase):
 
     @decorators.idempotent_id('8a0a72b4-7290-4677-afeb-b4ffe37bc352')
     def test_centralized_router_creation(self):
-        """
+        """Test centralized router creation
+
         Test uses administrative credentials to creates a
         CVR (Centralized Virtual Routing) router using the
         distributed=False.
@@ -84,7 +86,8 @@ class RouterTestCentralizedToDVR(RoutersTestDVRBase):
 
     @decorators.idempotent_id('acd43596-c1fb-439d-ada8-31ad48ae3c2e')
     def test_centralized_router_update_to_dvr(self):
-        """
+        """Test centralized to DVR router update
+
         Test uses administrative credentials to creates a
         CVR (Centralized Virtual Routing) router using the
         distributed=False.Then it will "update" the router

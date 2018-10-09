@@ -23,8 +23,8 @@ LONG_NAME_OK = 'x' * db_const.NAME_FIELD_SIZE
 
 
 class MeteringTestJSON(base.BaseAdminNetworkTest):
+    """Test Metering
 
-    """
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
 

@@ -40,9 +40,10 @@ class AgentAvailabilityZoneTestCase(base.BaseAdminNetworkTest):
     @testtools.skipUnless(CONF.neutron_plugin_options.agent_availability_zone,
                           "Need a single availability_zone assumption.")
     def test_agents_availability_zone(self):
-        """
-        Test list agents availability_zone, only L3 and DHCP agent support
-        availability_zone, default availability_zone is "nova".
+        """Test list agents availability_zone
+
+        Only L3 and DHCP agent support availability_zone, default
+        availability_zone is "nova".
         """
         body = self.admin_client.list_agents()
         agents = body['agents']

@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib import constants
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -110,54 +111,38 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
     @decorators.idempotent_id('5c924ff7-b7a9-474f-92a3-dbe0f976ec13')
     @utils.requires_ext(extension="security-group", service="network")
     def test_create_security_group_when_quotas_is_full(self):
-        tenant_id = self.create_project()['id']
-        sg_args = {'tenant_id': tenant_id}
-        # avoid a number that is made by default
-        sg_list = self.admin_client.list_security_groups(
-            tenant_id=tenant_id)['security_groups']
-        num = len(sg_list) + 1
+        project = self.create_project()
 
-        new_quotas = {'security_group': num}
-        self._setup_quotas(tenant_id, **new_quotas)
+        # Set quotas to allow to create only one more security group
+        security_groups = self.admin_client.list_security_groups(
+            tenant_id=project['id'])['security_groups']
+        self._setup_quotas(project['id'],
+                           security_group=len(security_groups) + 1)
 
-        sg = self.admin_client.create_security_group(
-            **sg_args)['security_group']
-        self.addCleanup(self.admin_client.delete_security_group, sg['id'])
-
-        self.assertRaises(lib_exc.Conflict,
-                          self.admin_client.create_security_group, **sg_args)
+        self.create_security_group(project=project)
+        self.assertRaises(lib_exc.Conflict, self.create_security_group,
+                          project=project)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('b7143480-6118-4ed4-be38-1b6f15f30d05')
     @utils.requires_ext(extension="security-group", service="network")
     def test_create_security_group_rule_when_quotas_is_full(self):
-        tenant_id = self.create_project()['id']
-        sg_args = {'tenant_id': tenant_id}
+        project = self.create_project()
+        security_group = self.create_security_group(project=project)
 
-        sg = self.admin_client.create_security_group(
-            **sg_args)['security_group']
-        self.addCleanup(self.admin_client.delete_security_group, sg['id'])
+        # Set quotas to allow to create only one more security group rule
+        security_group_rules = self.admin_client.list_security_group_rules(
+            tenant_id=project['id'])['security_group_rules']
+        self._setup_quotas(project['id'],
+                           security_group_rule=len(security_group_rules) + 1)
 
-        # avoid a number that is made by default
-        sg_rule_list = self.admin_client.list_security_group_rules(
-            tenant_id=tenant_id)['security_group_rules']
-        num = len(sg_rule_list) + 1
-
-        new_quotas = {'security_group_rule': num}
-        self._setup_quotas(tenant_id, **new_quotas)
-
-        sg_rule_args = {'tenant_id': tenant_id,
-                        'security_group_id': sg['id'],
-                        'direction': 'ingress'}
-        sg_rule = self.admin_client.create_security_group_rule(
-            **sg_rule_args)['security_group_rule']
-        self.addCleanup(
-            self.admin_client.delete_security_group_rule, sg_rule['id'])
-
-        sg_rule_args['direction'] = 'egress'
+        self.create_security_group_rule(
+            project=project, security_group=security_group,
+            direction=constants.INGRESS_DIRECTION)
         self.assertRaises(lib_exc.Conflict,
-                          self.admin_client.create_security_group_rule,
-                          **sg_rule_args)
+                          self.create_security_group_rule,
+                          project=project, security_group=security_group,
+                          direction=constants.EGRESS_DIRECTION)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('d00fe5bb-9db8-4e1a-9c31-490f52897e6f')

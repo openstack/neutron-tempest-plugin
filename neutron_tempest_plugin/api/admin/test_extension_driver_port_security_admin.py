@@ -17,11 +17,9 @@ from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin.api import base_security_groups as base_security
 
 
-class PortSecurityAdminTests(base_security.BaseSecGroupTest,
-                             base.BaseAdminNetworkTest):
+class PortSecurityAdminTests(base.BaseAdminNetworkTest):
 
     required_extensions = ['port-security']
 

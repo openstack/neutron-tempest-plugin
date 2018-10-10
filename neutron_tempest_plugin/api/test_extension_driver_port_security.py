@@ -19,15 +19,13 @@ from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin.api import base_security_groups as base_security
 
 FAKE_IP = '10.0.0.1'
 FAKE_MAC = '00:25:64:e8:19:dd'
 
 
 @ddt.ddt
-class PortSecTest(base_security.BaseSecGroupTest,
-                  base.BaseNetworkTest):
+class PortSecTest(base.BaseNetworkTest):
 
     @decorators.idempotent_id('7c338ddf-e64e-4118-bd33-e49a1f2f1495')
     @utils.requires_ext(extension='port-security', service='network')
@@ -76,7 +74,7 @@ class PortSecTest(base_security.BaseSecGroupTest,
         network = self.create_network()
         self.create_subnet(network)
 
-        sec_group_body, _ = self._create_security_group()
+        security_group = self.create_security_group()
         port = self.create_port(network)
 
         # Exception when set port-sec to False with sec-group defined
@@ -88,7 +86,7 @@ class PortSecTest(base_security.BaseSecGroupTest,
         self.assertEmpty(port['security_groups'])
         self.assertFalse(port['port_security_enabled'])
         port = self.update_port(
-            port, security_groups=[sec_group_body['security_group']['id']],
+            port, security_groups=[security_group['id']],
             port_security_enabled=True)
 
         self.assertNotEmpty(port['security_groups'])
@@ -102,11 +100,11 @@ class PortSecTest(base_security.BaseSecGroupTest,
     def test_port_sec_update_pass(self):
         network = self.create_network()
         self.create_subnet(network)
-        sec_group, _ = self._create_security_group()
-        sec_group_id = sec_group['security_group']['id']
-        port = self.create_port(network, security_groups=[sec_group_id],
-                                port_security_enabled=True)
+        security_group = self.create_security_group()
 
+        port = self.create_port(network,
+                                security_groups=[security_group['id']],
+                                port_security_enabled=True)
         self.assertNotEmpty(port['security_groups'])
         self.assertTrue(port['port_security_enabled'])
 
@@ -114,7 +112,7 @@ class PortSecTest(base_security.BaseSecGroupTest,
         self.assertEmpty(port['security_groups'])
         self.assertTrue(port['port_security_enabled'])
 
-        port = self.update_port(port, security_groups=[sec_group_id])
+        port = self.update_port(port, security_groups=[security_group['id']])
         self.assertNotEmpty(port['security_groups'])
         port = self.update_port(port, security_groups=[],
                                 port_security_enabled=False)

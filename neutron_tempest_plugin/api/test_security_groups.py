@@ -17,39 +17,40 @@ from neutron_lib import constants
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
-from neutron_tempest_plugin.api import base_security_groups as base
+from neutron_tempest_plugin.api import base
+from neutron_tempest_plugin.api import base_security_groups
 
 
-class SecGroupTest(base.BaseSecGroupTest):
+class SecGroupTest(base.BaseNetworkTest):
 
     required_extensions = ['security-group']
 
     @decorators.idempotent_id('bfd128e5-3c92-44b6-9d66-7fe29d22c802')
     def test_create_list_update_show_delete_security_group(self):
-        group_create_body, name = self._create_security_group()
+        security_group = self.create_security_group()
 
         # List security groups and verify if created group is there in response
-        list_body = self.client.list_security_groups()
-        secgroup_list = list()
-        for secgroup in list_body['security_groups']:
-            secgroup_list.append(secgroup['id'])
-        self.assertIn(group_create_body['security_group']['id'], secgroup_list)
+        security_groups = self.client.list_security_groups()['security_groups']
+        self.assertIn(security_group['id'],
+                      {sg['id'] for sg in security_groups})
+
         # Update the security group
         new_name = data_utils.rand_name('security')
         new_description = data_utils.rand_name('security-description')
-        update_body = self.client.update_security_group(
-            group_create_body['security_group']['id'],
-            name=new_name,
-            description=new_description)
+        updated_security_group = self.client.update_security_group(
+            security_group['id'], name=new_name,
+            description=new_description)['security_group']
+
         # Verify if security group is updated
-        self.assertEqual(update_body['security_group']['name'], new_name)
-        self.assertEqual(update_body['security_group']['description'],
+        self.assertEqual(updated_security_group['name'], new_name)
+        self.assertEqual(updated_security_group['description'],
                          new_description)
+
         # Show details of the updated security group
-        show_body = self.client.show_security_group(
-            group_create_body['security_group']['id'])
-        self.assertEqual(show_body['security_group']['name'], new_name)
-        self.assertEqual(show_body['security_group']['description'],
+        observed_security_group = self.client.show_security_group(
+            security_group['id'])['security_group']
+        self.assertEqual(observed_security_group['name'], new_name)
+        self.assertEqual(observed_security_group['description'],
                          new_description)
 
     @decorators.idempotent_id('7c0ecb10-b2db-11e6-9b14-000c29248b0d')
@@ -67,58 +68,48 @@ class SecGroupTest(base.BaseSecGroupTest):
             self.assertIsNotNone(secgrp['id'])
 
 
-class SecGroupProtocolTest(base.BaseSecGroupTest):
+class SecGroupProtocolTest(base.BaseNetworkTest):
+
+    protocol_names = base_security_groups.V4_PROTOCOL_NAMES
+    protocol_ints = base_security_groups.V4_PROTOCOL_INTS
 
     @decorators.idempotent_id('282e3681-aa6e-42a7-b05c-c341aa1e3cdf')
-    def test_create_show_delete_security_group_rule_names(self):
-        group_create_body, _ = self._create_security_group()
-        for protocol in base.V4_PROTOCOL_NAMES:
-            self._test_create_show_delete_security_group_rule(
-                security_group_id=group_create_body['security_group']['id'],
-                protocol=protocol,
+    def test_security_group_rule_protocol_names(self):
+        self._test_security_group_rule_protocols(protocols=self.protocol_names)
+
+    @decorators.idempotent_id('66e47f1f-20b6-4417-8839-3cc671c7afa3')
+    def test_security_group_rule_protocol_ints(self):
+        self._test_security_group_rule_protocols(protocols=self.protocol_ints)
+
+    def _test_security_group_rule_protocols(self, protocols):
+        security_group = self.create_security_group()
+        for protocol in protocols:
+            self._test_security_group_rule(
+                security_group=security_group,
+                protocol=str(protocol),
                 direction=constants.INGRESS_DIRECTION,
                 ethertype=self.ethertype)
 
-    @decorators.idempotent_id('66e47f1f-20b6-4417-8839-3cc671c7afa3')
-    def test_create_show_delete_security_group_rule_integers(self):
-        group_create_body, _ = self._create_security_group()
-        for protocol in base.V4_PROTOCOL_INTS:
-            self._test_create_show_delete_security_group_rule(
-                security_group_id=group_create_body['security_group']['id'],
-                protocol=protocol,
-                direction=constants.INGRESS_DIRECTION,
-                ethertype=self.ethertype)
+    def _test_security_group_rule(self, security_group, **kwargs):
+        security_group_rule = self.create_security_group_rule(
+            security_group=security_group, **kwargs)
+        observed_security_group_rule = self.client.show_security_group_rule(
+            security_group_rule['id'])['security_group_rule']
+        for key, value in kwargs.items():
+            self.assertEqual(value, security_group_rule[key],
+                             "{!r} does not match.".format(key))
+            self.assertEqual(value, observed_security_group_rule[key],
+                             "{!r} does not match.".format(key))
 
 
 class SecGroupProtocolIPv6Test(SecGroupProtocolTest):
-    _ip_version = constants.IP_VERSION_6
 
-    @decorators.idempotent_id('1f7cc9f5-e0d5-487c-8384-3d74060ab530')
-    def test_create_security_group_rule_with_ipv6_protocol_names(self):
-        group_create_body, _ = self._create_security_group()
-        for protocol in base.V6_PROTOCOL_NAMES:
-            self._test_create_show_delete_security_group_rule(
-                security_group_id=group_create_body['security_group']['id'],
-                protocol=protocol,
-                direction=constants.INGRESS_DIRECTION,
-                ethertype=self.ethertype)
+    _ip_version = constants.IP_VERSION_6
+    protocol_names = base_security_groups.V6_PROTOCOL_NAMES
+    protocol_ints = base_security_groups.V6_PROTOCOL_INTS
+    protocol_legacy_names = base_security_groups.V6_PROTOCOL_LEGACY
 
     @decorators.idempotent_id('c7d17b41-3b4e-4add-bb3b-6af59baaaffa')
-    def test_create_security_group_rule_with_ipv6_protocol_legacy_names(self):
-        group_create_body, _ = self._create_security_group()
-        for protocol in base.V6_PROTOCOL_LEGACY:
-            self._test_create_show_delete_security_group_rule(
-                security_group_id=group_create_body['security_group']['id'],
-                protocol=protocol,
-                direction=constants.INGRESS_DIRECTION,
-                ethertype=self.ethertype)
-
-    @decorators.idempotent_id('bcfce0b7-bc96-40ae-9b08-3f6774ee0260')
-    def test_create_security_group_rule_with_ipv6_protocol_integers(self):
-        group_create_body, _ = self._create_security_group()
-        for protocol in base.V6_PROTOCOL_INTS:
-            self._test_create_show_delete_security_group_rule(
-                security_group_id=group_create_body['security_group']['id'],
-                protocol=protocol,
-                direction=constants.INGRESS_DIRECTION,
-                ethertype=self.ethertype)
+    def test_security_group_rule_protocol_legacy_names(self):
+        self._test_security_group_rule_protocols(
+            protocols=self.protocol_legacy_names)

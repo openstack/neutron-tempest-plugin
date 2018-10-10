@@ -171,3 +171,11 @@ VALID_FLOATINGIP_STATUS = (lib_constants.FLOATINGIP_STATUS_ACTIVE,
 # Possible types of values (e.g. in QoS rule types)
 VALUES_TYPE_CHOICES = "choices"
 VALUES_TYPE_RANGE = "range"
+
+# Security group parameters values mapped by IP version
+DEFAULT_SECURITY_GROUP_RULE_PARAMS = {
+    lib_constants.IP_VERSION_4: {'ethertype': lib_constants.IPv4,
+                                 'remote_ip_prefix': lib_constants.IPv4_ANY},
+    lib_constants.IP_VERSION_6: {'ethertype': lib_constants.IPv6,
+                                 'remote_ip_prefix': lib_constants.IPv6_ANY},
+}

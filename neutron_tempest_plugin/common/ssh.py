@@ -146,8 +146,7 @@ class Client(ssh.Client):
     _get_ssh_connection = connect
 
     def close(self):
-        """Closes connection to SSH server and cleanup resources.
-        """
+        """Closes connection to SSH server and cleanup resources."""
         client = self._client
         if client is not None:
             client.close()

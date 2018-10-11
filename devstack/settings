@@ -1,3 +1,7 @@
 GITREPO["neutron-tempest-plugin"]=${NEUTRON_TEMPEST_REPO:-${GIT_BASE}/openstack/neutron-tempest-plugin.git}
 GITDIR["neutron-tempest-plugin"]=$DEST/neutron-tempest-plugin
 GITBRANCH["neutron-tempest-plugin"]=master
+
+ADVANCED_IMAGE_NAME=${ADVANCED_IMAGE_NAME:-""}
+ADVANCED_INSTANCE_TYPE=${ADVANCED_INSTANCE_TYPE:-$DEFAULT_INSTANCE_TYPE}
+ADVANCED_INSTANCE_USER=${ADVANCED_INSTANCE_USER:-$DEFAULT_INSTANCE_USER}

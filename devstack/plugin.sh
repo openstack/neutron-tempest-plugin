@@ -15,5 +15,9 @@ if [[ "$1" == "stack" ]]; then
             echo_summary "Installing neutron-tempest-plugin"
             install_neutron_tempest_plugin
             ;;
+        test-config)
+            echo_summary "Configuring neutron-tempest-plugin tempest options"
+            configure_advanced_image
+            configure_flavor_for_advanced_image
     esac
 fi

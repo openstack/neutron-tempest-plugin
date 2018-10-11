@@ -29,10 +29,6 @@ NeutronPluginOptions = [
                 default=[],
                 help='List of network types available to neutron, '
                      'e.g. vxlan,vlan,gre.'),
-    cfg.BoolOpt('image_is_advanced',
-                default=False,
-                help='Image that supports features that cirros does not, like'
-                     ' Ubuntu or CentOS supporting advanced features'),
     cfg.StrOpt('agent_availability_zone',
                help='The availability zone for all agents in the deployment. '
                     'Configure this only when the single value is used by '
@@ -75,6 +71,26 @@ NeutronPluginOptions = [
     cfg.IntOpt('ssh_proxy_jump_port',
                default=22,
                help='Port used to connect to "ssh_proxy_jump_host".'),
+
+    # Options for special, "advanced" image like e.g. Ubuntu. Such image can be
+    # used in tests which require some more advanced tool than available in
+    # Cirros
+    cfg.StrOpt('advanced_image_ref',
+               default=None,
+               help='Valid advanced image uuid to be used in tests. '
+                    'It is an image that supports features that Cirros '
+                    'does not, like Ubuntu or CentOS supporting advanced '
+                    'features.'),
+    cfg.StrOpt('advanced_image_flavor_ref',
+               default=None,
+               help='Valid flavor to use with advanced image in tests. '
+                    'This is required if advanced image has to be used in '
+                    'tests.'),
+    cfg.StrOpt('advanced_image_ssh_user',
+               default=None,
+               help='Name of ssh user to use with advanced image in tests. '
+                    'This is required if advanced image has to be used in '
+                    'tests.'),
 ]
 
 # TODO(amuller): Redo configuration options registration as part of the planned

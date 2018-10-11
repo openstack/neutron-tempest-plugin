@@ -64,12 +64,18 @@ class TrunkTest(base.BaseTempestTestCase):
         return {'port': port, 'trunk': trunk, 'fip': fip,
                 'server': server}
 
-    def _create_server_with_fip(self, port_id, **server_kwargs):
+    def _create_server_with_fip(self, port_id, use_advanced_image=False,
+                                **server_kwargs):
         fip = self.create_floatingip(port_id=port_id)
+        flavor_ref = CONF.compute.flavor_ref
+        image_ref = CONF.compute.image_ref
+        if use_advanced_image:
+            flavor_ref = CONF.neutron_plugin_options.advanced_image_flavor_ref
+            image_ref = CONF.neutron_plugin_options.advanced_image_ref
         return (
             self.create_server(
-                flavor_ref=CONF.compute.flavor_ref,
-                image_ref=CONF.compute.image_ref,
+                flavor_ref=flavor_ref,
+                image_ref=image_ref,
                 key_name=self.keypair['name'],
                 networks=[{'port': port_id}],
                 security_groups=[{'name': self.secgroup[
@@ -89,7 +95,8 @@ class TrunkTest(base.BaseTempestTestCase):
         t = self.client.show_trunk(trunk_id)['trunk']
         return t['status'] == 'ACTIVE'
 
-    def _create_server_with_port_and_subport(self, vlan_network, vlan_tag):
+    def _create_server_with_port_and_subport(self, vlan_network, vlan_tag,
+                                             use_advanced_image=False):
         parent_port = self.create_port(self.network, security_groups=[
             self.secgroup['security_group']['id']])
         port_for_subport = self.create_port(
@@ -102,11 +109,16 @@ class TrunkTest(base.BaseTempestTestCase):
             'segmentation_id': vlan_tag}
         self.create_trunk(parent_port, [subport])
 
-        server, fip = self._create_server_with_fip(parent_port['id'])
+        server, fip = self._create_server_with_fip(
+            parent_port['id'], use_advanced_image=use_advanced_image)
+
+        ssh_user = CONF.validation.image_ssh_user
+        if use_advanced_image:
+            ssh_user = CONF.neutron_plugin_options.advanced_image_ssh_user
 
         server_ssh_client = ssh.Client(
             fip['floating_ip_address'],
-            CONF.validation.image_ssh_user,
+            ssh_user,
             pkey=self.keypair['private_key'])
 
         return {
@@ -116,12 +128,15 @@ class TrunkTest(base.BaseTempestTestCase):
             'subport': port_for_subport,
         }
 
-    def _wait_for_server(self, server):
+    def _wait_for_server(self, server, advanced_image=False):
+        ssh_user = CONF.validation.image_ssh_user
+        if advanced_image:
+            ssh_user = CONF.neutron_plugin_options.advanced_image_ssh_user
         waiters.wait_for_server_status(self.os_primary.servers_client,
                                        server['server']['id'],
                                        constants.SERVER_STATUS_ACTIVE)
         self.check_connectivity(server['fip']['floating_ip_address'],
-                                CONF.validation.image_ssh_user,
+                                ssh_user,
                                 self.keypair['private_key'])
 
     @decorators.idempotent_id('bb13fe28-f152-4000-8131-37890a40c79e')
@@ -205,7 +220,7 @@ class TrunkTest(base.BaseTempestTestCase):
                                 self.keypair['private_key'])
 
     @testtools.skipUnless(
-          CONF.neutron_plugin_options.image_is_advanced,
+          CONF.neutron_plugin_options.advanced_image_ref,
           "Advanced image is required to run this test.")
     @decorators.idempotent_id('a8a02c9b-b453-49b5-89a2-cce7da66aafb')
     def test_subport_connectivity(self):
@@ -215,11 +230,12 @@ class TrunkTest(base.BaseTempestTestCase):
         self.create_subnet(vlan_network, gateway=None)
 
         servers = [
-            self._create_server_with_port_and_subport(vlan_network, vlan_tag)
+            self._create_server_with_port_and_subport(
+                vlan_network, vlan_tag, use_advanced_image=True)
             for i in range(2)]
 
         for server in servers:
-            self._wait_for_server(server)
+            self._wait_for_server(server, advanced_image=True)
             # Configure VLAN interfaces on server
             command = CONFIGURE_VLAN_INTERFACE_COMMANDS % {'tag': vlan_tag}
             server['ssh_client'].exec_command(command)

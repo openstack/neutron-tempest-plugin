@@ -82,7 +82,9 @@ class NetworksTestDHCPv6(base.BaseNetworkTest):
 
     @decorators.idempotent_id('98244d88-d990-4570-91d4-6b25d70d08af')
     def test_dhcp_stateful_fixedips_outrange(self):
-        """When port gets IP address from fixed IP range it
+        """Test DHCP Stateful fixed IPs out of range
+
+        When port gets IP address from fixed IP range it
         shall be checked if it's from subnets range.
         """
         kwargs = {'ipv6_ra_mode': 'dhcpv6-stateful',

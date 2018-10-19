@@ -95,7 +95,9 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
 
     @decorators.idempotent_id('6bba729b-3fb6-494b-9e1e-82bbd89a1045')
     def test_two_vms_fips(self):
-        """This test verifies the ability of two instances
+        """Test two VMs floating IPs
+
+        This test verifies the ability of two instances
         that were created in the same compute node and same availability zone
         to reach each other.
         """

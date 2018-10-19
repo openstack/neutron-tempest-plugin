@@ -40,6 +40,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     def create_server(self, flavor_ref, image_ref, key_name, networks,
                       **kwargs):
         """Create a server using tempest lib
+
         All the parameters are the ones used in Compute API
         * - Kwargs that require admin privileges
 
@@ -134,8 +135,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     @classmethod
     def create_pingable_secgroup_rule(cls, secgroup_id=None,
                                       client=None):
-        """This rule is intended to permit inbound ping
-        """
+        """This rule is intended to permit inbound ping"""
 
         rule_list = [{'protocol': 'icmp',
                       'direction': 'ingress',

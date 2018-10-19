@@ -43,6 +43,7 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
     def create_vm_testing_sec_grp(self, num_servers=2, security_groups=None,
                                   ports=None):
         """Create instance for security group testing
+
         :param num_servers (int): number of servers to spawn
         :param security_groups (list): list of security groups
         :param ports* (list): list of ports
@@ -260,7 +261,9 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
 
     @decorators.idempotent_id('f07d0159-8f9e-4faa-87f5-a869ab0ad488')
     def test_multiple_ports_secgroup_inheritance(self):
-        """This test creates two ports with security groups, then
+        """Test multiple port security group inheritance
+
+        This test creates two ports with security groups, then
         boots two instances and verify that the security group was
         inherited properly and enforced in these instances.
         """

@@ -49,8 +49,7 @@ def _try_connect(host_ip, port):
 
 
 def _connect_socket(host, port):
-    """Try to initiate a connection to a host using an ip address
-    and a port.
+    """Try to initiate a connection to a host using an ip address and a port.
 
     Trying couple of times until a timeout is reached in case the listening
     host is not ready yet.

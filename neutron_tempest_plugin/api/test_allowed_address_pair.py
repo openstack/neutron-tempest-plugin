@@ -20,7 +20,8 @@ from neutron_tempest_plugin.api import base
 
 class AllowedAddressPairTestJSON(base.BaseNetworkTest):
 
-    """
+    """AllowedAddressPairTestJSON class
+
     Tests the Neutron Allowed Address Pair API extension using the Tempest
     REST client. The following API operations are tested with this extension:
 

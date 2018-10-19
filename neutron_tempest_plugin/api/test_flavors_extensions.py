@@ -19,8 +19,8 @@ from neutron_tempest_plugin.api import base
 
 
 class TestFlavorsJson(base.BaseAdminNetworkTest):
+    """Test Flavors
 
-    """
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
 

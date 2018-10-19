@@ -22,8 +22,8 @@ from neutron_tempest_plugin import config
 
 
 class NetworksTestJSON(base.BaseNetworkTest):
+    """Test Networks
 
-    """
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
 

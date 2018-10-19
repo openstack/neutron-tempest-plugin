@@ -40,7 +40,8 @@ class RoutersTestHA(base.BaseRouterTest):
 
     @decorators.idempotent_id('8abc177d-14f1-4018-9f01-589b299cbee1')
     def test_ha_router_creation(self):
-        """
+        """Test HA router creation
+
         Test uses administrative credentials to create a
         HA (High Availability) router using the ha=True.
 
@@ -53,7 +54,8 @@ class RoutersTestHA(base.BaseRouterTest):
 
     @decorators.idempotent_id('97b5f7ef-2192-4fa3-901e-979cd5c1097a')
     def test_legacy_router_creation(self):
-        """
+        """Test legacy router creation
+
         Test uses administrative credentials to create a
         SF (Single Failure) router using the ha=False.
 
@@ -68,7 +70,8 @@ class RoutersTestHA(base.BaseRouterTest):
 
     @decorators.idempotent_id('5a6bfe82-5b23-45a4-b027-5160997d4753')
     def test_legacy_router_update_to_ha(self):
-        """
+        """Test legacy to HA router update
+
         Test uses administrative credentials to create a
         SF (Single Failure) router using the ha=False.
         Then it will "update" the router ha attribute to True

@@ -19,8 +19,8 @@ from tempest.lib import exceptions as lib_exc
 
 
 class NetworkClientJSON(service_client.RestClient):
+    """NetworkClientJSON class
 
-    """
     Tempest REST client for Neutron. Uses v2 of the Neutron API, since the
     V1 API has been removed from the code base.
 
@@ -447,7 +447,8 @@ class NetworkClientJSON(service_client.RestClient):
         return service_client.ResponseBody(resp, body)
 
     def update_agent(self, agent_id, agent_info):
-        """
+        """Update an agent
+
         :param agent_info: Agent update information.
         E.g {"admin_state_up": True}
         """

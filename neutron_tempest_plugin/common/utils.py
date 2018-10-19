@@ -54,8 +54,8 @@ class LockWithTimer(object):
 
 
 def wait_until_true(predicate, timeout=60, sleep=1, exception=None):
-    """
-    Wait until callable predicate is evaluated as True
+    """Wait until callable predicate is evaluated as True
+
     :param predicate: Callable deciding whether waiting should continue.
     Best practice is to instantiate predicate with functools.partial()
     :param timeout: Timeout in seconds how long should function wait.

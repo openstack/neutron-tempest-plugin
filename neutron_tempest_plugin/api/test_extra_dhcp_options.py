@@ -20,8 +20,8 @@ from neutron_tempest_plugin.api import base
 
 
 class ExtraDHCPOptionsTestJSON(base.BaseNetworkTest):
+    """Test Extra DHCP Options
 
-    """
     Tests the following operations with the Extra DHCP Options Neutron API
     extension:
 

@@ -101,8 +101,7 @@ class SharedNetworksTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('9c31fabb-0181-464f-9ace-95144fe9ca77')
     def test_create_port_shared_network_as_non_admin_tenant(self):
         # create a port as non admin
-        body = self.client.create_port(network_id=self.shared_network['id'])
-        port = body['port']
+        port = self.create_port(self.shared_network)
         self.addCleanup(self.admin_client.delete_port, port['id'])
         # verify the tenant id of admin network and non admin port
         self.assertNotEqual(self.shared_network['tenant_id'],
@@ -257,7 +256,7 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
     def test_port_presence_prevents_network_rbac_policy_deletion(self):
         res = self._make_admin_net_and_subnet_shared_to_tenant_id(
             self.client.tenant_id)
-        port = self.client.create_port(network_id=res['network']['id'])['port']
+        port = self.create_port(res['network'])
         # a port on the network should prevent the deletion of a policy
         # required for it to exist
         with testtools.ExpectedException(lib_exc.Conflict):
@@ -274,7 +273,7 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
                          object_type='network', object_id=net['id'],
                          action='access_as_shared',
                          target_tenant=net['tenant_id'])['rbac_policy']
-        port = self.client.create_port(network_id=net['id'])['port']
+        port = self.create_port(net)
         self.client.delete_rbac_policy(self_share['id'])
         self.client.delete_port(port['id'])
 
@@ -290,8 +289,7 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('f7539232-389a-4e9c-9e37-e42a129eb541')
     def test_tenant_cant_delete_other_tenants_ports(self):
         net = self.create_network()
-        port = self.client.create_port(network_id=net['id'])['port']
-        self.addCleanup(self.client.delete_port, port['id'])
+        port = self.create_port(net)
         with testtools.ExpectedException(lib_exc.NotFound):
             self.client2.delete_port(port['id'])
 
@@ -405,7 +403,7 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
                          object_type='network', object_id=net['id'],
                          action='access_as_shared',
                          target_tenant=net['tenant_id'])['rbac_policy']
-        port = self.client.create_port(network_id=net['id'])['port']
+        port = self.create_port(net)
         self.client.update_rbac_policy(self_share['id'],
                                        target_tenant=self.client2.tenant_id)
         self.client.delete_port(port['id'])

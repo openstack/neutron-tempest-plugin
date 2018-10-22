@@ -56,11 +56,10 @@ class ExtraDHCPOptionsTestJSON(base.BaseNetworkTest):
     @decorators.idempotent_id('d2c17063-3767-4a24-be4f-a23dbfa133c9')
     def test_create_list_port_with_extra_dhcp_options(self):
         # Create a port with Extra DHCP Options
-        body = self.client.create_port(
-            network_id=self.network['id'],
+        body = self.create_port(
+            self.network,
             extra_dhcp_opts=self.extra_dhcp_opts)
-        port_id = body['port']['id']
-        self.addCleanup(self.client.delete_port, port_id)
+        port_id = body['id']
 
         # Confirm port created has Extra DHCP Options
         body = self.client.list_ports()

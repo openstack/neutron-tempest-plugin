@@ -53,11 +53,10 @@ class AllowedAddressPairTestJSON(base.BaseNetworkTest):
         # Create port with allowed address pair attribute
         allowed_address_pairs = [{'ip_address': self.ip_address,
                                   'mac_address': self.mac_address}]
-        body = self.client.create_port(
-            network_id=self.network['id'],
+        body = self.create_port(
+            self.network,
             allowed_address_pairs=allowed_address_pairs)
-        port_id = body['port']['id']
-        self.addCleanup(self.client.delete_port, port_id)
+        port_id = body['id']
 
         # Confirm port was created with allowed address pair attribute
         body = self.client.list_ports()
@@ -69,9 +68,8 @@ class AllowedAddressPairTestJSON(base.BaseNetworkTest):
 
     def _update_port_with_address(self, address, mac_address=None, **kwargs):
         # Create a port without allowed address pair
-        body = self.client.create_port(network_id=self.network['id'])
-        port_id = body['port']['id']
-        self.addCleanup(self.client.delete_port, port_id)
+        body = self.create_port(self.network)
+        port_id = body['id']
         if mac_address is None:
             mac_address = self.mac_address
 
@@ -99,11 +97,9 @@ class AllowedAddressPairTestJSON(base.BaseNetworkTest):
     @decorators.idempotent_id('b3f20091-6cd5-472b-8487-3516137df933')
     def test_update_port_with_multiple_ip_mac_address_pair(self):
         # Create an ip _address and mac_address through port create
-        resp = self.client.create_port(network_id=self.network['id'])
-        newportid = resp['port']['id']
-        self.addCleanup(self.client.delete_port, newportid)
-        ipaddress = resp['port']['fixed_ips'][0]['ip_address']
-        macaddress = resp['port']['mac_address']
+        resp = self.create_port(self.network)
+        ipaddress = resp['fixed_ips'][0]['ip_address']
+        macaddress = resp['mac_address']
 
         # Update allowed address pair port with multiple ip and  mac
         allowed_address_pairs = {'ip_address': ipaddress,

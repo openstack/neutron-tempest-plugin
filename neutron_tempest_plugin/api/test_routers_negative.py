@@ -39,9 +39,9 @@ class RoutersNegativeTest(RoutersNegativeTestBase):
     @decorators.idempotent_id('e3e751af-15a2-49cc-b214-a7154579e94f')
     def test_delete_router_in_use(self):
         # This port is deleted after a test by remove_router_interface.
-        port = self.client.create_port(network_id=self.network['id'])
+        port = self.create_port(self.network)
         self.client.add_router_interface_with_port_id(
-            self.router['id'], port['port']['id'])
+            self.router['id'], port['id'])
         with testtools.ExpectedException(lib_exc.Conflict):
             self.client.delete_router(self.router['id'])
 

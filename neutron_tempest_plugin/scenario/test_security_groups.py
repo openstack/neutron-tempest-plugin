@@ -137,16 +137,18 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a283d9d864')
     def test_protocol_number_rule(self):
         # protocol number is added instead of str in security rule creation
-        server_ssh_clients, fips, _ = self.create_vm_testing_sec_grp(
-            num_servers=1)
+        name = data_utils.rand_name("test_protocol_number_rule")
+        security_group = self.create_security_group(name=name)
+        port = self.create_port(network=self.network, name=name,
+                                security_groups=[security_group['id']])
+        _, fips, _ = self.create_vm_testing_sec_grp(num_servers=1,
+                                                    ports=[port])
         self.ping_ip_address(fips[0]['floating_ip_address'],
                              should_succeed=False)
         rule_list = [{'protocol': constants.PROTO_NUM_ICMP,
                       'direction': constants.INGRESS_DIRECTION,
                       'remote_ip_prefix': '0.0.0.0/0'}]
-        secgroup_id = self.os_primary.network_client.list_security_groups()[
-            'security_groups'][0]['id']
-        self.create_secgroup_rules(rule_list, secgroup_id=secgroup_id)
+        self.create_secgroup_rules(rule_list, secgroup_id=security_group['id'])
         self.ping_ip_address(fips[0]['floating_ip_address'])
 
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a283d9d964')

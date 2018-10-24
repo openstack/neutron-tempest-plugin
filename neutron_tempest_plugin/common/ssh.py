@@ -43,13 +43,13 @@ class Client(ssh.Client):
 
     def __init__(self, host, username, password=None, timeout=None, pkey=None,
                  channel_timeout=10, look_for_keys=False, key_filename=None,
-                 port=22, proxy_client=None):
+                 port=22, proxy_client=None, create_proxy_client=True):
 
         timeout = timeout or self.timeout
 
-        if self.proxy_jump_host:
+        if not proxy_client and create_proxy_client and self.proxy_jump_host:
             # Perform all SSH connections passing through configured SSH server
-            proxy_client = proxy_client or self.create_proxy_client(
+            proxy_client = self.create_proxy_client(
                 timeout=timeout, channel_timeout=channel_timeout)
 
         super(Client, self).__init__(
@@ -115,10 +115,10 @@ class Client(ssh.Client):
                         "set 'proxy_jump_keyfile' to provide a valid SSH key "
                         "file.", login)
 
-        return ssh.Client(
+        return Client(
             host=host, username=username, password=password,
             look_for_keys=look_for_keys, key_filename=key_file,
-            port=port, proxy_client=None, **kwargs)
+            port=port, create_proxy_client=False, **kwargs)
 
     # attribute used to keep reference to opened client connection
     _client = None
@@ -178,6 +178,16 @@ class Client(ssh.Client):
             raise exceptions.SSHTimeout(host=self.host,
                                         user=self.username,
                                         password=self.password)
+
+    def exec_command(self, cmd, encoding="utf-8", timeout=None):
+        if timeout:
+            original_timeout = self.timeout
+            self.timeout = timeout
+        try:
+            return super(Client, self).exec_command(cmd=cmd, encoding=encoding)
+        finally:
+            if timeout:
+                self.timeout = original_timeout
 
     def execute_script(self, script, become_root=False, combine_stderr=False,
                        shell='sh -eux', timeout=None, **params):
@@ -285,12 +295,12 @@ class Client(ssh.Client):
         stderr = _buffer_to_string(error_data, encoding)
         if exit_status is None:
             raise exc.SSHScriptTimeoutExpired(
-                host=self.host, script=script, stderr=stderr, stdout=stdout,
-                timeout=timeout)
+                command=shell, host=self.host, script=script, stderr=stderr,
+                stdout=stdout, timeout=timeout)
         else:
             raise exc.SSHScriptFailed(
-                host=self.host, script=script, stderr=stderr, stdout=stdout,
-                exit_status=exit_status)
+                command=shell, host=self.host, script=script, stderr=stderr,
+                stdout=stdout, exit_status=exit_status)
 
 
 def _buffer_to_string(data_buffer, encoding):

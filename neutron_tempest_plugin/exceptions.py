@@ -15,18 +15,35 @@
 
 from tempest.lib import exceptions
 
-TempestException = exceptions.TempestException
+from neutron_tempest_plugin.common import utils
 
 
-class InvalidConfiguration(TempestException):
+class NeutronTempestPluginException(exceptions.TempestException):
+
+    def __init__(self, **kwargs):
+        super(NeutronTempestPluginException, self).__init__(**kwargs)
+        self._properties = kwargs
+
+    def __getattr__(self, name):
+        try:
+            return self._properties[name]
+        except KeyError:
+            pass
+
+        msg = ("AttributeError: {!r} object has no attribute {!r}").format(
+            self, name)
+        raise AttributeError(msg)
+
+
+class InvalidConfiguration(NeutronTempestPluginException):
     message = "Invalid Configuration"
 
 
-class InvalidCredentials(TempestException):
+class InvalidCredentials(NeutronTempestPluginException):
     message = "Invalid Credentials"
 
 
-class InvalidServiceTag(TempestException):
+class InvalidServiceTag(NeutronTempestPluginException):
     message = "Invalid service tag"
 
 
@@ -34,17 +51,50 @@ class SSHScriptException(exceptions.TempestException):
     """Base class for SSH client execute_script() exceptions"""
 
 
-class SSHScriptTimeoutExpired(SSHScriptException):
-    message = ("Timeout expired while executing script on host %(host)r:\n"
-               "script:\n%(script)s\n"
-               "stderr:\n%(stderr)s\n"
-               "stdout:\n%(stdout)s\n"
-               "timeout: %(timeout)s")
+class ShellError(NeutronTempestPluginException):
+    pass
 
 
-class SSHScriptFailed(SSHScriptException):
-    message = ("Failed executing script on remote host %(host)r:\n"
+class ShellCommandFailed(ShellError):
+    """Raised when shell command exited with non-zero status
+
+    """
+    message = ("Command %(command)r failed, exit status: %(exit_status)d, "
+               "stderr:\n%(stderr)s\n"
+               "stdout:\n%(stdout)s")
+
+
+class SSHScriptFailed(ShellCommandFailed):
+    message = ("Command %(command)r failed, exit status: %(exit_status)d, "
+               "host: %(host)r\n"
                "script:\n%(script)s\n"
                "stderr:\n%(stderr)s\n"
-               "stdout:\n%(stdout)s\n"
-               "exit_status: %(exit_status)s")
+               "stdout:\n%(stdout)s")
+
+
+class ShellTimeoutExpired(ShellError):
+    """Raised when shell command timeouts and has been killed before exiting
+
+    """
+    message = ("Command '%(command)s' timed out: %(timeout)d, "
+               "stderr:\n%(stderr)s\n"
+               "stdout:\n%(stdout)s")
+
+
+class SSHScriptTimeoutExpired(ShellTimeoutExpired):
+    message = ("Command '%(command)s', timed out: %(timeout)d "
+               "host: %(host)r\n"
+               "script:\n%(script)s\n"
+               "stderr:\n%(stderr)s\n"
+               "stdout:\n%(stdout)s")
+
+
+# Patch SSHExecCommandFailed exception to make sure we can access to fields
+# command, exit_status, STDOUT and STDERR when SSH client reports command
+# failure
+exceptions.SSHExecCommandFailed = utils.override_class(
+    exceptions.SSHExecCommandFailed, ShellCommandFailed)
+
+# Above code created a new SSHExecCommandFailed class based on top
+# of ShellCommandError
+assert issubclass(exceptions.SSHExecCommandFailed, ShellCommandFailed)

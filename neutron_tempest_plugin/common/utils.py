@@ -88,3 +88,17 @@ def unstable_test(reason):
                 raise self.skipTest(msg)
         return inner
     return decor
+
+
+def override_class(overriden_class, overrider_class):
+    """Override class definition with a MixIn class
+
+    If overriden_class is not a subclass of overrider_class then it creates
+    a new class that has as bases overrider_class and overriden_class.
+    """
+
+    if not issubclass(overriden_class, overrider_class):
+        name = overriden_class.__name__
+        bases = (overrider_class, overriden_class)
+        overriden_class = type(name, bases, {})
+    return overriden_class

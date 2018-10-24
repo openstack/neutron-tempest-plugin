@@ -1053,6 +1053,25 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
                           policy_id=policy['id'],
                           direction=self.DIRECTION_EGRESS, min_kbps=201)
 
+    @decorators.idempotent_id('35baf998-ae65-495c-9902-35a0d11e8936')
+    @utils.requires_ext(extension="qos-bw-minimum-ingress",
+                        service="network")
+    def test_rule_create_pass_for_direction_ingress(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        self.admin_client.create_minimum_bandwidth_rule(
+            policy_id=policy['id'],
+            direction=self.DIRECTION_INGRESS,
+            min_kbps=201)
+
+        retrieved_policy = self.admin_client.show_qos_policy(policy['id'])
+        policy_rules = retrieved_policy['policy']['rules']
+        self.assertEqual(1, len(policy_rules))
+        self.assertEqual(qos_consts.RULE_TYPE_MINIMUM_BANDWIDTH,
+                         policy_rules[0]['type'])
+        self.assertEqual(self.DIRECTION_INGRESS, policy_rules[0]['direction'])
+
     @decorators.idempotent_id('a49a6988-2568-47d2-931e-2dbc858943b3')
     def test_rule_update(self):
         policy = self.create_qos_policy(name='test-policy',

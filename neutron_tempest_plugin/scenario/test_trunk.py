@@ -12,28 +12,30 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import collections
+
+from neutron_lib import constants
 from oslo_log import log as logging
 from tempest.common import utils as tutils
-from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 import testtools
 
+from neutron_tempest_plugin.common import ip
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
-from neutron_tempest_plugin.scenario import constants
+
 
 LOG = logging.getLogger(__name__)
 CONF = config.CONF
 
-CONFIGURE_VLAN_INTERFACE_COMMANDS = (
-    'IFACE=$(PATH=$PATH:/usr/sbin ip l | grep "^[0-9]*: e"|cut -d \: -f 2) &&'
-    'sudo ip l a link $IFACE name $IFACE.%(tag)d type vlan id %(tag)d &&'
-    'sudo ip l s up dev $IFACE.%(tag)d && '
-    'ps -ef | grep -q "[d]hclient .*$IFACE.%(tag)d" || '
-    'sudo dhclient $IFACE.%(tag)d;')
+
+ServerWithTrunkPort = collections.namedtuple(
+    'ServerWithTrunkPort',
+    ['port', 'subport', 'trunk', 'floating_ip', 'server',
+     'ssh_client'])
 
 
 class TrunkTest(base.BaseTempestTestCase):
@@ -45,122 +47,140 @@ class TrunkTest(base.BaseTempestTestCase):
     def resource_setup(cls):
         super(TrunkTest, cls).resource_setup()
         # setup basic topology for servers we can log into
-        cls.network = cls.create_network()
-        cls.subnet = cls.create_subnet(cls.network)
+        cls.rand_name = data_utils.rand_name(
+            cls.__name__.rsplit('.', 1)[-1])
+        cls.network = cls.create_network(name=cls.rand_name)
+        cls.subnet = cls.create_subnet(network=cls.network,
+                                       name=cls.rand_name)
         cls.router = cls.create_router_by_client()
         cls.create_router_interface(cls.router['id'], cls.subnet['id'])
-        cls.keypair = cls.create_keypair()
-        cls.secgroup = cls.os_primary.network_client.create_security_group(
-            name=data_utils.rand_name('secgroup'))
-        cls.security_groups.append(cls.secgroup['security_group'])
-        cls.create_loginable_secgroup_rule(
-            secgroup_id=cls.secgroup['security_group']['id'])
+        cls.keypair = cls.create_keypair(name=cls.rand_name)
 
-    def _create_server_with_trunk_port(self):
-        port = self.create_port(self.network, security_groups=[
-            self.secgroup['security_group']['id']])
-        trunk = self.create_trunk(port)
-        server, fip = self._create_server_with_fip(port['id'])
-        return {'port': port, 'trunk': trunk, 'fip': fip,
-                'server': server}
+    def setUp(self):
+        super(TrunkTest, self).setUp()
+        self.security_group = self.create_security_group(name=self.rand_name)
+        self.create_loginable_secgroup_rule(self.security_group['id'])
 
-    def _create_server_with_fip(self, port_id, use_advanced_image=False,
-                                **server_kwargs):
-        fip = self.create_floatingip(port_id=port_id)
-        flavor_ref = CONF.compute.flavor_ref
-        image_ref = CONF.compute.image_ref
+    def _create_server_with_network(self, network, use_advanced_image=False):
+        port = self._create_server_port(network=network)
+        floating_ip = self.create_floatingip(port=port)
+        ssh_client = self._create_ssh_client(
+            floating_ip=floating_ip, use_advanced_image=use_advanced_image)
+        server = self._create_server(port=port,
+                                     use_advanced_image=use_advanced_image)
+        return ServerWithTrunkPort(port=port, subport=None, trunk=None,
+                                   floating_ip=floating_ip, server=server,
+                                   ssh_client=ssh_client)
+
+    def _create_server_with_trunk_port(self, subport_network=None,
+                                       segmentation_id=None,
+                                       use_advanced_image=False):
+        port = self._create_server_port()
+        floating_ip = self.create_floatingip(port=port)
+        ssh_client = self._create_ssh_client(
+            floating_ip=floating_ip, use_advanced_image=use_advanced_image)
+
+        subport = None
+        subports = None
+        if subport_network:
+            subport = self._create_server_port(
+                network=subport_network, mac_address=port['mac_address'])
+            subports = [{'port_id': subport['id'],
+                         'segmentation_type': 'vlan',
+                         'segmentation_id': segmentation_id}]
+        trunk = self.create_trunk(port=port, subports=subports)
+
+        server = self._create_server(port=port,
+                                     use_advanced_image=use_advanced_image)
+        return ServerWithTrunkPort(port=port, subport=subport, trunk=trunk,
+                                   floating_ip=floating_ip, server=server,
+                                   ssh_client=ssh_client)
+
+    def _create_server_port(self, network=None, **params):
+        network = network or self.network
+        return self.create_port(network=network, name=self.rand_name,
+                                security_groups=[self.security_group['id']],
+                                **params)
+
+    def _create_server(self, port, use_advanced_image=False, **params):
         if use_advanced_image:
             flavor_ref = CONF.neutron_plugin_options.advanced_image_flavor_ref
             image_ref = CONF.neutron_plugin_options.advanced_image_ref
-        return (
-            self.create_server(
-                flavor_ref=flavor_ref,
-                image_ref=image_ref,
-                key_name=self.keypair['name'],
-                networks=[{'port': port_id}],
-                security_groups=[{'name': self.secgroup[
-                    'security_group']['name']}],
-                **server_kwargs)['server'],
-            fip)
+        else:
+            flavor_ref = CONF.compute.flavor_ref
+            image_ref = CONF.compute.image_ref
+        return self.create_server(flavor_ref=flavor_ref,
+                                  image_ref=image_ref,
+                                  key_name=self.keypair['name'],
+                                  networks=[{'port': port['id']}],
+                                  **params)['server']
 
-    def _is_port_down(self, port_id):
-        p = self.client.show_port(port_id)['port']
-        return p['status'] == 'DOWN'
+    def _show_port(self, port, update=False):
+        observed = self.client.show_port(port['id'])['port']
+        if update:
+            port.update(observed)
+        return observed
 
-    def _is_port_active(self, port_id):
-        p = self.client.show_port(port_id)['port']
-        return p['status'] == 'ACTIVE'
+    def _show_trunk(self, trunk, update=False):
+        observed = self.client.show_trunk(trunk['id'])['trunk']
+        if update:
+            trunk.update(observed)
+        return observed
 
-    def _is_trunk_active(self, trunk_id):
-        t = self.client.show_trunk(trunk_id)['trunk']
-        return t['status'] == 'ACTIVE'
+    def _is_trunk_status(self, trunk, status, update=False):
+        return self._show_trunk(trunk, update)['status'] == status
 
-    def _create_server_with_network(self, network, use_advanced_image=False):
-        port = self.create_port(network, security_groups=[
-            self.secgroup['security_group']['id']])
-        server, fip = self._create_server_with_fip(
-            port['id'], use_advanced_image=use_advanced_image)
-        ssh_user = CONF.validation.image_ssh_user
+    def _is_port_status(self, port, status, update=False):
+        return self._show_port(port, update)['status'] == status
+
+    def _wait_for_port(self, port, status=constants.ACTIVE):
+        utils.wait_until_true(
+            lambda: self._is_port_status(port, status),
+            exception=RuntimeError(
+                "Timed out waiting for port {!r} to transition to get "
+                "status {!r}.".format(port['id'], status)))
+
+    def _wait_for_trunk(self, trunk, status=constants.ACTIVE):
+        utils.wait_until_true(
+            lambda: self._is_trunk_status(trunk, status),
+            exception=RuntimeError(
+                "Timed out waiting for trunk {!r} to transition to get "
+                "status {!r}.".format(trunk['id'], status)))
+
+    def _create_ssh_client(self, floating_ip, use_advanced_image=False):
         if use_advanced_image:
-            ssh_user = CONF.neutron_plugin_options.advanced_image_ssh_user
+            username = CONF.neutron_plugin_options.advanced_image_ssh_user
+        else:
+            username = CONF.validation.image_ssh_user
+        return ssh.Client(host=floating_ip['floating_ip_address'],
+                          username=username,
+                          pkey=self.keypair['private_key'])
 
-        server_ssh_client = ssh.Client(
-            fip['floating_ip_address'],
-            ssh_user,
-            pkey=self.keypair['private_key'])
+    def _assert_has_ssh_connectivity(self, ssh_client):
+        ssh_client.exec_command("true")
 
-        return {
-            'server': server,
-            'fip': fip,
-            'ssh_client': server_ssh_client,
-            'port': port,
-        }
+    def _configure_vlan_subport(self, vm, vlan_tag, vlan_subnet):
+        self.wait_for_server_active(server=vm.server)
+        self._wait_for_trunk(trunk=vm.trunk)
+        self._wait_for_port(port=vm.port)
+        self._wait_for_port(port=vm.subport)
 
-    def _create_server_with_port_and_subport(self, vlan_network, vlan_tag,
-                                             use_advanced_image=False):
-        parent_port = self.create_port(self.network, security_groups=[
-            self.secgroup['security_group']['id']])
-        port_for_subport = self.create_port(
-            vlan_network,
-            security_groups=[self.secgroup['security_group']['id']],
-            mac_address=parent_port['mac_address'])
-        subport = {
-            'port_id': port_for_subport['id'],
-            'segmentation_type': 'vlan',
-            'segmentation_id': vlan_tag}
-        trunk = self.create_trunk(parent_port, [subport])
+        ip_command = ip.IPCommand(ssh_client=vm.ssh_client)
+        for address in ip_command.list_addresses(port=vm.port):
+            port_iface = address.device.name
+            break
+        else:
+            self.fail("Parent port fixed IP not found on server.")
 
-        server, fip = self._create_server_with_fip(
-            parent_port['id'], use_advanced_image=use_advanced_image)
-
-        ssh_user = CONF.validation.image_ssh_user
-        if use_advanced_image:
-            ssh_user = CONF.neutron_plugin_options.advanced_image_ssh_user
-
-        server_ssh_client = ssh.Client(
-            fip['floating_ip_address'],
-            ssh_user,
-            pkey=self.keypair['private_key'])
-
-        return {
-            'server': server,
-            'fip': fip,
-            'ssh_client': server_ssh_client,
-            'subport': port_for_subport,
-            'parentport': parent_port,
-            'trunk': trunk,
-        }
-
-    def _wait_for_server(self, server, advanced_image=False):
-        ssh_user = CONF.validation.image_ssh_user
-        if advanced_image:
-            ssh_user = CONF.neutron_plugin_options.advanced_image_ssh_user
-        waiters.wait_for_server_status(self.os_primary.servers_client,
-                                       server['server']['id'],
-                                       constants.SERVER_STATUS_ACTIVE)
-        self.check_connectivity(server['fip']['floating_ip_address'],
-                                ssh_user,
-                                self.keypair['private_key'])
+        subport_iface = ip_command.configure_vlan_subport(
+            port=vm.port, subport=vm.subport, vlan_tag=vlan_tag,
+            subnets=[vlan_subnet])
+        for address in ip_command.list_addresses(port=vm.subport):
+            self.assertEqual(subport_iface, address.device.name)
+            self.assertEqual(port_iface, address.device.parent)
+            break
+        else:
+            self.fail("Sub-port fixed IP not found on server.")
 
     @decorators.idempotent_id('bb13fe28-f152-4000-8131-37890a40c79e')
     def test_trunk_subport_lifecycle(self):
@@ -175,186 +195,149 @@ class TrunkTest(base.BaseTempestTestCase):
         wired the port correctly and that the trunk port itself maintains
         connectivity.
         """
-        server1 = self._create_server_with_trunk_port()
-        server2 = self._create_server_with_trunk_port()
-        for server in (server1, server2):
-            self._wait_for_server(server)
-        trunk1_id, trunk2_id = server1['trunk']['id'], server2['trunk']['id']
-        # trunks should transition to ACTIVE without any subports
-        utils.wait_until_true(
-            lambda: self._is_trunk_active(trunk1_id),
-            exception=RuntimeError("Timed out waiting for trunk %s to "
-                                   "transition to ACTIVE." % trunk1_id))
-        utils.wait_until_true(
-            lambda: self._is_trunk_active(trunk2_id),
-            exception=RuntimeError("Timed out waiting for trunk %s to "
-                                   "transition to ACTIVE." % trunk2_id))
+        vm1 = self._create_server_with_trunk_port()
+        vm2 = self._create_server_with_trunk_port()
+        for vm in (vm1, vm2):
+            self.wait_for_server_active(server=vm.server)
+            self._wait_for_trunk(vm.trunk)
+            self._assert_has_ssh_connectivity(vm.ssh_client)
+
         # create a few more networks and ports for subports
         # check limit of networks per project
-        max_vlan = 3 + CONF.neutron_plugin_options.max_networks_per_project
-        allowed_vlans = range(3, max_vlan)
-        subports = [{'port_id': self.create_port(self.create_network())['id'],
-                     'segmentation_type': 'vlan', 'segmentation_id': seg_id}
-                    for seg_id in allowed_vlans]
-        # add all subports to server1
-        self.client.add_subports(trunk1_id, subports)
-        # ensure trunk transitions to ACTIVE
-        utils.wait_until_true(
-            lambda: self._is_trunk_active(trunk1_id),
-            exception=RuntimeError("Timed out waiting for trunk %s to "
-                                   "transition to ACTIVE." % trunk1_id))
-        # ensure all underlying subports transitioned to ACTIVE
-        for s in subports:
-            utils.wait_until_true(lambda: self._is_port_active(s['port_id']))
-        # ensure main dataplane wasn't interrupted
-        self.check_connectivity(server1['fip']['floating_ip_address'],
-                                CONF.validation.image_ssh_user,
-                                self.keypair['private_key'])
-        # move subports over to other server
-        self.client.remove_subports(trunk1_id, subports)
-        # ensure all subports go down
-        for s in subports:
-            utils.wait_until_true(
-                lambda: self._is_port_down(s['port_id']),
-                exception=RuntimeError("Timed out waiting for subport %s to "
-                                       "transition to DOWN." % s['port_id']))
-        self.client.add_subports(trunk2_id, subports)
-        # wait for both trunks to go back to ACTIVE
-        utils.wait_until_true(
-            lambda: self._is_trunk_active(trunk1_id),
-            exception=RuntimeError("Timed out waiting for trunk %s to "
-                                   "transition to ACTIVE." % trunk1_id))
-        utils.wait_until_true(
-            lambda: self._is_trunk_active(trunk2_id),
-            exception=RuntimeError("Timed out waiting for trunk %s to "
-                                   "transition to ACTIVE." % trunk2_id))
-        # ensure subports come up on other trunk
-        for s in subports:
-            utils.wait_until_true(
-                lambda: self._is_port_active(s['port_id']),
-                exception=RuntimeError("Timed out waiting for subport %s to "
-                                       "transition to ACTIVE." % s['port_id']))
-        # final connectivity check
-        self.check_connectivity(server1['fip']['floating_ip_address'],
-                                CONF.validation.image_ssh_user,
-                                self.keypair['private_key'])
-        self.check_connectivity(server2['fip']['floating_ip_address'],
-                                CONF.validation.image_ssh_user,
-                                self.keypair['private_key'])
+        segment_ids = range(
+            3, 3 + CONF.neutron_plugin_options.max_networks_per_project)
+        tagged_networks = [self.create_network() for _ in segment_ids]
+        tagged_ports = [self.create_port(network=network)
+                        for network in tagged_networks]
+        subports = [{'port_id': tagged_ports[i]['id'],
+                     'segmentation_type': 'vlan',
+                     'segmentation_id': segment_id}
+                    for i, segment_id in enumerate(segment_ids)]
 
-    @testtools.skipUnless(
-          CONF.neutron_plugin_options.advanced_image_ref,
-          "Advanced image is required to run this test.")
+        # add all subports to server1
+        self.client.add_subports(vm1.trunk['id'], subports)
+        self._wait_for_trunk(vm1.trunk)
+        for port in tagged_ports:
+            self._wait_for_port(port)
+
+        # ensure main data-plane wasn't interrupted
+        self._assert_has_ssh_connectivity(vm1.ssh_client)
+
+        # move subports over to other server
+        self.client.remove_subports(vm1.trunk['id'], subports)
+        # ensure all subports go down
+        for port in tagged_ports:
+            self._wait_for_port(port, status=constants.DOWN)
+
+        self.client.add_subports(vm2.trunk['id'], subports)
+
+        # wait for both trunks to go back to ACTIVE
+        for vm in [vm1, vm2]:
+            self._wait_for_trunk(vm.trunk)
+
+        # ensure subports come up on other trunk
+        for port in tagged_ports:
+            self._wait_for_port(port)
+
+        # final connectivity check
+        for vm in [vm1, vm2]:
+            self._wait_for_trunk(vm.trunk)
+            self._assert_has_ssh_connectivity(vm1.ssh_client)
+
+    @testtools.skipUnless(CONF.neutron_plugin_options.advanced_image_ref,
+                          "Advanced image is required to run this test.")
     @decorators.idempotent_id('a8a02c9b-b453-49b5-89a2-cce7da66aafb')
     def test_subport_connectivity(self):
         vlan_tag = 10
-
         vlan_network = self.create_network()
-        self.create_subnet(vlan_network, gateway=None)
+        vlan_subnet = self.create_subnet(network=vlan_network, gateway=None)
 
-        servers = [
-            self._create_server_with_port_and_subport(
-                vlan_network, vlan_tag, use_advanced_image=True)
-            for i in range(2)]
+        vm1 = self._create_server_with_trunk_port(subport_network=vlan_network,
+                                                  segmentation_id=vlan_tag,
+                                                  use_advanced_image=True)
+        vm2 = self._create_server_with_trunk_port(subport_network=vlan_network,
+                                                  segmentation_id=vlan_tag,
+                                                  use_advanced_image=True)
 
-        for server in servers:
-            self._wait_for_server(server, advanced_image=True)
-            # Configure VLAN interfaces on server
-            command = CONFIGURE_VLAN_INTERFACE_COMMANDS % {'tag': vlan_tag}
-            server['ssh_client'].exec_command(command)
-            out = server['ssh_client'].exec_command(
-                'PATH=$PATH:/usr/sbin;ip addr list')
-            LOG.debug("Interfaces on server %s: %s", server, out)
+        for vm in [vm1, vm2]:
+            self._configure_vlan_subport(vm=vm,
+                                         vlan_tag=vlan_tag,
+                                         vlan_subnet=vlan_subnet)
 
         # Ping from server1 to server2 via VLAN interface should fail because
         # we haven't allowed ICMP
         self.check_remote_connectivity(
-            servers[0]['ssh_client'],
-            servers[1]['subport']['fixed_ips'][0]['ip_address'],
-            should_succeed=False
-        )
-        # allow intra-securitygroup traffic
-        self.client.create_security_group_rule(
-            security_group_id=self.secgroup['security_group']['id'],
-            direction='ingress', ethertype='IPv4', protocol='icmp',
-            remote_group_id=self.secgroup['security_group']['id'])
+            vm1.ssh_client,
+            vm2.subport['fixed_ips'][0]['ip_address'],
+            should_succeed=False)
+
+        # allow intra-security-group traffic
+        self.create_pingable_secgroup_rule(self.security_group['id'])
         self.check_remote_connectivity(
-            servers[0]['ssh_client'],
-            servers[1]['subport']['fixed_ips'][0]['ip_address'],
-            should_succeed=True
-        )
+            vm1.ssh_client,
+            vm2.subport['fixed_ips'][0]['ip_address'])
 
     @testtools.skipUnless(
-          CONF.neutron_plugin_options.advanced_image_ref,
-          "Advanced image is required to run this test.")
+        CONF.neutron_plugin_options.advanced_image_ref,
+        "Advanced image is required to run this test.")
     @testtools.skipUnless(
-          CONF.neutron_plugin_options.q_agent == "linuxbridge",
-          "Linux bridge agent is required to run this test.")
+        CONF.neutron_plugin_options.q_agent == "linuxbridge",
+        "Linux bridge agent is required to run this test.")
     @decorators.idempotent_id('d61cbdf6-1896-491c-b4b4-871caf7fbffe')
     def test_parent_port_connectivity_after_trunk_deleted_lb(self):
         vlan_tag = 10
-
         vlan_network = self.create_network()
         vlan_subnet = self.create_subnet(vlan_network)
         self.create_router_interface(self.router['id'], vlan_subnet['id'])
 
-        trunk_network_server = self._create_server_with_port_and_subport(
-            vlan_network, vlan_tag, use_advanced_image=True)
+        # Create servers
+        trunk_network_server = self._create_server_with_trunk_port(
+            subport_network=vlan_network,
+            segmentation_id=vlan_tag,
+            use_advanced_image=True)
         normal_network_server = self._create_server_with_network(self.network)
         vlan_network_server = self._create_server_with_network(vlan_network)
 
-        self._wait_for_server(trunk_network_server, advanced_image=True)
-        # Configure VLAN interfaces on server
-        command = CONFIGURE_VLAN_INTERFACE_COMMANDS % {'tag': vlan_tag}
-        trunk_network_server['ssh_client'].exec_command(command)
-        out = trunk_network_server['ssh_client'].exec_command(
-            'PATH=$PATH:/usr/sbin;ip addr list')
-        LOG.debug("Interfaces on server %s: %s", trunk_network_server, out)
+        self._configure_vlan_subport(vm=trunk_network_server,
+                                     vlan_tag=vlan_tag,
+                                     vlan_subnet=vlan_subnet)
+        for vm in [normal_network_server, vlan_network_server]:
+            self.wait_for_server_active(vm.server)
 
-        self._wait_for_server(normal_network_server)
-        self._wait_for_server(vlan_network_server)
-
-        # allow intra-securitygroup traffic
-        rule = self.client.create_security_group_rule(
-            security_group_id=self.secgroup['security_group']['id'],
-            direction='ingress', ethertype='IPv4', protocol='icmp',
-            remote_group_id=self.secgroup['security_group']['id'])
-        self.addCleanup(self.client.delete_security_group_rule,
-                        rule['security_group_rule']['id'])
+        # allow ICMP traffic
+        self.create_pingable_secgroup_rule(self.security_group['id'])
 
         # Ping from trunk_network_server to normal_network_server
         # via parent port
         self.check_remote_connectivity(
-            trunk_network_server['ssh_client'],
-            normal_network_server['port']['fixed_ips'][0]['ip_address'],
-            should_succeed=True
-        )
+            trunk_network_server.ssh_client,
+            normal_network_server.port['fixed_ips'][0]['ip_address'],
+            should_succeed=True)
 
         # Ping from trunk_network_server to vlan_network_server via VLAN
         # interface should success
         self.check_remote_connectivity(
-            trunk_network_server['ssh_client'],
-            vlan_network_server['port']['fixed_ips'][0]['ip_address'],
-            should_succeed=True
-        )
+            trunk_network_server.ssh_client,
+            vlan_network_server.port['fixed_ips'][0]['ip_address'],
+            should_succeed=True)
 
         # Delete the trunk
-        self.delete_trunk(trunk_network_server['trunk'],
+        self.delete_trunk(
+            trunk_network_server.trunk,
             detach_parent_port=False)
-        LOG.debug("Trunk %s is deleted.", trunk_network_server['trunk']['id'])
+        LOG.debug("Trunk %s is deleted.",
+                  trunk_network_server.trunk['id'])
 
         # Ping from trunk_network_server to normal_network_server
         # via parent port success after trunk deleted
         self.check_remote_connectivity(
-            trunk_network_server['ssh_client'],
-            normal_network_server['port']['fixed_ips'][0]['ip_address'],
-            should_succeed=True
-        )
+            trunk_network_server.ssh_client,
+            normal_network_server.port['fixed_ips'][0]['ip_address'],
+            should_succeed=True)
 
         # Ping from trunk_network_server to vlan_network_server via VLAN
         # interface should fail after trunk deleted
         self.check_remote_connectivity(
-            trunk_network_server['ssh_client'],
-            vlan_network_server['port']['fixed_ips'][0]['ip_address'],
-            should_succeed=False
-        )
+            trunk_network_server.ssh_client,
+            vlan_network_server.port['fixed_ips'][0]['ip_address'],
+            should_succeed=False)

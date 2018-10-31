@@ -25,7 +25,6 @@ class ListAvailableZonesTest(base.BaseNetworkTest):
     @utils.requires_ext(extension="availability_zone",
                         service="network")
     def test_list_available_zones(self):
-        resource = 'availability_zones'
-        body = getattr(self.client, 'list_%s' % resource)()
+        body = self.client.list_availability_zones()
         self.assertIsNotNone(body)
         self.assertIsInstance(body['availability_zones'], list)

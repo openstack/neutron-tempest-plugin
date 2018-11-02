@@ -431,6 +431,8 @@ class BaseNetworkTest(test.BaseTestCase):
                 ip_version=ip_version, cidr=cidr, mask_bits=mask_bits):
             if gateway is not None:
                 kwargs['gateway_ip'] = str(gateway or (subnet_cidr.ip + 1))
+            else:
+                kwargs['gateway_ip'] = None
             try:
                 body = client.create_subnet(
                     network_id=network['id'],

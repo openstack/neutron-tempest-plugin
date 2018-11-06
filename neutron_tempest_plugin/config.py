@@ -53,6 +53,10 @@ NeutronPluginOptions = [
                     '"mtu":<MTU> - integer '
                     '"cidr"<SUBNET/MASK> - string '
                     '"provider:segmentation_id":<VLAN_ID> - integer'),
+    cfg.StrOpt('q_agent',
+               default=None,
+               choices=['None', 'linuxbridge', 'ovs', 'sriov'],
+               help='Agent used for devstack@q-agt.service'),
 
     # Option for feature to connect via SSH to VMs using an intermediate SSH
     # server

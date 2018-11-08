@@ -12,6 +12,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import locale
 import os
 import time
 
@@ -21,6 +22,7 @@ from tempest.lib.common import ssh
 from tempest.lib import exceptions
 
 from neutron_tempest_plugin import config
+from neutron_tempest_plugin import exceptions as exc
 
 
 CONF = config.CONF
@@ -145,12 +147,19 @@ class Client(ssh.Client):
     # more times
     _get_ssh_connection = connect
 
+    # This overrides superclass test_connection_auth method forbidding it to
+    # close connection
+    test_connection_auth = connect
+
     def close(self):
         """Closes connection to SSH server and cleanup resources."""
         client = self._client
         if client is not None:
             client.close()
             self._client = None
+
+    def __exit__(self, _exception_type, _exception_value, _traceback):
+        self.close()
 
     def open_session(self):
         """Gets connection to SSH server and open a new paramiko.Channel
@@ -170,8 +179,8 @@ class Client(ssh.Client):
                                         user=self.username,
                                         password=self.password)
 
-    def execute_script(self, script, become_root=False,
-                       combine_stderr=True, shell='sh -eux'):
+    def execute_script(self, script, become_root=False, combine_stderr=False,
+                       shell='sh -eux', timeout=None, **params):
         """Connect to remote machine and executes script.
 
         Implementation note: it passes script lines to shell interpreter via
@@ -191,14 +200,32 @@ class Client(ssh.Client):
         variable would interrupt script execution with an error and every
         command executed by the script is going to be traced to STDERR.
 
+        :param timeout: time in seconds to wait before brutally aborting
+        script execution.
+
+        :param **params: script parameter values to be assigned at the
+        beginning of the script.
+
         :returns output written by script to STDOUT.
 
         :raises tempest.lib.exceptions.SSHTimeout: in case it fails to connect
         to remote server or it fails to open a channel.
 
         :raises tempest.lib.exceptions.SSHExecCommandFailed: in case command
-        script exits with non zero exit status.
+        script exits with non zero exit status or times out.
         """
+
+        if params:
+            # Append script parameters at the beginning of the script
+            header = ''.join(sorted(["{!s}={!s}\n".format(k, v)
+                                     for k, v in params.items()]))
+            script = header + '\n' + script
+
+        timeout = timeout or self.timeout
+        end_of_time = time.time() + timeout
+        output_data = b''
+        error_data = b''
+        exit_status = None
 
         channel = self.open_session()
         with channel:
@@ -206,52 +233,66 @@ class Client(ssh.Client):
             # Combine STOUT and STDERR to have to handle with only one stream
             channel.set_combine_stderr(combine_stderr)
 
-            # Set default environment
-            channel.update_environment({
-                # Language and encoding
-                'LC_ALL': os.environ.get('LC_ALL') or self.default_ssh_lang,
-                'LANG': os.environ.get('LANG') or self.default_ssh_lang
-            })
+            # Update local environment
+            lang, encoding = locale.getlocale()
+            if not lang:
+                lang, encoding = locale.getdefaultlocale()
+            _locale = '.'.join([lang, encoding])
+            channel.update_environment({'LC_ALL': _locale,
+                                        'LANG': _locale})
 
             if become_root:
                 shell = 'sudo ' + shell
             # Spawn a Bash
             channel.exec_command(shell)
 
+            end_of_script = False
             lines_iterator = iter(script.splitlines())
-            output_data = b''
-            error_data = b''
-
-            while not channel.exit_status_ready():
+            while (not channel.exit_status_ready() and
+                   time.time() < end_of_time):
                 # Drain incoming data buffers
                 while channel.recv_ready():
                     output_data += channel.recv(self.buf_size)
                 while channel.recv_stderr_ready():
                     error_data += channel.recv_stderr(self.buf_size)
 
-                if channel.send_ready():
+                if not end_of_script and channel.send_ready():
                     try:
                         line = next(lines_iterator)
                     except StopIteration:
                         # Finalize Bash script execution
                         channel.shutdown_write()
+                        end_of_script = True
                     else:
                         # Send script to Bash STDIN line by line
-                        channel.send((line + '\n').encode('utf-8'))
-                else:
-                    time.sleep(.1)
+                        channel.send((line + '\n').encode(encoding))
+                        continue
+
+                time.sleep(.1)
 
             # Get exit status and drain incoming data buffers
-            exit_status = channel.recv_exit_status()
+            if channel.exit_status_ready():
+                exit_status = channel.recv_exit_status()
             while channel.recv_ready():
                 output_data += channel.recv(self.buf_size)
             while channel.recv_stderr_ready():
                 error_data += channel.recv_stderr(self.buf_size)
 
-        if exit_status != 0:
-            raise exceptions.SSHExecCommandFailed(
-                command='bash', exit_status=exit_status,
-                stderr=error_data.decode('utf-8'),
-                stdout=output_data.decode('utf-8'))
+        stdout = _buffer_to_string(output_data, encoding)
+        if exit_status == 0:
+            return stdout
 
-        return output_data.decode('utf-8')
+        stderr = _buffer_to_string(error_data, encoding)
+        if exit_status is None:
+            raise exc.SSHScriptTimeoutExpired(
+                host=self.host, script=script, stderr=stderr, stdout=stdout,
+                timeout=timeout)
+        else:
+            raise exc.SSHScriptFailed(
+                host=self.host, script=script, stderr=stderr, stdout=stdout,
+                exit_status=exit_status)
+
+
+def _buffer_to_string(data_buffer, encoding):
+    return data_buffer.decode(encoding).replace("\r\n", "\n").replace(
+        "\r", "\n")

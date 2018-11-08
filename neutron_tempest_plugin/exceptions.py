@@ -28,3 +28,23 @@ class InvalidCredentials(TempestException):
 
 class InvalidServiceTag(TempestException):
     message = "Invalid service tag"
+
+
+class SSHScriptException(exceptions.TempestException):
+    """Base class for SSH client execute_script() exceptions"""
+
+
+class SSHScriptTimeoutExpired(SSHScriptException):
+    message = ("Timeout expired while executing script on host %(host)r:\n"
+               "script:\n%(script)s\n"
+               "stderr:\n%(stderr)s\n"
+               "stdout:\n%(stdout)s\n"
+               "timeout: %(timeout)s")
+
+
+class SSHScriptFailed(SSHScriptException):
+    message = ("Failed executing script on remote host %(host)r:\n"
+               "script:\n%(script)s\n"
+               "stderr:\n%(stderr)s\n"
+               "stdout:\n%(stdout)s\n"
+               "exit_status: %(exit_status)s")

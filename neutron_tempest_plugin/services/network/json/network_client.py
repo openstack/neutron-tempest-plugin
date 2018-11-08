@@ -375,6 +375,8 @@ class NetworkClientJSON(service_client.RestClient):
             update_body['distributed'] = kwargs['distributed']
         if 'ha' in kwargs:
             update_body['ha'] = kwargs['ha']
+        if 'routes' in kwargs:
+            update_body['routes'] = kwargs['routes']
         update_body = dict(router=update_body)
         update_body = jsonutils.dumps(update_body)
         resp, body = self.put(uri, update_body)
@@ -445,6 +447,9 @@ class NetworkClientJSON(service_client.RestClient):
         self.expected_success(200, resp.status)
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
+
+    def remove_router_extra_routes(self, router_id):
+        self.update_router(router_id, routes=None)
 
     def update_agent(self, agent_id, agent_info):
         """Update an agent

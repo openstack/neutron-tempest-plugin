@@ -27,16 +27,17 @@ class InternalDNSTest(base.BaseTempestTestCase):
 
     @utils.requires_ext(extension="dns-integration", service="network")
     @decorators.idempotent_id('988347de-07af-471a-abfa-65aea9f452a6')
-    def test_dns_name(self):
+    def test_dns_domain_and_name(self):
         """Test the ability to ping a VM's hostname from another VM.
 
         1) Create two VMs on the same network, giving each a name
         2) SSH in to the first VM:
           2.1) ping the other VM's internal IP
-          2.2) ping the otheR VM's hostname
+          2.2) ping the other VM's hostname
         """
 
-        self.setup_network_and_server(server_name='luke')
+        network = self.create_network(dns_domain='starwars.')
+        self.setup_network_and_server(network=network, server_name='luke')
         self.create_pingable_secgroup_rule(
             secgroup_id=self.security_groups[-1]['id'])
         self.check_connectivity(self.fip['floating_ip_address'],
@@ -70,4 +71,8 @@ class InternalDNSTest(base.BaseTempestTestCase):
         self.check_remote_connectivity(
             ssh_client, leia_port['fixed_ips'][0]['ip_address'],
             timeout=CONF.validation.ping_timeout * 10)
+        self.assertIn(
+            'starwars', ssh_client.exec_command('cat /etc/resolv.conf'))
+
         self.check_remote_connectivity(ssh_client, 'leia')
+        self.check_remote_connectivity(ssh_client, 'leia.starwars')

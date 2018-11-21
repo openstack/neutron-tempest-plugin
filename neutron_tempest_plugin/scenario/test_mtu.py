@@ -46,11 +46,24 @@ class NetworkMtuBaseTest(base.BaseTempestTestCase):
             secgroup_id=cls.secgroup['security_group']['id'])
         cls.create_pingable_secgroup_rule(
             secgroup_id=cls.secgroup['security_group']['id'])
+        if CONF.neutron_plugin_options.default_image_is_advanced:
+            cls.use_advanced_image = False
+            cls.username = CONF.validation.image_ssh_user
+        else:
+            cls.use_advanced_image = True
+            cls.username = CONF.neutron_plugin_options.advanced_image_ssh_user
 
     def create_pingable_vm(self, net, keypair, secgroup):
+        if self.use_advanced_image:
+            flavor_ref = CONF.neutron_plugin_options.advanced_image_flavor_ref
+            image_ref = CONF.neutron_plugin_options.advanced_image_ref
+        else:
+            flavor_ref = CONF.compute.flavor_ref
+            image_ref = CONF.compute.image_ref
+
         server = self.create_server(
-            flavor_ref=CONF.neutron_plugin_options.advanced_image_flavor_ref,
-            image_ref=CONF.neutron_plugin_options.advanced_image_ref,
+            flavor_ref=flavor_ref,
+            image_ref=image_ref,
             key_name=keypair['name'],
             networks=[{'uuid': net['id']}],
             security_groups=[{'name': secgroup[
@@ -107,24 +120,22 @@ class NetworkMtuTest(NetworkMtuBaseTest):
                                                 self.keypair, self.secgroup)
         server_ssh_client1 = ssh.Client(
             self.floating_ips[0]['floating_ip_address'],
-            CONF.neutron_plugin_options.advanced_image_ssh_user,
-            pkey=self.keypair['private_key'])
+            self.username, pkey=self.keypair['private_key'])
         server2, fip2 = self.create_pingable_vm(self.networks[1],
                                                 self.keypair, self.secgroup)
         server_ssh_client2 = ssh.Client(
             self.floating_ips[0]['floating_ip_address'],
-            CONF.neutron_plugin_options.advanced_image_ssh_user,
-            pkey=self.keypair['private_key'])
+            self.username, pkey=self.keypair['private_key'])
         for fip in (fip1, fip2):
             self.check_connectivity(
                 fip['floating_ip_address'],
-                CONF.neutron_plugin_options.advanced_image_ssh_user,
-                self.keypair['private_key'])
+                self.username, self.keypair['private_key'])
         return server_ssh_client1, fip1, server_ssh_client2, fip2
 
     @testtools.skipUnless(
-          CONF.neutron_plugin_options.advanced_image_ref,
-          "Advanced image is required to run this test.")
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a273d9d344')
     def test_connectivity_min_max_mtu(self):
         server_ssh_client, _, _, fip2 = self._create_setup()
@@ -202,24 +213,22 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
                                                 self.keypair, self.secgroup)
         server_ssh_client1 = ssh.Client(
             self.floating_ips[0]['floating_ip_address'],
-            CONF.neutron_plugin_options.advanced_image_ssh_user,
-            pkey=self.keypair['private_key'])
+            self.username, pkey=self.keypair['private_key'])
         server2, fip2 = self.create_pingable_vm(self.networks[1],
                                                 self.keypair, self.secgroup)
         server_ssh_client2 = ssh.Client(
             self.floating_ips[0]['floating_ip_address'],
-            CONF.neutron_plugin_options.advanced_image_ssh_user,
-            pkey=self.keypair['private_key'])
+            self.username, pkey=self.keypair['private_key'])
         for fip in (fip1, fip2):
             self.check_connectivity(
                 fip['floating_ip_address'],
-                CONF.neutron_plugin_options.advanced_image_ssh_user,
-                self.keypair['private_key'])
+                self.username, self.keypair['private_key'])
         return server_ssh_client1, fip1, server_ssh_client2, fip2
 
     @testtools.skipUnless(
-          CONF.neutron_plugin_options.advanced_image_ref,
-          "Advanced image is required to run this test.")
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
     @decorators.idempotent_id('bc470200-d8f4-4f07-b294-1b4cbaaa35b9')
     def test_connectivity_min_max_mtu(self):
         server_ssh_client, _, _, fip2 = self._create_setup()

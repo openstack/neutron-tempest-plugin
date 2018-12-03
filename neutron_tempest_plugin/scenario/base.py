@@ -122,29 +122,24 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         Setting a group_id would only permit traffic from ports
         belonging to the same security group.
         """
-
-        rule_list = [{'protocol': 'tcp',
-                      'direction': 'ingress',
-                      'port_range_min': 22,
-                      'port_range_max': 22,
-                      'remote_ip_prefix': '0.0.0.0/0'}]
-        client = client or cls.os_primary.network_client
-        cls.create_secgroup_rules(rule_list, client=client,
-                                  secgroup_id=secgroup_id)
+        return cls.create_security_group_rule(
+            security_group_id=secgroup_id,
+            client=client,
+            protocol=neutron_lib_constants.PROTO_NAME_TCP,
+            direction=neutron_lib_constants.INGRESS_DIRECTION,
+            port_range_min=22,
+            port_range_max=22)
 
     @classmethod
     def create_pingable_secgroup_rule(cls, secgroup_id=None,
                                       client=None):
-        """This rule is intended to permit inbound ping"""
+        """This rule is intended to permit inbound ping
 
-        rule_list = [{'protocol': 'icmp',
-                      'direction': 'ingress',
-                      'port_range_min': 8,  # type
-                      'port_range_max': 0,  # code
-                      'remote_ip_prefix': '0.0.0.0/0'}]
-        client = client or cls.os_primary.network_client
-        cls.create_secgroup_rules(rule_list, client=client,
-                                  secgroup_id=secgroup_id)
+        """
+        return cls.create_security_group_rule(
+            security_group_id=secgroup_id, client=client,
+            protocol=neutron_lib_constants.PROTO_NAME_ICMP,
+            direction=neutron_lib_constants.INGRESS_DIRECTION)
 
     @classmethod
     def create_router_by_client(cls, is_admin=False, **kwargs):

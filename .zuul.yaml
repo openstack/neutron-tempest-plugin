@@ -15,6 +15,7 @@
       tempest_concurrency: 4
       tox_envlist: all
       devstack_localrc:
+        USE_PYTHON3: true
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
         NETWORK_API_EXTENSIONS: address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-domain-ports,dns-integration,dvr,empty-string-filtering,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,filter-validation,fip-port-details,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,qos-bw-minimum-ingress,qos-fip,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,port-mac-address-regenerate,port-security-groups-filtering,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-segment,standard-attr-timestamp,standard-attr-tag,subnet_allocation,trunk,trunk-details,uplink-status-propagation
       devstack_plugins:
@@ -102,6 +103,7 @@
     vars:
       branch_override: stable/queens
       devstack_localrc:
+        USE_PYTHON3: false
         # TODO(slaweq): find a way to put this list of extensions in
         # neutron repository and keep it different per branch,
         # then it could be removed from here
@@ -114,6 +116,7 @@
     vars:
       branch_override: stable/rocky
       devstack_localrc:
+        USE_PYTHON3: false
         # TODO(slaweq): find a way to put this list of extensions in
         # neutron repository and keep it different per branch,
         # then it could be removed from here
@@ -172,6 +175,7 @@
     vars:
       branch_override: stable/queens
       devstack_localrc:
+        USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-integration,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,qos-fip,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,port-security-groups-filtering,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-timestamp,standard-attr-tag,subnet_allocation,tag,tag-ext,trunk,trunk-details
 
 - job:
@@ -181,6 +185,7 @@
     vars:
       branch_override: stable/rocky
       devstack_localrc:
+        USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-domain-ports,dns-integration,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,fip-port-details,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,qos-fip,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,port-security-groups-filtering,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-timestamp,standard-attr-tag,subnet_allocation,tag,tag-ext,trunk,trunk-details
 
 - job:
@@ -202,6 +207,7 @@
       tox_envlist: all
       tempest_test_regex: ^neutron_tempest_plugin\.scenario
       devstack_localrc:
+        USE_PYTHON3: true
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
         NETWORK_API_EXTENSIONS: "address-scope,agent,allowed-address-pairs,auto-allocated-topology,availability_zone,binding,default-subnetpools,dhcp_agent_scheduler,dns-integration,dvr,empty-string-filtering,ext-gw-mode,external-net,extra_dhcp_opt,extraroute,fip-port-details,flavors,ip-substring-filtering,l3-flavors,l3-ha,l3_agent_scheduler,logging,metering,multi-provider,net-mtu,net-mtu-writable,network-ip-availability,network_availability_zone,pagination,port-security,project-id,provider,qos,qos-bw-minimum-ingress,qos-fip,quotas,quota_details,rbac-policies,router,router_availability_zone,security-group,port-security-groups-filtering,segment,service-type,sorting,standard-attr-description,standard-attr-revisions,standard-attr-segment,standard-attr-timestamp,standard-attr-tag,subnet_allocation,trunk,trunk-details"
         PHYSICAL_NETWORK: default
@@ -314,6 +320,8 @@
     override-checkout: stable/queens
     vars:
       branch_override: stable/queens
+      devstack_localrc:
+        USE_PYTHON3: false
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
@@ -321,6 +329,8 @@
     override-checkout: stable/rocky
     vars:
       branch_override: stable/rocky
+      devstack_localrc:
+        USE_PYTHON3: false
 
 - job:
     name: neutron-tempest-plugin-designate-scenario
@@ -354,6 +364,8 @@
     override-checkout: stable/queens
     vars:
       branch_override: stable/queens
+      devstack_localrc:
+        USE_PYTHON3: false
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-rocky
@@ -361,6 +373,8 @@
     override-checkout: stable/rocky
     vars:
       branch_override: stable/rocky
+      devstack_localrc:
+        USE_PYTHON3: false
 
 - project-template:
     name: neutron-tempest-plugin-jobs

@@ -14,7 +14,6 @@
 #    under the License.
 from tempest.common import utils
 from tempest.common import waiters
-from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.common import ssh
@@ -38,22 +37,17 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
         cls.create_router_interface(router['id'], cls.subnets[0]['id'])
         # Create keypair with admin privileges
         cls.keypair = cls.create_keypair(client=cls.os_admin.keypairs_client)
-        # Create security group with admin privileges
-        cls.secgroup = cls.os_admin.network_client.create_security_group(
-            name=data_utils.rand_name('secgroup'))['security_group']
-        # Execute funcs to achieve ssh and ICMP capabilities
-        funcs = [cls.create_loginable_secgroup_rule,
-                 cls.create_pingable_secgroup_rule]
-        for func in funcs:
-            func(secgroup_id=cls.secgroup['id'],
-                 client=cls.os_admin.network_client)
 
-    @classmethod
-    def resource_cleanup(cls):
-        # Cleanup for security group
-        cls.os_admin.network_client.delete_security_group(
-            security_group_id=cls.secgroup['id'])
-        super(FloatingIpTestCasesAdmin, cls).resource_cleanup()
+        # Create security group with admin privileges
+        network_client = cls.os_admin.network_client
+        cls.secgroup = cls.create_security_group(
+            client=cls.os_admin.network_client)
+        cls.create_loginable_secgroup_rule(
+            secgroup_id=cls.secgroup['id'],
+            client=network_client)
+        cls.create_pingable_secgroup_rule(
+            secgroup_id=cls.secgroup['id'],
+            client=network_client),
 
     def _list_hypervisors(self):
         # List of hypervisors

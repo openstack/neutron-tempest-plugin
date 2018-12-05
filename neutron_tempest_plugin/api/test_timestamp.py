@@ -11,14 +11,15 @@
 #    under the License.
 
 import copy
+import time
 
+from neutron_lib import constants
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin.api import base_routers
-from neutron_tempest_plugin.api import base_security_groups
 from neutron_tempest_plugin import config
 
 CONF = config.CONF
@@ -276,7 +277,7 @@ class TestTimeStampWithL3(base_routers.BaseRouterTest):
                          show_fip['updated_at'])
 
 
-class TestTimeStampWithSecurityGroup(base_security_groups.BaseSecGroupTest):
+class TestTimeStampWithSecurityGroup(base.BaseNetworkTest):
 
     required_extensions = ['standard-attr-timestamp']
 
@@ -287,66 +288,66 @@ class TestTimeStampWithSecurityGroup(base_security_groups.BaseSecGroupTest):
 
     @decorators.idempotent_id('a3150a7b-d31a-423a-abf3-45e71c97cbac')
     def test_create_sg_with_timestamp(self):
-        sg, _ = self._create_security_group()
+        security_group = self.create_security_group()
         # Verifies body contains timestamp fields
-        self.assertIsNotNone(sg['security_group']['created_at'])
-        self.assertIsNotNone(sg['security_group']['updated_at'])
+        self.assertIsNotNone(security_group['created_at'])
+        self.assertIsNotNone(security_group['updated_at'])
 
     @decorators.idempotent_id('432ae0d3-32b4-413e-a9b3-091ac76da31b')
     def test_update_sg_with_timestamp(self):
-        sgc, _ = self._create_security_group()
-        sg = sgc['security_group']
-        origin_updated_at = sg['updated_at']
-        update_body = {'name': sg['name'] + 'new'}
-        body = self.client.update_security_group(sg['id'], **update_body)
-        updated_sg = body['security_group']
-        new_updated_at = updated_sg['updated_at']
-        self.assertEqual(sg['created_at'], updated_sg['created_at'])
-        # Verify that origin_updated_at is not same with new_updated_at
-        self.assertIsNot(origin_updated_at, new_updated_at)
+        security_group = self.create_security_group()
+
+        # Make sure update time will be different
+        time.sleep(2.)
+        updated_security_group = self.client.update_security_group(
+            security_group['id'], name=security_group['name'] + 'new')[
+                'security_group']
+
+        # Verify that created_at hasn't changed
+        self.assertEqual(security_group['created_at'],
+                         updated_security_group['created_at'])
+        # Verify that updated_at has changed
+        self.assertNotEqual(security_group['updated_at'],
+                            updated_security_group['updated_at'])
 
     @decorators.idempotent_id('521e6723-43d6-12a6-8c3d-f5042ad9fc32')
     def test_show_sg_attribute_with_timestamp(self):
-        sg, _ = self._create_security_group()
-        body = self.client.show_security_group(sg['security_group']['id'])
-        show_sg = body['security_group']
-        # verify the timestamp from creation and showed is same
-        self.assertEqual(sg['security_group']['created_at'],
-                         show_sg['created_at'])
-        self.assertEqual(sg['security_group']['updated_at'],
-                         show_sg['updated_at'])
+        security_group = self.create_security_group()
+        observed_security_group = self.client.show_security_group(
+            security_group['id'])['security_group']
 
-    def _prepare_sgrule_test(self):
-        sg, _ = self._create_security_group()
-        sg_id = sg['security_group']['id']
-        direction = 'ingress'
-        protocol = 'tcp'
-        port_range_min = 77
-        port_range_max = 77
-        rule_create_body = self.client.create_security_group_rule(
-            security_group_id=sg_id,
-            direction=direction,
-            ethertype=self.ethertype,
-            protocol=protocol,
-            port_range_min=port_range_min,
-            port_range_max=port_range_max,
-            remote_group_id=None,
-            remote_ip_prefix=None
-        )
-        return rule_create_body['security_group_rule']
+        # Verify that created_at hasn't changed
+        self.assertEqual(security_group['created_at'],
+                         observed_security_group['created_at'])
+        # Verify that updated_at hasn't changed
+        self.assertEqual(security_group['updated_at'],
+                         observed_security_group['updated_at'])
+
+    def _create_security_group_rule(self):
+        security_group = self.create_security_group()
+        return self.create_security_group_rule(
+            security_group=security_group,
+            direction=constants.INGRESS_DIRECTION,
+            protocol=constants.PROTO_NAME_TCP,
+            port_range_min=77,
+            port_range_max=77)
 
     @decorators.idempotent_id('83e8bd32-43e0-a3f0-1af3-12a5733c653e')
     def test_create_sgrule_with_timestamp(self):
-        sgrule = self._prepare_sgrule_test()
+        security_group_rule = self._create_security_group_rule()
         # Verifies body contains timestamp fields
-        self.assertIsNotNone(sgrule['created_at'])
-        self.assertIsNotNone(sgrule['updated_at'])
+        self.assertIn('created_at', security_group_rule)
+        self.assertIn('updated_at', security_group_rule)
 
     @decorators.idempotent_id('143da0e6-ba17-43ad-b3d7-03aa759c3cb4')
     def test_show_sgrule_attribute_with_timestamp(self):
-        sgrule = self._prepare_sgrule_test()
-        body = self.client.show_security_group_rule(sgrule['id'])
-        show_sgrule = body['security_group_rule']
-        # verify the timestamp from creation and showed is same
-        self.assertEqual(sgrule['created_at'], show_sgrule['created_at'])
-        self.assertEqual(sgrule['updated_at'], show_sgrule['updated_at'])
+        security_group_rule = self._create_security_group_rule()
+
+        observed_security_group_rule = self.client.show_security_group_rule(
+            security_group_rule['id'])['security_group_rule']
+
+        # Verify the time stamp from creation and showed are equal
+        self.assertEqual(security_group_rule['created_at'],
+                         observed_security_group_rule['created_at'])
+        self.assertEqual(security_group_rule['updated_at'],
+                         observed_security_group_rule['updated_at'])

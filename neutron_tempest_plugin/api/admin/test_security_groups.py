@@ -14,10 +14,10 @@
 
 from tempest.lib import decorators
 
-from neutron_tempest_plugin.api import base_security_groups as base
+from neutron_tempest_plugin.api import base
 
 
-class SecGroupAdminTest(base.BaseSecGroupTest):
+class SecGroupAdminTest(base.BaseNetworkTest):
     required_extensions = ['security-group']
     credentials = ['primary', 'admin']
 

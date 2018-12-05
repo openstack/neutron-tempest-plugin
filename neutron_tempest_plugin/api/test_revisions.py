@@ -12,16 +12,16 @@
 
 import netaddr
 
+from neutron_lib import constants
 from tempest.common import utils
 from tempest.lib import decorators
 from tempest.lib import exceptions
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin.api import base_security_groups as bsg
 from neutron_tempest_plugin import config
 
 
-class TestRevisions(base.BaseAdminNetworkTest, bsg.BaseSecGroupTest):
+class TestRevisions(base.BaseAdminNetworkTest):
 
     required_extensions = ['standard-attr-revisions']
 
@@ -111,46 +111,51 @@ class TestRevisions(base.BaseAdminNetworkTest, bsg.BaseSecGroupTest):
     @decorators.idempotent_id('6c256f71-c929-4200-b3dc-4e1843506be5')
     @utils.requires_ext(extension="security-group", service="network")
     def test_update_sg_group_bumps_revision(self):
-        sg, name = self._create_security_group()
-        self.assertIn('revision_number', sg['security_group'])
-        update_body = self.client.update_security_group(
-            sg['security_group']['id'], name='new_sg_name')
-        self.assertGreater(update_body['security_group']['revision_number'],
-                           sg['security_group']['revision_number'])
+        security_group = self.create_security_group()
+        self.assertIn('revision_number', security_group)
+        updated_security_group = self.client.update_security_group(
+            security_group['id'], name='new_sg_name')['security_group']
+        self.assertGreater(updated_security_group['revision_number'],
+                           security_group['revision_number'])
 
     @decorators.idempotent_id('6489632f-8550-4453-a674-c98849742967')
     @utils.requires_ext(extension="security-group", service="network")
     def test_update_port_sg_binding_bumps_revision(self):
-        net = self.create_network()
-        self.addCleanup(self.client.delete_network, net['id'])
-        port = self.create_port(net)
-        self.addCleanup(self.client.delete_port, port['id'])
-        sg = self._create_security_group()[0]
-        self.client.update_port(
-            port['id'], security_groups=[sg['security_group']['id']])
-        updated = self.client.show_port(port['id'])
-        updated2 = self.client.update_port(port['id'], security_groups=[])
-        self.assertGreater(updated['port']['revision_number'],
+        network = self.create_network()
+        port = self.create_port(network)
+
+        security_group = self.create_security_group()
+        updated_port = self.client.update_port(
+            port['id'], security_groups=[security_group['id']])['port']
+        self.assertGreater(updated_port['revision_number'],
                            port['revision_number'])
-        self.assertGreater(updated2['port']['revision_number'],
-                           updated['port']['revision_number'])
+
+        updated_port2 = self.client.update_port(
+            port['id'], security_groups=[])['port']
+        self.assertGreater(updated_port2['revision_number'],
+                           updated_port['revision_number'])
 
     @decorators.idempotent_id('29c7ab2b-d1d8-425d-8cec-fcf632960f22')
     @utils.requires_ext(extension="security-group", service="network")
     def test_update_sg_rule_bumps_sg_revision(self):
-        sg, name = self._create_security_group()
-        rule = self.client.create_security_group_rule(
-            security_group_id=sg['security_group']['id'],
-            protocol='tcp', direction='ingress', ethertype=self.ethertype,
-            port_range_min=60, port_range_max=70)
-        updated = self.client.show_security_group(sg['security_group']['id'])
-        self.assertGreater(updated['security_group']['revision_number'],
-                           sg['security_group']['revision_number'])
-        self.client.delete_security_group_rule(
-            rule['security_group_rule']['id'])
-        updated2 = self.client.show_security_group(sg['security_group']['id'])
-        self.assertGreater(updated2['security_group']['revision_number'],
-                           updated['security_group']['revision_number'])
+        security_group = self.create_security_group()
+
+        security_group_rule = self.create_security_group_rule(
+            security_group=security_group,
+            protocol=constants.PROTO_NAME_TCP,
+            direction=constants.INGRESS_DIRECTION,
+            port_range_min=60,
+            port_range_max=70)
+        updated_security_group = self.client.show_security_group(
+            security_group['id'])['security_group']
+        self.assertGreater(updated_security_group['revision_number'],
+                           security_group['revision_number'])
+
+        self.client.delete_security_group_rule(security_group_rule['id'])
+        updated_security_group2 = self.client.show_security_group(
+            security_group['id'])['security_group']
+        self.assertGreater(updated_security_group2['revision_number'],
+                           updated_security_group['revision_number'])
 
     @decorators.idempotent_id('db70c285-0365-4fac-9f55-2a0ad8cf55a8')
     @utils.requires_ext(extension="allowed-address-pairs", service="network")

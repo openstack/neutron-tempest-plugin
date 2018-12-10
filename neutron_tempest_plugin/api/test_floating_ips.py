@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import netaddr
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -121,3 +122,39 @@ class FloatingIPTestJSON(base.BaseNetworkTest):
         self.assertEqual(port['status'], port_details['status'])
         self.assertEqual(port['device_id'], port_details['device_id'])
         self.assertEqual(port['device_owner'], port_details['device_owner'])
+
+
+class FloatingIPPoolTestJSON(base.BaseAdminNetworkTest):
+
+    required_extensions = ['router']
+
+    @decorators.idempotent_id('6c438332-4554-461c-9668-512ae09bf952')
+    @utils.requires_ext(extension="floatingip-pools", service="network")
+    def test_create_floatingip_from_specific_pool(self):
+        network = self.create_network(client=self.admin_client, external=True)
+        subnet1 = self.create_subnet(network, client=self.admin_client)
+        subnet2 = self.create_subnet(network, client=self.admin_client)
+        pools = self.client.list_floatingip_pools()["floatingip_pools"]
+
+        def test_create_floatingip_from_subnet(pools, subnet):
+            pool = None
+            for p in pools:
+                if p['network_id'] == subnet['network_id'] \
+                        and p['subnet_id'] == subnet['id']:
+                    pool = p
+                    break
+
+            self.assertTrue(pool)
+            new_floatingip = self.create_floatingip(
+                pool['network_id'], subnet_id=pool['subnet_id'])
+            cidr = netaddr.IPNetwork(pool['cidr'])
+            ip_address = netaddr.IPAddress(
+                new_floatingip['floating_ip_address'])
+            self.assertIn(ip_address, cidr)
+            fip_id = new_floatingip['id']
+            floatingip = self.client.get_floatingip(fip_id)['floatingip']
+            self.assertEqual(new_floatingip['floating_ip_address'],
+                             floatingip['floating_ip_address'])
+
+        test_create_floatingip_from_subnet(pools, subnet1)
+        test_create_floatingip_from_subnet(pools, subnet2)

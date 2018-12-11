@@ -830,7 +830,7 @@ class BaseNetworkTest(test.BaseTestCase):
         return trunk
 
     @classmethod
-    def delete_trunk(cls, trunk, client=None):
+    def delete_trunk(cls, trunk, client=None, detach_parent_port=True):
         """Delete network trunk
 
         :param trunk: dictionary containing trunk ID (trunk['id'])
@@ -856,7 +856,7 @@ class BaseNetworkTest(test.BaseTestCase):
             parent_port.update(client.show_port(parent_port['id'])['port'])
             return not parent_port['device_id']
 
-        if not is_parent_port_detached():
+        if detach_parent_port and not is_parent_port_detached():
             # this could probably happen when trunk is deleted and parent port
             # has been assigned to a VM that is still running. Here we are
             # assuming that device_id points to such VM.

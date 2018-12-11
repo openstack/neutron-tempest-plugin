@@ -876,6 +876,13 @@ class NetworkClientJSON(service_client.RestClient):
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
 
+    def delete_security_group_rule(self, security_group_rule_id):
+        uri = '%s/security-group-rules/%s' % (self.uri_prefix,
+                                              security_group_rule_id)
+        resp, body = self.delete(uri)
+        self.expected_success(204, resp.status)
+        return service_client.ResponseBody(resp, body)
+
     def list_security_groups(self, **kwargs):
         post_body = {'security_groups': kwargs}
         body = jsonutils.dumps(post_body)

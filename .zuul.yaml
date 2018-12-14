@@ -98,6 +98,7 @@
 
 - job:
     name: neutron-tempest-plugin-api-queens
+    nodeset: openstack-single-node-xenial
     parent: neutron-tempest-plugin-api
     override-checkout: stable/queens
     vars:
@@ -111,6 +112,7 @@
 
 - job:
     name: neutron-tempest-plugin-api-rocky
+    nodeset: openstack-single-node-xenial
     parent: neutron-tempest-plugin-api
     override-checkout: stable/rocky
     vars:
@@ -172,6 +174,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-queens
     parent: neutron-tempest-plugin-scenario-linuxbridge
+    nodeset: openstack-single-node-xenial
     override-checkout: stable/queens
     vars:
       branch_override: stable/queens
@@ -190,6 +193,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-rocky
     parent: neutron-tempest-plugin-scenario-linuxbridge
+    nodeset: openstack-single-node-xenial
     override-checkout: stable/rocky
     vars:
       branch_override: stable/rocky
@@ -334,6 +338,7 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-queens
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-xenial
     override-checkout: stable/queens
     vars:
       branch_override: stable/queens
@@ -343,6 +348,7 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-xenial
     override-checkout: stable/rocky
     vars:
       branch_override: stable/rocky
@@ -378,6 +384,7 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-queens
     parent: neutron-tempest-plugin-designate-scenario
+    nodeset: openstack-single-node-xenial
     override-checkout: stable/queens
     vars:
       branch_override: stable/queens
@@ -387,6 +394,7 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-rocky
     parent: neutron-tempest-plugin-designate-scenario
+    nodeset: openstack-single-node-xenial
     override-checkout: stable/rocky
     vars:
       branch_override: stable/rocky

@@ -42,20 +42,17 @@ class NetworkClientJSON(service_client.RestClient):
         # The following list represents resource names that do not require
         # changing underscore to a hyphen
         hyphen_exceptions = ["service_profiles", "availability_zones"]
-        # the following map is used to construct proper URI
-        # for the given neutron resource
+        # The following map is used to construct proper URI
+        # for the given neutron resource.
+        # No need to populate this map if the neutron resource
+        # doesn't have a URI prefix.
         service_resource_prefix_map = {
-            'networks': '',
-            'subnets': '',
-            'subnetpools': '',
-            'ports': '',
             'metering_labels': 'metering',
             'metering_label_rules': 'metering',
             'policies': 'qos',
             'bandwidth_limit_rules': 'qos',
             'minimum_bandwidth_rules': 'qos',
             'rule_types': 'qos',
-            'rbac-policies': '',
             'logs': 'log',
             'loggable_resources': 'log',
         }

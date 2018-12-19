@@ -135,6 +135,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.reserved_subnet_cidrs = set()
         cls.keypairs = []
         cls.trunks = []
+        cls.network_segment_ranges = []
 
     @classmethod
     def resource_cleanup(cls):
@@ -243,6 +244,12 @@ class BaseNetworkTest(test.BaseTestCase):
 
             for keypair in cls.keypairs:
                 cls._try_delete_resource(cls.delete_keypair, keypair)
+
+            # Clean up network_segment_ranges
+            for network_segment_range in cls.network_segment_ranges:
+                cls._try_delete_resource(
+                    cls.admin_client.delete_network_segment_range,
+                    network_segment_range['id'])
 
         super(BaseNetworkTest, cls).resource_cleanup()
 
@@ -911,6 +918,25 @@ class BaseAdminNetworkTest(BaseNetworkTest):
         metering_label_rule = body['metering_label_rule']
         cls.metering_label_rules.append(metering_label_rule)
         return metering_label_rule
+
+    @classmethod
+    def create_network_segment_range(cls, name, shared,
+                                     project_id, network_type,
+                                     physical_network, minimum,
+                                     maximum):
+        """Wrapper utility that returns a test network segment range."""
+        network_segment_range_args = {'name': name,
+                                      'shared': shared,
+                                      'project_id': project_id,
+                                      'network_type': network_type,
+                                      'physical_network': physical_network,
+                                      'minimum': minimum,
+                                      'maximum': maximum}
+        body = cls.admin_client.create_network_segment_range(
+            **network_segment_range_args)
+        network_segment_range = body['network_segment_range']
+        cls.network_segment_ranges.append(network_segment_range)
+        return network_segment_range
 
     @classmethod
     def create_flavor(cls, name, description, service_type):

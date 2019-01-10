@@ -46,6 +46,7 @@
         - network-ip-availability
         - network_availability_zone
         - pagination
+        - port-resource-request
         - port-mac-address-regenerate
         - port-security
         - port-security-groups-filtering
@@ -127,6 +128,7 @@
               agent_availability_zone: nova
               image_is_advanced: true
               available_type_drivers: flat,geneve,vlan,gre,local,vxlan
+              provider_net_base_segm_id: 1
     irrelevant-files: &tempest-irrelevant-files
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$

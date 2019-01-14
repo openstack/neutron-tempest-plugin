@@ -14,7 +14,6 @@
 #    under the License.
 
 import functools
-import itertools
 import math
 import time
 
@@ -993,27 +992,24 @@ class BaseAdminNetworkTest(BaseNetworkTest):
     def create_provider_network(cls, physnet_name, start_segmentation_id,
                                 max_attempts=30):
         segmentation_id = start_segmentation_id
-        for attempts in itertools.count():
+        for attempts in range(max_attempts):
             try:
-                prov_network = cls.create_network(
+                return cls.create_network(
                     name=data_utils.rand_name('test_net'),
                     shared=True,
                     provider_network_type='vlan',
                     provider_physical_network=physnet_name,
                     provider_segmentation_id=segmentation_id)
-                break
             except lib_exc.Conflict:
-                if attempts > max_attempts:
-                    LOG.exception("Failed to create provider network after "
-                                  "%d attempts", attempts)
-                    raise lib_exc.TimeoutException
                 segmentation_id += 1
                 if segmentation_id > 4095:
                     raise lib_exc.TempestException(
                         "No free segmentation id was found for provider "
                         "network creation!")
                 time.sleep(CONF.network.build_interval)
-        return prov_network
+        LOG.exception("Failed to create provider network after "
+                      "%d attempts", max_attempts)
+        raise lib_exc.TimeoutException
 
 
 def require_qos_rule_type(rule_type):

@@ -158,9 +158,11 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
     @classmethod
     def skip_checks(cls):
         super(NetworkWritableMtuTest, cls).skip_checks()
-        if ("vxlan" not in
-                config.CONF.neutron_plugin_options.available_type_drivers):
-            raise cls.skipException("VXLAN type_driver is not enabled")
+        supported_type_drivers = ['vxlan', 'geneve']
+        if not any(type_driver in supported_type_drivers for type_driver in
+                   config.CONF.neutron_plugin_options.available_type_drivers):
+            raise cls.skipException(
+                "Neither VXLAN nor GENEVE type_driver is enabled")
 
     @classmethod
     @utils.requires_ext(extension="net-mtu-writable", service="network")

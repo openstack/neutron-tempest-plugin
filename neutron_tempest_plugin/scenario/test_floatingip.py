@@ -310,10 +310,12 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
             timed_out = int(time.time()) - start >= timeout
 
             if status != lib_constants.PORT_STATUS_DOWN and timed_out:
+                port_id = fip.get("port_id")
+                port = self.os_admin.network_client.show_port(port_id)['port']
                 message = ('Floating IP %s attached port status failed to '
                            'transition to DOWN (current status %s) within '
-                           'the required time (%s s).' %
-                           (fip_id, status, timeout))
+                           'the required time (%s s). Port details: %s' %
+                           (fip_id, status, timeout, port))
                 raise exceptions.TimeoutException(message)
 
         return fip

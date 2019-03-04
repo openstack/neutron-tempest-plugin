@@ -340,6 +340,11 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                       'reachable' if should_succeed else 'unreachable'
                   })
         result = test_utils.call_until_true(ping, timeout, 1)
+
+        # To make sure ping_ip_address called by test works
+        # as expected.
+        self.assertTrue(result)
+
         LOG.debug('%(caller)s finishes ping %(ip)s in %(timeout)s sec and the '
                   'ping result is %(result)s', {
                       'caller': caller, 'ip': ip_address, 'timeout': timeout,

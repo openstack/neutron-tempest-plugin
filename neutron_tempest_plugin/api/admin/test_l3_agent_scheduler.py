@@ -68,18 +68,30 @@ class L3AgentSchedulerTestJSON(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('9464e5e7-8625-49c3-8fd1-89c52be59d66')
     def test_add_list_remove_router_on_l3_agent(self):
         l3_agent_ids = list()
+
+        # First list agents which host router
+        body = self.admin_client.list_l3_agents_hosting_router(
+            self.router['id'])
+        # Now remove router from all agents
+        for agent in body['agents']:
+            self.admin_client.remove_router_from_l3_agent(
+                agent['id'], self.router['id'])
+
+        # Now list agents which host router again - list should be empty
+        body = self.admin_client.list_l3_agents_hosting_router(
+            self.router['id'])
+        self.assertEqual([], body['agents'])
+
+        # Now add router to one of agents
         self.admin_client.add_router_to_l3_agent(
             self.agent['id'],
+            router_id=self.router['id'])
+
+        # And check that router is hosted by this agent
+        body = self.admin_client.list_l3_agents_hosting_router(
             self.router['id'])
-        body = (
-            self.admin_client.list_l3_agents_hosting_router(self.router['id']))
         for agent in body['agents']:
             l3_agent_ids.append(agent['id'])
             self.assertIn('agent_type', agent)
             self.assertEqual('L3 agent', agent['agent_type'])
         self.assertIn(self.agent['id'], l3_agent_ids)
-        body = self.admin_client.remove_router_from_l3_agent(
-            self.agent['id'],
-            self.router['id'])
-        # NOTE(afazekas): The deletion not asserted, because neutron
-        # is not forbidden to reschedule the router to the same agent

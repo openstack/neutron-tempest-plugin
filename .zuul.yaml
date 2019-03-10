@@ -58,6 +58,7 @@
         - quotas
         - quota_details
         - rbac-policies
+        - rbac-security-groups
         - router
         - router_availability_zone
         - security-group

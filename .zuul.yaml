@@ -45,6 +45,7 @@
         - net-mtu-writable
         - network-ip-availability
         - network_availability_zone
+        - network-segment-range
         - pagination
         - port-resource-request
         - port-mac-address-regenerate
@@ -91,6 +92,7 @@
         neutron-segments: true
         neutron-trunk: true
         neutron-uplink-status-propagation: true
+        neutron-network-segment-range: true
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:

@@ -20,6 +20,7 @@ from neutron_lib import constants as const
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+from tempest.lib import exceptions as tlib_exceptions
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin import config
@@ -149,6 +150,14 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
         self.update_port(port, **{'qos_policy_id': None})
         port = self.admin_client.show_port(port_id)['port']
         self.assertIsNone(port['resource_request'])
+
+    @decorators.idempotent_id('7261391f-64cc-45a6-a1e3-435694c54bf5')
+    def test_port_resource_request_no_provider_net_conflict(self):
+        conflict = self.assertRaises(
+            tlib_exceptions.Conflict,
+            self._create_qos_policy_and_port,
+            network=self.network, vnic_type=self.vnic_type)
+        self.assertEqual('QosRuleNotSupported', conflict.resp_body['type'])
 
     @decorators.idempotent_id('0eeb6ffa-9a7a-40b5-83dd-dbdcd67e2e64')
     def test_port_resource_request_empty(self):

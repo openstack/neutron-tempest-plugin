@@ -150,14 +150,6 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
         port = self.admin_client.show_port(port_id)['port']
         self.assertIsNone(port['resource_request'])
 
-    @decorators.idempotent_id('10b3308b-d8a2-459b-9b89-a146863c357f')
-    def test_port_resource_request_no_provider_net(self):
-        port = self._create_qos_policy_and_port(
-            network=self.network, vnic_type=self.vnic_type)
-
-        self.assertIn('resource_request', port)
-        self.assertIsNone(port['resource_request'])
-
     @decorators.idempotent_id('0eeb6ffa-9a7a-40b5-83dd-dbdcd67e2e64')
     def test_port_resource_request_empty(self):
         qos_policy = self.create_qos_policy(

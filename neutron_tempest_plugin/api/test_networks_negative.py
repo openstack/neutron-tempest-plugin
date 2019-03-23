@@ -15,6 +15,9 @@ from tempest.lib import exceptions as lib_exc
 import testtools
 
 from neutron_tempest_plugin.api import base
+from tempest import config
+
+CONF = config.CONF
 
 
 class NetworksNegativeTest(base.BaseNetworkTest):
@@ -33,3 +36,10 @@ class NetworksNegativeTest(base.BaseNetworkTest):
             self.client.delete_subnet(self.subnet['id'])
         with testtools.ExpectedException(lib_exc.Conflict):
             self.client.delete_network(self.network['id'])
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('9f80f25b-5d1b-4f26-9f6b-774b9b270820')
+    def test_update_network_mtu(self):
+        with testtools.ExpectedException(lib_exc.BadRequest):
+            self.client.create_network(
+                mtu=CONF.neutron_plugin_options.max_mtu + 1)

@@ -9,7 +9,7 @@ source "${NEUTRON_TEMPEST_PLUGIN_DIR}/functions.sh"
 
 # By default enable guest image customization. It will be automatically skipped
 # for cirros images
-CUSTOMIZE_IMAGE=${CUSTOMIZE_IMAGE:-True}
+CUSTOMIZE_IMAGE=${CUSTOMIZE_IMAGE:-False}
 
 # Image customization is performed using virt-customize
 # using direct backend by default

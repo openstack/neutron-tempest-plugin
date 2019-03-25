@@ -82,8 +82,8 @@
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
       devstack_plugins:
-        neutron: git://git.openstack.org/openstack/neutron.git
-        neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
+        neutron: https://git.openstack.org/openstack/neutron.git
+        neutron-tempest-plugin: https://git.openstack.org/openstack/neutron-tempest-plugin.git
       devstack_services:
         tls-proxy: false
         tempest: true
@@ -418,8 +418,8 @@
         ADVANCED_INSTANCE_USER: ubuntu
         BUILD_TIMEOUT: 784
       devstack_plugins:
-        neutron: git://git.openstack.org/openstack/neutron.git
-        neutron-tempest-plugin: git://git.openstack.org/openstack/neutron-tempest-plugin.git
+        neutron: https://git.openstack.org/openstack/neutron.git
+        neutron-tempest-plugin: https://git.openstack.org/openstack/neutron-tempest-plugin.git
       devstack_services:
         tls-proxy: false
         tempest: true
@@ -552,7 +552,7 @@
         # empty
         ADVANCED_IMAGE_NAME: ""
       devstack_plugins:
-        designate: git://git.openstack.org/openstack/designate.git
+        designate: https://git.openstack.org/openstack/designate.git
       devstack_services:
         cinder: false
         designate: true

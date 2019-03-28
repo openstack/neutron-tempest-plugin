@@ -57,6 +57,9 @@ NeutronPluginOptions = [
                     '"mtu":<MTU> - integer '
                     '"cidr"<SUBNET/MASK> - string '
                     '"provider:segmentation_id":<VLAN_ID> - integer'),
+    cfg.IntOpt('max_mtu',
+               default=1500,
+               help='Max mtu value of default deployments".'),
     cfg.StrOpt('q_agent',
                default=None,
                choices=['None', 'linuxbridge', 'ovs', 'sriov'],

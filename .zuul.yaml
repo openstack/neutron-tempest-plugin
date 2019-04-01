@@ -229,6 +229,81 @@
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
 
 - job:
+    name: neutron-tempest-plugin-api-stein
+    parent: neutron-tempest-plugin-api
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+      # TODO(slaweq): find a way to put this list of extensions in
+      # neutron repository and keep it different per branch,
+      # then it could be removed from here
+      network_api_extensions_common: &api_extensions_stein
+        - address-scope
+        - agent
+        - allowed-address-pairs
+        - auto-allocated-topology
+        - availability_zone
+        - binding
+        - default-subnetpools
+        - dhcp_agent_scheduler
+        - dns-domain-ports
+        - dns-integration
+        - empty-string-filtering
+        - ext-gw-mode
+        - external-net
+        - extra_dhcp_opt
+        - extraroute
+        - filter-validation
+        - fip-port-details
+        - flavors
+        - floatingip-pools
+        - ip-substring-filtering
+        - l3-flavors
+        - l3-ha
+        - l3_agent_scheduler
+        - logging
+        - metering
+        - multi-provider
+        - net-mtu
+        - net-mtu-writable
+        - network-ip-availability
+        - network_availability_zone
+        - network-segment-range
+        - pagination
+        - port-resource-request
+        - port-mac-address-regenerate
+        - port-security
+        - port-security-groups-filtering
+        - project-id
+        - provider
+        - qos
+        - qos-bw-minimum-ingress
+        - qos-fip
+        - quotas
+        - quota_details
+        - rbac-policies
+        - rbac-security-groups
+        - router
+        - router_availability_zone
+        - security-group
+        - segment
+        - service-type
+        - sorting
+        - standard-attr-description
+        - standard-attr-revisions
+        - standard-attr-segment
+        - standard-attr-tag
+        - standard-attr-timestamp
+        - subnet_allocation
+        - trunk
+        - trunk-details
+        - uplink-status-propagation
+      network_api_extensions_tempest:
+        - dvr
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
+
+- job:
     name: neutron-tempest-plugin-api-rocky
     nodeset: openstack-single-node-xenial
     parent: neutron-tempest-plugin-api
@@ -390,6 +465,16 @@
               q_agent: None
 
 - job:
+    name: neutron-tempest-plugin-scenario-linuxbridge-stein
+    parent: neutron-tempest-plugin-scenario-linuxbridge
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+      network_api_extensions: *api_extensions_stein
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
     parent: tempest-multinode-full
     description: |
@@ -542,6 +627,13 @@
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
 
 - job:
+    name: neutron-tempest-plugin-dvr-multinode-scenario-stein
+    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+
+- job:
     name: neutron-tempest-plugin-designate-scenario
     parent: neutron-tempest-plugin-scenario
     description: Neutron designate integration scenario
@@ -591,6 +683,13 @@
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
 
+- job:
+    name: neutron-tempest-plugin-designate-scenario-stein
+    parent: neutron-tempest-plugin-designate-scenario
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+
 - project-template:
     name: neutron-tempest-plugin-jobs
     check:
@@ -630,11 +729,24 @@
       jobs:
         - neutron-tempest-plugin-api-rocky
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-stein
+    check:
+      jobs:
+        - neutron-tempest-plugin-api-stein
+        - neutron-tempest-plugin-designate-scenario-stein
+        - neutron-tempest-plugin-dvr-multinode-scenario-stein
+        - neutron-tempest-plugin-scenario-linuxbridge-stein
+    gate:
+      jobs:
+        - neutron-tempest-plugin-api-stein
+
 - project:
     templates:
       - neutron-tempest-plugin-jobs
       - neutron-tempest-plugin-jobs-queens
       - neutron-tempest-plugin-jobs-rocky
+      - neutron-tempest-plugin-jobs-stein
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3

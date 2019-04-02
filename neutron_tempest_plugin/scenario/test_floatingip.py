@@ -24,6 +24,7 @@ from tempest.lib import decorators
 from tempest.lib import exceptions
 import testscenarios
 from testscenarios.scenarios import multiply_scenarios
+import testtools
 
 from neutron_tempest_plugin.api import base as base_api
 from neutron_tempest_plugin.common import ssh
@@ -436,3 +437,124 @@ class TestFloatingIPUpdate(FloatingIpTestCasesMixin,
             self.fail(
                 "Server %s is not accessible via its floating ip %s" % (
                     servers[-1]['id'], self.fip['id']))
+
+
+class FloatingIpMultipleRoutersTest(base.BaseTempestTestCase):
+    credentials = ['primary', 'admin']
+
+    @classmethod
+    @utils.requires_ext(extension="router", service="network")
+    def skip_checks(cls):
+        super(FloatingIpMultipleRoutersTest, cls).skip_checks()
+
+    def _create_keypair_and_secgroup(self):
+        self.keypair = self.create_keypair()
+        self.secgroup = self.create_security_group()
+        self.create_loginable_secgroup_rule(
+            secgroup_id=self.secgroup['id'])
+        self.create_pingable_secgroup_rule(
+            secgroup_id=self.secgroup['id'])
+
+    def _create_network_and_servers(self, servers_num=1, fip_addresses=None):
+        if fip_addresses:
+            self.assertEqual(servers_num, len(fip_addresses),
+                             ('Number of specified fip addresses '
+                              'does not match the number of servers'))
+        network = self.create_network()
+        subnet = self.create_subnet(network)
+        router = self.create_router_by_client()
+        self.create_router_interface(router['id'], subnet['id'])
+
+        fips = []
+        for server in range(servers_num):
+            fip = fip_addresses[server] if fip_addresses else None
+            fips.append(
+                self._create_server_and_fip(
+                    network=network, fip_address=fip))
+        return fips
+
+    def _create_server_and_fip(self, network, fip_address=None):
+        server = self.create_server(
+            flavor_ref=CONF.compute.flavor_ref,
+            image_ref=CONF.compute.image_ref,
+            key_name=self.keypair['name'],
+            networks=[{'uuid': network['id']}],
+            security_groups=[{'name': self.secgroup['name']}])
+        waiters.wait_for_server_status(self.os_primary.servers_client,
+                                       server['server']['id'],
+                                       constants.SERVER_STATUS_ACTIVE)
+        port = self.client.list_ports(
+            network_id=network['id'],
+            device_id=server['server']['id'])['ports'][0]
+
+        if fip_address:
+            fip = self.create_floatingip(
+                floating_ip_address=fip_address,
+                client=self.os_admin.network_client,
+                port=port)
+            self.addCleanup(
+                self.delete_floatingip, fip, self.os_admin.network_client)
+        else:
+            fip = self.create_floatingip(port=port)
+        return fip
+
+    def _check_fips_connectivity(self, mutable_fip, permanent_fip):
+        for fip in [mutable_fip, permanent_fip]:
+            fip['ssh_client'] = ssh.Client(fip['floating_ip_address'],
+                                           CONF.validation.image_ssh_user,
+                                           pkey=self.keypair['private_key'])
+        self.check_remote_connectivity(
+            permanent_fip['ssh_client'], mutable_fip['floating_ip_address'])
+        self.check_remote_connectivity(
+            mutable_fip['ssh_client'], permanent_fip['floating_ip_address'])
+
+    @testtools.skipUnless(CONF.network.public_network_id,
+                          'The public_network_id option must be specified.')
+    @decorators.idempotent_id('b0382ab3-3c86-4415-84e3-649a8b040dab')
+    def test_reuse_ip_address_with_other_fip_on_other_router(self):
+        """Reuse IP address by another floating IP on another router
+
+        Scenario:
+            1. Create and connect a router to the external network.
+            2. Create and connect an internal network to the router.
+            3. Create and connect 2 VMs to the internal network.
+            4. Create FIPs in the external network for the VMs.
+            5. Make sure that VM1 can ping VM2 FIP address.
+            6. Delete VM2 FIP but save IP address that it used.
+            7. Create and connect one more router to the external network.
+            8. Create and connect an internal network to the second router.
+            9. Create and connect a VM (VM3) to the internal network of
+               the second router.
+            10. Create a FIP for the VM3 in the external network with
+               the same IP address that was used for VM2.
+            11. Make sure that now VM1 is able to reach VM3 using the FIP.
+
+        Note, the scenario passes only in case corresponding
+        ARP update was sent to the external network when reusing same IP
+        address for another FIP.
+        """
+
+        self._create_keypair_and_secgroup()
+        [mutable_fip, permanent_fip] = (
+            self._create_network_and_servers(servers_num=2))
+        self._check_fips_connectivity(mutable_fip, permanent_fip)
+        ip_address = mutable_fip['floating_ip_address']
+        self.delete_floatingip(mutable_fip)
+
+        def _fip_is_free():
+            fips = self.os_admin.network_client.list_floatingips(
+                    )['floatingips']
+            for fip in fips:
+                if ip_address == fip['floating_ip_address']:
+                    return False
+            return True
+
+        try:
+            common_utils.wait_until_true(lambda: _fip_is_free(),
+                                         timeout=30, sleep=5)
+        except common_utils.WaitTimeout:
+            self.fail("Can't reuse IP address because it is not free")
+
+        [mutable_fip] = self._create_network_and_servers(
+            servers_num=1, fip_addresses=[ip_address])
+        self._check_fips_connectivity(mutable_fip, permanent_fip)

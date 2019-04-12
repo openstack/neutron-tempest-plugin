@@ -24,12 +24,7 @@ from tempest.lib import decorators
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 from neutron_tempest_plugin.scenario import constants
-
-try:
-    # TODO(yamamoto): Remove this hack after bgp tests are rehomed
-    from neutron_dynamic_routing.tests.tempest import bgp_client
-except ImportError:
-    bgp_client = None
+from neutron_tempest_plugin.services.bgp import bgp_client
 
 
 CONF = config.CONF

@@ -894,6 +894,35 @@
     files:
       - ^neutron_tempest_plugin/fwaas/.*$
 
+- job:
+    name: neutron-tempest-plugin-dynamic-routing
+    parent: neutron-tempest-plugin
+    description: |
+      Perform setup common to all Neutron dynamic routing tempest tests
+    required-projects:
+      - openstack/neutron
+      - openstack/neutron-dynamic-routing
+      - openstack/os-ken
+      - openstack/tempest
+    pre-run: playbooks/dynamic-routing-pre-run.yaml
+    vars:
+      devstack_plugins:
+        neutron-dynamic-routing: https://opendev.org/openstack/neutron-dynamic-routing
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin
+      network_api_extensions_common: *api_extensions_master
+      network_api_extensions_bgp:
+        - bgp
+        - bgp_dragent_scheduler
+        - bgp_4byte_asn
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_bgp) | join(',') }}"
+      devstack_services:
+        neutron-dr: true
+        neutron-dr-agent: true
+        q-l3: true
+      tempest_concurrency: 1
+      tempest_test_regex: ^neutron_tempest_plugin\.neutron_dynamic_routing
+
 - project-template:
     name: neutron-tempest-plugin-jobs
     check:
@@ -967,7 +996,9 @@
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-fwaas
+        - neutron-tempest-plugin-dynamic-routing
     gate:
       jobs:
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-fwaas
+        - neutron-tempest-plugin-dynamic-routing

@@ -714,6 +714,28 @@
     files:
       - ^neutron_tempest_plugin/sfc/.*$
 
+- job:
+    name: neutron-tempest-plugin-bgpvpn-bagpipe
+    parent: neutron-tempest-plugin
+    required-projects:
+      - openstack/networking-bagpipe
+      - openstack/networking-bgpvpn
+    vars:
+      tempest_test_regex: ^neutron_tempest_plugin\.bgpvpn
+      network_api_extensions: *api_extensions_master
+      network_api_extensions_bgpvpn:
+        - bgpvpn
+        - bgpvpn-routes-control
+      devstack_localrc:
+        NETWORKING_BGPVPN_DRIVER: "BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default"
+        BAGPIPE_DATAPLANE_DRIVER_IPVPN: "ovs"
+        BAGPIPE_BGP_PEERS: "-"
+        USE_PYTHON3: false
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_bgpvpn) | join(',') }}"
+      devstack_plugins:
+        networking-bgpvpn: https://git.openstack.org/openstack/networking-bgpvpn
+        networking-bagpipe: https://git.openstack.org/openstack/networking-bagpipe
+
 - project-template:
     name: neutron-tempest-plugin-jobs
     check:
@@ -722,10 +744,12 @@
         - neutron-tempest-plugin-designate-scenario
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-scenario-linuxbridge
+        - neutron-tempest-plugin-bgpvpn-bagpipe
     gate:
       jobs:
         - neutron-tempest-plugin-api
         - neutron-tempest-plugin-scenario-linuxbridge
+        - neutron-tempest-plugin-bgpvpn-bagpipe
 
 - project-template:
     name: neutron-tempest-plugin-jobs-queens

@@ -116,6 +116,29 @@ NeutronPluginOptions = [
 for opt in NeutronPluginOptions:
     CONF.register_opt(opt, 'neutron_plugin_options')
 
+BgpvpnGroup = [
+    cfg.IntOpt('min_asn',
+               default=100,
+               help=("Minimum number for the range of "
+                     "autonomous system number for distinguishers.")),
+    cfg.IntOpt('min_nn',
+               default=100,
+               help=("Minimum number for the range of "
+                     "assigned number for distinguishers.")),
+    cfg.IntOpt('max_asn',
+               default=200,
+               help=("Maximum number for the range of "
+                     "autonomous system number for distinguishers.")),
+    cfg.IntOpt('max_nn',
+               default=200,
+               help=("Maximum number for the range of "
+                     "assigned number for distinguishers.")),
+]
+
+bgpvpn_group = cfg.OptGroup(name="bgpvpn", title=("Networking-Bgpvpn Service "
+                                                  "Options"))
+CONF.register_group(bgpvpn_group)
+CONF.register_opts(BgpvpnGroup, group="bgpvpn")
 
 config_opts_translator = {
     'project_network_cidr': 'tenant_network_cidr',

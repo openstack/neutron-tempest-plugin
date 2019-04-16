@@ -690,6 +690,30 @@
     vars:
       branch_override: stable/stein
 
+- job:
+    name: neutron-tempest-plugin-sfc
+    parent: neutron-tempest-plugin
+    timeout: 10800
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/networking-sfc
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - openstack/tempest
+    vars:
+      tempest_test_regex: ^neutron_tempest_plugin\.sfc
+      tox_envlist: all-plugin
+      devstack_plugins:
+        networking-sfc: https://opendev.org/openstack/networking-sfc
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin
+      network_api_extensions_sfc:
+        - flow_classifier
+        - sfc
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_sfc) | join(',') }}"
+    files:
+      - ^neutron_tempest_plugin/sfc/.*$
+
 - project-template:
     name: neutron-tempest-plugin-jobs
     check:
@@ -750,3 +774,6 @@
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3
+    check:
+      jobs:
+        - neutron-tempest-plugin-sfc

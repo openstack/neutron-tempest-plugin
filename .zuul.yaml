@@ -5,9 +5,9 @@
     description: |
       Perform setup common to all Neutron tempest tests
     roles:
-      - zuul: openstack-dev/devstack
+      - zuul: openstack/devstack
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/neutron
       - openstack/neutron-tempest-plugin
       - openstack/tempest
@@ -81,8 +81,8 @@
         USE_PYTHON3: true
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
       devstack_plugins:
-        neutron: https://git.openstack.org/openstack/neutron.git
-        neutron-tempest-plugin: https://git.openstack.org/openstack/neutron-tempest-plugin.git
+        neutron: https://opendev.org/openstack/neutron.git
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
       tempest_plugins:
         - neutron-tempest-plugin
       devstack_services:
@@ -437,7 +437,7 @@
       devstack_local_conf:
         test-config:
           # NOTE: ignores linux bridge's trunk delete on bound port test
-          # for queens branch (as https://review.openstack.org/#/c/605589/
+          # for queens branch (as https://review.opendev.org/#/c/605589/
           # fix will not apply for queens branch)
           $TEMPEST_CONFIG:
             neutron_plugin_options:
@@ -458,7 +458,7 @@
       devstack_local_conf:
         test-config:
           # NOTE: ignores linux bridge's trunk delete on bound port test
-          # for rocky branch (as https://review.openstack.org/#/c/605589/
+          # for rocky branch (as https://review.opendev.org/#/c/605589/
           # fix will not apply for rocky branch)
           $TEMPEST_CONFIG:
             neutron_plugin_options:
@@ -480,9 +480,9 @@
     description: |
         Perform setup for Neutron tempest tests in multinode with DVR scenario
     roles:
-      - zuul: openstack-dev/devstack
+      - zuul: openstack/devstack
     required-projects:
-      - openstack-infra/devstack-gate
+      - openstack/devstack-gate
       - openstack/neutron
       - openstack/neutron-tempest-plugin
       - openstack/tempest
@@ -507,8 +507,8 @@
         ADVANCED_INSTANCE_USER: ubuntu
         BUILD_TIMEOUT: 784
       devstack_plugins:
-        neutron: https://git.openstack.org/openstack/neutron.git
-        neutron-tempest-plugin: https://git.openstack.org/openstack/neutron-tempest-plugin.git
+        neutron: https://opendev.org/openstack/neutron.git
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
       tempest_plugins:
         - neutron-tempest-plugin
       devstack_services:
@@ -651,7 +651,7 @@
         # empty
         ADVANCED_IMAGE_NAME: ""
       devstack_plugins:
-        designate: https://git.openstack.org/openstack/designate.git
+        designate: https://opendev.org/openstack/designate.git
       devstack_services:
         cinder: false
         designate: true

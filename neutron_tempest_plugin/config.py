@@ -86,6 +86,13 @@ NeutronPluginOptions = [
     # Options for special, "advanced" image like e.g. Ubuntu. Such image can be
     # used in tests which require some more advanced tool than available in
     # Cirros
+    cfg.BoolOpt('default_image_is_advanced',
+                default=False,
+                help='Default image is an image which supports features '
+                     'that Cirros does not, like Ubuntu or CentOS supporting '
+                     'advanced features. '
+                     'If this is set to True, "advanced_image_ref" option '
+                     'is not required to be set.'),
     cfg.StrOpt('advanced_image_ref',
                default=None,
                help='Valid advanced image uuid to be used in tests. '

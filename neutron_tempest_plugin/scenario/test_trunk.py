@@ -244,20 +244,27 @@ class TrunkTest(base.BaseTempestTestCase):
             self._wait_for_trunk(vm.trunk)
             self._assert_has_ssh_connectivity(vm1.ssh_client)
 
-    @testtools.skipUnless(CONF.neutron_plugin_options.advanced_image_ref,
-                          "Advanced image is required to run this test.")
+    @testtools.skipUnless(
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
     @decorators.idempotent_id('a8a02c9b-b453-49b5-89a2-cce7da66aafb')
     def test_subport_connectivity(self):
         vlan_tag = 10
         vlan_network = self.create_network()
         vlan_subnet = self.create_subnet(network=vlan_network, gateway=None)
 
-        vm1 = self._create_server_with_trunk_port(subport_network=vlan_network,
-                                                  segmentation_id=vlan_tag,
-                                                  use_advanced_image=True)
-        vm2 = self._create_server_with_trunk_port(subport_network=vlan_network,
-                                                  segmentation_id=vlan_tag,
-                                                  use_advanced_image=True)
+        use_advanced_image = (
+            not CONF.neutron_plugin_options.default_image_is_advanced)
+
+        vm1 = self._create_server_with_trunk_port(
+            subport_network=vlan_network,
+            segmentation_id=vlan_tag,
+            use_advanced_image=use_advanced_image)
+        vm2 = self._create_server_with_trunk_port(
+            subport_network=vlan_network,
+            segmentation_id=vlan_tag,
+            use_advanced_image=use_advanced_image)
 
         for vm in [vm1, vm2]:
             self._configure_vlan_subport(vm=vm,
@@ -278,7 +285,8 @@ class TrunkTest(base.BaseTempestTestCase):
             vm2.subport['fixed_ips'][0]['ip_address'])
 
     @testtools.skipUnless(
-        CONF.neutron_plugin_options.advanced_image_ref,
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
         "Advanced image is required to run this test.")
     @testtools.skipUnless(
         CONF.neutron_plugin_options.q_agent == "linuxbridge",
@@ -290,11 +298,14 @@ class TrunkTest(base.BaseTempestTestCase):
         vlan_subnet = self.create_subnet(vlan_network)
         self.create_router_interface(self.router['id'], vlan_subnet['id'])
 
+        use_advanced_image = (
+            not CONF.neutron_plugin_options.default_image_is_advanced)
+
         # Create servers
         trunk_network_server = self._create_server_with_trunk_port(
             subport_network=vlan_network,
             segmentation_id=vlan_tag,
-            use_advanced_image=True)
+            use_advanced_image=use_advanced_image)
         normal_network_server = self._create_server_with_network(self.network)
         vlan_network_server = self._create_server_with_network(vlan_network)
 

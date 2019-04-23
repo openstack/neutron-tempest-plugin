@@ -1,7 +1,7 @@
 Set up connection between infra bridge and Neutron external bridge
 
 Network topology used in CI multinode jobs is described In `Devstack documention
-<https://git.openstack.org/cgit/openstack-infra/devstack-gate/tree/multinode_setup_info.txt#n81>`_
+<https://opendev.org/openstack/devstack-gate/src/branch/master/multinode_setup_info.txt#L81>`_
 
 In case when DVR is used, there is also additional bridge ``br-infra`` added
 on each node to provide connectivity to floating IPs from main node.

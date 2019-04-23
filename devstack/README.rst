@@ -8,14 +8,14 @@ repository.  See contrib/vagrant to create a vagrant VM.
 
 1. Download DevStack::
 
-    git clone https://git.openstack.org/openstack-dev/devstack.git
+    git clone https://opendev.org/openstack/devstack.git
     cd devstack
 
 2. Add this repo as an external repository::
 
      > cat local.conf
      [[local|localrc]]
-     enable_plugin neutron-tempest-plugin https://git.openstack.org/openstack/neutron-tempest-plugin
+     enable_plugin neutron-tempest-plugin https://opendev.org/openstack/neutron-tempest-plugin
 
 3. run ``stack.sh``
 

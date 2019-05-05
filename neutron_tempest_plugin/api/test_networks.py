@@ -135,7 +135,7 @@ class NetworksTestJSON(base.BaseNetworkTest):
 # TODO(ihrachys): check that bad mtu is not allowed; current API extension
 # definition doesn't enforce values
 # TODO(ihrachys): check that new segment reservation updates mtu, once
-# https://review.openstack.org/#/c/353115/ is merged
+# https://review.opendev.org/#/c/353115/ is merged
 class NetworksMtuTestJSON(base.BaseNetworkTest):
     required_extensions = ['net-mtu', 'net-mtu-writable']
 

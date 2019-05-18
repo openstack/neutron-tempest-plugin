@@ -238,21 +238,24 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 LOG.debug("Server %s disappeared(deleted) while looking "
                           "for the console log", server['id'])
 
-    def _check_remote_connectivity(self, source, dest, should_succeed=True,
+    def _check_remote_connectivity(self, source, dest, count,
+                                   should_succeed=True,
                                    nic=None, mtu=None, fragmentation=True,
                                    timeout=None):
         """check ping server via source ssh connection
 
         :param source: RemoteClient: an ssh connection from which to ping
         :param dest: and IP to ping against
+        :param count: Number of ping packet(s) to send
         :param should_succeed: boolean should ping succeed or not
         :param nic: specific network interface to ping from
         :param mtu: mtu size for the packet to be sent
         :param fragmentation: Flag for packet fragmentation
+        :param timeout: Timeout for all ping packet(s) to succeed
         :returns: boolean -- should_succeed == ping
         :returns: ping is false if ping failed
         """
-        def ping_host(source, host, count=CONF.validation.ping_count,
+        def ping_host(source, host, count,
                       size=CONF.validation.ping_size, nic=None, mtu=None,
                       fragmentation=True):
             IP_VERSION_4 = neutron_lib_constants.IP_VERSION_4
@@ -275,7 +278,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
 
         def ping_remote():
             try:
-                result = ping_host(source, dest, nic=nic, mtu=mtu,
+                result = ping_host(source, dest, count, nic=nic, mtu=mtu,
                                    fragmentation=fragmentation)
 
             except lib_exc.SSHExecCommandFailed:
@@ -296,10 +299,12 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
 
     def check_remote_connectivity(self, source, dest, should_succeed=True,
                                   nic=None, mtu=None, fragmentation=True,
-                                  servers=None, timeout=None):
+                                  servers=None, timeout=None,
+                                  ping_count=CONF.validation.ping_count):
         try:
             self.assertTrue(self._check_remote_connectivity(
-                source, dest, should_succeed, nic, mtu, fragmentation,
+                source, dest, ping_count, should_succeed, nic, mtu,
+                fragmentation,
                 timeout=timeout))
         except lib_exc.SSHTimeout as ssh_e:
             LOG.debug(ssh_e)

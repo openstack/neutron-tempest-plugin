@@ -47,8 +47,6 @@ V4_PROTOCOL_INTS = {v
                     for k, v in constants.IP_PROTOCOL_MAP.items()
                     if k in V4_PROTOCOL_NAMES}
 
-V6_PROTOCOL_LEGACY = {constants.PROTO_NAME_IPV6_ICMP_LEGACY}
-
 V6_PROTOCOL_NAMES = {
     'ipv6-encap',
     'ipv6-frag',
@@ -60,4 +58,4 @@ V6_PROTOCOL_NAMES = {
 
 V6_PROTOCOL_INTS = {v
                     for k, v in constants.IP_PROTOCOL_MAP.items()
-                    if k in (V6_PROTOCOL_NAMES | V6_PROTOCOL_LEGACY)}
+                    if k in V6_PROTOCOL_NAMES}

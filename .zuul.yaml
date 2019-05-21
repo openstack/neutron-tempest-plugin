@@ -722,12 +722,10 @@
         - neutron-tempest-plugin-designate-scenario
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-scenario-linuxbridge
-        - build-openstack-sphinx-docs
     gate:
       jobs:
         - neutron-tempest-plugin-api
         - neutron-tempest-plugin-scenario-linuxbridge
-        - build-openstack-sphinx-docs
 
 - project-template:
     name: neutron-tempest-plugin-jobs-queens
@@ -767,6 +765,7 @@
 
 - project:
     templates:
+      - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
       - neutron-tempest-plugin-jobs-queens
       - neutron-tempest-plugin-jobs-rocky

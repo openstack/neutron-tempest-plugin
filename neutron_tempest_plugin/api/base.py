@@ -1111,8 +1111,10 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
 
     def get_bare_url(self, url):
         base_url = self.client.base_url
-        self.assertTrue(url.startswith(base_url))
-        return url[len(base_url):]
+        base_url_normalized = utils.normalize_url(base_url)
+        url_normalized = utils.normalize_url(url)
+        self.assertTrue(url_normalized.startswith(base_url_normalized))
+        return url_normalized[len(base_url_normalized):]
 
     @classmethod
     def _extract_resources(cls, body):

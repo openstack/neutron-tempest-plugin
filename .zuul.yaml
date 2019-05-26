@@ -26,6 +26,7 @@
         - dns-domain-ports
         - dns-integration
         - empty-string-filtering
+        - expose-port-forwarding-in-fip
         - ext-gw-mode
         - external-net
         - extra_dhcp_opt
@@ -33,6 +34,7 @@
         - filter-validation
         - fip-port-details
         - flavors
+        - floating-ip-port-forwarding
         - floatingip-pools
         - ip-substring-filtering
         - l3-flavors
@@ -94,6 +96,7 @@
         neutron-trunk: true
         neutron-uplink-status-propagation: true
         neutron-network-segment-range: true
+        neutron-port-forwarding: true
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -249,6 +252,7 @@
         - dns-domain-ports
         - dns-integration
         - empty-string-filtering
+        - expose-port-forwarding-in-fip
         - ext-gw-mode
         - external-net
         - extra_dhcp_opt
@@ -257,6 +261,7 @@
         - fip-port-details
         - flavors
         - floatingip-pools
+        - floating-ip-port-forwarding
         - ip-substring-filtering
         - l3-flavors
         - l3-ha
@@ -325,12 +330,14 @@
         - dns-domain-ports
         - dns-integration
         - empty-string-filtering
+        - expose-port-forwarding-in-fip
         - ext-gw-mode
         - external-net
         - extra_dhcp_opt
         - extraroute
         - fip-port-details
         - flavors
+        - floating-ip-port-forwarding
         - ip-substring-filtering
         - l3-flavors
         - l3-ha

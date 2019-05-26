@@ -938,6 +938,55 @@ class NetworkClientJSON(service_client.RestClient):
         body = jsonutils.loads(resp_body)
         return service_client.ResponseBody(put_resp, body)
 
+    def create_port_forwarding(self, fip_id, internal_port_id,
+                               internal_port, external_port,
+                               internal_ip_address=None, protocol='tcp'):
+        post_body = {'port_forwarding': {
+            'protocol': protocol,
+            'internal_port_id': internal_port_id,
+            'internal_port': int(internal_port),
+            'external_port': int(external_port)}}
+        if internal_ip_address:
+            post_body['port_forwarding']['internal_ip_address'] = (
+                internal_ip_address)
+        body = jsonutils.dumps(post_body)
+        uri = '%s/floatingips/%s/port_forwardings' % (self.uri_prefix, fip_id)
+        resp, body = self.post(uri, body)
+        self.expected_success(201, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
+    def get_port_forwarding(self, fip_id, pf_id):
+        uri = '%s/floatingips/%s/port_forwardings/%s' % (self.uri_prefix,
+                                                         fip_id, pf_id)
+        get_resp, get_resp_body = self.get(uri)
+        self.expected_success(200, get_resp.status)
+        body = jsonutils.loads(get_resp_body)
+        return service_client.ResponseBody(get_resp, body)
+
+    def list_port_forwardings(self, fip_id):
+        uri = '%s/floatingips/%s/port_forwardings' % (self.uri_prefix, fip_id)
+        resp, body = self.get(uri)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
+    def update_port_forwarding(self, fip_id, pf_id, **kwargs):
+        uri = '%s/floatingips/%s/port_forwardings/%s' % (self.uri_prefix,
+                                                         fip_id, pf_id)
+        put_body = jsonutils.dumps({'port_forwarding': kwargs})
+        put_resp, resp_body = self.put(uri, put_body)
+        self.expected_success(200, put_resp.status)
+        body = jsonutils.loads(resp_body)
+        return service_client.ResponseBody(put_resp, body)
+
+    def delete_port_forwarding(self, fip_id, pf_id):
+        uri = '%s/floatingips/%s/port_forwardings/%s' % (self.uri_prefix,
+                                                         fip_id, pf_id)
+        resp, body = self.delete(uri)
+        self.expected_success(204, resp.status)
+        service_client.ResponseBody(resp, body)
+
     def create_network_keystone_v3(self, name, project_id, tenant_id=None):
         uri = '%s/networks' % self.uri_prefix
         post_data = {

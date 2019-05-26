@@ -117,6 +117,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.ports = []
         cls.routers = []
         cls.floating_ips = []
+        cls.port_forwardings = []
         cls.metering_labels = []
         cls.service_profiles = []
         cls.flavors = []
@@ -143,6 +144,10 @@ class BaseNetworkTest(test.BaseTestCase):
             # Clean up trunks
             for trunk in cls.trunks:
                 cls._try_delete_resource(cls.delete_trunk, trunk)
+
+            # Clean up port forwardings
+            for pf in cls.port_forwardings:
+                cls._try_delete_resource(cls.delete_port_forwarding, pf)
 
             # Clean up floating IPs
             for floating_ip in cls.floating_ips:
@@ -650,6 +655,66 @@ class BaseNetworkTest(test.BaseTestCase):
 
         client = client or floating_ip.get('client') or cls.client
         client.delete_floatingip(floating_ip['id'])
+
+    @classmethod
+    def create_port_forwarding(cls, fip_id, internal_port_id,
+                               internal_port, external_port,
+                               internal_ip_address=None, protocol="tcp",
+                               client=None):
+        """Creates a port forwarding.
+
+        Create a port forwarding and schedule it for later deletion.
+        If a client is passed, then it is used for deleting the PF too.
+
+        :param fip_id: The ID of the floating IP address.
+
+        :param internal_port_id: The ID of the Neutron port associated to
+        the floating IP port forwarding.
+
+        :param internal_port: The TCP/UDP/other protocol port number of the
+        Neutron port fixed IP address associated to the floating ip
+        port forwarding.
+
+        :param external_port: The TCP/UDP/other protocol port number of
+        the port forwarding floating IP address.
+
+        :param internal_ip_address: The fixed IPv4 address of the Neutron
+        port associated to the floating IP port forwarding.
+
+        :param protocol: The IP protocol used in the floating IP port
+        forwarding.
+
+        :param client: network client to be used for creating and cleaning up
+        the floating IP port forwarding.
+        """
+
+        client = client or cls.client
+
+        pf = client.create_port_forwarding(
+            fip_id, internal_port_id, internal_port, external_port,
+            internal_ip_address, protocol)['port_forwarding']
+
+        # save ID of floating IP associated with port forwarding for final
+        # cleanup
+        pf['floatingip_id'] = fip_id
+
+        # save client to be used later in cls.delete_port_forwarding
+        # for final cleanup
+        pf['client'] = client
+        cls.port_forwardings.append(pf)
+        return pf
+
+    @classmethod
+    def delete_port_forwarding(cls, pf, client=None):
+        """Delete port forwarding
+
+        :param client: Client to be used
+        If client is not given it will use the client used to create
+        the port forwarding, or cls.client if unknown.
+        """
+
+        client = client or pf.get('client') or cls.client
+        client.delete_port_forwarding(pf['floatingip_id'], pf['id'])
 
     @classmethod
     def create_router_interface(cls, router_id, subnet_id):

@@ -21,8 +21,17 @@
 import functools
 import threading
 import time
+try:
+    import urlparse
+except ImportError:
+    from urllib import parse as urlparse
 
 import eventlet
+
+SCHEMA_PORT_MAPPING = {
+    "http": 80,
+    "https": 443,
+}
 
 
 class classproperty(object):
@@ -102,3 +111,15 @@ def override_class(overriden_class, overrider_class):
         bases = (overrider_class, overriden_class)
         overriden_class = type(name, bases, {})
     return overriden_class
+
+
+def normalize_url(url):
+    """Normalize url without port with schema default port
+
+    """
+    parse_result = urlparse.urlparse(url)
+    (scheme, netloc, url, params, query, fragment) = parse_result
+    port = parse_result.port
+    if scheme in SCHEMA_PORT_MAPPING and not port:
+        netloc = netloc + ":" + str(SCHEMA_PORT_MAPPING[scheme])
+    return urlparse.urlunparse((scheme, netloc, url, params, query, fragment))

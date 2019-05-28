@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import random
+
 from neutron_lib import constants
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -23,7 +25,7 @@ from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin.api import base_security_groups
 
 
-class SecGroupTest(base.BaseNetworkTest):
+class SecGroupTest(base.BaseAdminNetworkTest):
 
     required_extensions = ['security-group']
 
@@ -54,6 +56,25 @@ class SecGroupTest(base.BaseNetworkTest):
         self.assertEqual(observed_security_group['name'], new_name)
         self.assertEqual(observed_security_group['description'],
                          new_description)
+
+    @decorators.idempotent_id('1fff0d57-bb6c-4528-9c1d-2326dce1c087')
+    def test_show_security_group_contains_all_rules(self):
+        security_group = self.create_security_group()
+        protocol = random.choice(list(base_security_groups.V4_PROTOCOL_NAMES))
+        security_group_rule = self.create_security_group_rule(
+            security_group=security_group,
+            project={'id': self.admin_client.tenant_id},
+            client=self.admin_client,
+            protocol=protocol,
+            direction=constants.INGRESS_DIRECTION)
+
+        observed_security_group = self.client.show_security_group(
+            security_group['id'])['security_group']
+        observerd_security_group_rules_ids = [
+            sgr['id'] for sgr in
+            observed_security_group['security_group_rules']]
+        self.assertIn(
+            security_group_rule['id'], observerd_security_group_rules_ids)
 
     @decorators.idempotent_id('7c0ecb10-b2db-11e6-9b14-000c29248b0d')
     def test_create_bulk_sec_groups(self):

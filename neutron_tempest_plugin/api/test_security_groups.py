@@ -109,12 +109,42 @@ class SecGroupProtocolIPv6Test(SecGroupProtocolTest):
     _ip_version = constants.IP_VERSION_6
     protocol_names = base_security_groups.V6_PROTOCOL_NAMES
     protocol_ints = base_security_groups.V6_PROTOCOL_INTS
-    protocol_legacy_names = base_security_groups.V6_PROTOCOL_LEGACY
 
     @decorators.idempotent_id('c7d17b41-3b4e-4add-bb3b-6af59baaaffa')
-    def test_security_group_rule_protocol_legacy_names(self):
-        self._test_security_group_rule_protocols(
-            protocols=self.protocol_legacy_names)
+    def test_security_group_rule_protocol_legacy_icmpv6(self):
+        # These legacy protocols can be used to create security groups,
+        # but they could be shown either with their passed protocol name,
+        # or a canonical-ized version, depending on the neutron version.
+        # So we check against a list of possible values.
+        # TODO(haleyb): Remove once these legacy names are deprecated
+        protocols = {constants.PROTO_NAME_IPV6_ICMP_LEGACY:
+                     constants.PROTO_NAME_IPV6_ICMP,
+                     constants.PROTO_NAME_ICMP:
+                     constants.PROTO_NAME_IPV6_ICMP}
+        for key, value in protocols.items():
+            self._test_security_group_rule_legacy(
+                protocol_list=[str(key), str(value)],
+                protocol=str(key),
+                direction=constants.INGRESS_DIRECTION,
+                ethertype=self.ethertype)
+
+    def _test_security_group_rule_legacy(self, protocol_list, **kwargs):
+        security_group = self.create_security_group()
+        security_group_rule = self.create_security_group_rule(
+            security_group=security_group, **kwargs)
+        observed_security_group_rule = self.client.show_security_group_rule(
+            security_group_rule['id'])['security_group_rule']
+        for key, value in kwargs.items():
+            if key == 'protocol':
+                self.assertIn(security_group_rule[key], protocol_list,
+                              "{!r} does not match.".format(key))
+                self.assertIn(observed_security_group_rule[key], protocol_list,
+                              "{!r} does not match.".format(key))
+            else:
+                self.assertEqual(value, security_group_rule[key],
+                                 "{!r} does not match.".format(key))
+                self.assertEqual(value, observed_security_group_rule[key],
+                                 "{!r} does not match.".format(key))
 
 
 class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):

@@ -109,3 +109,40 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
 
         self.check_remote_connectivity(
             ap1_sshclient, ap2_internal_port['fixed_ips'][0]['ip_address'])
+
+    @decorators.idempotent_id('b72c3b77-3396-4144-b05d-9cd3c0099893')
+    def test_connectivity_router_east_west_traffic(self):
+        """This case is intended to test router east west taffic
+
+        The case can be used in various scenarios: legacy/distributed router,
+        same/different host.
+        """
+        net_1 = self.create_network()
+        net_2 = self.create_network()
+        subnet_1 = self.create_subnet(net_1, cidr="10.10.1.0/24")
+        subnet_2 = self.create_subnet(net_2, cidr="10.10.2.0/24")
+
+        router = self.create_router(
+            router_name=data_utils.rand_name("east_west_traffic_router"),
+            admin_state_up=True,
+            external_network_id=CONF.network.public_network_id)
+
+        internal_port_1 = self.create_port(
+            net_1, security_groups=[self.secgroup['id']])
+        internal_port_2 = self.create_port(
+            net_2, security_groups=[self.secgroup['id']])
+
+        self._create_servers(internal_port_1, internal_port_2)
+
+        self.create_router_interface(router['id'], subnet_1['id'])
+        self.create_router_interface(router['id'], subnet_2['id'])
+
+        fip = self.create_and_associate_floatingip(
+            internal_port_1['id'])
+        sshclient = ssh.Client(
+            fip['floating_ip_address'], CONF.validation.image_ssh_user,
+            pkey=self.keypair['private_key'])
+
+        self.check_remote_connectivity(
+            sshclient, internal_port_2['fixed_ips'][0]['ip_address'],
+            ping_count=10)

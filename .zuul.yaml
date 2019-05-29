@@ -744,12 +744,10 @@
         - neutron-tempest-plugin-designate-scenario
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-scenario-linuxbridge
-        - neutron-tempest-plugin-bgpvpn-bagpipe
     gate:
       jobs:
         - neutron-tempest-plugin-api
         - neutron-tempest-plugin-scenario-linuxbridge
-        - neutron-tempest-plugin-bgpvpn-bagpipe
 
 - project-template:
     name: neutron-tempest-plugin-jobs-queens
@@ -800,3 +798,7 @@
     check:
       jobs:
         - neutron-tempest-plugin-sfc
+        - neutron-tempest-plugin-bgpvpn-bagpipe
+    gate:
+      jobs:
+        - neutron-tempest-plugin-bgpvpn-bagpipe

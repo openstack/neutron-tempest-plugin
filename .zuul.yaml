@@ -74,6 +74,7 @@
         - standard-attr-tag
         - standard-attr-timestamp
         - subnet_allocation
+        - subnetpool-prefix-ops
         - trunk
         - trunk-details
         - uplink-status-propagation

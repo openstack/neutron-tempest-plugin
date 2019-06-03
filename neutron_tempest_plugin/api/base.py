@@ -137,6 +137,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.keypairs = []
         cls.trunks = []
         cls.network_segment_ranges = []
+        cls.conntrack_helpers = []
 
     @classmethod
     def resource_cleanup(cls):
@@ -152,6 +153,10 @@ class BaseNetworkTest(test.BaseTestCase):
             # Clean up floating IPs
             for floating_ip in cls.floating_ips:
                 cls._try_delete_resource(cls.delete_floatingip, floating_ip)
+
+            # Clean up conntrack helpers
+            for cth in cls.conntrack_helpers:
+                cls._try_delete_resource(cls.delete_conntrack_helper, cth)
 
             # Clean up routers
             for router in cls.routers:
@@ -959,6 +964,55 @@ class BaseNetworkTest(test.BaseTestCase):
             utils.wait_until_true(is_parent_port_detached)
 
         client.delete_trunk(trunk['id'])
+
+    @classmethod
+    def create_conntrack_helper(cls, router_id, helper, protocol, port,
+                                client=None):
+        """Create a conntrack helper
+
+        Create a conntrack helper and schedule it for later deletion. If a
+        client is passed, then it is used for deleteing the CTH too.
+
+        :param router_id: The ID of the Neutron router associated to the
+        conntrack helper.
+
+        :param helper: The conntrack helper module alias
+
+        :param protocol: The conntrack helper IP protocol used in the conntrack
+        helper.
+
+        :param port: The conntrack helper IP protocol port number for the
+        conntrack helper.
+
+        :param client: network client to be used for creating and cleaning up
+        the conntrack helper.
+        """
+
+        client = client or cls.client
+
+        cth = client.create_conntrack_helper(router_id, helper, protocol,
+                                             port)['conntrack_helper']
+
+        # save ID of router associated with conntrack helper for final cleanup
+        cth['router_id'] = router_id
+
+        # save client to be used later in cls.delete_conntrack_helper for final
+        # cleanup
+        cth['client'] = client
+        cls.conntrack_helpers.append(cth)
+        return cth
+
+    @classmethod
+    def delete_conntrack_helper(cls, cth, client=None):
+        """Delete conntrack helper
+
+        :param client: Client to be used
+        If client is not given it will use the client used to create the
+        conntrack helper, or cls.client if unknown.
+        """
+
+        client = client or cth.get('client') or cls.client
+        client.delete_conntrack_helper(cth['router_id'], cth['id'])
 
 
 class BaseAdminNetworkTest(BaseNetworkTest):

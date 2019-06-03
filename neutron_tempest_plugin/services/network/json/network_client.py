@@ -1020,6 +1020,49 @@ class NetworkClientJSON(service_client.RestClient):
         self.expected_success(204, resp.status)
         service_client.ResponseBody(resp, body)
 
+    def create_conntrack_helper(self, router_id, helper, protocol, port):
+        post_body = {'conntrack_helper': {
+            'helper': helper,
+            'protocol': protocol,
+            'port': port}}
+        body = jsonutils.dumps(post_body)
+        uri = '%s/routers/%s/conntrack_helpers' % (self.uri_prefix, router_id)
+        resp, body = self.post(uri, body)
+        self.expected_success(201, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
+    def get_conntrack_helper(self, router_id, cth_id):
+        uri = '%s/routers/%s/conntrack_helpers/%s' % (self.uri_prefix,
+                                                      router_id, cth_id)
+        get_resp, get_resp_body = self.get(uri)
+        self.expected_success(200, get_resp.status)
+        body = jsonutils.loads(get_resp_body)
+        return service_client.ResponseBody(get_resp, body)
+
+    def list_conntrack_helpers(self, router_id):
+        uri = '%s/routers/%s/conntrack_helpers' % (self.uri_prefix, router_id)
+        resp, body = self.get(uri)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
+    def update_conntrack_helper(self, router_id, cth_id, **kwargs):
+        uri = '%s/routers/%s/conntrack_helpers/%s' % (self.uri_prefix,
+                                                      router_id, cth_id)
+        put_body = jsonutils.dumps({'conntrack_helper': kwargs})
+        put_resp, resp_body = self.put(uri, put_body)
+        self.expected_success(200, put_resp.status)
+        body = jsonutils.loads(resp_body)
+        return service_client.ResponseBody(put_resp, body)
+
+    def delete_conntrack_helper(self, router_id, cth_id):
+        uri = '%s/routers/%s/conntrack_helpers/%s' % (self.uri_prefix,
+                                                      router_id, cth_id)
+        resp, body = self.delete(uri)
+        self.expected_success(204, resp.status)
+        service_client.ResponseBody(resp, body)
+
     def create_network_keystone_v3(self, name, project_id, tenant_id=None):
         uri = '%s/networks' % self.uri_prefix
         post_data = {

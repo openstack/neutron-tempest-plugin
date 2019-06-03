@@ -27,6 +27,7 @@
         - dns-integration
         - empty-string-filtering
         - expose-port-forwarding-in-fip
+        - expose-l3-conntrack-helper
         - ext-gw-mode
         - external-net
         - extra_dhcp_opt
@@ -38,6 +39,7 @@
         - floating-ip-port-forwarding
         - floatingip-pools
         - ip-substring-filtering
+        - l3-conntrack-helper
         - l3-flavors
         - l3-ha
         - l3_agent_scheduler
@@ -100,6 +102,7 @@
         neutron-uplink-status-propagation: true
         neutron-network-segment-range: true
         neutron-port-forwarding: true
+        neutron-conntrack-helper: true
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:

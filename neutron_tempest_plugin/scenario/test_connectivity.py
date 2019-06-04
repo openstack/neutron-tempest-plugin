@@ -146,3 +146,77 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         self.check_remote_connectivity(
             sshclient, internal_port_2['fixed_ips'][0]['ip_address'],
             ping_count=10)
+
+    @utils.requires_ext(extension="dvr", service="network")
+    @decorators.idempotent_id('69d3650a-5c32-40bc-ae56-5c4c849ddd37')
+    def test_connectivity_dvr_and_no_dvr_routers_in_same_subnet(self):
+        """This test case tests connectivity between vm and 2 routers.
+
+        Subnet is connected to dvr and non-dvr routers in the same time, test
+        ensures that connectivity from VM to both routers is working.
+
+        Test scenario:
+        +----------------+                  +------------+
+        | Non-dvr router |                  | DVR router |
+        |                |                  |            |
+        |    10.0.0.1    |                  |  10.0.0.x  |
+        +-------+--------+                  +-----+------+
+                |                                 |
+                |         10.0.0.0/24             |
+                +----------------+----------------+
+                                 |
+                               +-+-+
+                               |VM |
+                               +---+
+
+        where:
+        10.0.0.1 - is subnet's gateway IP address,
+        10.0.0.x - is any other IP address taken from subnet's range
+
+        Test ensures that both 10.0.0.1 and 10.0.0.x IP addresses are
+        reachable from VM.
+        """
+
+        network = self.create_network()
+        subnet = self.create_subnet(
+            network, cidr="10.0.0.0/24", gateway="10.0.0.1")
+
+        non_dvr_router = self.create_router_by_client(
+            tenant_id=self.client.tenant_id,
+            is_admin=True,
+            router_name=data_utils.rand_name("nondvr-2-routers-same-network"),
+            admin_state_up=True,
+            distributed=False)
+        self.create_router_interface(non_dvr_router['id'], subnet['id'])
+
+        dvr_router = self.create_router_by_client(
+            tenant_id=self.client.tenant_id,
+            is_admin=True,
+            router_name=data_utils.rand_name("dvr-2-rotuers-same-network"),
+            admin_state_up=True,
+            distributed=True)
+        dvr_router_port = self.create_port(network)
+        self.client.add_router_interface_with_port_id(
+            dvr_router['id'], dvr_router_port['id'])
+
+        vm = self.create_server(
+            flavor_ref=CONF.compute.flavor_ref,
+            image_ref=CONF.compute.image_ref,
+            key_name=self.keypair['name'],
+            networks=[{'uuid': network['id']}],
+            security_groups=[{'name': self.secgroup['name']}])
+        self.wait_for_server_active(vm['server'])
+
+        vm_port = self.client.list_ports(
+            network_id=network['id'], device_id=vm['server']['id'])['ports'][0]
+        fip = self.create_and_associate_floatingip(vm_port['id'])
+
+        sshclient = ssh.Client(
+            fip['floating_ip_address'], CONF.validation.image_ssh_user,
+            pkey=self.keypair['private_key'])
+
+        self.check_remote_connectivity(
+            sshclient, '10.0.0.1', ping_count=10)
+        self.check_remote_connectivity(
+            sshclient, dvr_router_port['fixed_ips'][0]['ip_address'],
+            ping_count=10)

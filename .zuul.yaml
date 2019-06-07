@@ -526,6 +526,7 @@
         neutron-segments: true
         neutron-trunk: true
         neutron-log: true
+        neutron-port-forwarding: true
         cinder: true
       devstack_local_conf:
         post-config:
@@ -588,6 +589,7 @@
           neutron-qos: true
           neutron-trunk: true
           neutron-log: true
+          neutron-port-forwarding: true
         devstack_local_conf:
           post-config:
             $NEUTRON_CONF:

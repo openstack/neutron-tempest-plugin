@@ -35,7 +35,7 @@ class InternalDNSTest(base.BaseTempestTestCase):
           2.1) ping the other VM's internal IP
           2.2) ping the other VM's hostname
         """
-
+        self.skipTest('Disable whilst associated changes land into Neutron')
         network = self.create_network(dns_domain='starwars.')
         self.setup_network_and_server(network=network, server_name='luke')
         self.create_pingable_secgroup_rule(
@@ -72,7 +72,9 @@ class InternalDNSTest(base.BaseTempestTestCase):
             ssh_client, leia_port['fixed_ips'][0]['ip_address'],
             timeout=CONF.validation.ping_timeout * 10)
         self.assertIn(
-            'starwars', ssh_client.exec_command('cat /etc/resolv.conf'))
+            'openstackgate.local',
+            ssh_client.exec_command('cat /etc/resolv.conf')
+        )
 
         self.check_remote_connectivity(ssh_client, 'leia')
-        self.check_remote_connectivity(ssh_client, 'leia.starwars')
+        self.check_remote_connectivity(ssh_client, 'leia.openstackgate.local')

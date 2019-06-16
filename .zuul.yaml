@@ -392,7 +392,7 @@
       devstack_localrc:
         PHYSICAL_NETWORK: default
         DOWNLOAD_DEFAULT_IMAGES: false
-        IMAGE_URLS: "http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img,http://cloud-images.ubuntu.com/releases/16.04/release-20180622/ubuntu-16.04-server-cloudimg-amd64-disk1.img"
+        IMAGE_URLS: "http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img,https://cloud-images.ubuntu.com/releases/xenial/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img"
         DEFAULT_IMAGE_NAME: cirros-0.3.4-i386-disk
         ADVANCED_IMAGE_NAME: ubuntu-16.04-server-cloudimg-amd64-disk1
         ADVANCED_INSTANCE_TYPE: ds512M
@@ -507,7 +507,7 @@
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_dvr) | join(',') }}"
         PHYSICAL_NETWORK: default
         DOWNLOAD_DEFAULT_IMAGES: false
-        IMAGE_URLS: "http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img,http://cloud-images.ubuntu.com/releases/16.04/release-20180622/ubuntu-16.04-server-cloudimg-amd64-disk1.img"
+        IMAGE_URLS: "http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img,https://cloud-images.ubuntu.com/releases/xenial/release/ubuntu-16.04-server-cloudimg-amd64-disk1.img"
         DEFAULT_IMAGE_NAME: cirros-0.3.4-i386-disk
         ADVANCED_IMAGE_NAME: ubuntu-16.04-server-cloudimg-amd64-disk1
         ADVANCED_INSTANCE_TYPE: ds512M

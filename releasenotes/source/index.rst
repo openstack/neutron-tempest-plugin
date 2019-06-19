@@ -1,6 +1,6 @@
-======================================
- Neutron Tempest Plugin Release Notes
-======================================
+====================================
+Neutron Tempest Plugin Release Notes
+====================================
 
 .. toctree::
    :maxdepth: 1

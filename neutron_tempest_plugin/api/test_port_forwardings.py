@@ -76,11 +76,21 @@ class PortForwardingTestJSON(base.BaseNetworkTest):
         self.assertEqual(port['fixed_ips'][0]['ip_address'],
                          pf['internal_ip_address'])
 
+        # Now lets try to remove Floating IP with existing port forwarding,
+        # this should fails
+        self.assertRaises(exceptions.Conflict,
+                          self.delete_floatingip, fip)
+
         # Delete port forwarding
         self.client.delete_port_forwarding(fip['id'], pf['id'])
         self.assertRaises(exceptions.NotFound,
                           self.client.get_port_forwarding,
                           fip['id'], pf['id'])
+
+        # Now Floating IP should be deleted properly
+        self.delete_floatingip(fip)
+        self.assertRaises(exceptions.NotFound,
+                          self.client.get_floatingip, fip['id'])
 
     @decorators.idempotent_id('aa842070-39ef-4b09-9df9-e723934f96f8')
     @utils.requires_ext(extension="expose-port-forwarding-in-fip",
@@ -166,6 +176,20 @@ class PortForwardingTestJSON(base.BaseNetworkTest):
             exceptions.Conflict,
             self.create_port_forwarding,
             fip['id'],
+            internal_port_id=port['id'],
+            internal_ip_address=port['fixed_ips'][0]['ip_address'],
+            internal_port=1111, external_port=2222,
+            protocol="tcp")
+
+    @decorators.idempotent_id('4ca72d40-93e4-485f-a876-76caf33c1fe6')
+    def test_associate_port_forwarding_to_port_with_fip(self):
+        port = self.create_port(self.network)
+        self.create_floatingip(port=port)
+        fip_for_pf = self.create_floatingip()
+        self.assertRaises(
+            exceptions.Conflict,
+            self.create_port_forwarding,
+            fip_for_pf['id'],
             internal_port_id=port['id'],
             internal_ip_address=port['fixed_ips'][0]['ip_address'],
             internal_port=1111, external_port=2222,

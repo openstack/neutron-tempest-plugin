@@ -47,14 +47,20 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             'image_ref': CONF.compute.image_ref,
             'key_name': self.keypair['name']
         }
-        vm1 = self.create_server(networks=[{'port': port_1['id']}], **params)
+        vms = []
+        vms.append(
+            self.create_server(networks=[{'port': port_1['id']}], **params))
 
         if (CONF.compute.min_compute_nodes > 1 and
                 compute.is_scheduler_filter_enabled("DifferentHostFilter")):
             params['scheduler_hints'] = {
-                'different_host': [vm1['server']['id']]}
+                'different_host': [vms[0]['server']['id']]}
 
-        self.create_server(networks=[{'port': port_2['id']}], **params)
+        vms.append(
+            self.create_server(networks=[{'port': port_2['id']}], **params))
+
+        for vm in vms:
+            self.wait_for_server_active(vm['server'])
 
     @decorators.idempotent_id('8944b90d-1766-4669-bd8a-672b5d106bb7')
     def test_connectivity_through_2_routers(self):
@@ -83,8 +89,6 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         ap1_wan_port = self.create_port(wan_net)
         ap2_wan_port = self.create_port(wan_net)
 
-        self._create_servers(ap1_internal_port, ap2_internal_port)
-
         self.client.add_router_interface_with_port_id(
             ap1_rt['id'], ap1_wan_port['id'])
         self.client.add_router_interface_with_port_id(
@@ -100,6 +104,8 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             ap2_rt['id'],
             routes=[{"destination": ap1_subnet['cidr'],
                      "nexthop": ap1_wan_port['fixed_ips'][0]['ip_address']}])
+
+        self._create_servers(ap1_internal_port, ap2_internal_port)
 
         ap1_fip = self.create_and_associate_floatingip(
             ap1_internal_port['id'])
@@ -132,10 +138,10 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         internal_port_2 = self.create_port(
             net_2, security_groups=[self.secgroup['id']])
 
-        self._create_servers(internal_port_1, internal_port_2)
-
         self.create_router_interface(router['id'], subnet_1['id'])
         self.create_router_interface(router['id'], subnet_2['id'])
+
+        self._create_servers(internal_port_1, internal_port_2)
 
         fip = self.create_and_associate_floatingip(
             internal_port_1['id'])

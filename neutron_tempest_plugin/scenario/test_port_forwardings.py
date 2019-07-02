@@ -13,14 +13,18 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 
 CONF = config.CONF
+
+LOG = log.getLogger(__name__)
 
 
 class PortForwardingTestJSON(base.BaseTempestTestCase):
@@ -66,10 +70,19 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                 protocol="tcp")
             servers.append(server)
 
-        for server in servers:
-            ssh_client = ssh.Client(
-                self.fip['floating_ip_address'],
-                CONF.validation.image_ssh_user,
-                pkey=self.keypair['private_key'],
-                port=server['port_forwarding']['external_port'])
-            self.assertIn(server['name'], ssh_client.exec_command('hostname'))
+        try:
+            for server in servers:
+                ssh_client = ssh.Client(
+                    self.fip['floating_ip_address'],
+                    CONF.validation.image_ssh_user,
+                    pkey=self.keypair['private_key'],
+                    port=server['port_forwarding']['external_port'])
+                self.assertIn(server['name'],
+                              ssh_client.exec_command('hostname'))
+        except lib_exc.SSHTimeout as ssh_e:
+            LOG.debug(ssh_e)
+            self._log_console_output(servers)
+            raise
+        except AssertionError:
+            self._log_console_output(servers)
+            raise

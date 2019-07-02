@@ -80,6 +80,56 @@ class DvrRoutersNegativeTest(RoutersNegativeTestBase):
                 data_utils.rand_name('router'), distributed=True)
 
 
+class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
+
+    required_extensions = ['dvr', 'router-admin-state-down-before-update']
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('5379fe06-e45e-4a4f-8b4a-9e28a924b451')
+    def test_router_update_distributed_returns_exception(self):
+        # create a centralized router
+        router_args = {'tenant_id': self.client.tenant_id,
+                       'distributed': False}
+        router = self.admin_client.create_router(
+            data_utils.rand_name('router'), admin_state_up=True,
+            **router_args)['router']
+        self.assertTrue(router['admin_state_up'])
+        self.assertFalse(router['distributed'])
+        # attempt to set the router to distributed, catch BadRequest exception
+        self.assertRaises(lib_exc.BadRequest,
+                          self.admin_client.update_router,
+                          router['id'],
+                          distributed=True)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('c277e945-3b39-442d-b149-e2e8cc6a2b40')
+    def test_router_update_centralized_returns_exception(self):
+        # create a centralized router
+        router_args = {'tenant_id': self.client.tenant_id,
+                       'distributed': False}
+        router = self.admin_client.create_router(
+            data_utils.rand_name('router'), admin_state_up=True,
+            **router_args)['router']
+        self.assertTrue(router['admin_state_up'])
+        self.assertFalse(router['distributed'])
+        # take the router down to modify distributed->True
+        update_body = self.admin_client.update_router(router['id'],
+                                                      admin_state_up=False)
+        self.assertFalse(update_body['router']['admin_state_up'])
+        update_body = self.admin_client.update_router(router['id'],
+                                                      distributed=True)
+        self.assertTrue(update_body['router']['distributed'])
+        # set admin_state_up=True
+        update_body = self.admin_client.update_router(router['id'],
+                                                      admin_state_up=True)
+        self.assertTrue(update_body['router']['admin_state_up'])
+        # attempt to set the router to centralized, catch BadRequest exception
+        self.assertRaises(lib_exc.BadRequest,
+                          self.admin_client.update_router,
+                          router['id'],
+                          distributed=False)
+
+
 class HaRoutersNegativeTest(RoutersNegativeTestBase):
 
     required_extensions = ['l3-ha']

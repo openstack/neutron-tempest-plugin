@@ -280,6 +280,62 @@ class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
         self.assertNotIn('ha', show_body['router'])
 
 
+class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
+
+    required_extensions = ['dvr', 'l3-ha',
+                           'router-admin-state-down-before-update']
+
+    @decorators.idempotent_id('0ffb9973-0c1a-4b76-a1f2-060178057661')
+    def test_convert_centralized_router_to_distributed_extended(self):
+        router_args = {'tenant_id': self.client.tenant_id,
+                       'distributed': False, 'ha': False}
+        router = self.admin_client.create_router(
+            data_utils.rand_name('router'), admin_state_up=True,
+            **router_args)['router']
+        self.addCleanup(self.admin_client.delete_router,
+                        router['id'])
+        self.assertTrue(router['admin_state_up'])
+        self.assertFalse(router['distributed'])
+        # take router down to allow setting the router to distributed
+        update_body = self.admin_client.update_router(router['id'],
+                                                      admin_state_up=False)
+        self.assertFalse(update_body['router']['admin_state_up'])
+        # set the router to distributed
+        update_body = self.admin_client.update_router(router['id'],
+                                                      distributed=True)
+        self.assertTrue(update_body['router']['distributed'])
+        # bring the router back up
+        update_body = self.admin_client.update_router(router['id'],
+                                                      admin_state_up=True)
+        self.assertTrue(update_body['router']['admin_state_up'])
+        self.assertTrue(update_body['router']['distributed'])
+
+    @decorators.idempotent_id('e9a8f55b-c535-44b7-8b0a-20af6a7c2921')
+    def test_convert_distributed_router_to_centralized_extended(self):
+        router_args = {'tenant_id': self.client.tenant_id,
+                       'distributed': True, 'ha': False}
+        router = self.admin_client.create_router(
+            data_utils.rand_name('router'), admin_state_up=True,
+            **router_args)['router']
+        self.addCleanup(self.admin_client.delete_router,
+                        router['id'])
+        self.assertTrue(router['admin_state_up'])
+        self.assertTrue(router['distributed'])
+        # take router down to allow setting the router to centralized
+        update_body = self.admin_client.update_router(router['id'],
+                                                      admin_state_up=False)
+        self.assertFalse(update_body['router']['admin_state_up'])
+        # set router to centralized
+        update_body = self.admin_client.update_router(router['id'],
+                                                      distributed=False)
+        self.assertFalse(update_body['router']['distributed'])
+        # bring router back up
+        update_body = self.admin_client.update_router(router['id'],
+                                                      admin_state_up=True)
+        self.assertTrue(update_body['router']['admin_state_up'])
+        self.assertFalse(update_body['router']['distributed'])
+
+
 class HaRoutersTest(base_routers.BaseRouterTest):
 
     required_extensions = ['l3-ha']

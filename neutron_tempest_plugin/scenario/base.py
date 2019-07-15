@@ -378,3 +378,30 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         """
         self.wait_for_server_status(
             server, constants.SERVER_STATUS_ACTIVE, client)
+
+    def check_servers_hostnames(self, servers, log_errors=True):
+        """Compare hostnames of given servers with their names."""
+        try:
+            for server in servers:
+                kwargs = {}
+                try:
+                    kwargs['port'] = server['port_forwarding']['external_port']
+                except KeyError:
+                    pass
+                ssh_client = ssh.Client(
+                    self.fip['floating_ip_address'],
+                    CONF.validation.image_ssh_user,
+                    pkey=self.keypair['private_key'],
+                    **kwargs)
+                self.assertIn(server['name'],
+                              ssh_client.exec_command('hostname'))
+        except lib_exc.SSHTimeout as ssh_e:
+            LOG.debug(ssh_e)
+            if log_errors:
+                self._log_console_output(servers)
+            raise
+        except AssertionError as assert_e:
+            LOG.debug(assert_e)
+            if log_errors:
+                self._log_console_output(servers)
+            raise

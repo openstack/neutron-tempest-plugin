@@ -13,9 +13,21 @@
 #    under the License.
 
 from tempest.api.network import base
+from tempest import config
 
 from neutron_tempest_plugin.fwaas.common import fwaas_v2_client
 
+CONF = config.CONF
+
 
 class BaseFWaaSTest(fwaas_v2_client.FWaaSClientMixin, base.BaseNetworkTest):
-    pass
+
+    @classmethod
+    def skip_checks(cls):
+        super(BaseFWaaSTest, cls).skip_checks()
+        msg = None
+        if not CONF.fwaas.run_fwaas_tests:
+            msg = ("Running of fwaas related tests is disabled in "
+                   "plugin configuration.")
+        if msg:
+            raise cls.skipException(msg)

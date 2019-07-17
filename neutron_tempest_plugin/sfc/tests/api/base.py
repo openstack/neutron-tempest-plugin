@@ -18,17 +18,31 @@ import socket
 import netaddr
 from tempest.api.network import base
 from tempest.common import utils
+from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.sfc.tests import flowclassifier_client
 from neutron_tempest_plugin.sfc.tests import sfc_client
 
+CONF = config.CONF
+
 
 class BaseFlowClassifierTest(
     flowclassifier_client.FlowClassifierClientMixin,
     base.BaseAdminNetworkTest
 ):
+
+    @classmethod
+    def skip_checks(cls):
+        super(BaseFlowClassifierTest, cls).skip_checks()
+        msg = None
+        if not CONF.sfc.run_sfc_tests:
+            msg = ("Running of SFC related tests is disabled in "
+                   "plugin configuration.")
+        if msg:
+            raise cls.skipException(msg)
+
     @classmethod
     def resource_setup(cls):
         super(BaseFlowClassifierTest, cls).resource_setup()

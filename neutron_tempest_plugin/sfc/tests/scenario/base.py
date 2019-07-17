@@ -30,6 +30,17 @@ class SfcScenarioTest(
     sfc_client.SfcClientMixin,
     manager.NetworkScenarioTest
 ):
+
+    @classmethod
+    def skip_checks(cls):
+        super(SfcScenarioTest, cls).skip_checks()
+        msg = None
+        if not CONF.sfc.run_sfc_tests:
+            msg = ("Running of SFC related tests is disabled in "
+                   "plugin configuration.")
+        if msg:
+            raise cls.skipException(msg)
+
     def _check_connectivity(
         self, source_ip, destination_ip, routes=None,
         username=None, private_key=None

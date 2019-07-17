@@ -41,6 +41,16 @@ class ScenarioTest(tempest.test.BaseTestCase):
     credentials = ['primary']
 
     @classmethod
+    def skip_checks(cls):
+        super(ScenarioTest, cls).skip_checks()
+        msg = None
+        if not CONF.fwaas.run_fwaas_tests:
+            msg = ("Running of fwaas related tests is disabled in "
+                   "plugin configuration.")
+        if msg:
+            raise cls.skipException(msg)
+
+    @classmethod
     def setup_clients(cls):
         super(ScenarioTest, cls).setup_clients()
         # Clients (in alphabetical order)

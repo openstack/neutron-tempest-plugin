@@ -227,6 +227,23 @@ class NetworkClientJSON(service_client.RestClient):
         self.expected_success(200, resp.status)
         return service_client.ResponseBody(resp, body)
 
+    def add_subnetpool_prefix(self, id, **kwargs):
+        return self._subnetpool_prefix_operation(id, 'add_prefixes', kwargs)
+
+    def remove_subnetpool_prefix(self, id, **kwargs):
+        return self._subnetpool_prefix_operation(id,
+                                                 'remove_prefixes',
+                                                 kwargs)
+
+    def _subnetpool_prefix_operation(self, id, operation, op_body):
+        uri = self.get_uri("subnetpools")
+        op_prefix_uri = '%s/%s/%s' % (uri, id, operation)
+        body = jsonutils.dumps(op_body)
+        resp, body = self.put(op_prefix_uri, body)
+        body = jsonutils.loads(body)
+        self.expected_success(200, resp.status)
+        return service_client.ResponseBody(resp, body)
+
     # Common methods that are hard to automate
     def create_bulk_network(self, names, shared=False):
         network_list = [{'name': name, 'shared': shared} for name in names]

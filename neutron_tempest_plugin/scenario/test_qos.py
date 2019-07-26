@@ -34,11 +34,12 @@ CONF = config.CONF
 LOG = logging.getLogger(__name__)
 
 
-def _try_connect(host_ip, port):
+def _try_connect(host_ip, port, socket_timeout):
     try:
         client_socket = socket.socket(socket.AF_INET,
                                       socket.SOCK_STREAM)
         client_socket.connect((host_ip, port))
+        client_socket.settimeout(socket_timeout)
         return client_socket
     except socket.error as serr:
         if serr.errno == errno.ECONNREFUSED:
@@ -48,7 +49,7 @@ def _try_connect(host_ip, port):
             raise
 
 
-def _connect_socket(host, port):
+def _connect_socket(host, port, socket_timeout):
     """Try to initiate a connection to a host using an ip address and a port.
 
     Trying couple of times until a timeout is reached in case the listening
@@ -58,7 +59,7 @@ def _connect_socket(host, port):
     start = time.time()
     while True:
         try:
-            return _try_connect(host, port)
+            return _try_connect(host, port, socket_timeout)
         except sc_exceptions.SocketConnectionRefused:
             if time.time() - start > constants.SOCKET_CONNECT_TIMEOUT:
                 raise sc_exceptions.ConnectionTimeoutException(host=host,
@@ -69,11 +70,10 @@ class QoSTestMixin(object):
     credentials = ['primary', 'admin']
     force_tenant_isolation = False
 
-    BUFFER_SIZE = 1024 * 1024
+    FILE_SIZE = 1024 * 1024
     TOLERANCE_FACTOR = 1.5
-    BS = 512
-    COUNT = BUFFER_SIZE / BS
-    FILE_SIZE = BS * COUNT
+    BUFFER_SIZE = 512
+    COUNT = FILE_SIZE / BUFFER_SIZE
     LIMIT_BYTES_SEC = (constants.LIMIT_KILO_BITS_PER_SECOND * 1024 *
                        TOLERANCE_FACTOR / 8.0)
     FILE_PATH = "/tmp/img"
@@ -83,44 +83,57 @@ class QoSTestMixin(object):
 
     def _create_file_for_bw_tests(self, ssh_client):
         cmd = ("(dd if=/dev/zero bs=%(bs)d count=%(count)d of=%(file_path)s) "
-               % {'bs': QoSTestMixin.BS, 'count': QoSTestMixin.COUNT,
-               'file_path': QoSTestMixin.FILE_PATH})
+               % {'bs': self.BUFFER_SIZE, 'count': self.COUNT,
+               'file_path': self.FILE_PATH})
         ssh_client.exec_command(cmd)
-        cmd = "stat -c %%s %s" % QoSTestMixin.FILE_PATH
+        cmd = "stat -c %%s %s" % self.FILE_PATH
         filesize = ssh_client.exec_command(cmd)
-        if int(filesize.strip()) != QoSTestMixin.FILE_SIZE:
+        if int(filesize.strip()) != self.FILE_SIZE:
             raise sc_exceptions.FileCreationFailedException(
-                file=QoSTestMixin.FILE_PATH)
+                file=self.FILE_PATH)
 
-    def _check_bw(self, ssh_client, host, port, expected_bw=LIMIT_BYTES_SEC):
+    @staticmethod
+    def _kill_nc_process(ssh_client):
         cmd = "killall -q nc"
         try:
             ssh_client.exec_command(cmd)
         except exceptions.SSHExecCommandFailed:
             pass
+
+    def _check_bw(self, ssh_client, host, port, expected_bw=LIMIT_BYTES_SEC):
+        self._kill_nc_process(ssh_client)
         cmd = ("(nc -ll -p %(port)d < %(file_path)s > /dev/null &)" % {
-                'port': port, 'file_path': QoSTestMixin.FILE_PATH})
+                'port': port, 'file_path': self.FILE_PATH})
         ssh_client.exec_command(cmd)
 
         # Open TCP socket to remote VM and download big file
         start_time = time.time()
-        client_socket = _connect_socket(host, port)
+        socket_timeout = self.FILE_SIZE * self.TOLERANCE_FACTOR / expected_bw
+        client_socket = _connect_socket(host, port, socket_timeout)
         total_bytes_read = 0
-        while total_bytes_read < QoSTestMixin.FILE_SIZE:
-            data = client_socket.recv(QoSTestMixin.BUFFER_SIZE)
-            total_bytes_read += len(data)
+        try:
+            while total_bytes_read < self.FILE_SIZE:
+                data = client_socket.recv(self.BUFFER_SIZE)
+                total_bytes_read += len(data)
 
-        # Calculate and return actual BW + logging result
-        time_elapsed = time.time() - start_time
-        bytes_per_second = total_bytes_read / time_elapsed
+            # Calculate and return actual BW + logging result
+            time_elapsed = time.time() - start_time
+            bytes_per_second = total_bytes_read / time_elapsed
 
-        LOG.debug("time_elapsed = %(time_elapsed).16f, "
-                  "total_bytes_read = %(total_bytes_read)d, "
-                  "bytes_per_second = %(bytes_per_second)d",
-                  {'time_elapsed': time_elapsed,
-                   'total_bytes_read': total_bytes_read,
-                   'bytes_per_second': bytes_per_second})
-        return bytes_per_second <= expected_bw
+            LOG.debug("time_elapsed = %(time_elapsed).16f, "
+                      "total_bytes_read = %(total_bytes_read)d, "
+                      "bytes_per_second = %(bytes_per_second)d",
+                      {'time_elapsed': time_elapsed,
+                       'total_bytes_read': total_bytes_read,
+                       'bytes_per_second': bytes_per_second})
+            return bytes_per_second <= expected_bw
+        except socket.timeout:
+            LOG.warning('Socket timeout while reading the remote file, bytes '
+                        'read: %s', total_bytes_read)
+            return False
+        finally:
+            client_socket.close()
+            self._kill_nc_process(ssh_client)
 
     def _create_ssh_client(self):
         return ssh.Client(self.fip['floating_ip_address'],

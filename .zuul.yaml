@@ -63,6 +63,7 @@
         - rbac-policies
         - rbac-security-groups
         - router
+        - router-admin-state-down-before-update
         - router_availability_zone
         - security-group
         - segment

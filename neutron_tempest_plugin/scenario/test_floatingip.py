@@ -381,3 +381,58 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
             port=self.NC_PORT),
             timeout=120,
             sleep=1)
+
+
+class TestFloatingIPUpdate(FloatingIpTestCasesMixin,
+                           base.BaseTempestTestCase):
+
+    same_network = None
+
+    @decorators.idempotent_id('1bdd849b-03dd-4b8f-994f-457cf8a36f93')
+    def test_floating_ip_update(self):
+        """Test updating FIP with another port.
+
+        The test creates two servers and attaches floating ip to first server.
+        Then it checks server is accesible using the FIP. FIP is then
+        associated with the second server and connectivity is checked again.
+        """
+        ports = [self.create_port(
+            self.network, security_groups=[self.secgroup['id']])
+            for i in range(2)]
+
+        servers = []
+        for port in ports:
+            name = data_utils.rand_name("server-%s" % port['id'][:8])
+            server = self.create_server(
+                name=name,
+                flavor_ref=CONF.compute.flavor_ref,
+                key_name=self.keypair['name'],
+                image_ref=CONF.compute.image_ref,
+                networks=[{'port': port['id']}])['server']
+            server['name'] = name
+            servers.append(server)
+        for server in servers:
+            self.wait_for_server_active(server)
+
+        self.fip = self.create_floatingip(port=ports[0])
+        self.check_connectivity(self.fip['floating_ip_address'],
+                                CONF.validation.image_ssh_user,
+                                self.keypair['private_key'])
+        self.client.update_floatingip(self.fip['id'], port_id=ports[1]['id'])
+
+        def _wait_for_fip_associated():
+            try:
+                self.check_servers_hostnames(servers[-1:], log_errors=False)
+            except (AssertionError, exceptions.SSHTimeout):
+                return False
+            return True
+
+        # The FIP is now associated with the port of the second server.
+        try:
+            common_utils.wait_until_true(_wait_for_fip_associated,
+                                         timeout=15, sleep=3)
+        except common_utils.WaitTimeout:
+            self._log_console_output(servers[-1:])
+            self.fail(
+                "Server %s is not accessible via its floating ip %s" % (
+                    servers[-1]['id'], self.fip['id']))

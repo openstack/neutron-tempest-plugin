@@ -130,10 +130,10 @@ class QoSTestMixin(object):
         except socket.timeout:
             LOG.warning('Socket timeout while reading the remote file, bytes '
                         'read: %s', total_bytes_read)
+            self._kill_nc_process(ssh_client)
             return False
         finally:
             client_socket.close()
-            self._kill_nc_process(ssh_client)
 
     def _create_ssh_client(self):
         return ssh.Client(self.fip['floating_ip_address'],

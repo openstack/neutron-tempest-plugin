@@ -471,6 +471,62 @@
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
 
 - job:
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    parent: neutron-tempest-plugin-scenario
+    timeout: 10000
+    vars:
+      network_api_extensions: *api_extensions_master
+      # TODO(slaweq): remove trunks subport_connectivity test from blacklist
+      # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
+      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)"
+      devstack_localrc:
+        Q_AGENT: openvswitch
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+      devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              enable_dvr: false
+          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+          # devstack-tempest job will be switched to use lib/neutron instead of
+          # lib/neutron-legacy
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            agent:
+              tunnel_types: vxlan,gre
+            ovs:
+              tunnel_bridge: br-tun
+              bridge_mappings: public:br-ex
+            securitygroup:
+              firewall_driver: iptables_hybrid
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_plugin_options:
+              available_type_drivers: flat,vlan,local,vxlan
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-rocky
+    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    nodeset: openstack-single-node-xenial
+    override-checkout: stable/rocky
+    vars:
+      branch_override: stable/rocky
+      network_api_extensions: *api_extensions_rocky
+      devstack_localrc:
+        USE_PYTHON3: false
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-stein
+    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+      network_api_extensions: *api_extensions_stein
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
     name: neutron-tempest-plugin-scenario-linuxbridge
     parent: neutron-tempest-plugin-scenario
     timeout: 10000
@@ -847,11 +903,13 @@
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-scenario-linuxbridge
         - neutron-tempest-plugin-scenario-openvswitch
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
     gate:
       jobs:
         - neutron-tempest-plugin-api
         - neutron-tempest-plugin-scenario-linuxbridge
         - neutron-tempest-plugin-scenario-openvswitch
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
 
 - project-template:
     name: neutron-tempest-plugin-jobs-queens
@@ -875,6 +933,7 @@
         - neutron-tempest-plugin-dvr-multinode-scenario-rocky
         - neutron-tempest-plugin-scenario-linuxbridge-rocky
         - neutron-tempest-plugin-scenario-openvswitch-rocky
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-rocky
     gate:
       jobs:
         - neutron-tempest-plugin-api-rocky
@@ -888,6 +947,7 @@
         - neutron-tempest-plugin-dvr-multinode-scenario-stein
         - neutron-tempest-plugin-scenario-linuxbridge-stein
         - neutron-tempest-plugin-scenario-openvswitch-stein
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-stein
     gate:
       jobs:
         - neutron-tempest-plugin-api-stein

@@ -136,7 +136,7 @@ class FWaaSClientMixin(object):
                                         nl_constants.PENDING_UPDATE])
 
     def _wait_firewall_group_while(self, firewall_group_id, statuses,
-        not_found_ok=False):
+                                   not_found_ok=False):
         start = int(time.time())
         if not_found_ok:
             expected_exceptions = (lib_exc.NotFound)

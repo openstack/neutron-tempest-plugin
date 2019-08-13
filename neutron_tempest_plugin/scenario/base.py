@@ -170,8 +170,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         client = client or cls.os_primary.interfaces_client
         client.delete_interface(server_id, port_id=port_id)
 
-    def setup_network_and_server(
-        self, router=None, server_name=None, network=None, **kwargs):
+    def setup_network_and_server(self, router=None, server_name=None,
+                                 network=None, **kwargs):
         """Create network resources and a server.
 
         Creating a network, subnet, router, keypair, security group

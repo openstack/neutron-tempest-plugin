@@ -73,12 +73,11 @@ class RoutersTest(base_routers.BaseRouterTest):
             external_gateway_info = {
                 'network_id': CONF.network.public_network_id,
                 'enable_snat': enable_snat}
-            create_body = self.admin_client.create_router(
-                name, external_gateway_info=external_gateway_info)
-            self.addCleanup(self.admin_client.delete_router,
-                            create_body['router']['id'])
+            router = self._create_admin_router(
+                name, external_network_id=CONF.network.public_network_id,
+                enable_snat=enable_snat)
             # Verify snat attributes after router creation
-            self._verify_router_gateway(create_body['router']['id'],
+            self._verify_router_gateway(router['id'],
                                         exp_ext_gw_info=external_gateway_info)
 
     def _verify_router_gateway(self, router_id, exp_ext_gw_info=None):
@@ -238,12 +237,8 @@ class DvrRoutersTest(base_routers.BaseRouterTest):
     @decorators.idempotent_id('141297aa-3424-455d-aa8d-f2d95731e00a')
     def test_create_distributed_router(self):
         name = data_utils.rand_name('router')
-        create_body = self.admin_client.create_router(
-            name, distributed=True)
-        self.addCleanup(self._delete_router,
-                        create_body['router']['id'],
-                        self.admin_client)
-        self.assertTrue(create_body['router']['distributed'])
+        router = self._create_admin_router(name, distributed=True)
+        self.assertTrue(router['distributed'])
 
 
 class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
@@ -255,11 +250,9 @@ class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
         # Convert a centralized router to distributed firstly
         router_args = {'tenant_id': self.client.tenant_id,
                        'distributed': False, 'ha': False}
-        router = self.admin_client.create_router(
+        router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=False,
-            **router_args)['router']
-        self.addCleanup(self.admin_client.delete_router,
-                        router['id'])
+            **router_args)
         self.assertFalse(router['distributed'])
         self.assertFalse(router['ha'])
         update_body = self.admin_client.update_router(router['id'],
@@ -289,11 +282,9 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
     def test_convert_centralized_router_to_distributed_extended(self):
         router_args = {'tenant_id': self.client.tenant_id,
                        'distributed': False, 'ha': False}
-        router = self.admin_client.create_router(
+        router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
-            **router_args)['router']
-        self.addCleanup(self.admin_client.delete_router,
-                        router['id'])
+            **router_args)
         self.assertTrue(router['admin_state_up'])
         self.assertFalse(router['distributed'])
         # take router down to allow setting the router to distributed
@@ -314,11 +305,9 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
     def test_convert_distributed_router_to_centralized_extended(self):
         router_args = {'tenant_id': self.client.tenant_id,
                        'distributed': True, 'ha': False}
-        router = self.admin_client.create_router(
+        router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
-            **router_args)['router']
-        self.addCleanup(self.admin_client.delete_router,
-                        router['id'])
+            **router_args)
         self.assertTrue(router['admin_state_up'])
         self.assertTrue(router['distributed'])
         # take router down to allow setting the router to centralized

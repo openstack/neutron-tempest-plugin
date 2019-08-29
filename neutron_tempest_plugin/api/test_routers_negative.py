@@ -90,9 +90,9 @@ class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
         # create a centralized router
         router_args = {'tenant_id': self.client.tenant_id,
                        'distributed': False}
-        router = self.admin_client.create_router(
+        router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
-            **router_args)['router']
+            **router_args)
         self.assertTrue(router['admin_state_up'])
         self.assertFalse(router['distributed'])
         # attempt to set the router to distributed, catch BadRequest exception
@@ -107,9 +107,9 @@ class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
         # create a centralized router
         router_args = {'tenant_id': self.client.tenant_id,
                        'distributed': False}
-        router = self.admin_client.create_router(
+        router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
-            **router_args)['router']
+            **router_args)
         self.assertTrue(router['admin_state_up'])
         self.assertFalse(router['distributed'])
         # take the router down to modify distributed->True

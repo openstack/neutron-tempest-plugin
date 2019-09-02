@@ -55,10 +55,8 @@ class RoutersTestDVR(RoutersTestDVRBase):
         set to True
         """
         name = data_utils.rand_name('router')
-        router = self.admin_client.create_router(name, distributed=True)
-        self.addCleanup(self.admin_client.delete_router,
-                        router['router']['id'])
-        self.assertTrue(router['router']['distributed'])
+        router = self._create_admin_router(name, distributed=True)
+        self.assertTrue(router['distributed'])
 
     @decorators.idempotent_id('8a0a72b4-7290-4677-afeb-b4ffe37bc352')
     def test_centralized_router_creation(self):
@@ -74,10 +72,8 @@ class RoutersTestDVR(RoutersTestDVRBase):
         as opposed to a "Distributed Virtual Router"
         """
         name = data_utils.rand_name('router')
-        router = self.admin_client.create_router(name, distributed=False)
-        self.addCleanup(self.admin_client.delete_router,
-                        router['router']['id'])
-        self.assertFalse(router['router']['distributed'])
+        router = self._create_admin_router(name, distributed=False)
+        self.assertFalse(router['distributed'])
 
 
 class RouterTestCentralizedToDVR(RoutersTestDVRBase):
@@ -100,13 +96,10 @@ class RouterTestCentralizedToDVR(RoutersTestDVRBase):
         """
         name = data_utils.rand_name('router')
         # router needs to be in admin state down in order to be upgraded to DVR
-        router = self.admin_client.create_router(name, distributed=False,
-                                                 ha=False,
-                                                 admin_state_up=False)
-        self.addCleanup(self.admin_client.delete_router,
-                        router['router']['id'])
-        self.assertFalse(router['router']['distributed'])
-        self.assertFalse(router['router']['ha'])
-        router = self.admin_client.update_router(router['router']['id'],
+        router = self._create_admin_router(name, distributed=False,
+                                           ha=False, admin_state_up=False)
+        self.assertFalse(router['distributed'])
+        self.assertFalse(router['ha'])
+        router = self.admin_client.update_router(router['id'],
                                                  distributed=True)
         self.assertTrue(router['router']['distributed'])

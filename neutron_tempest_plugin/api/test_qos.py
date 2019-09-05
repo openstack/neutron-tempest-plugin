@@ -13,6 +13,7 @@
 #    under the License.
 
 from neutron_lib.api.definitions import qos as qos_apidef
+from neutron_lib import constants as n_constants
 from neutron_lib.services.qos import constants as qos_consts
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
@@ -983,6 +984,71 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
         rules_ids = [r['id'] for r in rules]
         self.assertIn(rule1['id'], rules_ids)
         self.assertNotIn(rule2['id'], rules_ids)
+
+    @decorators.idempotent_id('19ed2286-ccb1-11e9-87d7-525400d6f522')
+    def test_qos_dscp_create_and_update(self):
+        """This test covers:
+
+           1.Creating a basic QoS policy with DSCP marking rule.
+           2.Updating QoS policy:
+           Administrator should have the ability to update existing QoS policy.
+           This test should verify that:
+           It's possible to update the existing DSCP marking rule with all of
+           the valid marks between 0-56, except of the invalid marks:
+           2-6, 42, 44, and 50-54 (which should be forbidden)
+        """
+
+        def _test_update_dscp_mark_values(self, dscp_policy_id, rule_id):
+            for mark in range(n_constants.VALID_DSCP_MARKS[1],
+                              self.VALID_DSCP_MARK1 + 1):
+                if mark in n_constants.VALID_DSCP_MARKS:
+                    self.admin_client.update_dscp_marking_rule(
+                        dscp_policy_id, rule_id, dscp_mark=mark)
+
+                    retrieved_rule = self.admin_client.show_dscp_marking_rule(
+                        dscp_policy_id, rule_id)['dscp_marking_rule']
+                    self.assertEqual(mark, retrieved_rule['dscp_mark'],
+                                     """current DSCP mark is incorrect:
+                                     expected value {0} actual value {1}
+                                     """.format(mark,
+                                     retrieved_rule['dscp_mark']))
+
+                else:
+                    self.assertRaises(exceptions.BadRequest,
+                                    self.admin_client.create_dscp_marking_rule,
+                                    dscp_policy_id,
+                                    mark)
+        # Setup network
+        self.network = self.create_network()
+
+        # Create QoS policy
+        dscp_policy_id = self.create_qos_policy(
+            name='test-policy',
+            description='test-qos-policy',
+            shared=True)['id']
+
+        # Associate QoS to the network
+        self.admin_client.update_network(
+            self.network['id'], qos_policy_id=dscp_policy_id)
+
+        # Set a new DSCP rule with the first mark in range
+        rule_id = self.admin_client.create_dscp_marking_rule(
+                  dscp_policy_id,
+                  n_constants.VALID_DSCP_MARKS[0])[
+                  'dscp_marking_rule']['id']
+
+        # Validate that the rule was set up properly
+        retrieved_rule = self.client.show_dscp_marking_rule(
+            dscp_policy_id, rule_id)['dscp_marking_rule']
+        self.assertEqual(n_constants.VALID_DSCP_MARKS[0],
+                         retrieved_rule['dscp_mark'],
+                         """current DSCP mark is incorrect:
+                         expected value {0} actual value {1}
+                         """.format(n_constants.VALID_DSCP_MARKS[0],
+                         retrieved_rule['dscp_mark']))
+
+        # Try to set marks in range 8:56 (invalid marks should raise an error)
+        _test_update_dscp_mark_values(self, dscp_policy_id, rule_id)
 
 
 class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):

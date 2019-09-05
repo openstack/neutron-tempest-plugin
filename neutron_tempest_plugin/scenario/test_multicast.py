@@ -22,11 +22,13 @@ from tempest.lib import decorators
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
+from neutron_tempest_plugin import exceptions
 from neutron_tempest_plugin.scenario import base
 
 
 CONF = config.CONF
 LOG = log.getLogger(__name__)
+PYTHON3_BIN = "python3"
 
 
 def get_receiver_script(group, port, hello_message, ack_message, result_file):
@@ -192,20 +194,27 @@ class BaseMulticastTest(object):
         port = self.client.list_ports(
             network_id=self.network['id'], device_id=server['id'])['ports'][0]
         server['fip'] = self.create_floatingip(port=port)
+        server['ssh_client'] = ssh.Client(server['fip']['floating_ip_address'],
+                                          self.username,
+                                          pkey=self.keypair['private_key'])
+        self._check_python_installed_on_server(server['ssh_client'],
+                                               server['id'])
         return server
+
+    def _check_python_installed_on_server(self, ssh_client, server_id):
+        try:
+            ssh_client.execute_script('which %s' % PYTHON3_BIN)
+        except exceptions.SSHScriptFailed:
+            raise self.skipException(
+                "%s is not available on server %s" % (PYTHON3_BIN, server_id))
 
     def _prepare_sender(self, server, mcast_address):
         check_script = get_sender_script(
             group=mcast_address, port=self.multicast_port,
             message=self.multicast_message,
             result_file=self.sender_output_file)
-        ssh_client = ssh.Client(server['fip']['floating_ip_address'],
-                                self.username,
-                                pkey=self.keypair['private_key'])
-
-        ssh_client.execute_script(
+        server['ssh_client'].execute_script(
             'echo "%s" > ~/multicast_traffic_sender.py' % check_script)
-        return ssh_client
 
     def _prepare_receiver(self, server, mcast_address):
         check_script = get_receiver_script(
@@ -216,9 +225,9 @@ class BaseMulticastTest(object):
             server['fip']['floating_ip_address'],
             self.username,
             pkey=self.keypair['private_key'])
-        ssh_client.execute_script(
+        self._check_python_installed_on_server(ssh_client, server['id'])
+        server['ssh_client'].execute_script(
             'echo "%s" > ~/multicast_traffic_receiver.py' % check_script)
-        return ssh_client
 
     @decorators.idempotent_id('113486fc-24c9-4be4-8361-03b1c9892867')
     def test_multicast_between_vms_on_same_network(self):
@@ -246,41 +255,39 @@ class BaseMulticastTest(object):
                     path=file_path))
             return msg in result
 
-        sender_ssh_client = self._prepare_sender(sender, mcast_address)
-        receiver_ssh_clients = []
+        self._prepare_sender(sender, mcast_address)
         receiver_ids = []
         for receiver in receivers:
-            receiver_ssh_client = self._prepare_receiver(
-                receiver, mcast_address)
-            receiver_ssh_client.execute_script(
-                "python3 ~/multicast_traffic_receiver.py &", shell="bash")
+            self._prepare_receiver(receiver, mcast_address)
+            receiver['ssh_client'].execute_script(
+                "%s ~/multicast_traffic_receiver.py &" % PYTHON3_BIN,
+                shell="bash")
             utils.wait_until_true(
                 lambda: _message_received(
-                    receiver_ssh_client, self.hello_message,
+                    receiver['ssh_client'], self.hello_message,
                     self.receiver_output_file),
                 exception=RuntimeError(
                     "Receiver script didn't start properly on server "
                     "{!r}.".format(receiver['id'])))
 
-            receiver_ssh_clients.append(receiver_ssh_client)
             receiver_ids.append(receiver['id'])
 
         # Now lets run scripts on sender
-        sender_ssh_client.execute_script(
-            "python3 ~/multicast_traffic_sender.py")
+        sender['ssh_client'].execute_script(
+            "%s ~/multicast_traffic_sender.py" % PYTHON3_BIN)
 
         # And check if message was received
-        for receiver_ssh_client in receiver_ssh_clients:
+        for receiver in receivers:
             utils.wait_until_true(
                 lambda: _message_received(
-                    receiver_ssh_client, self.multicast_message,
+                    receiver['ssh_client'], self.multicast_message,
                     self.receiver_output_file),
                 exception=RuntimeError(
                     "Receiver {!r} didn't get multicast message".format(
                         receiver['id'])))
 
         # TODO(slaweq): add validation of answears on sended server
-        replies_result = sender_ssh_client.execute_script(
+        replies_result = sender['ssh_client'].execute_script(
             "cat {path} || echo '{path} not exists yet'".format(
                 path=self.sender_output_file))
         for receiver_id in receiver_ids:

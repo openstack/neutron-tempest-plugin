@@ -13,10 +13,12 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib import constants
 from oslo_log import log
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
+from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 
@@ -42,12 +44,13 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
         cls.create_loginable_secgroup_rule(secgroup_id=cls.secgroup['id'])
         cls.keypair = cls.create_keypair()
 
-    @decorators.idempotent_id('ab40fc48-ca8d-41a0-b2a3-f6679c847bfe')
-    def test_port_forwarding_to_2_servers(self):
-        internal_tcp_port = 22
+    def _prepare_resources(self, num_servers, internal_tcp_port, protocol):
         servers = []
-        for i in range(1, 3):
-            external_tcp_port = 1000 + i
+        external_port_base = 1025
+        for i in range(1, num_servers + 1):
+            internal_udp_port = internal_tcp_port + 10
+            external_tcp_port = external_port_base + i
+            external_udp_port = external_tcp_port + 10
             name = data_utils.rand_name("server-%s" % i)
             port = self.create_port(
                 self.network,
@@ -59,13 +62,55 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                 networks=[{'port': port['id']}])['server']
             server['name'] = name
             self.wait_for_server_active(server)
-            server['port_forwarding'] = self.create_port_forwarding(
+            server['port_forwarding_tcp'] = self.create_port_forwarding(
                 self.fip['id'],
                 internal_port_id=port['id'],
                 internal_ip_address=port['fixed_ips'][0]['ip_address'],
                 internal_port=internal_tcp_port,
                 external_port=external_tcp_port,
-                protocol="tcp")
+                protocol=constants.PROTO_NAME_TCP)
+            server['port_forwarding_udp'] = self.create_port_forwarding(
+                self.fip['id'],
+                internal_port_id=port['id'],
+                internal_ip_address=port['fixed_ips'][0]['ip_address'],
+                internal_port=internal_udp_port,
+                external_port=external_udp_port,
+                protocol=constants.PROTO_NAME_UDP)
             servers.append(server)
+        return servers
 
+    def _test_udp_port_forwarding(self, servers):
+        for server in servers:
+            msg = "%s-UDP-test" % server['name']
+            ssh_client = ssh.Client(
+                self.fip['floating_ip_address'],
+                CONF.validation.image_ssh_user,
+                pkey=self.keypair['private_key'],
+                port=server['port_forwarding_tcp']['external_port'])
+            self.nc_listen(server,
+                           ssh_client,
+                           server['port_forwarding_udp']['internal_port'],
+                           constants.PROTO_NAME_UDP,
+                           msg)
+        for server in servers:
+            expected_msg = "%s-UDP-test" % server['name']
+            self.assertIn(
+                expected_msg, self.nc_client(
+                    self.fip['floating_ip_address'],
+                    server['port_forwarding_udp']['external_port'],
+                    constants.PROTO_NAME_UDP))
+
+    @decorators.idempotent_id('ab40fc48-ca8d-41a0-b2a3-f6679c847bfe')
+    def test_port_forwarding_to_2_servers(self):
+        udp_sg_rule = {'protocol': constants.PROTO_NAME_UDP,
+                       'direction': constants.INGRESS_DIRECTION,
+                       'remote_ip_prefix': '0.0.0.0/0'}
+        self.create_secgroup_rules(
+            [udp_sg_rule], secgroup_id=self.secgroup['id'])
+        servers = self._prepare_resources(
+            num_servers=2, internal_tcp_port=22,
+            protocol=constants.PROTO_NAME_TCP)
+        # Test TCP port forwarding by SSH to each server
         self.check_servers_hostnames(servers)
+        # And now test UDP port forwarding using nc
+        self._test_udp_port_forwarding(servers)

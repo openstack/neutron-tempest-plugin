@@ -26,6 +26,7 @@ from tempest.lib.common.utils import test_utils
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base as base_api
+from neutron_tempest_plugin.common import shell
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import constants
@@ -385,7 +386,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             for server in servers:
                 kwargs = {}
                 try:
-                    kwargs['port'] = server['port_forwarding']['external_port']
+                    kwargs['port'] = (
+                        server['port_forwarding_tcp']['external_port'])
                 except KeyError:
                     pass
                 ssh_client = ssh.Client(
@@ -405,3 +407,34 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             if log_errors:
                 self._log_console_output(servers)
             raise
+
+    def nc_listen(self, server, ssh_client, port, protocol, echo_msg):
+        """Create nc server listening on the given TCP/UDP port.
+
+        Listener is created always on remote host.
+        """
+        udp = ''
+        if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
+            udp = '-u'
+        cmd = "sudo nc %(udp)s -p %(port)s -lk -e echo %(msg)s &" % {
+            'udp': udp, 'port': port, 'msg': echo_msg}
+        try:
+            return ssh_client.exec_command(cmd)
+        except lib_exc.SSHTimeout as ssh_e:
+            LOG.debug(ssh_e)
+            self._log_console_output([server])
+            raise
+
+    def nc_client(self, ip_address, port, protocol):
+        """Check connectivity to TCP/UDP port at host via nc.
+
+        Client is always executed locally on host where tests are executed.
+        """
+        udp = ''
+        if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
+            udp = '-u'
+        cmd = 'echo "knock knock" | nc -w 1 %(udp)s %(host)s %(port)s' % {
+            'udp': udp, 'host': ip_address, 'port': port}
+        result = shell.execute_local_command(cmd)
+        self.assertEqual(0, result.exit_status)
+        return result.stdout

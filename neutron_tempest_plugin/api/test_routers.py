@@ -200,6 +200,71 @@ class RoutersTest(base_routers.BaseRouterTest):
     def _delete_extra_routes(self, router_id):
         self.client.delete_extra_routes(router_id)
 
+    @decorators.idempotent_id('b29d1698-d603-11e9-9c66-079cc4aec539')
+    @tutils.requires_ext(extension='extraroute-atomic', service='network')
+    def test_extra_routes_atomic(self):
+        self.network = self.create_network()
+        self.subnet = self.create_subnet(self.network)
+        self.router = self._create_router(
+            data_utils.rand_name('router-'), True)
+        self.create_router_interface(self.router['id'], self.subnet['id'])
+        self.addCleanup(
+            self._delete_extra_routes,
+            self.router['id'])
+
+        if self._ip_version == 6:
+            dst = '2001:db8:%s::/64'
+        else:
+            dst = '10.0.%s.0/24'
+
+        cidr = netaddr.IPNetwork(self.subnet['cidr'])
+
+        routes = [
+            {'destination': dst % 2, 'nexthop': cidr[2]},
+        ]
+        resp = self.client.add_extra_routes_atomic(
+            self.router['id'], routes)
+        self.assertEqual(1, len(resp['router']['routes']))
+
+        routes = [
+            {'destination': dst % 2, 'nexthop': cidr[2]},
+            {'destination': dst % 3, 'nexthop': cidr[3]},
+        ]
+        resp = self.client.add_extra_routes_atomic(
+            self.router['id'], routes)
+        self.assertEqual(2, len(resp['router']['routes']))
+
+        routes = [
+            {'destination': dst % 3, 'nexthop': cidr[3]},
+            {'destination': dst % 4, 'nexthop': cidr[4]},
+        ]
+        resp = self.client.remove_extra_routes_atomic(
+            self.router['id'], routes)
+        self.assertEqual(1, len(resp['router']['routes']))
+
+        routes = [
+            {'destination': dst % 2, 'nexthop': cidr[5]},
+        ]
+        resp = self.client.add_extra_routes_atomic(
+            self.router['id'], routes)
+        self.assertEqual(2, len(resp['router']['routes']))
+
+        routes = [
+            {'destination': dst % 2, 'nexthop': cidr[5]},
+        ]
+        resp = self.client.remove_extra_routes_atomic(
+            self.router['id'], routes)
+        self.assertEqual(1, len(resp['router']['routes']))
+
+        routes = [
+            {'destination': dst % 2, 'nexthop': cidr[2]},
+            {'destination': dst % 3, 'nexthop': cidr[3]},
+            {'destination': dst % 2, 'nexthop': cidr[5]},
+        ]
+        resp = self.client.remove_extra_routes_atomic(
+            self.router['id'], routes)
+        self.assertEqual(0, len(resp['router']['routes']))
+
     @decorators.idempotent_id('01f185d1-d1a6-4cf9-abf7-e0e1384c169c')
     def test_network_attached_with_two_routers(self):
         network = self.create_network(data_utils.rand_name('network1'))

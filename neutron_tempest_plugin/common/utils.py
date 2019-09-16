@@ -26,6 +26,7 @@ except ImportError:
     from urllib import parse as urlparse
 
 import eventlet
+from tempest.lib import exceptions
 
 SCHEMA_PORT_MAPPING = {
     "http": 80,
@@ -106,3 +107,22 @@ def normalize_url(url):
     if scheme in SCHEMA_PORT_MAPPING and not port:
         netloc = netloc + ":" + str(SCHEMA_PORT_MAPPING[scheme])
     return urlparse.urlunparse((scheme, netloc, url, params, query, fragment))
+
+
+def kill_nc_process(ssh_client):
+    cmd = "killall -q nc"
+    try:
+        ssh_client.exec_command(cmd)
+    except exceptions.SSHExecCommandFailed:
+        pass
+
+
+def spawn_http_server(ssh_client, port, message):
+    cmd = ("(echo -e 'HTTP/1.1 200 OK\r\n'; echo '%(msg)s') "
+           "| sudo nc -lp %(port)d &" % {'msg': message, 'port': port})
+    ssh_client.exec_command(cmd)
+
+
+def call_url_remote(ssh_client, url):
+    cmd = "curl %s --retry 3 --connect-timeout 2" % url
+    return ssh_client.exec_command(cmd)

@@ -85,9 +85,9 @@ class QoSTestMixin(object):
         cmd = ("(dd if=/dev/zero bs=%(bs)d count=%(count)d of=%(file_path)s) "
                % {'bs': self.BUFFER_SIZE, 'count': self.COUNT,
                'file_path': self.FILE_PATH})
-        ssh_client.exec_command(cmd)
+        ssh_client.exec_command(cmd, timeout=5)
         cmd = "stat -c %%s %s" % self.FILE_PATH
-        filesize = ssh_client.exec_command(cmd)
+        filesize = ssh_client.exec_command(cmd, timeout=5)
         if int(filesize.strip()) != self.FILE_SIZE:
             raise sc_exceptions.FileCreationFailedException(
                 file=self.FILE_PATH)
@@ -96,7 +96,7 @@ class QoSTestMixin(object):
     def _kill_nc_process(ssh_client):
         cmd = "killall -q nc"
         try:
-            ssh_client.exec_command(cmd)
+            ssh_client.exec_command(cmd, timeout=5)
         except exceptions.SSHExecCommandFailed:
             pass
 
@@ -104,7 +104,7 @@ class QoSTestMixin(object):
         self._kill_nc_process(ssh_client)
         cmd = ("(nc -ll -p %(port)d < %(file_path)s > /dev/null &)" % {
                 'port': port, 'file_path': self.FILE_PATH})
-        ssh_client.exec_command(cmd)
+        ssh_client.exec_command(cmd, timeout=5)
 
         # Open TCP socket to remote VM and download big file
         start_time = time.time()

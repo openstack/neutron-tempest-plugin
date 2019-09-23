@@ -845,8 +845,6 @@
         - sfc
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_sfc) | join(',') }}"
-    files:
-      - ^neutron_tempest_plugin/sfc/.*$
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe
@@ -891,8 +889,6 @@
         - fwaas_v2
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_fwaas) | join(',') }}"
-    files:
-      - ^neutron_tempest_plugin/fwaas/.*$
 
 - project-template:
     name: neutron-tempest-plugin-jobs

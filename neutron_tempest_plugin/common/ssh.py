@@ -14,12 +14,15 @@
 
 import locale
 import os
+import socket
 import time
 
 from oslo_log import log
 import paramiko
+import six
 from tempest.lib.common import ssh
 from tempest.lib import exceptions
+import tenacity
 
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin import exceptions as exc
@@ -27,6 +30,16 @@ from neutron_tempest_plugin import exceptions as exc
 
 CONF = config.CONF
 LOG = log.getLogger(__name__)
+
+
+RETRY_EXCEPTIONS = (exceptions.TimeoutException, paramiko.SSHException,
+                    socket.error)
+if six.PY2:
+    # NOTE(ralonsoh): TimeoutError was added in 3.3 and corresponds to
+    # OSError(errno.ETIMEDOUT)
+    RETRY_EXCEPTIONS += (OSError, )
+else:
+    RETRY_EXCEPTIONS += (TimeoutError, )
 
 
 class Client(ssh.Client):
@@ -179,6 +192,11 @@ class Client(ssh.Client):
                                         user=self.username,
                                         password=self.password)
 
+    @tenacity.retry(
+        stop=tenacity.stop_after_attempt(10),
+        wait=tenacity.wait_fixed(1),
+        retry=tenacity.retry_if_exception_type(RETRY_EXCEPTIONS),
+        reraise=True)
     def exec_command(self, cmd, encoding="utf-8", timeout=None):
         if timeout:
             original_timeout = self.timeout

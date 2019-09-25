@@ -724,6 +724,14 @@ class BaseNetworkTest(test.BaseTestCase):
         return interface
 
     @classmethod
+    def add_extra_routes_atomic(cls, *args, **kwargs):
+        return cls.client.add_extra_routes_atomic(*args, **kwargs)
+
+    @classmethod
+    def remove_extra_routes_atomic(cls, *args, **kwargs):
+        return cls.client.remove_extra_routes_atomic(*args, **kwargs)
+
+    @classmethod
     def get_supported_qos_rule_types(cls):
         body = cls.client.list_qos_rule_types()
         return [rule_type['type'] for rule_type in body['rule_types']]

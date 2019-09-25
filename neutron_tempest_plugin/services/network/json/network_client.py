@@ -564,6 +564,22 @@ class NetworkClientJSON(service_client.RestClient):
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
 
+    def add_extra_routes_atomic(self, router_id, routes):
+        uri = '%s/routers/%s/add_extraroutes' % (self.uri_prefix, router_id)
+        request_body = {'router': {'routes': routes}}
+        resp, response_body = self.put(uri, jsonutils.dumps(request_body))
+        self.expected_success(200, resp.status)
+        return service_client.ResponseBody(
+            resp, jsonutils.loads(response_body))
+
+    def remove_extra_routes_atomic(self, router_id, routes):
+        uri = '%s/routers/%s/remove_extraroutes' % (self.uri_prefix, router_id)
+        request_body = {'router': {'routes': routes}}
+        resp, response_body = self.put(uri, jsonutils.dumps(request_body))
+        self.expected_success(200, resp.status)
+        return service_client.ResponseBody(
+            resp, jsonutils.loads(response_body))
+
     def add_dhcp_agent_to_network(self, agent_id, network_id):
         post_body = {'network_id': network_id}
         body = jsonutils.dumps(post_body)

@@ -999,6 +999,7 @@
         - neutron-tempest-plugin-dynamic-routing
     gate:
       jobs:
+        - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-fwaas
         - neutron-tempest-plugin-dynamic-routing

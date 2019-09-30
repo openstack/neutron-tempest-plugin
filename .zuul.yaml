@@ -749,6 +749,7 @@
     override-checkout: stable/queens
     vars:
       branch_override: stable/queens
+      network_api_extensions_common: *api_extensions_queens
       # TODO(slaweq): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
       tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)"
@@ -763,6 +764,7 @@
     override-checkout: stable/rocky
     vars:
       branch_override: stable/rocky
+      network_api_extensions_common: *api_extensions_rocky
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
@@ -772,6 +774,7 @@
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     override-checkout: stable/stein
     vars:
+      network_api_extensions_common: *api_extensions_stein
       branch_override: stable/stein
 
 - job:
@@ -809,6 +812,7 @@
     override-checkout: stable/queens
     vars:
       branch_override: stable/queens
+      network_api_extensions_common: *api_extensions_queens
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
@@ -820,6 +824,7 @@
     override-checkout: stable/rocky
     vars:
       branch_override: stable/rocky
+      network_api_extensions_common: *api_extensions_rocky
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
@@ -829,6 +834,7 @@
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/stein
     vars:
+      network_api_extensions_common: *api_extensions_stein
       branch_override: stable/stein
 
 - job:

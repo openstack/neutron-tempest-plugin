@@ -1,0 +1,36 @@
+- name: Install and configure docker
+  become: yes
+  package:
+    name: docker.io
+    state: present
+
+- name: Copy 52_docker_for_tempest to /etc/sudoers.d
+  copy:
+    src: 52_docker_for_tempest
+    dest: /etc/sudoers.d
+    owner: root
+    group: root
+    mode: 0440
+  become: yes
+
+- name: Copy docker_apparmor to /etc/apparmor.d
+  copy:
+    src: docker_apparmor
+    dest: /etc/apparmor.d
+    owner: root
+    group: root
+    mode: 0640
+  become: yes
+
+- name: Ensure apparmor is restarted
+  become: yes
+  service:
+    name: apparmor
+    state: restarted
+  ignore_errors: yes
+
+- name: Ensure docker engine is restarted
+  become: yes
+  service:
+    name: docker
+    state: restarted

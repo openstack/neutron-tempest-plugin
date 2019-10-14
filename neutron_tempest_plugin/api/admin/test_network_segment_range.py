@@ -193,6 +193,16 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         for network_id in network_ids:
             self.admin_client.delete_network(network_id)
 
+    def _compare_segment_ranges(self, reference, observed):
+        self.assertEqual(reference['id'], observed['id'])
+        self.assertEqual(reference['name'], observed['name'])
+        self.assertFalse(observed['default'])
+        self.assertFalse(observed['shared'])
+        self.assertEqual(reference['project_id'], observed['project_id'])
+        self.assertEqual(reference['network_type'], observed['network_type'])
+        self.assertEqual(reference['minimum'], observed['minimum'])
+        self.assertEqual(reference['maximum'], observed['maximum'])
+
     @decorators.idempotent_id('54fa26c9-37b5-4df4-a934-a705f29920fc')
     def test_show_network_segment_range(self):
         # Creates a network segment range
@@ -201,18 +211,7 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         body = self.admin_client.show_network_segment_range(
             network_segment_range['id'])
         observed_range = body['network_segment_range']
-        self.assertEqual(network_segment_range['id'], observed_range['id'])
-        self.assertEqual(network_segment_range['name'], observed_range['name'])
-        self.assertFalse(observed_range['default'])
-        self.assertFalse(observed_range['shared'])
-        self.assertEqual(network_segment_range['project_id'],
-                         observed_range['project_id'])
-        self.assertEqual(network_segment_range['network_type'],
-                         observed_range['network_type'])
-        self.assertEqual(network_segment_range['minimum'],
-                         observed_range['minimum'])
-        self.assertEqual(network_segment_range['maximum'],
-                         observed_range['maximum'])
+        self._compare_segment_ranges(network_segment_range, observed_range)
 
     @decorators.idempotent_id('17139cc1-4826-4bf9-9c39-85b74894d938')
     def test_list_network_segment_ranges(self):
@@ -225,8 +224,9 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
 
         body = self.admin_client.list_network_segment_ranges(
             id=network_segment_range['id'])
-        list_range_ids = [r['id'] for r in body['network_segment_ranges']]
-        self.assertIn(network_segment_range['id'], list_range_ids)
+        self.assertEqual(1, len(body['network_segment_ranges']))
+        observed_range = body['network_segment_ranges'][0]
+        self._compare_segment_ranges(network_segment_range, observed_range)
 
     @decorators.idempotent_id('42959544-9956-4b0c-aec6-d56533323924')
     def test_delete_network_segment_range_failed_with_segment_referenced(

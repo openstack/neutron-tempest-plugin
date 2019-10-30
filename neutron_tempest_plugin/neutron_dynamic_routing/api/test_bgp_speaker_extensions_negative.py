@@ -26,7 +26,7 @@ class BgpSpeakerTestJSONNegative(test_base.BgpSpeakerTestJSONBase):
 
     """Negative test cases asserting proper behavior of BGP API extension"""
 
-    @decorators.attr(type=['negative', 'smoke'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('75e9ee2f-6efd-4320-bff7-ae24741c8b06')
     def test_create_bgp_speaker_illegal_local_asn(self):
         wrong_asn = 65537
@@ -36,21 +36,21 @@ class BgpSpeakerTestJSONNegative(test_base.BgpSpeakerTestJSONBase):
                           self.create_bgp_speaker,
                           local_as=wrong_asn)
 
-    @decorators.attr(type=['negative', 'smoke'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('6742ec2e-382a-4453-8791-13a19b47cd13')
     def test_create_bgp_speaker_non_admin(self):
         self.assertRaises(lib_exc.Forbidden,
                           self.bgp_client.create_bgp_speaker,
                           {'bgp_speaker': self.default_bgp_speaker_args})
 
-    @decorators.attr(type=['negative', 'smoke'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('33f7aaf0-9786-478b-b2d1-a51086a50eb4')
     def test_create_bgp_peer_non_admin(self):
         self.assertRaises(lib_exc.Forbidden,
                           self.bgp_client.create_bgp_peer,
                           {'bgp_peer': self.default_bgp_peer_args})
 
-    @decorators.attr(type=['negative', 'smoke'])
+    @decorators.attr(type=['negative'])
     @decorators.idempotent_id('39435932-0266-4358-899b-0e9b1e53c3e9')
     def test_update_bgp_speaker_local_asn(self):
         bgp_speaker = self.create_bgp_speaker(**self.default_bgp_speaker_args)

@@ -998,10 +998,16 @@
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-fwaas
-        - neutron-tempest-plugin-dynamic-routing
+        - neutron-tempest-plugin-dynamic-routing:
+            # TODO(slaweq): switch it to be voting when bug
+            # https://bugs.launchpad.net/neutron/+bug/1850626 will be fixed
+            voting: false
+
     gate:
       jobs:
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-fwaas
-        - neutron-tempest-plugin-dynamic-routing
+        # TODO(slaweq): bring it back to gate queue
+        # https://bugs.launchpad.net/neutron/+bug/1850626 will be fixed
+        # - neutron-tempest-plugin-dynamic-routing

@@ -19,6 +19,7 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.common import ssh
+from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 
@@ -100,6 +101,7 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                     server['port_forwarding_udp']['external_port'],
                     constants.PROTO_NAME_UDP))
 
+    @utils.unstable_test("bug 1850800")
     @decorators.idempotent_id('ab40fc48-ca8d-41a0-b2a3-f6679c847bfe')
     def test_port_forwarding_to_2_servers(self):
         udp_sg_rule = {'protocol': constants.PROTO_NAME_UDP,

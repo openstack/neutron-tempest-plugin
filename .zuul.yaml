@@ -238,6 +238,79 @@
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
 
 - job:
+    name: neutron-tempest-plugin-api-rocky
+    nodeset: openstack-single-node-xenial
+    parent: neutron-tempest-plugin-api
+    override-checkout: stable/rocky
+    vars:
+      branch_override: stable/rocky
+      # TODO(slaweq): find a way to put this list of extensions in
+      # neutron repository and keep it different per branch,
+      # then it could be removed from here
+      network_api_extensions_common: &api_extensions_rocky
+        - address-scope
+        - agent
+        - allowed-address-pairs
+        - auto-allocated-topology
+        - availability_zone
+        - binding
+        - default-subnetpools
+        - dhcp_agent_scheduler
+        - dns-domain-ports
+        - dns-integration
+        - empty-string-filtering
+        - expose-port-forwarding-in-fip
+        - ext-gw-mode
+        - external-net
+        - extra_dhcp_opt
+        - extraroute
+        - fip-port-details
+        - flavors
+        - floating-ip-port-forwarding
+        - ip-substring-filtering
+        - l3-flavors
+        - l3-ha
+        - l3_agent_scheduler
+        - logging
+        - metering
+        - multi-provider
+        - net-mtu
+        - net-mtu-writable
+        - network-ip-availability
+        - network_availability_zone
+        - pagination
+        - port-mac-address-regenerate
+        - port-security
+        - port-security-groups-filtering
+        - project-id
+        - provider
+        - qos
+        - qos-fip
+        - quotas
+        - quota_details
+        - rbac-policies
+        - router
+        - router_availability_zone
+        - security-group
+        - segment
+        - service-type
+        - sorting
+        - standard-attr-description
+        - standard-attr-revisions
+        - standard-attr-segment
+        - standard-attr-timestamp
+        - standard-attr-tag
+        - subnet_allocation
+        - trunk
+        - trunk-details
+      network_api_extensions_tempest:
+        - dvr
+      devstack_localrc:
+        USE_PYTHON3: false
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
+        TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+
+- job:
     name: neutron-tempest-plugin-api-stein
     parent: neutron-tempest-plugin-api
     override-checkout: stable/stein
@@ -315,16 +388,15 @@
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
 
 - job:
-    name: neutron-tempest-plugin-api-rocky
-    nodeset: openstack-single-node-xenial
+    name: neutron-tempest-plugin-api-train
     parent: neutron-tempest-plugin-api
-    override-checkout: stable/rocky
+    override-checkout: stable/train
     vars:
-      branch_override: stable/rocky
+      branch_override: stable/train
       # TODO(slaweq): find a way to put this list of extensions in
       # neutron repository and keep it different per branch,
       # then it could be removed from here
-      network_api_extensions_common: &api_extensions_rocky
+      network_api_extensions_common: &api_extensions_train
         - address-scope
         - agent
         - allowed-address-pairs
@@ -337,14 +409,19 @@
         - dns-integration
         - empty-string-filtering
         - expose-port-forwarding-in-fip
+        - expose-l3-conntrack-helper
         - ext-gw-mode
         - external-net
         - extra_dhcp_opt
         - extraroute
+        - extraroute-atomic
+        - filter-validation
         - fip-port-details
         - flavors
         - floating-ip-port-forwarding
+        - floatingip-pools
         - ip-substring-filtering
+        - l3-conntrack-helper
         - l3-flavors
         - l3-ha
         - l3_agent_scheduler
@@ -355,18 +432,23 @@
         - net-mtu-writable
         - network-ip-availability
         - network_availability_zone
+        - network-segment-range
         - pagination
+        - port-resource-request
         - port-mac-address-regenerate
         - port-security
         - port-security-groups-filtering
         - project-id
         - provider
         - qos
+        - qos-bw-minimum-ingress
         - qos-fip
         - quotas
         - quota_details
         - rbac-policies
+        - rbac-security-groups
         - router
+        - router-admin-state-down-before-update
         - router_availability_zone
         - security-group
         - segment
@@ -375,17 +457,17 @@
         - standard-attr-description
         - standard-attr-revisions
         - standard-attr-segment
-        - standard-attr-timestamp
         - standard-attr-tag
+        - standard-attr-timestamp
         - subnet_allocation
+        - subnetpool-prefix-ops
         - trunk
         - trunk-details
+        - uplink-status-propagation
       network_api_extensions_tempest:
         - dvr
       devstack_localrc:
-        USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
-        TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
 
 - job:
     name: neutron-tempest-plugin-scenario
@@ -475,6 +557,16 @@
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
 
 - job:
+    name: neutron-tempest-plugin-scenario-openvswitch-train
+    parent: neutron-tempest-plugin-scenario-openvswitch
+    override-checkout: stable/train
+    vars:
+      branch_override: stable/train
+      network_api_extensions: *api_extensions_train
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
     parent: neutron-tempest-plugin-scenario
     timeout: 10000
@@ -527,6 +619,16 @@
     vars:
       branch_override: stable/stein
       network_api_extensions: *api_extensions_stein
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-train
+    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    override-checkout: stable/train
+    vars:
+      branch_override: stable/train
+      network_api_extensions: *api_extensions_train
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
 
@@ -607,6 +709,16 @@
     vars:
       branch_override: stable/stein
       network_api_extensions: *api_extensions_stein
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-scenario-linuxbridge-train
+    parent: neutron-tempest-plugin-scenario-linuxbridge
+    override-checkout: stable/train
+    vars:
+      branch_override: stable/train
+      network_api_extensions: *api_extensions_train
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
 
@@ -778,6 +890,14 @@
       branch_override: stable/stein
 
 - job:
+    name: neutron-tempest-plugin-dvr-multinode-scenario-train
+    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    override-checkout: stable/train
+    vars:
+      network_api_extensions_common: *api_extensions_train
+      branch_override: stable/train
+
+- job:
     name: neutron-tempest-plugin-designate-scenario
     parent: neutron-tempest-plugin-scenario
     description: Neutron designate integration scenario
@@ -853,6 +973,14 @@
       branch_override: stable/stein
 
 - job:
+    name: neutron-tempest-plugin-designate-scenario-train
+    parent: neutron-tempest-plugin-designate-scenario
+    override-checkout: stable/train
+    vars:
+      branch_override: stable/train
+      network_api_extensions_common: *api_extensions_train
+
+- job:
     name: neutron-tempest-plugin-sfc
     parent: neutron-tempest-plugin
     timeout: 10800
@@ -873,6 +1001,14 @@
         - sfc
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_sfc) | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-sfc-train
+    parent: neutron-tempest-plugin-sfc
+    override-checkout: stable/train
+    vars:
+      branch_override: stable/train
+      network_api_extensions_common: *api_extensions_train
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe
@@ -896,6 +1032,14 @@
         networking-bagpipe: https://git.openstack.org/openstack/networking-bagpipe
 
 - job:
+    name: neutron-tempest-plugin-bgpvpn-bagpipe-train
+    parent: neutron-tempest-plugin-bgpvpn-bagpipe
+    override-checkout: stable/train
+    vars:
+      branch_override: stable/train
+      network_api_extensions: *api_extensions_train
+
+- job:
     name: neutron-tempest-plugin-fwaas
     parent: neutron-tempest-plugin
     timeout: 10800
@@ -916,6 +1060,14 @@
         - fwaas_v2
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_fwaas) | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-fwaas-train
+    parent: neutron-tempest-plugin-fwaas
+    override-checkout: stable/train
+    vars:
+      branch_override: stable/train
+      network_api_extensions_common: *api_extensions_train
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing
@@ -1004,6 +1156,20 @@
       jobs:
         - neutron-tempest-plugin-api-stein
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-train
+    check:
+      jobs:
+        - neutron-tempest-plugin-api-train
+        - neutron-tempest-plugin-designate-scenario-train
+        - neutron-tempest-plugin-dvr-multinode-scenario-train
+        - neutron-tempest-plugin-scenario-linuxbridge-train
+        - neutron-tempest-plugin-scenario-openvswitch-train
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-train
+    gate:
+      jobs:
+        - neutron-tempest-plugin-api-train
+
 - project:
     templates:
       - build-openstack-docs-pti
@@ -1011,14 +1177,18 @@
       - neutron-tempest-plugin-jobs-queens
       - neutron-tempest-plugin-jobs-rocky
       - neutron-tempest-plugin-jobs-stein
+      - neutron-tempest-plugin-jobs-train
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3
     check:
       jobs:
         - neutron-tempest-plugin-sfc
+        - neutron-tempest-plugin-sfc-train
         - neutron-tempest-plugin-bgpvpn-bagpipe
+        - neutron-tempest-plugin-bgpvpn-bagpipe-train
         - neutron-tempest-plugin-fwaas
+        - neutron-tempest-plugin-fwaas-train
         - neutron-tempest-plugin-dynamic-routing:
             # TODO(slaweq): switch it to be voting when bug
             # https://bugs.launchpad.net/neutron/+bug/1850626 will be fixed

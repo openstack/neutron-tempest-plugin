@@ -176,6 +176,12 @@
     nodeset: openstack-single-node-xenial
     parent: neutron-tempest-plugin-api
     override-checkout: stable/queens
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 0.7.0
+      - openstack/tempest
     vars:
       branch_override: stable/queens
       # TODO(slaweq): find a way to put this list of extensions in
@@ -236,6 +242,7 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        TEMPEST_BRANCH: queens-em
 
 - job:
     name: neutron-tempest-plugin-api-rocky
@@ -522,6 +529,12 @@
     parent: neutron-tempest-plugin-scenario-openvswitch
     nodeset: openstack-single-node-xenial
     override-checkout: stable/queens
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 0.7.0
+      - openstack/tempest
     vars:
       branch_override: stable/queens
       network_api_extensions: *api_extensions_queens
@@ -532,6 +545,7 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        TEMPEST_BRANCH: queens-em
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-rocky
@@ -665,6 +679,12 @@
     parent: neutron-tempest-plugin-scenario-linuxbridge
     nodeset: openstack-single-node-xenial
     override-checkout: stable/queens
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 0.7.0
+      - openstack/tempest
     vars:
       branch_override: stable/queens
       network_api_extensions: *api_extensions_queens
@@ -672,6 +692,7 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        TEMPEST_BRANCH: queens-em
       devstack_local_conf:
         test-config:
           # NOTE: ignores linux bridge's trunk delete on bound port test
@@ -859,6 +880,12 @@
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     nodeset: openstack-two-node-xenial
     override-checkout: stable/queens
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 0.7.0
+      - openstack/tempest
     vars:
       branch_override: stable/queens
       network_api_extensions_common: *api_extensions_queens
@@ -868,6 +895,7 @@
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        TEMPEST_BRANCH: queens-em
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
@@ -945,12 +973,19 @@
     parent: neutron-tempest-plugin-designate-scenario
     nodeset: openstack-single-node-xenial
     override-checkout: stable/queens
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 0.7.0
+      - openstack/tempest
     vars:
       branch_override: stable/queens
       network_api_extensions_common: *api_extensions_queens
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
+        TEMPEST_BRANCH: queens-em
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-rocky
@@ -1174,7 +1209,6 @@
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
-      - neutron-tempest-plugin-jobs-queens
       - neutron-tempest-plugin-jobs-rocky
       - neutron-tempest-plugin-jobs-stein
       - neutron-tempest-plugin-jobs-train

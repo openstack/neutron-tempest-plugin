@@ -1001,6 +1001,10 @@
         - sfc
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_sfc) | join(',') }}"
+      # TODO(bcafarel): tests still fail from time to time in parallel
+      # https://bugs.launchpad.net/neutron/+bug/1851500
+      # https://bugs.launchpad.net/networking-sfc/+bug/1660366
+      tempest_concurrency: 1
 
 - job:
     name: neutron-tempest-plugin-sfc-train

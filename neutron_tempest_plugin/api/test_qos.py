@@ -588,7 +588,8 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
 class QosBandwidthLimitRuleWithDirectionTestJSON(
         QosBandwidthLimitRuleTestJSON):
-
+    DIRECTION_EGRESS = "egress"
+    DIRECTION_INGRESS = "ingress"
     required_extensions = (
         QosBandwidthLimitRuleTestJSON.required_extensions +
         ['qos-bw-limit-direction']
@@ -597,6 +598,50 @@ class QosBandwidthLimitRuleWithDirectionTestJSON(
         ('ingress', {'direction': 'ingress'}),
         ('egress', {'direction': 'egress'}),
     ]
+
+    @classmethod
+    @base.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
+    def resource_setup(cls):
+        super(QosBandwidthLimitRuleWithDirectionTestJSON, cls).resource_setup()
+
+    @decorators.idempotent_id('c8cbe502-0f7e-11ea-8d71-362b9e155667')
+    def test_create_policy_with_multiple_rules(self):
+        # Create a policy with multiple rules
+        policy = self.create_qos_policy(name='test-policy1',
+                                        description='test policy1',
+                                        shared=False)
+
+        rule1 = self.create_qos_bandwidth_limit_rule(policy_id=policy['id'],
+                                                     max_kbps=1024,
+                                                     max_burst_kbps=1024,
+                                                     direction=self.
+                                                     DIRECTION_EGRESS)
+        rule2 = self.create_qos_bandwidth_limit_rule(policy_id=policy['id'],
+                                                     max_kbps=1024,
+                                                     max_burst_kbps=1024,
+                                                     direction=self.
+                                                     DIRECTION_INGRESS)
+        # Check that the rules were added to the policy
+        rules = self.admin_client.list_bandwidth_limit_rules(
+            policy['id'])['bandwidth_limit_rules']
+        rules_ids = [rule['id'] for rule in rules]
+        self.assertIn(rule1['id'], rules_ids)
+        self.assertIn(rule2['id'], rules_ids)
+
+        # Check that the rules creation fails for the same rule types
+        self.assertRaises(exceptions.Conflict,
+                          self.create_qos_bandwidth_limit_rule,
+                          policy_id=policy['id'],
+                          max_kbps=1025,
+                          max_burst_kbps=1025,
+                          direction=self.DIRECTION_EGRESS)
+
+        self.assertRaises(exceptions.Conflict,
+                          self.create_qos_bandwidth_limit_rule,
+                          policy_id=policy['id'],
+                          max_kbps=1025,
+                          max_burst_kbps=1025,
+                          direction=self.DIRECTION_INGRESS)
 
 
 class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):

@@ -66,6 +66,8 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         for vm in vms:
             self.wait_for_server_active(vm['server'])
 
+        return vms
+
     @decorators.idempotent_id('8944b90d-1766-4669-bd8a-672b5d106bb7')
     def test_connectivity_through_2_routers(self):
         ap1_net = self.create_network()
@@ -109,7 +111,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             routes=[{"destination": ap1_subnet['cidr'],
                      "nexthop": ap1_wan_port['fixed_ips'][0]['ip_address']}])
 
-        self._create_servers(ap1_internal_port, ap2_internal_port)
+        servers = self._create_servers(ap1_internal_port, ap2_internal_port)
 
         ap1_fip = self.create_and_associate_floatingip(
             ap1_internal_port['id'])
@@ -118,7 +120,8 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             pkey=self.keypair['private_key'])
 
         self.check_remote_connectivity(
-            ap1_sshclient, ap2_internal_port['fixed_ips'][0]['ip_address'])
+            ap1_sshclient, ap2_internal_port['fixed_ips'][0]['ip_address'],
+            servers=servers)
 
     @decorators.idempotent_id('b72c3b77-3396-4144-b05d-9cd3c0099893')
     def test_connectivity_router_east_west_traffic(self):
@@ -145,7 +148,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         self.create_router_interface(router['id'], subnet_1['id'])
         self.create_router_interface(router['id'], subnet_2['id'])
 
-        self._create_servers(internal_port_1, internal_port_2)
+        servers = self._create_servers(internal_port_1, internal_port_2)
 
         fip = self.create_and_associate_floatingip(
             internal_port_1['id'])
@@ -155,7 +158,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
 
         self.check_remote_connectivity(
             sshclient, internal_port_2['fixed_ips'][0]['ip_address'],
-            ping_count=10)
+            ping_count=10, servers=servers)
 
     @utils.requires_ext(extension="dvr", service="network")
     @decorators.idempotent_id('69d3650a-5c32-40bc-ae56-5c4c849ddd37')
@@ -237,7 +240,8 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             fip['floating_ip_address'], CONF.validation.image_ssh_user,
             pkey=self.keypair['private_key'])
 
-        self.check_remote_connectivity(sshclient, str(gw_ip), ping_count=10)
+        self.check_remote_connectivity(
+            sshclient, str(gw_ip), ping_count=10, servers=[vm])
         self.check_remote_connectivity(
             sshclient, dvr_router_port['fixed_ips'][0]['ip_address'],
-            ping_count=10)
+            ping_count=10, servers=[vm])

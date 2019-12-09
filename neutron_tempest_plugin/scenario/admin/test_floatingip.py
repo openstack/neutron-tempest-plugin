@@ -85,7 +85,7 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
             server_ssh_clients.append(ssh.Client(
                 fips[i]['floating_ip_address'], CONF.validation.image_ssh_user,
                 pkey=self.keypair['private_key']))
-        return server_ssh_clients, fips
+        return servers, server_ssh_clients, fips
 
     @decorators.idempotent_id('6bba729b-3fb6-494b-9e1e-82bbd89a1045')
     def test_two_vms_fips(self):
@@ -99,6 +99,7 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
         hyper = self._list_hypervisors()[0]['hypervisor_hostname']
         # Get availability zone list to pass it for vm creation
         avail_zone = self._list_availability_zones()[0]['zoneName']
-        server_ssh_clients, fips = self._create_vms(hyper, avail_zone)
+        servers, server_ssh_clients, fips = self._create_vms(hyper, avail_zone)
         self.check_remote_connectivity(
-            server_ssh_clients[0], fips[1]['floating_ip_address'])
+            server_ssh_clients[0], fips[1]['floating_ip_address'],
+            servers=servers)

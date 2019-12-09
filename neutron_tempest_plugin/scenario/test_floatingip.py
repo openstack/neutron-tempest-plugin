@@ -134,10 +134,12 @@ class FloatingIpTestCasesMixin(object):
 
         # Check connectivity
         self.check_remote_connectivity(ssh_client,
-            dest_server['port']['fixed_ips'][0]['ip_address'])
+            dest_server['port']['fixed_ips'][0]['ip_address'],
+            servers=[src_server, dest_server])
         if self.dest_has_fip:
             self.check_remote_connectivity(ssh_client,
-                dest_server['fip']['floating_ip_address'])
+                dest_server['fip']['floating_ip_address'],
+                servers=[src_server, dest_server])
 
 
 class FloatingIpSameNetwork(FloatingIpTestCasesMixin,
@@ -200,7 +202,8 @@ class DefaultSnatToExternal(FloatingIpTestCasesMixin,
                                 pkey=self.keypair['private_key'],
                                 proxy_client=proxy_client)
         self.check_remote_connectivity(ssh_client,
-                                       gateway_external_ip)
+                                       gateway_external_ip,
+                                       servers=[proxy, src_server])
 
 
 class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
@@ -418,7 +421,8 @@ class TestFloatingIPUpdate(FloatingIpTestCasesMixin,
         self.fip = self.create_floatingip(port=ports[0])
         self.check_connectivity(self.fip['floating_ip_address'],
                                 CONF.validation.image_ssh_user,
-                                self.keypair['private_key'])
+                                self.keypair['private_key'],
+                                servers=servers)
         self.client.update_floatingip(self.fip['id'], port_id=ports[1]['id'])
 
         def _wait_for_fip_associated():

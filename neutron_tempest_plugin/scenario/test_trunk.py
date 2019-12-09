@@ -282,7 +282,8 @@ class TrunkTest(base.BaseTempestTestCase):
         self.create_pingable_secgroup_rule(self.security_group['id'])
         self.check_remote_connectivity(
             vm1.ssh_client,
-            vm2.subport['fixed_ips'][0]['ip_address'])
+            vm2.subport['fixed_ips'][0]['ip_address'],
+            servers=[vm1, vm2])
 
     @testtools.skipUnless(
         (CONF.neutron_plugin_options.advanced_image_ref or
@@ -308,11 +309,12 @@ class TrunkTest(base.BaseTempestTestCase):
             use_advanced_image=use_advanced_image)
         normal_network_server = self._create_server_with_network(self.network)
         vlan_network_server = self._create_server_with_network(vlan_network)
+        vms = [normal_network_server, vlan_network_server]
 
         self._configure_vlan_subport(vm=trunk_network_server,
                                      vlan_tag=vlan_tag,
                                      vlan_subnet=vlan_subnet)
-        for vm in [normal_network_server, vlan_network_server]:
+        for vm in vms:
             self.wait_for_server_active(vm.server)
 
         # allow ICMP traffic
@@ -323,14 +325,16 @@ class TrunkTest(base.BaseTempestTestCase):
         self.check_remote_connectivity(
             trunk_network_server.ssh_client,
             normal_network_server.port['fixed_ips'][0]['ip_address'],
-            should_succeed=True)
+            should_succeed=True,
+            servers=vms)
 
         # Ping from trunk_network_server to vlan_network_server via VLAN
         # interface should success
         self.check_remote_connectivity(
             trunk_network_server.ssh_client,
             vlan_network_server.port['fixed_ips'][0]['ip_address'],
-            should_succeed=True)
+            should_succeed=True,
+            servers=vms)
 
         # Delete the trunk
         self.delete_trunk(
@@ -344,7 +348,8 @@ class TrunkTest(base.BaseTempestTestCase):
         self.check_remote_connectivity(
             trunk_network_server.ssh_client,
             normal_network_server.port['fixed_ips'][0]['ip_address'],
-            should_succeed=True)
+            should_succeed=True,
+            servers=vms)
 
         # Ping from trunk_network_server to vlan_network_server via VLAN
         # interface should fail after trunk deleted

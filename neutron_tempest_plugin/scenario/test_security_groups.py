@@ -141,11 +141,12 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
 
         # make sure ICMP connectivity works
         self.check_remote_connectivity(server_ssh_clients[0], fips[1][
-            'fixed_ip_address'], should_succeed=should_succeed)
+            'fixed_ip_address'], should_succeed=should_succeed,
+            servers=servers)
 
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a283d9d764')
     def test_default_sec_grp_scenarios(self):
-        server_ssh_clients, fips, _ = self.create_vm_testing_sec_grp()
+        server_ssh_clients, fips, servers = self.create_vm_testing_sec_grp()
         # Check ssh connectivity when you add sec group rule, enabling ssh
         self.create_loginable_secgroup_rule(
             self.os_primary.network_client.list_security_groups()[
@@ -162,7 +163,8 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
         # Check ICMP connectivity between VMs without specific rule for that
         # It should work though the rule is not configured
         self.check_remote_connectivity(
-            server_ssh_clients[0], fips[1]['fixed_ip_address'])
+            server_ssh_clients[0], fips[1]['fixed_ip_address'],
+            servers=servers)
 
         # Check ICMP connectivity from VM to external network
         subnets = self.os_admin.network_client.list_subnets(
@@ -173,7 +175,8 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
                 ext_net_ip = subnet['gateway_ip']
                 break
         self.assertTrue(ext_net_ip)
-        self.check_remote_connectivity(server_ssh_clients[0], ext_net_ip)
+        self.check_remote_connectivity(server_ssh_clients[0], ext_net_ip,
+                                       servers=servers)
 
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a283d9d864')
     def test_protocol_number_rule(self):
@@ -297,7 +300,8 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
             rule_list, secgroup_id=ssh_secgrp['security_group']['id'])
         # verify ICMP connectivity between instances works
         self.check_remote_connectivity(
-            server_ssh_clients[0], fips[1]['fixed_ip_address'])
+            server_ssh_clients[0], fips[1]['fixed_ip_address'],
+            servers=servers)
         # make sure ICMP connectivity doesn't work from framework
         self.ping_ip_address(fips[0]['floating_ip_address'],
                              should_succeed=False)

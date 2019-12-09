@@ -1263,10 +1263,7 @@
             # TODO(slaweq): switch it to be voting when bug
             # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
             voting: false
-        - neutron-tempest-plugin-dynamic-routing:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/neutron/+bug/1850626 will be fixed
-            voting: false
+        - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-vpnaas
 
     gate:
@@ -1276,6 +1273,4 @@
         # TODO(slaweq): bring it back to gate queue
         # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
         # - neutron-tempest-plugin-fwaas
-        # TODO(slaweq): bring it back to gate queue
-        # https://bugs.launchpad.net/neutron/+bug/1850626 will be fixed
-        # - neutron-tempest-plugin-dynamic-routing
+        - neutron-tempest-plugin-dynamic-routing

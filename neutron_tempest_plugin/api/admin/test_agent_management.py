@@ -13,7 +13,9 @@
 #    under the License.
 
 from neutron_tempest_plugin.common import tempest_fixtures
+from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
 
@@ -90,3 +92,10 @@ class AgentManagementTestJSON(base.BaseAdminNetworkTest):
             if self.agent['id'] != agent['id']:
                 return agent
         raise self.skipException("This test requires at least two agents.")
+
+    @decorators.idempotent_id('b33af888-b6ac-4e68-a0ca-0444c2696cf9')
+    def test_delete_agent_negative(self):
+        non_existent_id = data_utils.rand_uuid()
+        self.assertRaises(
+            lib_exc.NotFound,
+            self.admin_client.delete_agent, non_existent_id)

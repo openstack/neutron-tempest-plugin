@@ -24,9 +24,10 @@ import testscenarios
 import testtools
 
 from neutron_tempest_plugin.api import base
-
+from neutron_tempest_plugin import config
 
 load_tests = testscenarios.load_tests_apply_scenarios
+CONF = config.CONF
 
 
 class QosTestJSON(base.BaseAdminNetworkTest):
@@ -585,11 +586,53 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
         self.assertIn(rule1['id'], rules_ids)
         self.assertNotIn(rule2['id'], rules_ids)
 
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.create_shared_resources,
+        """Creation of shared resources should be allowed,
+        setting the create_shared_resources option as 'True' is needed""")
+    @decorators.idempotent_id('d911707e-fa2c-11e9-9553-5076af30bbf5')
+    def test_attach_and_detach_a_policy_by_a_tenant(self):
+        # As an admin create an non shared QoS policy,add a rule
+        # and associate it with a network
+        self.network = self.create_network()
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy for attach',
+                                        shared=False)
+
+        self.admin_client.create_bandwidth_limit_rule(
+            policy['id'], 1024, 1024)
+
+        self.admin_client.update_network(
+            self.network['id'], qos_policy_id=policy['id'])
+
+        # As a tenant, try to detach the policy from the network
+        # The operation should be forbidden
+        self.assertRaises(
+            exceptions.Forbidden,
+            self.client.update_network,
+            self.network['id'], qos_policy_id=None)
+
+        # As an admin, make the policy shared
+        self.admin_client.update_qos_policy(policy['id'], shared=True)
+
+        # As a tenant, try to detach the policy from the network
+        # The operation should be allowed
+        self.client.update_network(self.network['id'],
+                                   qos_policy_id=None)
+
+        retrieved_network = self.admin_client.show_network(self.network['id'])
+        self.assertIsNone(retrieved_network['network']['qos_policy_id'])
+
+        # As a tenant, try to delete the policy from the network
+        # should be forbidden
+        self.assertRaises(
+            exceptions.Forbidden,
+            self.client.delete_qos_policy,
+            policy['id'])
+
 
 class QosBandwidthLimitRuleWithDirectionTestJSON(
         QosBandwidthLimitRuleTestJSON):
-    DIRECTION_EGRESS = "egress"
-    DIRECTION_INGRESS = "ingress"
     required_extensions = (
         QosBandwidthLimitRuleTestJSON.required_extensions +
         ['qos-bw-limit-direction']
@@ -614,13 +657,13 @@ class QosBandwidthLimitRuleWithDirectionTestJSON(
         rule1 = self.create_qos_bandwidth_limit_rule(policy_id=policy['id'],
                                                      max_kbps=1024,
                                                      max_burst_kbps=1024,
-                                                     direction=self.
-                                                     DIRECTION_EGRESS)
+                                                     direction=n_constants.
+                                                     EGRESS_DIRECTION)
         rule2 = self.create_qos_bandwidth_limit_rule(policy_id=policy['id'],
                                                      max_kbps=1024,
                                                      max_burst_kbps=1024,
-                                                     direction=self.
-                                                     DIRECTION_INGRESS)
+                                                     direction=n_constants.
+                                                     INGRESS_DIRECTION)
         # Check that the rules were added to the policy
         rules = self.admin_client.list_bandwidth_limit_rules(
             policy['id'])['bandwidth_limit_rules']
@@ -634,14 +677,14 @@ class QosBandwidthLimitRuleWithDirectionTestJSON(
                           policy_id=policy['id'],
                           max_kbps=1025,
                           max_burst_kbps=1025,
-                          direction=self.DIRECTION_EGRESS)
+                          direction=n_constants.EGRESS_DIRECTION)
 
         self.assertRaises(exceptions.Conflict,
                           self.create_qos_bandwidth_limit_rule,
                           policy_id=policy['id'],
                           max_kbps=1025,
                           max_burst_kbps=1025,
-                          direction=self.DIRECTION_INGRESS)
+                          direction=n_constants.INGRESS_DIRECTION)
 
 
 class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):

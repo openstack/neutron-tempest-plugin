@@ -115,6 +115,14 @@ NeutronPluginOptions = [
                help='Name of ssh user to use with advanced image in tests. '
                     'This is required if advanced image has to be used in '
                     'tests.'),
+
+    # Option for creating QoS policies configures as "shared".
+    # The default is false in order to prevent undesired usage
+    # while testing in parallel.
+    cfg.BoolOpt('create_shared_resources',
+                default=False,
+                help='Allow creation of shared resources.'
+                     'The default value is false.'),
 ]
 
 # TODO(amuller): Redo configuration options registration as part of the planned

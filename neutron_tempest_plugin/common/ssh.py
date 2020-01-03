@@ -133,46 +133,19 @@ class Client(ssh.Client):
             look_for_keys=look_for_keys, key_filename=key_file,
             port=port, create_proxy_client=False, **kwargs)
 
-    # attribute used to keep reference to opened client connection
-    _client = None
-
     def connect(self, *args, **kwargs):
         """Creates paramiko.SSHClient and connect it to remote SSH server
-
-        In case this method is called more times it returns the same client
-        and no new SSH connection is created until close method is called.
 
         :returns: paramiko.Client connected to remote server.
 
         :raises tempest.lib.exceptions.SSHTimeout: in case it fails to connect
         to remote server.
         """
-        client = self._client
-        if client is None:
-            client = super(Client, self)._get_ssh_connection(
-                *args, **kwargs)
-            self._client = client
-
-        return client
-
-    # This overrides superclass protected method to make sure exec_command
-    # method is going to reuse the same SSH client and connection if called
-    # more times
-    _get_ssh_connection = connect
+        return super(Client, self)._get_ssh_connection(*args, **kwargs)
 
     # This overrides superclass test_connection_auth method forbidding it to
     # close connection
     test_connection_auth = connect
-
-    def close(self):
-        """Closes connection to SSH server and cleanup resources."""
-        client = self._client
-        if client is not None:
-            client.close()
-            self._client = None
-
-    def __exit__(self, _exception_type, _exception_value, _traceback):
-        self.close()
 
     def open_session(self):
         """Gets connection to SSH server and open a new paramiko.Channel

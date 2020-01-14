@@ -378,16 +378,6 @@ class BaseNetworkTest(test.BaseTestCase):
         return cls.create_network(name=network_name, shared=True, **kwargs)
 
     @classmethod
-    def create_network_keystone_v3(cls, network_name=None, project_id=None,
-                                   tenant_id=None, client=None):
-        params = {}
-        if project_id:
-            params['project_id'] = project_id
-        if tenant_id:
-            params['tenant_id'] = tenant_id
-        return cls.create_network(name=network_name, client=client, **params)
-
-    @classmethod
     def create_subnet(cls, network, gateway='', cidr=None, mask_bits=None,
                       ip_version=None, client=None, reserve_cidr=True,
                       **kwargs):

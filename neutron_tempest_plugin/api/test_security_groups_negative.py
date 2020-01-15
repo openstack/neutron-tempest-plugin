@@ -20,6 +20,7 @@ from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin.api import base_security_groups
+from neutron_tempest_plugin.api import test_security_groups
 
 
 LONG_NAME_NG = 'x' * (db_const.NAME_FIELD_SIZE + 1)
@@ -114,3 +115,22 @@ class NegativeSecGroupProtocolTest(base.BaseNetworkTest):
     def test_create_security_group_rule_with_ipv6_protocol_integers(self):
         self._test_create_security_group_rule_with_bad_protocols(
             base_security_groups.V6_PROTOCOL_INTS)
+
+
+class NegativeSecGroupQuotaTest(test_security_groups.BaseSecGroupQuota):
+
+    credentials = ['primary', 'admin']
+    required_extensions = ['security-group', 'quotas']
+
+    @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('63f00cba-fcf5-4000-a3ee-eca58a1795c1')
+    def test_create_excess_sg(self):
+        self._set_sg_quota(0)
+        self.assertRaises(lib_exc.Conflict, self.create_security_group)
+
+    @decorators.attr(type=['negative'])
+    @decorators.idempotent_id('90a83445-bbc2-49d8-8c85-a111c08cd7fb')
+    def test_sg_quota_incorrect_values(self):
+        values = [-2, 2147483648, "value"]
+        for value in values:
+            self.assertRaises(lib_exc.BadRequest, self._set_sg_quota, value)

@@ -416,7 +416,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         udp = ''
         if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
             udp = '-u'
-        cmd = "sudo nc %(udp)s -p %(port)s -lk -e echo %(msg)s &" % {
+        cmd = "sudo nc %(udp)s -p %(port)s -lk -c echo %(msg)s &" % {
             'udp': udp, 'port': port, 'msg': echo_msg}
         try:
             return ssh_client.exec_command(cmd)

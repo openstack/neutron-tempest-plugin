@@ -15,6 +15,7 @@
 
 import netaddr
 from neutron_lib import constants
+from neutron_lib.utils import test
 from oslo_log import log
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -229,7 +230,7 @@ class BaseMulticastTest(object):
         server['ssh_client'].execute_script(
             'echo "%s" > ~/multicast_traffic_receiver.py' % check_script)
 
-    @utils.unstable_test("bug 1850288")
+    @test.unstable_test("bug 1850288")
     @decorators.idempotent_id('113486fc-24c9-4be4-8361-03b1c9892867')
     def test_multicast_between_vms_on_same_network(self):
         """Test multicast messaging between two servers on the same network

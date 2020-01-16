@@ -17,6 +17,7 @@ import time
 
 from neutron_lib import constants as lib_constants
 from neutron_lib.services.qos import constants as qos_consts
+from neutron_lib.utils import test
 from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
@@ -151,7 +152,7 @@ class FloatingIpSameNetwork(FloatingIpTestCasesMixin,
 
     same_network = True
 
-    @common_utils.unstable_test("bug 1717302")
+    @test.unstable_test("bug 1717302")
     @decorators.idempotent_id('05c4e3b3-7319-4052-90ad-e8916436c23b')
     def test_east_west(self):
         self._test_east_west()
@@ -169,7 +170,7 @@ class FloatingIpSeparateNetwork(FloatingIpTestCasesMixin,
 
     same_network = False
 
-    @common_utils.unstable_test("bug 1717302")
+    @test.unstable_test("bug 1717302")
     @decorators.idempotent_id('f18f0090-3289-4783-b956-a0f8ac511e8b')
     def test_east_west(self):
         self._test_east_west()
@@ -212,7 +213,7 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
     def resource_setup(cls):
         super(FloatingIPPortDetailsTest, cls).resource_setup()
 
-    @common_utils.unstable_test("bug 1815585")
+    @test.unstable_test("bug 1815585")
     @decorators.idempotent_id('a663aeee-dd81-492b-a207-354fd6284dbe')
     def test_floatingip_port_details(self):
         """Tests the following:

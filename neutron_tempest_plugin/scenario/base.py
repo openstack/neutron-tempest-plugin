@@ -26,6 +26,7 @@ from tempest.lib.common.utils import test_utils
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base as base_api
+from neutron_tempest_plugin.common import ip as ip_utils
 from neutron_tempest_plugin.common import shell
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
@@ -219,6 +220,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         except lib_exc.SSHTimeout as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)
+            self._log_local_network_status()
             raise
 
     def _log_console_output(self, servers=None):
@@ -238,6 +240,12 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             except lib_exc.NotFound:
                 LOG.debug("Server %s disappeared(deleted) while looking "
                           "for the console log", server['id'])
+
+    def _log_local_network_status(self):
+        local_routes = ip_utils.IPCommand().list_routes()
+        LOG.debug('Local routes:\n%s', '\n'.join(str(r) for r in local_routes))
+        arp_table = ip_utils.arp_table()
+        LOG.debug('Local ARP table:\n%s', '\n'.join(str(r) for r in arp_table))
 
     def _check_remote_connectivity(self, source, dest, count,
                                    should_succeed=True,

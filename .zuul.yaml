@@ -181,7 +181,7 @@
       - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 0.7.0
+        override-checkout: 0.3.0
       - openstack/tempest
     vars:
       branch_override: stable/queens
@@ -534,14 +534,18 @@
       - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 0.7.0
+        override-checkout: 0.3.0
       - openstack/tempest
     vars:
       branch_override: stable/queens
       network_api_extensions: *api_extensions_queens
       # TODO(slaweq): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
-      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)"
+      # NOTE(bcafarel): remove DNS test as queens pinned version does not have
+      # fix for https://bugs.launchpad.net/neutron/+bug/1826419
+      tempest_black_regex: "\
+          (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)|\
+          (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
       devstack_localrc:
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
@@ -684,11 +688,15 @@
       - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 0.7.0
+        override-checkout: 0.3.0
       - openstack/tempest
     vars:
       branch_override: stable/queens
       network_api_extensions: *api_extensions_queens
+      # NOTE(bcafarel): remove DNS test as queens pinned version does not have
+      # fix for https://bugs.launchpad.net/neutron/+bug/1826419
+      tempest_black_regex: "\
+          (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
       devstack_localrc:
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
@@ -887,14 +895,18 @@
       - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 0.7.0
+        override-checkout: 0.3.0
       - openstack/tempest
     vars:
       branch_override: stable/queens
       network_api_extensions_common: *api_extensions_queens
       # TODO(slaweq): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
-      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)"
+      # NOTE(bcafarel): remove DNS test as queens pinned version does not have
+      # fix for https://bugs.launchpad.net/neutron/+bug/1826419
+      tempest_black_regex: "\
+          (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)|\
+          (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
@@ -980,11 +992,15 @@
       - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 0.7.0
+        override-checkout: 0.3.0
       - openstack/tempest
     vars:
       branch_override: stable/queens
       network_api_extensions_common: *api_extensions_queens
+      # NOTE(bcafarel): remove DNS test as queens pinned version does not have
+      # fix for https://bugs.launchpad.net/neutron/+bug/1826419
+      tempest_black_regex: "\
+          (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'

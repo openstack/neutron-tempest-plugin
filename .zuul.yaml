@@ -243,7 +243,6 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
-        TEMPEST_BRANCH: queens-em
 
 - job:
     name: neutron-tempest-plugin-api-rocky
@@ -550,7 +549,6 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
-        TEMPEST_BRANCH: queens-em
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-rocky
@@ -701,7 +699,6 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
-        TEMPEST_BRANCH: queens-em
       devstack_local_conf:
         test-config:
           # NOTE: ignores linux bridge's trunk delete on bound port test
@@ -910,7 +907,6 @@
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
-        TEMPEST_BRANCH: queens-em
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
@@ -1004,7 +1000,6 @@
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
-        TEMPEST_BRANCH: queens-em
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-rocky

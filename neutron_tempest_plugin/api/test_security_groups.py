@@ -91,6 +91,94 @@ class SecGroupTest(base.BaseAdminNetworkTest):
             self.assertIsNotNone(secgrp['id'])
 
 
+class BaseSecGroupQuota(base.BaseAdminNetworkTest):
+
+    def _create_max_allowed_sg_amount(self):
+        sg_amount = self._get_sg_amount()
+        sg_quota = self._get_sg_quota()
+        sg_to_create = sg_quota - sg_amount
+        self._create_security_groups(sg_to_create)
+
+    def _create_security_groups(self, amount):
+        for _ in range(amount):
+            sg = self.create_security_group()
+            self.addCleanup(self.delete_security_group, sg)
+
+    def _increase_sg_quota(self):
+        sg_quota = self._get_sg_quota()
+        new_sg_quota = 2 * sg_quota
+        self._set_sg_quota(new_sg_quota)
+        return new_sg_quota
+
+    def _decrease_sg_quota(self):
+        sg_quota = self._get_sg_quota()
+        new_sg_quota = sg_quota // 2
+        self._set_sg_quota(new_sg_quota)
+        return new_sg_quota
+
+    def _set_sg_quota(self, val):
+        sg_quota = self._get_sg_quota()
+        project_id = self.client.tenant_id
+        self.admin_client.update_quotas(project_id, **{'security_group': val})
+        self.addCleanup(self.admin_client.update_quotas,
+                project_id,
+                **{'security_group': sg_quota})
+
+    def _get_sg_quota(self):
+        project_id = self.client.tenant_id
+        quotas = self.admin_client.show_quotas(project_id)
+        return quotas['quota']['security_group']
+
+    def _get_sg_amount(self):
+        project_id = self.client.tenant_id
+        filter_query = {'project_id': project_id}
+        security_groups = self.client.list_security_groups(**filter_query)
+        return len(security_groups['security_groups'])
+
+
+class SecGroupQuotaTest(BaseSecGroupQuota):
+
+    credentials = ['primary', 'admin']
+    required_extensions = ['security-group', 'quotas']
+
+    @decorators.idempotent_id('1826aa02-090d-4717-b43a-50ee449b02e7')
+    def test_sg_quota_values(self):
+        values = [-1, 0, 10, 2147483647]
+        for value in values:
+            self._set_sg_quota(value)
+            self.assertEqual(value, self._get_sg_quota())
+
+    @decorators.idempotent_id('df7981fb-b83a-4779-b13e-65494ef44a72')
+    def test_max_allowed_sg_amount(self):
+        self._create_max_allowed_sg_amount()
+        self.assertEqual(self._get_sg_quota(), self._get_sg_amount())
+
+    @decorators.idempotent_id('623d909c-6ef8-43d6-93ee-97086e2651e8')
+    def test_sg_quota_increased(self):
+        self._create_max_allowed_sg_amount()
+        new_quota = self._increase_sg_quota()
+        self._create_max_allowed_sg_amount()
+        quota_set = self._get_sg_quota()
+        self.assertEqual(quota_set, new_quota,
+                "Security group quota was not changed correctly")
+        self.assertEqual(quota_set, self._get_sg_amount(),
+                "Amount of security groups doesn't match quota")
+
+    @decorators.idempotent_id('ba95676c-8d9a-4482-b4ec-74d51a4602a6')
+    def test_sg_quota_decrease_less_than_created(self):
+        self._create_max_allowed_sg_amount()
+        new_quota = self._decrease_sg_quota()
+        self.assertEqual(self._get_sg_quota(), new_quota)
+
+    @decorators.idempotent_id('d43cf1a7-aa7e-4c41-9340-627a1a6ab961')
+    def test_create_sg_when_quota_disabled(self):
+        sg_amount = self._get_sg_amount()
+        self._set_sg_quota(-1)
+        self._create_security_groups(10)
+        new_sg_amount = self._get_sg_amount()
+        self.assertGreater(new_sg_amount, sg_amount)
+
+
 class SecGroupProtocolTest(base.BaseNetworkTest):
 
     protocol_names = base_security_groups.V4_PROTOCOL_NAMES

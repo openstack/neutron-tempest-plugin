@@ -348,3 +348,24 @@ class ARPregister(collections.namedtuple(
         return '%s %s %s %s %s %s' % (self.ip_address, self.hw_type,
                                       self.flags, self.mac_address, self.mask,
                                       self.device)
+
+
+def find_valid_cidr(valid_cidr='10.0.0.0/8', used_cidr=None):
+    total_ips = netaddr.IPSet(netaddr.IPNetwork(valid_cidr))
+    if used_cidr:
+        used_network = netaddr.IPNetwork(used_cidr)
+        netmask = used_network.netmask.netmask_bits()
+        valid_ips = total_ips.difference(netaddr.IPSet(used_network))
+    else:
+        valid_ips = total_ips
+        netmask = 24
+
+    for ip in valid_ips:
+        valid_network = netaddr.IPNetwork('%s/%s' % (ip, netmask))
+        if valid_network in valid_ips:
+            return valid_network.cidr
+
+    exception_str = 'No valid CIDR found in %s' % valid_cidr
+    if used_cidr:
+        exception_str += ', used CIDR %s' % used_cidr
+    raise Exception(exception_str)

@@ -13,11 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import netaddr
+
 from tempest.common import compute
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
+from neutron_tempest_plugin.common import ip as ip_utils
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
@@ -161,14 +164,14 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         Subnet is connected to dvr and non-dvr routers in the same time, test
         ensures that connectivity from VM to both routers is working.
 
-        Test scenario:
+        Test scenario: (NOTE: 10.1.0.0/24 private CIDR is used as an example)
         +----------------+                  +------------+
         | Non-dvr router |                  | DVR router |
         |                |                  |            |
-        |    10.0.0.1    |                  |  10.0.0.x  |
+        |    10.1.0.1    |                  |  10.1.0.x  |
         +-------+--------+                  +-----+------+
                 |                                 |
-                |         10.0.0.0/24             |
+                |         10.1.0.0/24             |
                 +----------------+----------------+
                                  |
                                +-+-+
@@ -176,16 +179,22 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
                                +---+
 
         where:
-        10.0.0.1 - is subnet's gateway IP address,
-        10.0.0.x - is any other IP address taken from subnet's range
+        10.1.0.1 - is subnet's gateway IP address,
+        10.1.0.x - is any other IP address taken from subnet's range
 
-        Test ensures that both 10.0.0.1 and 10.0.0.x IP addresses are
+        Test ensures that both 10.1.0.1 and 10.1.0.x IP addresses are
         reachable from VM.
         """
+        ext_network = self.safe_client.show_network(self.external_network_id)
+        ext_subnet_id = ext_network['network']['subnets'][0]['id']
+        ext_subnet = self.safe_client.show_subnet(ext_subnet_id)
+        ext_cidr = ext_subnet['subnet']['cidr']
+        subnet_cidr = ip_utils.find_valid_cidr(used_cidr=ext_cidr)
+        gw_ip = netaddr.IPAddress(subnet_cidr.first + 1)
 
         network = self.create_network()
         subnet = self.create_subnet(
-            network, cidr="10.0.0.0/24", gateway="10.0.0.1")
+            network, cidr=str(subnet_cidr), gateway=str(gw_ip))
 
         non_dvr_router = self.create_router_by_client(
             tenant_id=self.client.tenant_id,
@@ -221,8 +230,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             fip['floating_ip_address'], CONF.validation.image_ssh_user,
             pkey=self.keypair['private_key'])
 
-        self.check_remote_connectivity(
-            sshclient, '10.0.0.1', ping_count=10)
+        self.check_remote_connectivity(sshclient, str(gw_ip), ping_count=10)
         self.check_remote_connectivity(
             sshclient, dvr_router_port['fixed_ips'][0]['ip_address'],
             ping_count=10)

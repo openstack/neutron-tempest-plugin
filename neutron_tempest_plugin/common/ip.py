@@ -15,6 +15,7 @@
 #    under the License.
 
 import collections
+import re
 import subprocess
 
 import netaddr
@@ -299,6 +300,23 @@ def _get_ip_address_prefix_len_pairs(port, subnets):
                    netaddr.IPNetwork(subnet['cidr']).prefixlen)
 
 
+def arp_table():
+    # 192.168.0.16  0x1  0x2  dc:a6:32:06:56:51  *  enp0s31f6
+    regex_str = (r"([^ ]+)\s+(0x\d+)\s+(0x\d+)\s+(\w{2}\:\w{2}\:\w{2}\:\w{2}\:"
+                 r"\w{2}\:\w{2})\s+([\w+\*]+)\s+([\-\w]+)")
+    regex = re.compile(regex_str)
+    arp_table = []
+    with open('/proc/net/arp', 'r') as proc_file:
+        for line in proc_file.readlines():
+            m = regex.match(line)
+            if m:
+                arp_table.append(ARPregister(
+                    ip_address=m.group(1), hw_type=m.group(2),
+                    flags=m.group(3), mac_address=m.group(4),
+                    mask=m.group(5), device=m.group(6)))
+    return arp_table
+
+
 class Route(HasProperties,
             collections.namedtuple('Route',
                                    ['dest', 'properties'])):
@@ -314,3 +332,19 @@ class Route(HasProperties,
     @property
     def src_ip(self):
         return netaddr.IPAddress(self.src)
+
+    def __str__(self):
+        properties_str = ' '.join('%s %s' % (k, v)
+                                  for k, v in self.properties.items())
+        return '%(dest)s %(properties)s' % {'dest': self.dest,
+                                            'properties': properties_str}
+
+
+class ARPregister(collections.namedtuple(
+        'ARPregister',
+        ['ip_address', 'hw_type', 'flags', 'mac_address', 'mask', 'device'])):
+
+    def __str__(self):
+        return '%s %s %s %s %s %s' % (self.ip_address, self.hw_type,
+                                      self.flags, self.mac_address, self.mask,
+                                      self.device)

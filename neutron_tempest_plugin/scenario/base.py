@@ -250,7 +250,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     def _check_remote_connectivity(self, source, dest, count,
                                    should_succeed=True,
                                    nic=None, mtu=None, fragmentation=True,
-                                   timeout=None):
+                                   timeout=None, pattern=None):
         """check ping server via source ssh connection
 
         :param source: RemoteClient: an ssh connection from which to ping
@@ -261,12 +261,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         :param mtu: mtu size for the packet to be sent
         :param fragmentation: Flag for packet fragmentation
         :param timeout: Timeout for all ping packet(s) to succeed
+        :param pattern: hex digits included in ICMP messages
         :returns: boolean -- should_succeed == ping
         :returns: ping is false if ping failed
         """
         def ping_host(source, host, count,
                       size=CONF.validation.ping_size, nic=None, mtu=None,
-                      fragmentation=True):
+                      fragmentation=True, pattern=None):
             IP_VERSION_4 = neutron_lib_constants.IP_VERSION_4
             IP_VERSION_6 = neutron_lib_constants.IP_VERSION_6
 
@@ -282,13 +283,16 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                     cmd += ' -M do'
                 size = str(net_utils.get_ping_payload_size(
                     mtu=mtu, ip_version=ip_version))
+            if pattern:
+                cmd += ' -p {pattern}'.format(pattern=pattern)
             cmd += ' -c{0} -w{0} -s{1} {2}'.format(count, size, host)
             return source.exec_command(cmd)
 
         def ping_remote():
             try:
                 result = ping_host(source, dest, count, nic=nic, mtu=mtu,
-                                   fragmentation=fragmentation)
+                                   fragmentation=fragmentation,
+                                   pattern=pattern)
 
             except lib_exc.SSHExecCommandFailed:
                 LOG.warning('Failed to ping IP: %s via a ssh connection '
@@ -309,12 +313,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     def check_remote_connectivity(self, source, dest, should_succeed=True,
                                   nic=None, mtu=None, fragmentation=True,
                                   servers=None, timeout=None,
-                                  ping_count=CONF.validation.ping_count):
+                                  ping_count=CONF.validation.ping_count,
+                                  pattern=None):
         try:
             self.assertTrue(self._check_remote_connectivity(
                 source, dest, ping_count, should_succeed, nic, mtu,
                 fragmentation,
-                timeout=timeout))
+                timeout=timeout, pattern=pattern))
         except lib_exc.SSHTimeout as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)

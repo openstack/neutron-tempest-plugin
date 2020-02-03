@@ -15,6 +15,7 @@
 
 import netaddr
 
+from neutron_lib import constants
 from tempest.common import compute
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
@@ -185,10 +186,16 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         Test ensures that both 10.1.0.1 and 10.1.0.x IP addresses are
         reachable from VM.
         """
-        ext_network = self.safe_client.show_network(self.external_network_id)
-        ext_subnet_id = ext_network['network']['subnets'][0]['id']
-        ext_subnet = self.safe_client.show_subnet(ext_subnet_id)
-        ext_cidr = ext_subnet['subnet']['cidr']
+        ext_network = self.client.show_network(self.external_network_id)
+        for ext_subnetid in ext_network['network']['subnets']:
+            ext_subnet = self.os_admin.network_client.show_subnet(ext_subnetid)
+            ext_cidr = ext_subnet['subnet']['cidr']
+            if ext_subnet['subnet']['ip_version'] == constants.IP_VERSION_4:
+                break
+        else:
+            self.fail('No IPv4 subnet was found in external network %s' %
+                      ext_network['network']['id'])
+
         subnet_cidr = ip_utils.find_valid_cidr(used_cidr=ext_cidr)
         gw_ip = netaddr.IPAddress(subnet_cidr.first + 1)
 

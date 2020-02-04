@@ -1,0 +1,11 @@
+---
+features:
+  - |
+    Enhanced the ``test_multicast_between_vms_on_same_network`` adding
+    IGMP test coverage to it. A new VM running tcpdump is spawned as
+    part of the test to verify whether the traffic is reaching it or not.
+upgrade:
+  - |
+    Add a new configuration option called ``is_igmp_snooping_enabled``
+    to enable/disable IGMP testing as part of the
+    ``test_multicast_between_vms_on_same_network`` test case.

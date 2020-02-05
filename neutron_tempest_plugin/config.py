@@ -67,7 +67,7 @@ NeutronPluginOptions = [
 
     # Multicast tests settings
     cfg.StrOpt('multicast_group_range',
-               default='224.0.0.120-224.0.0.250',
+               default='225.0.0.120-225.0.0.250',
                help='Unallocated multi-cast IPv4 range, which will be used to '
                     'test the multi-cast support.'),
 

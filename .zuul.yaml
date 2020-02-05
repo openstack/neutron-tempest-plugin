@@ -248,8 +248,10 @@
     name: neutron-tempest-plugin-api-rocky
     nodeset: openstack-single-node-xenial
     parent: neutron-tempest-plugin-api
+    description: |
+      This job run on py2 for stable/rocky gate.
     override-checkout: stable/rocky
-    vars:
+    vars: &api_vars_rocky
       branch_override: stable/rocky
       # TODO(slaweq): find a way to put this list of extensions in
       # neutron repository and keep it different per branch,
@@ -316,6 +318,24 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+    # NOTE(gmann): This job run on py2 for stable/rocky gate.
+    branches:
+      - stable/rocky
+
+
+- job:
+    name: neutron-tempest-plugin-api-rocky
+    nodeset: openstack-single-node-xenial
+    parent: neutron-tempest-plugin-api
+    description: |
+      This job run on py3 for other than stable/rocky gate
+      which is nothing but neutron-tempest-pluign master gate.
+    override-checkout: stable/rocky
+    vars:
+      <<: *api_vars_rocky
+      devstack_localrc:
+        USE_PYTHON3: True
+    branches: ^(?!stable/rocky).*$
 
 - job:
     name: neutron-tempest-plugin-api-stein
@@ -553,15 +573,33 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-rocky
     parent: neutron-tempest-plugin-scenario-openvswitch
+    description: |
+      This job run on py2 for stable/rocky gate.
     nodeset: openstack-single-node-xenial
     override-checkout: stable/rocky
-    vars:
+    vars: &scenario_vars_rocky
       branch_override: stable/rocky
       network_api_extensions: *api_extensions_rocky
       devstack_localrc:
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+    branches:
+      - stable/rocky
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-rocky
+    parent: neutron-tempest-plugin-scenario-openvswitch
+    nodeset: openstack-single-node-xenial
+    description: |
+      This job run on py3 for other than stable/rocky gate
+      which is nothing but neutron-tempest-pluign master gate.
+    override-checkout: stable/rocky
+    vars:
+      <<: *scenario_vars_rocky
+      devstack_localrc:
+        USE_PYTHON3: True
+    branches: ^(?!stable/rocky).*$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-stein
@@ -620,14 +658,32 @@
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-rocky
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
     nodeset: openstack-single-node-xenial
+    description: |
+      This job run on py2 for stable/rocky gate.
     override-checkout: stable/rocky
-    vars:
+    vars: &openvswitch_vars_rocky
       branch_override: stable/rocky
       network_api_extensions: *api_extensions_rocky
       devstack_localrc:
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+    branches:
+      - stable/rocky
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-rocky
+    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    nodeset: openstack-single-node-xenial
+    description: |
+      This job run on py3 for other than stable/rocky gate
+      which is nothing but neutron-tempest-pluign master gate.
+    override-checkout: stable/rocky
+    vars:
+      <<: *openvswitch_vars_rocky
+      devstack_localrc:
+        USE_PYTHON3: True
+    branches: ^(?!stable/rocky).*$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-stein
@@ -711,9 +767,11 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-rocky
     parent: neutron-tempest-plugin-scenario-linuxbridge
+    description: |
+      This job run on py2 for stable/rocky gate.
     nodeset: openstack-single-node-xenial
     override-checkout: stable/rocky
-    vars:
+    vars: &linuxbridge_vars_rocky
       branch_override: stable/rocky
       network_api_extensions: *api_extensions_rocky
       devstack_localrc:
@@ -728,6 +786,22 @@
           $TEMPEST_CONFIG:
             neutron_plugin_options:
               q_agent: None
+    branches:
+      - stable/rocky
+
+- job:
+    name: neutron-tempest-plugin-scenario-linuxbridge-rocky
+    parent: neutron-tempest-plugin-scenario-linuxbridge
+    nodeset: openstack-single-node-xenial
+    description: |
+      This job run on py3 for other than stable/rocky gate
+      which is nothing but neutron-tempest-pluign master gate.
+    override-checkout: stable/rocky
+    vars:
+      <<: *linuxbridge_vars_rocky
+      devstack_localrc:
+        USE_PYTHON3: True
+    branches: ^(?!stable/rocky).*$
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-stein
@@ -911,14 +985,36 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    description: |
+      This job run on py2 for stable/rocky gate.
     nodeset: openstack-two-node-xenial
     override-checkout: stable/rocky
-    vars:
+    vars: &multinode_scenario_vars_rocky
       branch_override: stable/rocky
       network_api_extensions_common: *api_extensions_rocky
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+    branches:
+      - stable/rocky
+
+- job:
+    name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
+    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-xenial
+    description: |
+      This job run on py3 for other than stable/rocky gate
+      which is nothing but neutron-tempest-pluign master gate.
+    override-checkout: stable/rocky
+    vars:
+      <<: *multinode_scenario_vars_rocky
+      devstack_localrc:
+        USE_PYTHON3: True
+    group-vars:
+      subnode:
+        devstack_localrc:
+          USE_PYTHON3: True
+    branches: ^(?!stable/rocky).*$
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-stein
@@ -1004,14 +1100,32 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-rocky
     parent: neutron-tempest-plugin-designate-scenario
+    description: |
+      This job run on py2 for stable/rocky gate.
     nodeset: openstack-single-node-xenial
     override-checkout: stable/rocky
-    vars:
+    vars: &designate_scenario_vars_rocky
       branch_override: stable/rocky
       network_api_extensions_common: *api_extensions_rocky
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
+    branches:
+      - stable/rocky
+
+- job:
+    name: neutron-tempest-plugin-designate-scenario-rocky
+    parent: neutron-tempest-plugin-designate-scenario
+    nodeset: openstack-single-node-xenial
+    description: |
+      This job run on py3 for other than stable/rocky gate
+      which is nothing but neutron-tempest-pluign master gate.
+    override-checkout: stable/rocky
+    vars:
+      <<: *designate_scenario_vars_rocky
+      devstack_localrc:
+        USE_PYTHON3: True
+    branches: ^(?!stable/rocky).*$
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-stein

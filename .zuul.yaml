@@ -1255,7 +1255,9 @@
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
-      - neutron-tempest-plugin-jobs-rocky
+      # TODO(slaweq): bring rocky jobs back when dropping py27
+      # drama will be finally over
+      # - neutron-tempest-plugin-jobs-rocky
       - neutron-tempest-plugin-jobs-stein
       - neutron-tempest-plugin-jobs-train
       - check-requirements

@@ -15,6 +15,7 @@
 
 from neutron_lib import constants
 from neutron_lib.db import constants as db_const
+from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
@@ -84,6 +85,41 @@ class NegativeSecGroupTest(base.BaseNetworkTest):
         self.assertRaises(lib_exc.Conflict,
                           self.os_primary.network_client.delete_security_group,
                           security_group_id=security_group['id'])
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('867d67c3-7e26-4288-a27b-e3d0649ee54b')
+    def test_assign_sec_group_twice(self):
+        net = self.create_network()
+        port = self.create_port(net)
+        sg = self.create_security_group()
+        self.assertRaises(lib_exc.BadRequest,
+                          self.update_port,
+                          port,
+                          **{'security_groups': [sg['id'], sg['id']]})
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('d5ecb408-eb7e-47c1-a56f-353967dbd1c2')
+    def test_assign_nonexistent_sec_group(self):
+        net = self.create_network()
+        port = self.create_port(net)
+        self.assertRaises(lib_exc.NotFound,
+                          self.update_port,
+                          port,
+                          **{'security_groups': [data_utils.rand_uuid()]})
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('98ef378d-81a2-43f6-bb6f-735c04cdef91')
+    def test_no_sec_group_changes_after_assignment_failure(self):
+        net = self.create_network()
+        port = self.create_port(net)
+        sg_list_before_failure = port['security_groups']
+        self.assertRaises(lib_exc.NotFound,
+                          self.update_port,
+                          port,
+                          **{'security_groups': [data_utils.rand_uuid()]})
+        port_details_new = self.client.show_port(port['id'])['port']
+        sg_list_after_failure = port_details_new['security_groups']
+        self.assertEqual(sg_list_before_failure, sg_list_after_failure)
 
 
 class NegativeSecGroupIPv6Test(NegativeSecGroupTest):

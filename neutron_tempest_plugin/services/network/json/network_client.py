@@ -601,7 +601,7 @@ class NetworkClientJSON(service_client.RestClient):
         return service_client.ResponseBody(resp, body)
 
     def create_qos_policy(self, name, description=None, shared=False,
-                          tenant_id=None, is_default=False):
+                          project_id=None, is_default=False):
         uri = '%s/qos/policies' % self.uri_prefix
         post_data = {
             'policy': {
@@ -612,8 +612,8 @@ class NetworkClientJSON(service_client.RestClient):
         }
         if description is not None:
             post_data['policy']['description'] = description
-        if tenant_id is not None:
-            post_data['policy']['tenant_id'] = tenant_id
+        if project_id is not None:
+            post_data['policy']['project_id'] = project_id
         resp, body = self.post(uri, self.serialize(post_data))
         body = self.deserialize_single(body)
         self.expected_success(201, resp.status)

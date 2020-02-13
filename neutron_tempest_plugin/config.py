@@ -123,6 +123,12 @@ NeutronPluginOptions = [
                 default=False,
                 help='Allow creation of shared resources.'
                      'The default value is false.'),
+    cfg.BoolOpt('is_igmp_snooping_enabled',
+                default=False,
+                help='Indicates whether IGMP snooping is enabled or not. '
+                     'If True, multicast test(s) will assert that multicast '
+                     'traffic is not being flooded to all ports. Defaults '
+                     'to False.'),
 ]
 
 # TODO(amuller): Redo configuration options registration as part of the planned

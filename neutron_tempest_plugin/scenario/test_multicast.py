@@ -111,6 +111,14 @@ with open('%(result_file)s', 'w') as f:
            'result_file': result_file}
 
 
+def get_unregistered_script(group, result_file):
+    return """#!/bin/bash
+export LC_ALL=en_US.UTF-8
+tcpdump -i any -s0 -vv host %(group)s -vvneA -s0 -l &> %(result_file)s &
+    """ % {'group': group,
+           'result_file': result_file}
+
+
 class BaseMulticastTest(object):
 
     credentials = ['primary']
@@ -125,6 +133,7 @@ class BaseMulticastTest(object):
     multicast_message = "Big Bang"
     receiver_output_file = "/tmp/receiver_mcast_out"
     sender_output_file = "/tmp/sender_mcast_out"
+    unregistered_output_file = "/tmp/unregistered_mcast_out"
 
     @classmethod
     def skip_checks(cls):
@@ -198,16 +207,16 @@ class BaseMulticastTest(object):
         server['ssh_client'] = ssh.Client(server['fip']['floating_ip_address'],
                                           self.username,
                                           pkey=self.keypair['private_key'])
-        self._check_python_installed_on_server(server['ssh_client'],
-                                               server['id'])
+        self._check_cmd_installed_on_server(server['ssh_client'],
+                                            server['id'], PYTHON3_BIN)
         return server
 
-    def _check_python_installed_on_server(self, ssh_client, server_id):
+    def _check_cmd_installed_on_server(self, ssh_client, server_id, cmd):
         try:
-            ssh_client.execute_script('which %s' % PYTHON3_BIN)
+            ssh_client.execute_script('which %s' % cmd)
         except exceptions.SSHScriptFailed:
             raise self.skipException(
-                "%s is not available on server %s" % (PYTHON3_BIN, server_id))
+                "%s is not available on server %s" % (cmd, server_id))
 
     def _prepare_sender(self, server, mcast_address):
         check_script = get_sender_script(
@@ -226,9 +235,22 @@ class BaseMulticastTest(object):
             server['fip']['floating_ip_address'],
             self.username,
             pkey=self.keypair['private_key'])
-        self._check_python_installed_on_server(ssh_client, server['id'])
+        self._check_cmd_installed_on_server(ssh_client, server['id'],
+                                            PYTHON3_BIN)
         server['ssh_client'].execute_script(
             'echo "%s" > ~/multicast_traffic_receiver.py' % check_script)
+
+    def _prepare_unregistered(self, server, mcast_address):
+        check_script = get_unregistered_script(
+            group=mcast_address, result_file=self.unregistered_output_file)
+        ssh_client = ssh.Client(
+            server['fip']['floating_ip_address'],
+            self.username,
+            pkey=self.keypair['private_key'])
+        self._check_cmd_installed_on_server(ssh_client, server['id'],
+                                            'tcpdump')
+        server['ssh_client'].execute_script(
+            'echo "%s" > ~/unregistered_traffic_receiver.sh' % check_script)
 
     @test.unstable_test("bug 1850288")
     @decorators.idempotent_id('113486fc-24c9-4be4-8361-03b1c9892867')
@@ -241,9 +263,26 @@ class BaseMulticastTest(object):
         receivers = [self._create_server() for _ in range(1)]
         # Sender can be also receiver of multicast traffic
         receivers.append(sender)
-        self._check_multicast_conectivity(sender=sender, receivers=receivers)
+        unregistered = self._create_server()
+        self._check_multicast_conectivity(sender=sender, receivers=receivers,
+                                          unregistered=unregistered)
 
-    def _check_multicast_conectivity(self, sender, receivers):
+    def _is_multicast_traffic_expected(self, mcast_address):
+        """Checks if multicast traffic is expected to arrive.
+
+        Checks if multicast traffic is expected to arrive to the
+        unregistered VM.
+
+        If IGMP snooping is enabled, multicast traffic should not be
+        flooded unless the destination IP is in the range of 224.0.0.X
+        [0].
+
+        [0] https://tools.ietf.org/html/rfc4541 (See section 2.1.2)
+        """
+        return (mcast_address.startswith('224.0.0') or not
+                CONF.neutron_plugin_options.is_igmp_snooping_enabled)
+
+    def _check_multicast_conectivity(self, sender, receivers, unregistered):
         """Test multi-cast messaging between two servers
 
         [Sender server] -> ... some network topology ... -> [Receiver server]
@@ -256,6 +295,12 @@ class BaseMulticastTest(object):
                 "cat {path} || echo '{path} not exists yet'".format(
                     path=file_path))
             return msg in result
+
+        self._prepare_unregistered(unregistered, mcast_address)
+
+        # Run the unregistered node script
+        unregistered['ssh_client'].execute_script(
+            "bash ~/unregistered_traffic_receiver.sh", become_root=True)
 
         self._prepare_sender(sender, mcast_address)
         receiver_ids = []
@@ -294,6 +339,18 @@ class BaseMulticastTest(object):
                 path=self.sender_output_file))
         for receiver_id in receiver_ids:
             self.assertIn(receiver_id, replies_result)
+
+        # Kill the tcpdump command running on the unregistered node so
+        # tcpdump flushes its output to the output file
+        unregistered['ssh_client'].execute_script(
+            "killall tcpdump && sleep 2", become_root=True)
+
+        unregistered_result = unregistered['ssh_client'].execute_script(
+            "cat {path} || echo '{path} not exists yet'".format(
+                path=self.unregistered_output_file))
+        num_of_pckt = (1 if self._is_multicast_traffic_expected(mcast_address)
+                       else 0)
+        self.assertIn('%d packets captured' % num_of_pckt, unregistered_result)
 
 
 class MulticastTestIPv4(BaseMulticastTest, base.BaseTempestTestCase):

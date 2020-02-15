@@ -46,7 +46,7 @@ def execute(command, ssh_client=None, timeout=None, check=True):
 
     :param timeout: command execution timeout in seconds
 
-    :param check: when False it doesn't raises ShellCommandError when
+    :param check: when False it doesn't raises ShellCommandFailed when
     exit status is not zero. True by default
 
     :returns: STDOUT text when command execution terminates with zero exit
@@ -57,7 +57,7 @@ def execute(command, ssh_client=None, timeout=None, check=True):
     try to read STDOUT and STDERR buffers (not fully implemented) before
     raising the exception.
 
-    :raises ShellCommandError: when command execution terminates with non-zero
+    :raises ShellCommandFailed: when command execution terminates with non-zero
     exit status.
     """
     ssh_client = ssh_client or SSH_PROXY_CLIENT
@@ -110,7 +110,7 @@ def execute_remote_command(command, ssh_client, timeout=None):
 
     except lib_exc.SSHExecCommandFailed as ex:
         # Please note class SSHExecCommandFailed has been re-based on
-        # top of ShellCommandError
+        # top of ShellCommandFailed
         stdout = ex.stdout
         stderr = ex.stderr
         exit_status = ex.exit_status
@@ -174,7 +174,7 @@ class ShellExecuteResult(collections.namedtuple(
                                                  stdout=self.stdout)
 
         elif self.exit_status != 0:
-            raise exceptions.ShellCommandError(command=self.command,
-                                               exit_status=self.exit_status,
-                                               stderr=self.stderr,
-                                               stdout=self.stdout)
+            raise exceptions.ShellCommandFailed(command=self.command,
+                                                exit_status=self.exit_status,
+                                                stderr=self.stderr,
+                                                stdout=self.stdout)

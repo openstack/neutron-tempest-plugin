@@ -96,5 +96,5 @@ exceptions.SSHExecCommandFailed = utils.override_class(
     exceptions.SSHExecCommandFailed, ShellCommandFailed)
 
 # Above code created a new SSHExecCommandFailed class based on top
-# of ShellCommandError
+# of ShellCommandFailed
 assert issubclass(exceptions.SSHExecCommandFailed, ShellCommandFailed)

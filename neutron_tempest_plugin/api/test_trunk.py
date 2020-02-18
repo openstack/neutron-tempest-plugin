@@ -235,7 +235,9 @@ class TrunkTestInheritJSONBase(TrunkTestJSONBase):
                               'segmentation_id': segmentation_id2}]
 
         # Validate that subport got segmentation details from the network
-        self.assertEqual(expected_subports, trunk['sub_ports'])
+        self.assertEqual(
+            sorted(expected_subports, key=lambda subport: subport['port_id']),
+            sorted(trunk['sub_ports'], key=lambda subport: subport['port_id']))
 
 
 class TrunkTestMtusJSONBase(TrunkTestJSONBase):

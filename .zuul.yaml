@@ -1079,6 +1079,8 @@
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 0.3.0
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
       - openstack/tempest
     vars:
       branch_override: stable/queens
@@ -1098,6 +1100,13 @@
       This job run on py2 for stable/rocky gate.
     nodeset: openstack-single-node-xenial
     override-checkout: stable/rocky
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
+      - openstack/tempest
     vars: &designate_scenario_vars_rocky
       branch_override: stable/rocky
       network_api_extensions_common: *api_extensions_rocky
@@ -1113,7 +1122,7 @@
     nodeset: openstack-single-node-xenial
     description: |
       This job run on py3 for other than stable/rocky gate
-      which is nothing but neutron-tempest-pluign master gate.
+      which is nothing but neutron-tempest-plugin master gate.
     override-checkout: stable/rocky
     vars:
       <<: *designate_scenario_vars_rocky
@@ -1125,6 +1134,13 @@
     name: neutron-tempest-plugin-designate-scenario-stein
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/stein
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
+      - openstack/tempest
     vars:
       branch_override: stable/stein
       network_api_extensions_common: *api_extensions_stein
@@ -1375,7 +1391,10 @@
       jobs:
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-sfc-train
-        - neutron-tempest-plugin-bgpvpn-bagpipe
+        - neutron-tempest-plugin-bgpvpn-bagpipe:
+            # TODO(bcafarel): switch back to voting when
+            # https://review.opendev.org/708648 is merged
+            voting: false
         - neutron-tempest-plugin-bgpvpn-bagpipe-train
         - neutron-tempest-plugin-fwaas:
             # TODO(slaweq): switch it to be voting when bug
@@ -1391,7 +1410,9 @@
     gate:
       jobs:
         - neutron-tempest-plugin-sfc
-        - neutron-tempest-plugin-bgpvpn-bagpipe
+        # TODO(bcafarel): bring back to gate queue when
+        # https://review.opendev.org/708648 is merged
+        # - neutron-tempest-plugin-bgpvpn-bagpipe
         # TODO(slaweq): bring it back to gate queue
         # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
         # - neutron-tempest-plugin-fwaas

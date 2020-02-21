@@ -1391,10 +1391,7 @@
       jobs:
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-sfc-train
-        - neutron-tempest-plugin-bgpvpn-bagpipe:
-            # TODO(bcafarel): switch back to voting when
-            # https://review.opendev.org/708648 is merged
-            voting: false
+        - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-bgpvpn-bagpipe-train
         - neutron-tempest-plugin-fwaas:
             # TODO(slaweq): switch it to be voting when bug
@@ -1410,9 +1407,7 @@
     gate:
       jobs:
         - neutron-tempest-plugin-sfc
-        # TODO(bcafarel): bring back to gate queue when
-        # https://review.opendev.org/708648 is merged
-        # - neutron-tempest-plugin-bgpvpn-bagpipe
+        - neutron-tempest-plugin-bgpvpn-bagpipe
         # TODO(slaweq): bring it back to gate queue
         # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
         # - neutron-tempest-plugin-fwaas

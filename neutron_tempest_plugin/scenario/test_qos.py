@@ -20,7 +20,6 @@ from neutron_lib.services.qos import constants as qos_consts
 from oslo_log import log as logging
 from tempest.common import utils as tutils
 from tempest.lib import decorators
-from tempest.lib import exceptions
 
 from neutron_tempest_plugin.api import base as base_api
 from neutron_tempest_plugin.common import ssh
@@ -92,16 +91,8 @@ class QoSTestMixin(object):
             raise sc_exceptions.FileCreationFailedException(
                 file=self.FILE_PATH)
 
-    @staticmethod
-    def _kill_nc_process(ssh_client):
-        cmd = "killall -q nc"
-        try:
-            ssh_client.exec_command(cmd, timeout=5)
-        except exceptions.SSHExecCommandFailed:
-            pass
-
     def _check_bw(self, ssh_client, host, port, expected_bw=LIMIT_BYTES_SEC):
-        self._kill_nc_process(ssh_client)
+        utils.kill_nc_process(ssh_client)
         cmd = ("(nc -ll -p %(port)d < %(file_path)s > /dev/null &)" % {
                 'port': port, 'file_path': self.FILE_PATH})
         ssh_client.exec_command(cmd, timeout=5)
@@ -130,7 +121,7 @@ class QoSTestMixin(object):
         except socket.timeout:
             LOG.warning('Socket timeout while reading the remote file, bytes '
                         'read: %s', total_bytes_read)
-            self._kill_nc_process(ssh_client)
+            utils.kill_nc_process(ssh_client)
             return False
         finally:
             client_socket.close()

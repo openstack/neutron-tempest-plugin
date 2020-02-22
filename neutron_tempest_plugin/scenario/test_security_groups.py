@@ -19,6 +19,7 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.common import ssh
+from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 from neutron_tempest_plugin.scenario import constants as const
@@ -29,6 +30,33 @@ CONF = config.CONF
 class NetworkSecGroupTest(base.BaseTempestTestCase):
     credentials = ['primary', 'admin']
     required_extensions = ['router', 'security-group']
+
+    def _verify_http_connection(self, ssh_client, ssh_server,
+                                test_ip, test_port, should_pass=True):
+        """Verify if HTTP connection works using remote hosts.
+
+        :param ssh.Client ssh_client: The client host active SSH client.
+        :param ssh.Client ssh_server: The HTTP server host active SSH client.
+        :param string test_ip: IP address of HTTP server
+        :param string test_port: Port of HTTP server
+        :param bool should_pass: Wheter test should pass or not.
+
+        :return: if passed or not
+        :rtype: bool
+        """
+        utils.kill_nc_process(ssh_server)
+        url = 'http://%s:%d' % (test_ip, test_port)
+        utils.spawn_http_server(ssh_server, port=test_port, message='foo_ok')
+        try:
+            ret = utils.call_url_remote(ssh_client, url)
+            if should_pass:
+                self.assertIn('foo_ok', ret)
+                return
+            self.assertNotIn('foo_ok', ret)
+        except Exception as e:
+            if not should_pass:
+                return
+            raise e
 
     @classmethod
     def resource_setup(cls):
@@ -293,3 +321,65 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
             self.check_connectivity(fip['floating_ip_address'],
                                     CONF.validation.image_ssh_user,
                                     self.keypair['private_key'])
+
+    @decorators.idempotent_id('f07d0159-8f9e-4faa-87f5-a869ab0ad489')
+    def test_multiple_ports_portrange_remote(self):
+        ssh_clients, fips, servers = self.create_vm_testing_sec_grp(
+            num_servers=3)
+        secgroups = []
+        ports = []
+
+        # Create remote and test security groups
+        for i in range(0, 2):
+            secgroups.append(
+                self.create_security_group(name='secgrp-%d' % i))
+            # configure sec groups to support SSH connectivity
+            self.create_loginable_secgroup_rule(
+                secgroup_id=secgroups[-1]['id'])
+
+        # Configure security groups, first two servers as remotes
+        for i, server in enumerate(servers):
+            port = self.client.list_ports(
+                network_id=self.network['id'], device_id=server['server'][
+                    'id'])['ports'][0]
+            ports.append(port)
+            secgroup = secgroups[0 if i in range(0, 2) else 1]
+            self.client.update_port(port['id'], security_groups=[
+                secgroup['id']])
+
+        # verify SSH functionality
+        for fip in fips:
+            self.check_connectivity(fip['floating_ip_address'],
+                                    CONF.validation.image_ssh_user,
+                                    self.keypair['private_key'])
+
+        test_ip = ports[2]['fixed_ips'][0]['ip_address']
+
+        # verify that conections are not working
+        for port in range(80, 84):
+            self._verify_http_connection(
+                ssh_clients[0],
+                ssh_clients[2],
+                test_ip, port,
+                should_pass=False)
+
+        # add two remote-group rules with port-ranges
+        rule_list = [{'protocol': constants.PROTO_NUM_TCP,
+                      'direction': constants.INGRESS_DIRECTION,
+                      'port_range_min': '80',
+                      'port_range_max': '81',
+                      'remote_group_id': secgroups[0]['id']},
+                     {'protocol': constants.PROTO_NUM_TCP,
+                      'direction': constants.INGRESS_DIRECTION,
+                      'port_range_min': '82',
+                      'port_range_max': '83',
+                      'remote_group_id': secgroups[0]['id']}]
+        self.create_secgroup_rules(
+            rule_list, secgroup_id=secgroups[1]['id'])
+
+        # verify that conections are working
+        for port in range(80, 84):
+            self._verify_http_connection(
+                ssh_clients[0],
+                ssh_clients[2],
+                test_ip, port)

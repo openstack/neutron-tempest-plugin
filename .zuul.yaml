@@ -110,7 +110,7 @@
             QUOTAS:
               quota_router: 100
               quota_floatingip: 500
-              quota_security_group: 100
+              quota_security_group: 150
               quota_security_group_rule: 1000
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
           # devstack-tempest job will be switched to use lib/neutron instead of

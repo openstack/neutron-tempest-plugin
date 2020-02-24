@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import copy
+
 from tempest.common import utils
 from tempest.lib import decorators
 
@@ -203,3 +205,62 @@ class PortsSearchCriteriaTest(base.BaseSearchCriteriaTest):
     @decorators.idempotent_id('74293e59-d794-4a93-be09-38667199ef68')
     def test_list_pagination_page_reverse_with_href_links(self):
         self._test_list_pagination_page_reverse_with_href_links()
+
+
+class PortsTaggingOnCreationTestJSON(base.BaseNetworkTest):
+
+    _tags = [
+        ['tag-1', 'tag-2', 'tag-3'],
+        ['tag-1', 'tag-2'],
+        ['tag-1', 'tag-3'],
+        []
+    ]
+
+    @classmethod
+    def resource_setup(cls):
+        super(PortsTaggingOnCreationTestJSON, cls).resource_setup()
+        cls.network = cls.create_network()
+
+    def _create_ports_in_bulk(self, ports):
+        body = self.client.create_bulk_port(ports)
+        for port in body['ports']:
+            self.ports.append(port)
+        return body
+
+    def _create_ports_list(self):
+        num_ports = len(self._tags)
+        net_id = self.network['id']
+        port = {'port': {'network_id': net_id,
+                         'admin_state_up': True}}
+        return [copy.deepcopy(port) for x in range(num_ports)]
+
+    @decorators.idempotent_id('5cf26014-fdd3-4a6d-b94d-a05f0c55da89')
+    @utils.requires_ext(extension="tag-ports-during-bulk-creation",
+                        service="network")
+    def test_tagging_ports_during_bulk_creation(self):
+        ports = self._create_ports_list()
+        ports_tags_map = {}
+        for port, tags in zip(ports, self._tags):
+            port['port']['tags'] = tags
+            port['port']['name'] = '-'.join(tags)
+            ports_tags_map[port['port']['name']] = tags
+        body = self._create_ports_in_bulk(ports)
+        for port in body['ports']:
+            self.assertEqual(ports_tags_map[port['name']], port['tags'])
+
+    @decorators.idempotent_id('33eda785-a08a-44a0-1bbb-fb50a2f1cd78')
+    @utils.requires_ext(extension="tag-ports-during-bulk-creation",
+                        service="network")
+    def test_tagging_ports_during_bulk_creation_no_tags(self):
+        ports = self._create_ports_list()
+        body = self._create_ports_in_bulk(ports)
+        for port in body['ports']:
+            self.assertFalse(port['tags'])
+
+    @decorators.idempotent_id('6baa43bf-88fb-8bca-6051-97ea1a5e8f4f')
+    @utils.requires_ext(extension="tag-ports-during-bulk-creation",
+                        service="network")
+    def test_tagging_ports_during_creation(self):
+        port = {'name': 'port', 'tags': self._tags[0]}
+        body = self.create_port(self.network, **port)
+        self.assertEqual(self._tags[0], body['tags'])

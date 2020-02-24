@@ -80,6 +80,7 @@
         - subnet_allocation
         - subnet-dns-publish-fixed-ip
         - subnetpool-prefix-ops
+        - tag-ports-during-bulk-creation
         - trunk
         - trunk-details
         - uplink-status-propagation
@@ -104,6 +105,7 @@
         neutron-network-segment-range: true
         neutron-port-forwarding: true
         neutron-conntrack-helper: true
+        neutron-tag-ports-during-bulk-creation: true
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:

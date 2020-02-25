@@ -12,6 +12,8 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import distutils
+import re
 import subprocess
 
 from debtcollector import removals
@@ -30,11 +32,51 @@ from neutron_tempest_plugin.common import ip as ip_utils
 from neutron_tempest_plugin.common import shell
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
+from neutron_tempest_plugin import exceptions
 from neutron_tempest_plugin.scenario import constants
 
 CONF = config.CONF
 
 LOG = log.getLogger(__name__)
+
+
+def get_ncat_version(ssh_client=None):
+    cmd = "ncat --version 2>&1"
+    try:
+        version_result = shell.execute(cmd, ssh_client=ssh_client).stdout
+    except exceptions.ShellCommandFailed:
+        m = None
+    else:
+        m = re.match(r"Ncat: Version ([\d.]+) *.", version_result)
+    # NOTE(slaweq): by default lets assume we have ncat 7.60 which is in Ubuntu
+    # 18.04 which is used on u/s gates
+    return distutils.version.StrictVersion(m.group(1) if m else '7.60')
+
+
+def get_ncat_server_cmd(port, protocol, msg):
+    udp = ''
+    if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
+        udp = '-u'
+    cmd = "nc %(udp)s -p %(port)s -lk " % {
+        'udp': udp, 'port': port}
+    if CONF.neutron_plugin_options.default_image_is_advanced:
+        cmd += "-c 'echo %s' &" % msg
+    else:
+        cmd += "-e echo %s &" % msg
+    return cmd
+
+
+def get_ncat_client_cmd(ip_address, port, protocol):
+    udp = ''
+    if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
+        udp = '-u'
+    cmd = 'echo "knock knock" | nc '
+    ncat_version = get_ncat_version()
+    if ncat_version > distutils.version.StrictVersion('7.60'):
+        cmd += '-z '
+    cmd += '-w 1 %(udp)s %(host)s %(port)s' % {
+        'udp': udp, 'host': ip_address, 'port': port}
+    return cmd
 
 
 class BaseTempestTestCase(base_api.BaseNetworkTest):
@@ -426,13 +468,10 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
 
         Listener is created always on remote host.
         """
-        udp = ''
-        if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
-            udp = '-u'
-        cmd = "sudo nc %(udp)s -p %(port)s -lk -c echo %(msg)s &" % {
-            'udp': udp, 'port': port, 'msg': echo_msg}
         try:
-            return ssh_client.exec_command(cmd)
+            return ssh_client.execute_script(
+                get_ncat_server_cmd(port, protocol, echo_msg),
+                become_root=True)
         except lib_exc.SSHTimeout as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output([server])
@@ -443,11 +482,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
 
         Client is always executed locally on host where tests are executed.
         """
-        udp = ''
-        if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
-            udp = '-u'
-        cmd = 'echo "knock knock" | nc -w 1 %(udp)s %(host)s %(port)s' % {
-            'udp': udp, 'host': ip_address, 'port': port}
+        cmd = get_ncat_client_cmd(ip_address, port, protocol)
         result = shell.execute_local_command(cmd)
         self.assertEqual(0, result.exit_status)
         return result.stdout

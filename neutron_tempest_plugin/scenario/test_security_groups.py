@@ -16,6 +16,7 @@ from neutron_lib import constants
 
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
+from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.common import ssh
@@ -59,6 +60,12 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
             raise e
 
     @classmethod
+    def setup_credentials(cls):
+        super(NetworkSecGroupTest, cls).setup_credentials()
+        cls.project_id = cls.os_primary.credentials.tenant_id
+        cls.network_client = cls.os_admin.network_client
+
+    @classmethod
     def resource_setup(cls):
         super(NetworkSecGroupTest, cls).resource_setup()
         # setup basic topology for servers we can log into it
@@ -67,6 +74,12 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
         router = cls.create_router_by_client()
         cls.create_router_interface(router['id'], cls.subnet['id'])
         cls.keypair = cls.create_keypair()
+
+    def setUp(self):
+        super(NetworkSecGroupTest, self).setUp()
+        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
+                        self.network_client.reset_quotas, self.project_id)
+        self.network_client.update_quotas(self.project_id, security_group=-1)
 
     def create_vm_testing_sec_grp(self, num_servers=2, security_groups=None,
                                   ports=None):

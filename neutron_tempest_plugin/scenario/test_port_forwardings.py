@@ -14,12 +14,12 @@
 #    under the License.
 
 from neutron_lib import constants
-from neutron_lib.utils import test
 from oslo_log import log
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.common import ssh
+from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 
@@ -81,27 +81,32 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
         return servers
 
     def _test_udp_port_forwarding(self, servers):
+
+        def _message_received(server, ssh_client, expected_msg):
+            self.nc_listen(server,
+                           ssh_client,
+                           server['port_forwarding_udp']['internal_port'],
+                           constants.PROTO_NAME_UDP,
+                           expected_msg)
+            received_msg = self.nc_client(
+                self.fip['floating_ip_address'],
+                server['port_forwarding_udp']['external_port'],
+                constants.PROTO_NAME_UDP)
+            return expected_msg in received_msg
+
         for server in servers:
-            msg = "%s-UDP-test" % server['name']
+            expected_msg = "%s-UDP-test" % server['name']
             ssh_client = ssh.Client(
                 self.fip['floating_ip_address'],
                 CONF.validation.image_ssh_user,
                 pkey=self.keypair['private_key'],
                 port=server['port_forwarding_tcp']['external_port'])
-            self.nc_listen(server,
-                           ssh_client,
-                           server['port_forwarding_udp']['internal_port'],
-                           constants.PROTO_NAME_UDP,
-                           msg)
-        for server in servers:
-            expected_msg = "%s-UDP-test" % server['name']
-            self.assertIn(
-                expected_msg, self.nc_client(
-                    self.fip['floating_ip_address'],
-                    server['port_forwarding_udp']['external_port'],
-                    constants.PROTO_NAME_UDP))
+            utils.wait_until_true(
+                lambda: _message_received(server, ssh_client, expected_msg),
+                exception=RuntimeError(
+                    "Timed out waiting for message from server {!r} ".format(
+                        server['id'])))
 
-    @test.unstable_test("bug 1850800")
     @decorators.idempotent_id('ab40fc48-ca8d-41a0-b2a3-f6679c847bfe')
     def test_port_forwarding_to_2_servers(self):
         udp_sg_rule = {'protocol': constants.PROTO_NAME_UDP,

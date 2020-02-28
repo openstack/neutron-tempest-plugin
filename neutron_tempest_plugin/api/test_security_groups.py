@@ -76,6 +76,39 @@ class SecGroupTest(base.BaseAdminNetworkTest):
         self.assertIn(
             security_group_rule['id'], observerd_security_group_rules_ids)
 
+    @decorators.idempotent_id('b5923b1a-4d33-44e1-af25-088dcb55b02b')
+    def test_list_security_group_rules_contains_all_rules(self):
+        """Test list security group rules.
+
+        This test checks if all SG rules which belongs to the tenant OR
+        which belongs to the tenant's security group are listed.
+        """
+        security_group = self.create_security_group()
+        protocol = random.choice(list(base_security_groups.V4_PROTOCOL_NAMES))
+        security_group_rule = self.create_security_group_rule(
+            security_group=security_group,
+            project={'id': self.admin_client.tenant_id},
+            client=self.admin_client,
+            protocol=protocol,
+            direction=constants.INGRESS_DIRECTION)
+
+        # Create also other SG with some custom rule to check that regular user
+        # can't see this rule
+        admin_security_group = self.create_security_group(
+            project={'id': self.admin_client.tenant_id},
+            client=self.admin_client)
+        admin_security_group_rule = self.create_security_group_rule(
+            security_group=admin_security_group,
+            project={'id': self.admin_client.tenant_id},
+            client=self.admin_client,
+            protocol=protocol,
+            direction=constants.INGRESS_DIRECTION)
+
+        rules = self.client.list_security_group_rules()['security_group_rules']
+        rules_ids = [rule['id'] for rule in rules]
+        self.assertIn(security_group_rule['id'], rules_ids)
+        self.assertNotIn(admin_security_group_rule['id'], rules_ids)
+
     @decorators.idempotent_id('7c0ecb10-b2db-11e6-9b14-000c29248b0d')
     def test_create_bulk_sec_groups(self):
         # Creates 2 sec-groups in one request

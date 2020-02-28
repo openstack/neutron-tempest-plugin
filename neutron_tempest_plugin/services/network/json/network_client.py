@@ -893,6 +893,15 @@ class NetworkClientJSON(service_client.RestClient):
         self.expected_success(204, resp.status)
         return service_client.ResponseBody(resp, body)
 
+    def list_security_group_rules(self, **kwargs):
+        uri = '%s/security-group-rules' % self.uri_prefix
+        if kwargs:
+            uri += '?' + urlparse.urlencode(kwargs, doseq=1)
+        resp, body = self.get(uri)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
     def create_security_group_rule(self, direction, security_group_id,
                                    **kwargs):
         post_body = {'security_group_rule': kwargs}

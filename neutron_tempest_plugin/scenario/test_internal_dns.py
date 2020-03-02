@@ -69,11 +69,14 @@ class InternalDNSTest(base.BaseTempestTestCase):
         # in very long boot times.
         self.check_remote_connectivity(
             ssh_client, leia_port['fixed_ips'][0]['ip_address'],
-            timeout=CONF.validation.ping_timeout * 10)
+            timeout=CONF.validation.ping_timeout * 10,
+            servers=[self.server, leia])
 
         resolv_conf = ssh_client.exec_command('cat /etc/resolv.conf')
         self.assertIn('openstackgate.local', resolv_conf)
         self.assertNotIn('starwars', resolv_conf)
 
-        self.check_remote_connectivity(ssh_client, 'leia')
-        self.check_remote_connectivity(ssh_client, 'leia.openstackgate.local')
+        self.check_remote_connectivity(ssh_client, 'leia',
+                                       servers=[self.server, leia])
+        self.check_remote_connectivity(ssh_client, 'leia.openstackgate.local',
+                                       servers=[self.server, leia])

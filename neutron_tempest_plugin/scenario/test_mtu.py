@@ -129,7 +129,8 @@ class NetworkMtuTest(NetworkMtuBaseTest):
         for fip in (fip1, fip2):
             self.check_connectivity(
                 fip['floating_ip_address'],
-                self.username, self.keypair['private_key'])
+                self.username, self.keypair['private_key'],
+                servers=[server1, server2])
         return server_ssh_client1, fip1, server_ssh_client2, fip2
 
     @testtools.skipUnless(

@@ -378,7 +378,6 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
             self.fip['id'])['floatingip']
         self.assertEqual(policy_id, fip['qos_policy_id'])
 
-        self._create_file_for_bw_tests(ssh_client)
         common_utils.wait_until_true(lambda: self._check_bw(
             ssh_client,
             self.fip['floating_ip_address'],

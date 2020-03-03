@@ -251,6 +251,12 @@
     description: |
       This job run on py2 for stable/rocky gate.
     override-checkout: stable/rocky
+    required-projects: &required-projects-rocky
+      - openstack/devstack-gate
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 0.9.0
+      - openstack/tempest
     vars: &api_vars_rocky
       branch_override: stable/rocky
       # TODO(slaweq): find a way to put this list of extensions in
@@ -331,6 +337,7 @@
       This job run on py3 for other than stable/rocky gate
       which is nothing but neutron-tempest-pluign master gate.
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars:
       <<: *api_vars_rocky
       devstack_localrc:
@@ -575,6 +582,7 @@
       This job run on py2 for stable/rocky gate.
     nodeset: openstack-single-node-xenial
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars: &scenario_vars_rocky
       branch_override: stable/rocky
       network_api_extensions: *api_extensions_rocky
@@ -582,6 +590,10 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+      # NOTE(bcafarel): newer tests, unstable on rocky branch
+      tempest_black_regex: "\
+          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
     branches:
       - stable/rocky
 
@@ -593,6 +605,7 @@
       This job run on py3 for other than stable/rocky gate
       which is nothing but neutron-tempest-pluign master gate.
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars:
       <<: *scenario_vars_rocky
       devstack_localrc:
@@ -659,6 +672,7 @@
     description: |
       This job run on py2 for stable/rocky gate.
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars: &openvswitch_vars_rocky
       branch_override: stable/rocky
       network_api_extensions: *api_extensions_rocky
@@ -666,6 +680,10 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+      # NOTE(bcafarel): newer tests, unstable on rocky branch
+      tempest_black_regex: "\
+          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
     branches:
       - stable/rocky
 
@@ -677,6 +695,7 @@
       This job run on py3 for other than stable/rocky gate
       which is nothing but neutron-tempest-pluign master gate.
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars:
       <<: *openvswitch_vars_rocky
       devstack_localrc:
@@ -769,6 +788,7 @@
       This job run on py2 for stable/rocky gate.
     nodeset: openstack-single-node-xenial
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars: &linuxbridge_vars_rocky
       branch_override: stable/rocky
       network_api_extensions: *api_extensions_rocky
@@ -784,6 +804,10 @@
           $TEMPEST_CONFIG:
             neutron_plugin_options:
               q_agent: None
+      # NOTE(bcafarel): newer tests, unstable on rocky branch
+      tempest_black_regex: "\
+          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
     branches:
       - stable/rocky
 
@@ -795,6 +819,7 @@
       This job run on py3 for other than stable/rocky gate
       which is nothing but neutron-tempest-pluign master gate.
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars:
       <<: *linuxbridge_vars_rocky
       devstack_localrc:
@@ -985,12 +1010,17 @@
       This job run on py2 for stable/rocky gate.
     nodeset: openstack-two-node-xenial
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars: &multinode_scenario_vars_rocky
       branch_override: stable/rocky
       network_api_extensions_common: *api_extensions_rocky
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+      # NOTE(bcafarel): newer tests, unstable on rocky branch
+      tempest_black_regex: "\
+          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
     branches:
       - stable/rocky
 
@@ -1006,6 +1036,7 @@
       <<: *multinode_scenario_vars_rocky
       devstack_localrc:
         USE_PYTHON3: True
+    required-projects: *required-projects-rocky
     group-vars:
       subnode:
         devstack_localrc:
@@ -1103,7 +1134,8 @@
     required-projects:
       - openstack/devstack-gate
       - openstack/neutron
-      - openstack/neutron-tempest-plugin
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 0.9.0
       - name: openstack/designate-tempest-plugin
         override-checkout: 0.7.0
       - openstack/tempest
@@ -1124,6 +1156,7 @@
       This job run on py3 for other than stable/rocky gate
       which is nothing but neutron-tempest-plugin master gate.
     override-checkout: stable/rocky
+    required-projects: *required-projects-rocky
     vars:
       <<: *designate_scenario_vars_rocky
       devstack_localrc:
@@ -1379,9 +1412,6 @@
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
-      # TODO(slaweq): bring rocky jobs back when dropping py27
-      # drama will be finally over
-      # - neutron-tempest-plugin-jobs-rocky
       - neutron-tempest-plugin-jobs-stein
       - neutron-tempest-plugin-jobs-train
       - check-requirements

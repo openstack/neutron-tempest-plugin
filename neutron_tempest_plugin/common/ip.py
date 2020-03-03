@@ -117,6 +117,12 @@ class IPCommand(object):
         output = self.execute('route', 'show', *args)
         return list(parse_routes(output))
 
+    def get_nic_name_by_mac(self, mac_address):
+        nics = self.execute("-o", "link")
+        for nic_line in nics.split("\n"):
+            if mac_address in nic_line:
+                return nic_line.split(":")[1].strip()
+
 
 def parse_addresses(command_output):
     address = device = None

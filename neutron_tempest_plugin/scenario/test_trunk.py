@@ -39,7 +39,7 @@ ServerWithTrunkPort = collections.namedtuple(
 
 
 class TrunkTest(base.BaseTempestTestCase):
-    credentials = ['primary']
+    credentials = ['primary', 'admin']
     force_tenant_isolation = False
 
     @classmethod
@@ -279,11 +279,72 @@ class TrunkTest(base.BaseTempestTestCase):
             should_succeed=False)
 
         # allow intra-security-group traffic
-        self.create_pingable_secgroup_rule(self.security_group['id'])
+        sg_rule = self.create_pingable_secgroup_rule(self.security_group['id'])
+        self.addCleanup(
+                self.os_primary.network_client.delete_security_group_rule,
+                sg_rule['id'])
         self.check_remote_connectivity(
             vm1.ssh_client,
             vm2.subport['fixed_ips'][0]['ip_address'],
             servers=[vm1, vm2])
+
+    @testtools.skipUnless(CONF.compute_feature_enabled.cold_migration,
+                          'Cold migration is not available.')
+    @testtools.skipUnless(CONF.compute.min_compute_nodes > 1,
+                          'Less than 2 compute nodes, skipping multinode '
+                          'tests.')
+    @testtools.skipUnless(
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
+    @decorators.attr(type='slow')
+    @decorators.idempotent_id('ecd7de30-1c90-4280-b97c-1bed776d5d07')
+    def test_trunk_vm_migration(self):
+        '''Test connectivity after migration of the server with trunk
+
+        A successfully migrated server shows a VERIFY_RESIZE status that
+        requires confirmation. Need to reconfigure VLAN interface on server
+        side after migration is finished as the configuration doesn't survive
+        the reboot.
+        '''
+        vlan_tag = 10
+        vlan_network = self.create_network()
+        vlan_subnet = self.create_subnet(vlan_network)
+        sg_rule = self.create_pingable_secgroup_rule(self.security_group['id'])
+        self.addCleanup(
+                self.os_primary.network_client.delete_security_group_rule,
+                sg_rule['id'])
+
+        use_advanced_image = (
+            not CONF.neutron_plugin_options.default_image_is_advanced)
+        servers = {}
+        for role in ['migrate', 'connection_test']:
+            servers[role] = self._create_server_with_trunk_port(
+                                subport_network=vlan_network,
+                                segmentation_id=vlan_tag,
+                                use_advanced_image=use_advanced_image)
+        for role in ['migrate', 'connection_test']:
+            self.wait_for_server_active(servers[role].server)
+            self._configure_vlan_subport(vm=servers[role],
+                                         vlan_tag=vlan_tag,
+                                         vlan_subnet=vlan_subnet)
+
+        self.check_remote_connectivity(
+                servers['connection_test'].ssh_client,
+                servers['migrate'].subport['fixed_ips'][0]['ip_address'])
+
+        client = self.os_admin.compute.ServersClient()
+        client.migrate_server(servers['migrate'].server['id'])
+        self.wait_for_server_status(servers['migrate'].server,
+                                    'VERIFY_RESIZE')
+        client.confirm_resize_server(servers['migrate'].server['id'])
+        self._configure_vlan_subport(vm=servers['migrate'],
+                                     vlan_tag=vlan_tag,
+                                     vlan_subnet=vlan_subnet)
+
+        self.check_remote_connectivity(
+                servers['connection_test'].ssh_client,
+                servers['migrate'].subport['fixed_ips'][0]['ip_address'])
 
     @testtools.skipUnless(
         (CONF.neutron_plugin_options.advanced_image_ref or
@@ -318,7 +379,10 @@ class TrunkTest(base.BaseTempestTestCase):
             self.wait_for_server_active(vm.server)
 
         # allow ICMP traffic
-        self.create_pingable_secgroup_rule(self.security_group['id'])
+        sg_rule = self.create_pingable_secgroup_rule(self.security_group['id'])
+        self.addCleanup(
+                self.os_primary.network_client.delete_security_group_rule,
+                sg_rule['id'])
 
         # Ping from trunk_network_server to normal_network_server
         # via parent port

@@ -23,6 +23,9 @@ import testtools
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin.api import base_security_groups
+from oslo_log import log
+
+LOG = log.getLogger(__name__)
 
 
 class SecGroupTest(base.BaseAdminNetworkTest):
@@ -154,8 +157,7 @@ class BaseSecGroupQuota(base.BaseAdminNetworkTest):
         project_id = self.client.tenant_id
         self.admin_client.update_quotas(project_id, **{'security_group': val})
         self.addCleanup(self.admin_client.update_quotas,
-                project_id,
-                **{'security_group': sg_quota})
+                        project_id, **{'security_group': sg_quota})
 
     def _get_sg_quota(self):
         project_id = self.client.tenant_id
@@ -193,9 +195,9 @@ class SecGroupQuotaTest(BaseSecGroupQuota):
         self._create_max_allowed_sg_amount()
         quota_set = self._get_sg_quota()
         self.assertEqual(quota_set, new_quota,
-                "Security group quota was not changed correctly")
+                         "Security group quota was not changed correctly")
         self.assertEqual(quota_set, self._get_sg_amount(),
-                "Amount of security groups doesn't match quota")
+                         "Amount of security groups doesn't match quota")
 
     @decorators.idempotent_id('ba95676c-8d9a-4482-b4ec-74d51a4602a6')
     def test_sg_quota_decrease_less_than_created(self):
@@ -210,6 +212,56 @@ class SecGroupQuotaTest(BaseSecGroupQuota):
         self._create_security_groups(10)
         new_sg_amount = self._get_sg_amount()
         self.assertGreater(new_sg_amount, sg_amount)
+
+
+class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
+
+    def _create_max_allowed_sg_rules_amount(self, port_index=1):
+        sg_rules_amount = self._get_sg_rules_amount()
+        sg_rules_quota = self._get_sg_rules_quota()
+        sg_rules_to_create = sg_rules_quota - sg_rules_amount
+        port_index += sg_rules_to_create
+        self._create_security_group_rules(sg_rules_to_create,
+                                         port_index=port_index)
+
+    def _create_security_group_rules(self, amount, port_index=1):
+        for i in range(amount):
+            self.create_security_group_rules(**{
+                'project_id': self.client.tenant_id,
+                'direction': 'ingress',
+                'port_range_max': port_index + i,
+                'port_range_min': port_index + i,
+                'protocol': 'tcp'})
+
+    def _increase_sg_rules_quota(self):
+        sg_rules_quota = self._get_sg_rules_quota()
+        new_sg_rules_quota = 2 * sg_rules_quota
+        self._set_sg_rules_quota(new_sg_rules_quota)
+        return new_sg_rules_quota
+
+    def _decrease_sg_rules_quota(self):
+        sg_rules_quota = self._get_sg_rules_quota()
+        new_sg_rules_quota = sg_rules_quota // 2
+        self._set_sg_rules_quota(new_sg_rules_quota)
+        return new_sg_rules_quota
+
+    def _set_sg_rules_quota(self, val):
+        project_id = self.client.tenant_id
+        self.admin_client.update_quotas(project_id,
+                                        **{'security_group_rule': val})
+        LOG.info('Trying to update security group rule quota {} '.format(val))
+
+    def _get_sg_rules_quota(self):
+        project_id = self.client.tenant_id
+        quotas = self.admin_client.show_quotas(project_id)
+        return quotas['quota']['security_group_rule']
+
+    def _get_sg_rules_amount(self):
+        project_id = self.client.tenant_id
+        filter_query = {'project_id': project_id}
+        security_group_rules = self.client.list_security_group_rules(
+                **filter_query)
+        return len(security_group_rules['security_group_rules'])
 
 
 class SecGroupProtocolTest(base.BaseNetworkTest):
@@ -365,7 +417,7 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
         # ensure that 'client2' can't see the rbac-policy sharing the
         # sg to it because the rbac-policy belongs to 'client'
         self.assertNotIn(rbac_policy['id'], [p['id'] for p in
-                          self.client2.list_rbac_policies()['rbac_policies']])
+                         self.client2.list_rbac_policies()['rbac_policies']])
 
     @decorators.idempotent_id('2a9fd480-2a35-11e9-9cb6-acde48001122')
     def test_filter_fields(self):

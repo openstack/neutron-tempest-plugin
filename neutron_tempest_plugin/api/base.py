@@ -789,12 +789,15 @@ class BaseNetworkTest(test.BaseTestCase):
         return body['address_scope']
 
     @classmethod
-    def create_subnetpool(cls, name, is_admin=False, **kwargs):
+    def create_subnetpool(cls, name, is_admin=False, client=None, **kwargs):
+        if client is None:
+            client = cls.admin_client if is_admin else cls.client
+
         if is_admin:
-            body = cls.admin_client.create_subnetpool(name, **kwargs)
+            body = client.create_subnetpool(name, **kwargs)
             cls.admin_subnetpools.append(body['subnetpool'])
         else:
-            body = cls.client.create_subnetpool(name, **kwargs)
+            body = client.create_subnetpool(name, **kwargs)
             cls.subnetpools.append(body['subnetpool'])
         return body['subnetpool']
 

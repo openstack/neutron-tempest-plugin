@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import testtools
 
 import netaddr
 from oslo_utils import uuidutils
@@ -171,14 +172,12 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('3396ec6c-cb80-4ebe-b897-84e904580bdf')
+    @testtools.skipIf(
+        utils.is_extension_enabled('rbac-address-scope', 'network'),
+        reason="Test is outdated starting from Ussuri release."
+    )
     @utils.requires_ext(extension='address-scope', service='network')
     def test_tenant_create_subnetpool_associate_shared_address_scope(self):
-        # TODO(imalinovskiy): This test is temporary disabled
-        # to be able to test & merge
-        # https://review.opendev.org/709122/ and will be enabled again in
-        # https://review.opendev.org/711610/
-        self.skipTest("Temporary disabled")
-
         address_scope = self.create_address_scope(
             name=data_utils.rand_name('smoke-address-scope'), is_admin=True,
             shared=True, ip_version=4)

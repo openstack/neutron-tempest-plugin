@@ -63,6 +63,7 @@
         - qos-fip
         - quotas
         - quota_details
+        - rbac-address-scope
         - rbac-policies
         - rbac-security-groups
         - router

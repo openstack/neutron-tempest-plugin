@@ -17,6 +17,7 @@ import random
 
 from neutron_lib import constants
 from tempest.lib.common.utils import data_utils
+from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions
 import testtools
@@ -226,7 +227,7 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
 
     def _create_security_group_rules(self, amount, port_index=1):
         for i in range(amount):
-            self.create_security_group_rules(**{
+            self.create_security_group_rule(**{
                 'project_id': self.client.tenant_id,
                 'direction': 'ingress',
                 'port_range_max': port_index + i,
@@ -237,6 +238,8 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
         sg_rules_quota = self._get_sg_rules_quota()
         new_sg_rules_quota = 2 * sg_rules_quota
         self._set_sg_rules_quota(new_sg_rules_quota)
+        self.assertGreater(self._get_sg_rules_quota(), sg_rules_quota,
+                         "Security group rules quota wasn't changed correctly")
         return new_sg_rules_quota
 
     def _decrease_sg_rules_quota(self):
@@ -262,6 +265,28 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
         security_group_rules = self.client.list_security_group_rules(
                 **filter_query)
         return len(security_group_rules['security_group_rules'])
+
+
+class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
+
+    credentials = ['primary', 'admin']
+    required_extensions = ['security-group', 'quotas']
+
+    def setUp(self):
+        super(SecGroupRulesQuotaTest, self).setUp()
+        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
+                        self.admin_client.reset_quotas, self.client.tenant_id)
+        self._set_sg_rules_quota(10)
+
+    @decorators.idempotent_id('77ec038c-5638-11ea-8e2d-0242ac130003')
+    def test_sg_rules_quota_increased(self):
+        self._create_max_allowed_sg_rules_amount()
+        new_quota = self._increase_sg_rules_quota()
+        port_index = new_quota
+        self._create_max_allowed_sg_rules_amount(port_index)
+        quota_set = self._get_sg_rules_quota()
+        self.assertEqual(quota_set, self._get_sg_rules_amount(),
+                         "Amount of security groups rules doesn't match quota")
 
 
 class SecGroupProtocolTest(base.BaseNetworkTest):

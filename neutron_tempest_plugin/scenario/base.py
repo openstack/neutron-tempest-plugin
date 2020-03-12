@@ -273,6 +273,11 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             servers = self.os_primary.servers_client.list_servers()
             servers = servers['servers']
         for server in servers:
+            # NOTE(slaweq): sometimes servers are passed in dictionary with
+            # "server" key as first level key and in other cases it may be that
+            # it is just the "inner" dict without "server" key. Lets try to
+            # handle both cases
+            server = server.get("server") or server
             try:
                 console_output = (
                     self.os_primary.servers_client.get_console_output(

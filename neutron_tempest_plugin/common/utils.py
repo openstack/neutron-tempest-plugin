@@ -117,6 +117,14 @@ def kill_nc_process(ssh_client):
         pass
 
 
+def process_is_running(ssh_client, process_name):
+    try:
+        ssh_client.exec_command("pidof %s" % process_name)
+        return True
+    except exceptions.SSHExecCommandFailed:
+        return False
+
+
 def spawn_http_server(ssh_client, port, message):
     cmd = ("(echo -e 'HTTP/1.1 200 OK\r\n'; echo '%(msg)s') "
            "| sudo nc -lp %(port)d &" % {'msg': message, 'port': port})

@@ -83,11 +83,11 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
     def _test_udp_port_forwarding(self, servers):
 
         def _message_received(server, ssh_client, expected_msg):
-            self.nc_listen(server,
-                           ssh_client,
+            self.nc_listen(ssh_client,
                            server['port_forwarding_udp']['internal_port'],
                            constants.PROTO_NAME_UDP,
-                           expected_msg)
+                           expected_msg,
+                           [server])
             received_msg = self.nc_client(
                 self.fip['floating_ip_address'],
                 server['port_forwarding_udp']['external_port'],

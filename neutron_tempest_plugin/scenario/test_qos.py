@@ -81,8 +81,7 @@ class QoSTestMixin(object):
 
     def _check_bw(self, ssh_client, host, port, expected_bw=LIMIT_BYTES_SEC):
         utils.kill_nc_process(ssh_client)
-        cmd = ("(nc -ll -p %d < /dev/zero > /dev/null &)" % port)
-        ssh_client.exec_command(cmd, timeout=5)
+        self.ensure_nc_listen(ssh_client, port, "tcp")
 
         # Open TCP socket to remote VM and download big file
         start_time = time.time()

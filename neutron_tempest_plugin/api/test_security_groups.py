@@ -280,6 +280,11 @@ class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
 
     @decorators.idempotent_id('77ec038c-5638-11ea-8e2d-0242ac130003')
     def test_sg_rules_quota_increased(self):
+        """Test security group rules quota increased.
+
+        This test checks if it is possible to increase the SG rules Quota
+        value and creates security group rules according to new quota value.
+        """
         self._create_max_allowed_sg_rules_amount()
         new_quota = self._increase_sg_rules_quota()
         port_index = new_quota

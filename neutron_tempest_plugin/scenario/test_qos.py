@@ -70,41 +70,27 @@ class QoSTestMixin(object):
     credentials = ['primary', 'admin']
     force_tenant_isolation = False
 
-    FILE_SIZE = 1024 * 1024
     TOLERANCE_FACTOR = 1.5
     BUFFER_SIZE = 512
-    COUNT = FILE_SIZE / BUFFER_SIZE
     LIMIT_BYTES_SEC = (constants.LIMIT_KILO_BITS_PER_SECOND * 1024 *
                        TOLERANCE_FACTOR / 8.0)
-    FILE_PATH = "/tmp/img"
-
     NC_PORT = 1234
-    FILE_DOWNLOAD_TIMEOUT = 120
-
-    def _create_file_for_bw_tests(self, ssh_client):
-        cmd = ("(dd if=/dev/zero bs=%(bs)d count=%(count)d of=%(file_path)s) "
-               % {'bs': self.BUFFER_SIZE, 'count': self.COUNT,
-               'file_path': self.FILE_PATH})
-        ssh_client.exec_command(cmd, timeout=5)
-        cmd = "stat -c %%s %s" % self.FILE_PATH
-        filesize = ssh_client.exec_command(cmd, timeout=5)
-        if int(filesize.strip()) != self.FILE_SIZE:
-            raise sc_exceptions.FileCreationFailedException(
-                file=self.FILE_PATH)
+    DOWNLOAD_DURATION = 5
+    # NOTE(mjozefcz): This makes around 10 retries.
+    CHECK_TIMEOUT = DOWNLOAD_DURATION * 10
 
     def _check_bw(self, ssh_client, host, port, expected_bw=LIMIT_BYTES_SEC):
         utils.kill_nc_process(ssh_client)
-        cmd = ("(nc -ll -p %(port)d < %(file_path)s > /dev/null &)" % {
-                'port': port, 'file_path': self.FILE_PATH})
+        cmd = ("(nc -ll -p %d < /dev/zero > /dev/null &)" % port)
         ssh_client.exec_command(cmd, timeout=5)
 
         # Open TCP socket to remote VM and download big file
         start_time = time.time()
-        socket_timeout = self.FILE_SIZE * self.TOLERANCE_FACTOR / expected_bw
-        client_socket = _connect_socket(host, port, socket_timeout)
+        client_socket = _connect_socket(
+            host, port, constants.SOCKET_CONNECT_TIMEOUT)
         total_bytes_read = 0
         try:
-            while total_bytes_read < self.FILE_SIZE:
+            while time.time() - start_time < self.DOWNLOAD_DURATION:
                 data = client_socket.recv(self.BUFFER_SIZE)
                 total_bytes_read += len(data)
 
@@ -114,10 +100,12 @@ class QoSTestMixin(object):
 
             LOG.debug("time_elapsed = %(time_elapsed).16f, "
                       "total_bytes_read = %(total_bytes_read)d, "
-                      "bytes_per_second = %(bytes_per_second)d",
+                      "bytes_per_second = %(bytes_per_second)d, "
+                      "expected_bw = %(expected_bw)d.",
                       {'time_elapsed': time_elapsed,
                        'total_bytes_read': total_bytes_read,
-                       'bytes_per_second': bytes_per_second})
+                       'bytes_per_second': bytes_per_second,
+                       'expected_bw': expected_bw})
             return bytes_per_second <= expected_bw
         except socket.timeout:
             LOG.warning('Socket timeout while reading the remote file, bytes '
@@ -249,16 +237,13 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
         self.os_admin.network_client.update_network(
             self.network['id'], qos_policy_id=bw_limit_policy_id)
 
-        # Create file on VM
-        self._create_file_for_bw_tests(ssh_client)
-
         # Basic test, Check that actual BW while downloading file
         # is as expected (Original BW)
         utils.wait_until_true(lambda: self._check_bw(
             ssh_client,
             self.fip['floating_ip_address'],
             port=self.NC_PORT),
-            timeout=self.FILE_DOWNLOAD_TIMEOUT,
+            timeout=self.CHECK_TIMEOUT,
             sleep=1)
 
         # As admin user update QoS rule
@@ -275,7 +260,7 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             self.fip['floating_ip_address'],
             port=self.NC_PORT,
             expected_bw=QoSTest.LIMIT_BYTES_SEC * 2),
-            timeout=self.FILE_DOWNLOAD_TIMEOUT,
+            timeout=self.CHECK_TIMEOUT,
             sleep=1)
 
         # Create a new QoS policy
@@ -298,7 +283,7 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             ssh_client,
             self.fip['floating_ip_address'],
             port=self.NC_PORT),
-            timeout=self.FILE_DOWNLOAD_TIMEOUT,
+            timeout=self.CHECK_TIMEOUT,
             sleep=1)
 
         # As admin user update QoS rule
@@ -313,8 +298,9 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
         utils.wait_until_true(lambda: self._check_bw(
             ssh_client,
             self.fip['floating_ip_address'],
-            port=self.NC_PORT, expected_bw=QoSTest.LIMIT_BYTES_SEC * 3),
-            timeout=self.FILE_DOWNLOAD_TIMEOUT,
+            port=self.NC_PORT,
+            expected_bw=QoSTest.LIMIT_BYTES_SEC * 3),
+            timeout=self.CHECK_TIMEOUT,
             sleep=1)
 
     @decorators.idempotent_id('66e5673e-0522-11ea-8d71-362b9e155667')

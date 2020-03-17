@@ -357,3 +357,39 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
                          """The expected rule ID is {0},
                          the actual value is {1}""".
                          format(rule['id'], retrieved_rule_id))
+
+    @decorators.idempotent_id('4eee64da-5646-11ea-82b4-0242ac130003')
+    def test_create_instance_using_network_with_existing_policy(self):
+        network = self.create_network()
+
+        qos_policy = self.os_admin.network_client.create_qos_policy(
+            name='network-policy',
+            shared=False)['policy']
+
+        rule = self.os_admin.network_client.create_bandwidth_limit_rule(
+            policy_id=qos_policy['id'],
+            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
+            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)
+
+        network = self.os_admin.network_client.update_network(
+                  network['id'],
+                  qos_policy_id=qos_policy['id'])['network']
+        self.setup_network_and_server(network=network)
+        retrieved_net = self.client.show_network(network['id'])
+        self.assertEqual(qos_policy['id'],
+                         retrieved_net['network']['qos_policy_id'],
+                         """The expected policy ID is {0},
+                         the actual value is {1}""".
+                         format(qos_policy['id'],
+                                retrieved_net['network']['qos_policy_id']))
+
+        retrieved_policy = self.os_admin.network_client.show_qos_policy(
+                           retrieved_net['network']['qos_policy_id'])
+        retrieved_rule_id = retrieved_policy['policy']['rules'][0]['id']
+
+        self.assertEqual(rule['bandwidth_limit_rule']['id'],
+                         retrieved_rule_id,
+                         """The expected rule ID is {0},
+                         the actual value is {1}""".
+                         format(rule['bandwidth_limit_rule']['id'],
+                                retrieved_rule_id))

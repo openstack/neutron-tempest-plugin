@@ -145,13 +145,15 @@ class BaseSecGroupQuota(base.BaseAdminNetworkTest):
         sg_quota = self._get_sg_quota()
         new_sg_quota = 2 * sg_quota
         self._set_sg_quota(new_sg_quota)
-        return new_sg_quota
+        self.assertEqual(self._get_sg_quota(), new_sg_quota,
+                         "Security group quota wasn't changed correctly")
 
     def _decrease_sg_quota(self):
         sg_quota = self._get_sg_quota()
         new_sg_quota = sg_quota // 2
         self._set_sg_quota(new_sg_quota)
-        return new_sg_quota
+        self.assertEqual(self._get_sg_quota(), new_sg_quota,
+                         "Security group quota wasn't changed correctly")
 
     def _set_sg_quota(self, val):
         sg_quota = self._get_sg_quota()
@@ -192,19 +194,15 @@ class SecGroupQuotaTest(BaseSecGroupQuota):
     @decorators.idempotent_id('623d909c-6ef8-43d6-93ee-97086e2651e8')
     def test_sg_quota_increased(self):
         self._create_max_allowed_sg_amount()
-        new_quota = self._increase_sg_quota()
+        self._increase_sg_quota()
         self._create_max_allowed_sg_amount()
-        quota_set = self._get_sg_quota()
-        self.assertEqual(quota_set, new_quota,
-                         "Security group quota was not changed correctly")
-        self.assertEqual(quota_set, self._get_sg_amount(),
+        self.assertEqual(self._get_sg_quota(), self._get_sg_amount(),
                          "Amount of security groups doesn't match quota")
 
     @decorators.idempotent_id('ba95676c-8d9a-4482-b4ec-74d51a4602a6')
     def test_sg_quota_decrease_less_than_created(self):
         self._create_max_allowed_sg_amount()
-        new_quota = self._decrease_sg_quota()
-        self.assertEqual(self._get_sg_quota(), new_quota)
+        self._decrease_sg_quota()
 
     @decorators.idempotent_id('d43cf1a7-aa7e-4c41-9340-627a1a6ab961')
     def test_create_sg_when_quota_disabled(self):
@@ -223,7 +221,7 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
         sg_rules_to_create = sg_rules_quota - sg_rules_amount
         port_index += sg_rules_to_create
         self._create_security_group_rules(sg_rules_to_create,
-                                         port_index=port_index)
+                                          port_index=port_index)
 
     def _create_security_group_rules(self, amount, port_index=1):
         for i in range(amount):
@@ -239,7 +237,7 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
         new_sg_rules_quota = 2 * sg_rules_quota
         self._set_sg_rules_quota(new_sg_rules_quota)
         self.assertGreater(self._get_sg_rules_quota(), sg_rules_quota,
-                         "Security group rules quota wasn't changed correctly")
+                           "Security group rule quota wasnt changed correctly")
         return new_sg_rules_quota
 
     def _decrease_sg_rules_quota(self):

@@ -291,6 +291,22 @@ class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
         self.assertEqual(quota_set, self._get_sg_rules_amount(),
                          "Amount of security groups rules doesn't match quota")
 
+    @decorators.idempotent_id('37508c8d-270b-4b93-8007-72876a1fec38')
+    def test_sg_rules_quota_values(self):
+        """Test security group rules quota values.
+
+        This test checks if it is possible to change the SG rules Quota
+        values, different values.
+        """
+        sg_rules_quota = self._get_sg_rules_quota()
+        project_id = self.client.tenant_id
+        self.addCleanup(self.admin_client.update_quotas,
+                        project_id, **{'security_group_rule': sg_rules_quota})
+        values = [-1, 0, 10, 2147483647]
+        for value in values:
+            self._set_sg_rules_quota(value)
+            self.assertEqual(value, self._get_sg_rules_quota())
+
 
 class SecGroupProtocolTest(base.BaseNetworkTest):
 

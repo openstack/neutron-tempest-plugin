@@ -31,6 +31,7 @@ from neutron_tempest_plugin.api import base as base_api
 from neutron_tempest_plugin.common import ip as ip_utils
 from neutron_tempest_plugin.common import shell
 from neutron_tempest_plugin.common import ssh
+from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin import exceptions
 from neutron_tempest_plugin.scenario import constants
@@ -53,16 +54,19 @@ def get_ncat_version(ssh_client=None):
     return distutils.version.StrictVersion(m.group(1) if m else '7.60')
 
 
-def get_ncat_server_cmd(port, protocol, msg):
+def get_ncat_server_cmd(port, protocol, msg=None):
     udp = ''
     if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
         udp = '-u'
     cmd = "nc %(udp)s -p %(port)s -lk " % {
         'udp': udp, 'port': port}
-    if CONF.neutron_plugin_options.default_image_is_advanced:
-        cmd += "-c 'echo %s' &" % msg
+    if msg:
+        if CONF.neutron_plugin_options.default_image_is_advanced:
+            cmd += "-c 'echo %s' &" % msg
+        else:
+            cmd += "-e echo %s &" % msg
     else:
-        cmd += "-e echo %s &" % msg
+        cmd += "< /dev/zero &"
     return cmd
 
 
@@ -468,7 +472,20 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 self._log_console_output(servers)
             raise
 
-    def nc_listen(self, server, ssh_client, port, protocol, echo_msg):
+    def ensure_nc_listen(self, ssh_client, port, protocol, echo_msg=None,
+                         servers=None):
+        """Ensure that nc server listening on the given TCP/UDP port is up.
+
+        Listener is created always on remote host.
+        """
+        def spawn_and_check_process():
+            self.nc_listen(ssh_client, port, protocol, echo_msg, servers)
+            return utils.process_is_running(ssh_client, "nc")
+
+        utils.wait_until_true(spawn_and_check_process)
+
+    def nc_listen(self, ssh_client, port, protocol, echo_msg=None,
+                  servers=None):
         """Create nc server listening on the given TCP/UDP port.
 
         Listener is created always on remote host.
@@ -479,7 +496,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 become_root=True)
         except lib_exc.SSHTimeout as ssh_e:
             LOG.debug(ssh_e)
-            self._log_console_output([server])
+            self._log_console_output(servers)
             raise
 
     def nc_client(self, ip_address, port, protocol):

@@ -121,6 +121,11 @@ class FWaaSClientMixin(object):
             firewall_rule_id=firewall_rule_id)
         self._wait_firewall_group_ready(firewall_group_id)
 
+    def update_firewall_group_and_wait(self, firewall_group_id, **kwargs):
+        self.firewall_groups_client.update_firewall_group(
+            firewall_group_id, **kwargs)
+        self._wait_firewall_group_ready(firewall_group_id)
+
     @staticmethod
     def _call_and_ignore_exceptions(exc_list, func, *args, **kwargs):
         """Call the given function and pass if a given exception is raised."""

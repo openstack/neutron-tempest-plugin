@@ -299,5 +299,4 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
             should_connect=False)
 
         # Disassociate ports of this firewall group for cleanup resources
-        self.firewall_groups_client.update_firewall_group(
-            fw_group['id'], ports=[])
+        self.update_firewall_group_and_wait(fw_group['id'], ports=[])

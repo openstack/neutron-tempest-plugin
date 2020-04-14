@@ -512,6 +512,10 @@
     description: |
       Perform setup common to all tempest scenario test jobs.
     vars:
+      # NOTE(slaweq): in case of some tests, which requires advanced image,
+      # default test timeout set to 1200 seconds may be not enough if job is
+      # run on slow node
+      tempest_test_timeout: 2400
       tempest_test_regex: ^neutron_tempest_plugin\.scenario
       devstack_localrc:
         PHYSICAL_NETWORK: default
@@ -869,6 +873,10 @@
       tempest_concurrency: 4
       tox_envlist: all
       tempest_test_regex: ^neutron_tempest_plugin\.scenario
+      # NOTE(slaweq): in case of some tests, which requires advanced image,
+      # default test timeout set to 1200 seconds may be not enough if job is
+      # run on slow node
+      tempest_test_timeout: 2400
       network_api_extensions_common: *api_extensions_master
       network_api_extensions_dvr:
         - dvr

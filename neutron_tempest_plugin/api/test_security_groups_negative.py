@@ -16,6 +16,7 @@
 from neutron_lib import constants
 from neutron_lib.db import constants as db_const
 from tempest.lib.common.utils import data_utils
+from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
@@ -170,3 +171,21 @@ class NegativeSecGroupQuotaTest(test_security_groups.BaseSecGroupQuota):
         values = [-2, 2147483648, "value"]
         for value in values:
             self.assertRaises(lib_exc.BadRequest, self._set_sg_quota, value)
+
+
+class NegativeSecGroupRulesQuotaTest(
+        test_security_groups.BaseSecGroupRulesQuota):
+
+    credentials = ['primary', 'admin']
+    required_extensions = ['security-group', 'quotas']
+
+    def setUp(self):
+        super(NegativeSecGroupRulesQuotaTest, self).setUp()
+        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
+                        self.admin_client.reset_quotas, self.client.tenant_id)
+        self._set_sg_rules_quota(10)
+
+    @decorators.idempotent_id('8336e6ea-2e0a-4a1a-8673-a6f81b577d57')
+    def test_sg_creation_with_insufficient_sg_rules_quota(self):
+        self._set_sg_rules_quota(0)
+        self.assertRaises(lib_exc.Conflict, self.create_security_group)

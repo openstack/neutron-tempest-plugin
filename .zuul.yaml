@@ -1213,7 +1213,6 @@
       - openstack/tempest
     vars:
       tempest_test_regex: ^neutron_tempest_plugin\.sfc
-      tox_envlist: all-plugin
       devstack_plugins:
         networking-sfc: https://opendev.org/openstack/networking-sfc
         neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin
@@ -1276,7 +1275,6 @@
       - openstack/tempest
     vars:
       tempest_test_regex: ^neutron_tempest_plugin\.fwaas
-      tox_envlist: all-plugin
       devstack_plugins:
         neutron-fwaas: https://opendev.org/openstack/neutron-fwaas.git
         neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
@@ -1335,7 +1333,6 @@
       - openstack/tempest
     vars:
       tempest_test_regex: ^neutron_tempest_plugin\.vpnaas
-      tox_envlist: all-plugin
       devstack_plugins:
         neutron-vpnaas: https://opendev.org/openstack/neutron-vpnaas.git
         neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git

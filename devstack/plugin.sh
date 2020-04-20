@@ -12,8 +12,10 @@ function install_neutron_tempest_plugin {
 if [[ "$1" == "stack" ]]; then
     case "$2" in
         install)
-            echo_summary "Installing neutron-tempest-plugin"
-            install_neutron_tempest_plugin
+            if [[ "$INSTALL_TEMPEST" == "True" ]]; then
+                echo_summary "Installing neutron-tempest-plugin"
+                install_neutron_tempest_plugin
+            fi
             ;;
         test-config)
             echo_summary "Configuring neutron-tempest-plugin tempest options"

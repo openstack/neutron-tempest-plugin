@@ -224,7 +224,7 @@ class BaseMulticastTest(object):
             message=self.multicast_message,
             result_file=self.sender_output_file)
         server['ssh_client'].execute_script(
-            'echo "%s" > ~/multicast_traffic_sender.py' % check_script)
+            'echo "%s" > /tmp/multicast_traffic_sender.py' % check_script)
 
     def _prepare_receiver(self, server, mcast_address):
         check_script = get_receiver_script(
@@ -238,7 +238,7 @@ class BaseMulticastTest(object):
         self._check_cmd_installed_on_server(ssh_client, server['id'],
                                             PYTHON3_BIN)
         server['ssh_client'].execute_script(
-            'echo "%s" > ~/multicast_traffic_receiver.py' % check_script)
+            'echo "%s" > /tmp/multicast_traffic_receiver.py' % check_script)
 
     def _prepare_unregistered(self, server, mcast_address):
         check_script = get_unregistered_script(
@@ -250,7 +250,7 @@ class BaseMulticastTest(object):
         self._check_cmd_installed_on_server(ssh_client, server['id'],
                                             'tcpdump')
         server['ssh_client'].execute_script(
-            'echo "%s" > ~/unregistered_traffic_receiver.sh' % check_script)
+            'echo "%s" > /tmp/unregistered_traffic_receiver.sh' % check_script)
 
     @test.unstable_test("bug 1850288")
     @decorators.idempotent_id('113486fc-24c9-4be4-8361-03b1c9892867')
@@ -259,6 +259,8 @@ class BaseMulticastTest(object):
 
         [Sender server] -> (Multicast network) -> [Receiver server]
         """
+        LOG.debug("IGMP snooping enabled: %s",
+                  CONF.neutron_plugin_options.is_igmp_snooping_enabled)
         sender = self._create_server()
         receivers = [self._create_server() for _ in range(1)]
         # Sender can be also receiver of multicast traffic
@@ -279,7 +281,7 @@ class BaseMulticastTest(object):
 
         [0] https://tools.ietf.org/html/rfc4541 (See section 2.1.2)
         """
-        return (mcast_address.startswith('224.0.0') or not
+        return (str(mcast_address).startswith('224.0.0') or not
                 CONF.neutron_plugin_options.is_igmp_snooping_enabled)
 
     def _check_multicast_conectivity(self, sender, receivers, unregistered):
@@ -300,14 +302,14 @@ class BaseMulticastTest(object):
 
         # Run the unregistered node script
         unregistered['ssh_client'].execute_script(
-            "bash ~/unregistered_traffic_receiver.sh", become_root=True)
+            "bash /tmp/unregistered_traffic_receiver.sh", become_root=True)
 
         self._prepare_sender(sender, mcast_address)
         receiver_ids = []
         for receiver in receivers:
             self._prepare_receiver(receiver, mcast_address)
             receiver['ssh_client'].execute_script(
-                "%s ~/multicast_traffic_receiver.py &" % PYTHON3_BIN,
+                "%s /tmp/multicast_traffic_receiver.py &" % PYTHON3_BIN,
                 shell="bash")
             utils.wait_until_true(
                 lambda: _message_received(
@@ -321,7 +323,7 @@ class BaseMulticastTest(object):
 
         # Now lets run scripts on sender
         sender['ssh_client'].execute_script(
-            "%s ~/multicast_traffic_sender.py" % PYTHON3_BIN)
+            "%s /tmp/multicast_traffic_sender.py" % PYTHON3_BIN)
 
         # And check if message was received
         for receiver in receivers:
@@ -348,9 +350,11 @@ class BaseMulticastTest(object):
         unregistered_result = unregistered['ssh_client'].execute_script(
             "cat {path} || echo '{path} not exists yet'".format(
                 path=self.unregistered_output_file))
-        num_of_pckt = (1 if self._is_multicast_traffic_expected(mcast_address)
-                       else 0)
-        self.assertIn('%d packets captured' % num_of_pckt, unregistered_result)
+        LOG.debug("Unregistered VM result: %s", unregistered_result)
+        expected_result = '0 packets captured'
+        if self._is_multicast_traffic_expected(mcast_address):
+            expected_result = '1 packet captured'
+        self.assertIn(expected_result, unregistered_result)
 
 
 class MulticastTestIPv4(BaseMulticastTest, base.BaseTempestTestCase):

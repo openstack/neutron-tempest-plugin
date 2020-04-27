@@ -307,6 +307,14 @@ class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
             self._set_sg_rules_quota(value)
             self.assertEqual(value, self._get_sg_rules_quota())
 
+    @decorators.idempotent_id('4459e066-d9c8-4a13-9e98-018f95ce2dbf')
+    def test_create_sg_rules_when_quota_disabled(self):
+        sg_rules_amount = self._get_sg_rules_amount()
+        self._set_sg_rules_quota(-1)
+        self._create_security_group_rules(10, port_index=100)
+        new_sg_rules_amount = self._get_sg_rules_amount()
+        self.assertGreater(new_sg_rules_amount, sg_rules_amount)
+
 
 class SecGroupProtocolTest(base.BaseNetworkTest):
 

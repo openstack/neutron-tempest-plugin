@@ -35,8 +35,17 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
             post_body['router:external'] = external
         body = self.admin_client.create_network(**post_body)
         network = body['network']
-        self.addCleanup(self.admin_client.delete_network, network['id'])
+        self.addCleanup(self._delete_network, network['id'])
         return network
+
+    def _delete_network(self, net_id):
+        try:
+            self.admin_client.delete_network(net_id)
+        except lib_exc.Conflict:
+            ports = self.admin_client.list_ports(network_id=net_id)['ports']
+            for port in ports:
+                self.admin_client.delete_port(port['id'])
+            self.admin_client.delete_network(net_id)
 
     @decorators.idempotent_id('afd8f1b7-a81e-4629-bca8-a367b3a144bb')
     def test_regular_client_shares_with_another(self):

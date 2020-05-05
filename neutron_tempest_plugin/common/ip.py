@@ -36,13 +36,19 @@ class IPCommand(object):
     sudo = 'sudo'
     ip_path = '/sbin/ip'
 
-    def __init__(self, ssh_client=None, timeout=None):
+    def __init__(self, ssh_client=None, timeout=None, namespace=None):
         self.ssh_client = ssh_client
         self.timeout = timeout
+        self.namespace = namespace
 
     def get_command(self, obj, *command):
-        command_line = '{sudo!s} {ip_path!r} {object!s} {command!s}'.format(
-            sudo=self.sudo, ip_path=self.ip_path, object=obj,
+        command_line = '{sudo!s} {ip_path!r} '.format(sudo=self.sudo,
+                                                     ip_path=self.ip_path)
+        if self.namespace:
+            command_line += 'netns exec {ns_name!s} {ip_path!r} '.format(
+                ns_name=self.namespace, ip_path=self.ip_path)
+        command_line += '{object!s} {command!s}'.format(
+            object=obj,
             command=subprocess.list2cmdline([str(c) for c in command]))
         return command_line
 
@@ -83,6 +89,13 @@ class IPCommand(object):
         for subport_ip in subport_ips:
             self.add_address(address=subport_ip, device=subport_device)
         return subport_device
+
+    def list_namespaces(self):
+        namespaces_output = self.execute("netns")
+        ns_list = []
+        for ns_line in namespaces_output.split("\n"):
+            ns_list.append(ns_line.split(" ", 1)[0])
+        return ns_list
 
     def list_addresses(self, device=None, ip_addresses=None, port=None,
                        subnets=None):
@@ -308,20 +321,24 @@ def _get_ip_address_prefix_len_pairs(port, subnets):
                    netaddr.IPNetwork(subnet['cidr']).prefixlen)
 
 
-def arp_table():
+def arp_table(namespace=None):
     # 192.168.0.16  0x1  0x2  dc:a6:32:06:56:51  *  enp0s31f6
     regex_str = (r"([^ ]+)\s+(0x\d+)\s+(0x\d+)\s+(\w{2}\:\w{2}\:\w{2}\:\w{2}\:"
                  r"\w{2}\:\w{2})\s+([\w+\*]+)\s+([\-\w]+)")
     regex = re.compile(regex_str)
     arp_table = []
-    with open('/proc/net/arp', 'r') as proc_file:
-        for line in proc_file.readlines():
-            m = regex.match(line)
-            if m:
-                arp_table.append(ARPregister(
-                    ip_address=m.group(1), hw_type=m.group(2),
-                    flags=m.group(3), mac_address=m.group(4),
-                    mask=m.group(5), device=m.group(6)))
+    cmd = ""
+    if namespace:
+        cmd = "sudo ip netns exec %s " % namespace
+    cmd += "cat /proc/net/arp"
+    arp_entries = shell.execute(cmd).stdout.split("\n")
+    for line in arp_entries:
+        m = regex.match(line)
+        if m:
+            arp_table.append(ARPregister(
+                ip_address=m.group(1), hw_type=m.group(2),
+                flags=m.group(3), mac_address=m.group(4),
+                mask=m.group(5), device=m.group(6)))
     return arp_table
 
 

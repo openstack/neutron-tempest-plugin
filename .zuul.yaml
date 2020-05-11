@@ -508,6 +508,92 @@
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
 
 - job:
+    name: neutron-tempest-plugin-api-ussuri
+    parent: neutron-tempest-plugin-api
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      # TODO(slaweq): find a way to put this list of extensions in
+      # neutron repository and keep it different per branch,
+      # then it could be removed from here
+      network_api_extensions_common: &api_extensions_ussuri
+        - address-scope
+        - agent
+        - allowed-address-pairs
+        - auto-allocated-topology
+        - availability_zone
+        - binding
+        - default-subnetpools
+        - dhcp_agent_scheduler
+        - dns-domain-ports
+        - dns-integration
+        - empty-string-filtering
+        - expose-port-forwarding-in-fip
+        - expose-l3-conntrack-helper
+        - ext-gw-mode
+        - external-net
+        - extra_dhcp_opt
+        - extraroute
+        - extraroute-atomic
+        - filter-validation
+        - fip-port-details
+        - flavors
+        - floating-ip-port-forwarding
+        - floatingip-pools
+        - ip-substring-filtering
+        - l3-conntrack-helper
+        - l3-flavors
+        - l3-ha
+        - l3_agent_scheduler
+        - logging
+        - metering
+        - multi-provider
+        - net-mtu
+        - net-mtu-writable
+        - network-ip-availability
+        - network_availability_zone
+        - network-segment-range
+        - pagination
+        - port-resource-request
+        - port-mac-address-regenerate
+        - port-security
+        - port-security-groups-filtering
+        - project-id
+        - provider
+        - qos
+        - qos-bw-minimum-ingress
+        - qos-fip
+        - quotas
+        - quota_details
+        - rbac-address-scope
+        - rbac-policies
+        - rbac-security-groups
+        - rbac-subnetpool
+        - router
+        - router-admin-state-down-before-update
+        - router_availability_zone
+        - security-group
+        - segment
+        - service-type
+        - sorting
+        - standard-attr-description
+        - standard-attr-revisions
+        - standard-attr-segment
+        - standard-attr-tag
+        - standard-attr-timestamp
+        - subnet_allocation
+        - subnet-dns-publish-fixed-ip
+        - subnetpool-prefix-ops
+        - tag-ports-during-bulk-creation
+        - trunk
+        - trunk-details
+        - uplink-status-propagation
+      network_api_extensions_tempest:
+        - dvr
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
+
+- job:
     name: neutron-tempest-plugin-scenario
     parent: neutron-tempest-plugin
     abstract: true
@@ -641,6 +727,16 @@
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
 
 - job:
+    name: neutron-tempest-plugin-scenario-openvswitch-ussuri
+    parent: neutron-tempest-plugin-scenario-openvswitch
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions: *api_extensions_ussuri
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
     parent: neutron-tempest-plugin-scenario
     timeout: 10000
@@ -730,6 +826,16 @@
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions_train
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-ussuri
+    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    override-checkout: stable-ussuri
+    vars:
+      branch_override: stable-ussuri
+      network_api_extensions: *api_extensions_ussuri
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
 
@@ -854,6 +960,16 @@
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions_train
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-scenario-linuxbridge-ussuri
+    parent: neutron-tempest-plugin-scenario-linuxbridge
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions: *api_extensions_ussuri
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
 
@@ -1075,6 +1191,14 @@
       branch_override: stable/train
 
 - job:
+    name: neutron-tempest-plugin-dvr-multinode-scenario-ussuri
+    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    override-checkout: stable/ussuri
+    vars:
+      network_api_extensions_common: *api_extensions_ussuri
+      branch_override: stable/ussuri
+
+- job:
     name: neutron-tempest-plugin-designate-scenario
     parent: neutron-tempest-plugin-scenario
     description: Neutron designate integration scenario
@@ -1202,6 +1326,14 @@
       network_api_extensions_common: *api_extensions_train
 
 - job:
+    name: neutron-tempest-plugin-designate-scenario-ussuri
+    parent: neutron-tempest-plugin-designate-scenario
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions_common: *api_extensions_ussuri
+
+- job:
     name: neutron-tempest-plugin-sfc
     parent: neutron-tempest-plugin
     timeout: 10800
@@ -1235,6 +1367,14 @@
       network_api_extensions_common: *api_extensions_train
 
 - job:
+    name: neutron-tempest-plugin-sfc-ussuri
+    parent: neutron-tempest-plugin-sfc
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions_common: *api_extensions_ussuri
+
+- job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe
     parent: neutron-tempest-plugin
     required-projects:
@@ -1262,6 +1402,14 @@
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions_train
+
+- job:
+    name: neutron-tempest-plugin-bgpvpn-bagpipe-ussuri
+    parent: neutron-tempest-plugin-bgpvpn-bagpipe
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions: *api_extensions_ussuri
 
 - job:
     name: neutron-tempest-plugin-fwaas
@@ -1293,6 +1441,14 @@
       network_api_extensions_common: *api_extensions_train
 
 - job:
+    name: neutron-tempest-plugin-fwaas-ussuri
+    parent: neutron-tempest-plugin-fwaas
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions_common: *api_extensions_ussuri
+
+- job:
     name: neutron-tempest-plugin-dynamic-routing
     parent: neutron-tempest-plugin
     description: |
@@ -1322,6 +1478,14 @@
       tempest_test_regex: ^neutron_tempest_plugin\.neutron_dynamic_routing
 
 - job:
+    name: neutron-tempest-plugin-dynamic-routing-ussuri
+    parent: neutron-tempest-plugin-dynamic-routing
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions_common: *api_extensions_ussuri
+
+- job:
     name: neutron-tempest-plugin-vpnaas
     parent: neutron-tempest-plugin
     timeout: 3900
@@ -1347,6 +1511,14 @@
       - ^doc/.*$
       - ^neutron_vpnaas/tests/unit/.*$
       - ^releasenotes/.*$
+
+- job:
+    name: neutron-tempest-plugin-vpnaas-ussuri
+    parent: neutron-tempest-plugin-vpnaas
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions_common: *api_extensions_ussuri
 
 - project-template:
     name: neutron-tempest-plugin-jobs
@@ -1420,12 +1592,27 @@
       jobs:
         - neutron-tempest-plugin-api-train
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-ussuri
+    check:
+      jobs:
+        - neutron-tempest-plugin-api-ussuri
+        - neutron-tempest-plugin-designate-scenario-ussuri
+        - neutron-tempest-plugin-dvr-multinode-scenario-ussuri
+        - neutron-tempest-plugin-scenario-linuxbridge-ussuri
+        - neutron-tempest-plugin-scenario-openvswitch-ussuri
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-ussuri
+    gate:
+      jobs:
+        - neutron-tempest-plugin-api-ussuri
+
 - project:
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
       - neutron-tempest-plugin-jobs-stein
       - neutron-tempest-plugin-jobs-train
+      - neutron-tempest-plugin-jobs-ussuri
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3
@@ -1433,8 +1620,10 @@
       jobs:
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-sfc-train
+        - neutron-tempest-plugin-sfc-ussuri
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-bgpvpn-bagpipe-train
+        - neutron-tempest-plugin-bgpvpn-bagpipe-ussuri
         - neutron-tempest-plugin-fwaas:
             # TODO(slaweq): switch it to be voting when bug
             # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
@@ -1443,7 +1632,12 @@
             # TODO(slaweq): switch it to be voting when bug
             # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
             voting: false
+        - neutron-tempest-plugin-fwaas-ussuri:
+            # TODO(slaweq): switch it to be voting when bug
+            # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
+            voting: false
         - neutron-tempest-plugin-dynamic-routing
+        - neutron-tempest-plugin-dynamic-routing-ussuri
         - neutron-tempest-plugin-vpnaas
 
     gate:

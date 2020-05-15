@@ -158,6 +158,15 @@ class DNSIntegrationAdminTests(BaseDNSIntegrationTests,
         self.client.delete_port(port['id'])
         self._verify_dns_records(addr, name, found=False)
 
+    @decorators.idempotent_id('d44cd5b8-ac67-4965-96ff-cb77ab6aea8b')
+    def test_fip_admin_delete(self):
+        name = data_utils.rand_name('fip-test')
+        fip = self._create_floatingip_with_dns(name)
+        addr = fip['floating_ip_address']
+        self._verify_dns_records(addr, name)
+        self.delete_floatingip(fip, client=self.admin_client)
+        self._verify_dns_records(addr, name, found=False)
+
 
 class DNSIntegrationExtraTests(BaseDNSIntegrationTests):
 

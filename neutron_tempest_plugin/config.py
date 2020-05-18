@@ -60,6 +60,10 @@ NeutronPluginOptions = [
     cfg.IntOpt('max_mtu',
                default=1500,
                help='Max mtu value of default deployments".'),
+    cfg.StrOpt('global_ip_address',
+               default='',
+               help='An IP address in the Internet that can be used in '
+                    'a connectivity test'),
     cfg.StrOpt('q_agent',
                default=None,
                choices=['None', 'linuxbridge', 'ovs', 'sriov'],

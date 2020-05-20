@@ -89,9 +89,7 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
 
         cls.vnic_type = 'normal'
 
-        # Note(lajoskatona): to avoid creating provider network use vxlan
-        # as provider network type:
-        cls.network = cls.create_network(provider_network_type='vxlan')
+        cls.network = cls.create_network()
         cls.physnet_name = CONF.neutron_plugin_options.provider_vlans[0]
         base_segm = CONF.neutron_plugin_options.provider_net_base_segm_id
         cls.prov_network = cls.create_provider_network(

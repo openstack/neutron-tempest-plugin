@@ -1,0 +1,129 @@
+- job:
+    name: neutron-tempest-plugin-api-stein
+    parent: neutron-tempest-plugin-api
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+      # TODO(slaweq): find a way to put this list of extensions in
+      # neutron repository and keep it different per branch,
+      # then it could be removed from here
+      network_api_extensions_common: &api_extensions
+        - address-scope
+        - agent
+        - allowed-address-pairs
+        - auto-allocated-topology
+        - availability_zone
+        - binding
+        - default-subnetpools
+        - dhcp_agent_scheduler
+        - dns-domain-ports
+        - dns-integration
+        - empty-string-filtering
+        - expose-port-forwarding-in-fip
+        - ext-gw-mode
+        - external-net
+        - extra_dhcp_opt
+        - extraroute
+        - filter-validation
+        - fip-port-details
+        - flavors
+        - floatingip-pools
+        - floating-ip-port-forwarding
+        - ip-substring-filtering
+        - l3-flavors
+        - l3-ha
+        - l3_agent_scheduler
+        - logging
+        - metering
+        - multi-provider
+        - net-mtu
+        - net-mtu-writable
+        - network-ip-availability
+        - network_availability_zone
+        - network-segment-range
+        - pagination
+        - port-resource-request
+        - port-mac-address-regenerate
+        - port-security
+        - port-security-groups-filtering
+        - project-id
+        - provider
+        - qos
+        - qos-bw-minimum-ingress
+        - qos-fip
+        - quotas
+        - quota_details
+        - rbac-policies
+        - rbac-security-groups
+        - router
+        - router_availability_zone
+        - security-group
+        - segment
+        - service-type
+        - sorting
+        - standard-attr-description
+        - standard-attr-revisions
+        - standard-attr-segment
+        - standard-attr-tag
+        - standard-attr-timestamp
+        - subnet_allocation
+        - trunk
+        - trunk-details
+        - uplink-status-propagation
+      network_api_extensions_tempest:
+        - dvr
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-stein
+    parent: neutron-tempest-plugin-scenario-openvswitch
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+      network_api_extensions: *api_extensions
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-stein
+    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+      network_api_extensions: *api_extensions
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-scenario-linuxbridge-stein
+    parent: neutron-tempest-plugin-scenario-linuxbridge
+    override-checkout: stable/stein
+    vars:
+      branch_override: stable/stein
+      network_api_extensions: *api_extensions
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-dvr-multinode-scenario-stein
+    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    override-checkout: stable/stein
+    vars:
+      network_api_extensions_common: *api_extensions
+      branch_override: stable/stein
+
+- job:
+    name: neutron-tempest-plugin-designate-scenario-stein
+    parent: neutron-tempest-plugin-designate-scenario
+    override-checkout: stable/stein
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
+      - openstack/tempest
+    vars:
+      branch_override: stable/stein
+      network_api_extensions_common: *api_extensions

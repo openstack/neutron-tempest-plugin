@@ -336,7 +336,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                     mtu=mtu, ip_version=ip_version))
             if pattern:
                 cmd += ' -p {pattern}'.format(pattern=pattern)
-            cmd += ' -c{0} -w{0} -s{1} {2}'.format(count, size, host)
+            cmd += ' -c{0} -W{0} -s{1} {2}'.format(count, size, host)
             return source.exec_command(cmd)
 
         def ping_remote():

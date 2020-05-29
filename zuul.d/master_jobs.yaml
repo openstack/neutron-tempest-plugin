@@ -322,8 +322,8 @@
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
-      - ^neutron/locale/.*$
-      - ^neutron/tests/unit/.*$
+      - ^neutron.*/locale/.*$
+      - ^neutron.*/tests/unit/.*$
       - ^tools/.*$
       - ^tox.ini$
 
@@ -488,8 +488,4 @@
       devstack_localrc:
         IPSEC_PACKAGE: strongswan
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_vpnaas) | join(',') }}"
-    irrelevant-files:
-      - ^.*\.rst$
-      - ^doc/.*$
-      - ^neutron_vpnaas/tests/unit/.*$
-      - ^releasenotes/.*$
+    irrelevant-files: *tempest-irrelevant-files

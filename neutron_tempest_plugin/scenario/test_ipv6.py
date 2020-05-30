@@ -1,0 +1,172 @@
+# Copyright 2020 Red Hat, Inc.
+# All Rights Reserved.
+#
+#    Licensed under the Apache License, Version 2.0 (the "License"); you may
+#    not use this file except in compliance with the License. You may obtain
+#    a copy of the License at
+#
+#         http://www.apache.org/licenses/LICENSE-2.0
+#
+#    Unless required by applicable law or agreed to in writing, software
+#    distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+#    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+#    License for the specific language governing permissions and limitations
+#    under the License.
+
+from neutron_lib import constants as lib_constants
+from oslo_log import log
+from tempest.common import utils as tempest_utils
+from tempest.common import waiters
+from tempest.lib.common.utils import data_utils
+from tempest.lib import decorators
+from tempest.lib import exceptions as lib_exc
+
+from neutron_tempest_plugin.common import ip
+from neutron_tempest_plugin.common import ssh
+from neutron_tempest_plugin.common import utils
+from neutron_tempest_plugin import config
+from neutron_tempest_plugin.scenario import base
+
+CONF = config.CONF
+
+LOG = log.getLogger(__name__)
+
+
+def turn_nic6_on(ssh, ipv6_port):
+    """Turns the IPv6 vNIC on
+
+    Required because guest images usually set only the first vNIC on boot.
+    Searches for the IPv6 vNIC's MAC and brings it up.
+
+    @param ssh: RemoteClient ssh instance to server
+    @param ipv6_port: port from IPv6 network attached to the server
+    """
+    ip_command = ip.IPCommand(ssh)
+    nic = ip_command.get_nic_name_by_mac(ipv6_port['mac_address'])
+
+    # NOTE(slaweq): on RHEL based OS ifcfg file for new interface is
+    # needed to make IPv6 working on it, so if
+    # /etc/sysconfig/network-scripts directory exists ifcfg-%(nic)s file
+    # should be added in it
+    if sysconfig_network_scripts_dir_exists(ssh):
+        try:
+            ssh.execute_script(
+                'echo -e "DEVICE=%(nic)s\\nNAME=%(nic)s\\nIPV6INIT=yes" | '
+                'tee /etc/sysconfig/network-scripts/ifcfg-%(nic)s; '
+                'nmcli connection reload' % {'nic': nic},
+                become_root=True)
+            ssh.execute_script('nmcli connection up %s' % nic,
+                               become_root=True)
+        except lib_exc.SSHExecCommandFailed as e:
+            # NOTE(slaweq): Sometimes it can happen that this SSH command
+            # will fail because of some error from network manager in
+            # guest os.
+            # But even then doing ip link set up below is fine and
+            # IP address should be configured properly.
+            LOG.debug("Error during restarting %(nic)s interface on "
+                      "instance. Error message: %(error)s",
+                      {'nic': nic, 'error': e})
+    ip_command.set_link(nic, "up")
+
+
+def sysconfig_network_scripts_dir_exists(ssh):
+    return "False" not in ssh.execute_script(
+        'test -d /etc/sysconfig/network-scripts/ || echo "False"')
+
+
+class IPv6Test(base.BaseTempestTestCase):
+    credentials = ['primary', 'admin']
+
+    ipv6_ra_mode = 'slaac'
+    ipv6_address_mode = 'slaac'
+
+    @classmethod
+    @tempest_utils.requires_ext(extension="router", service="network")
+    def resource_setup(cls):
+        super(IPv6Test, cls).resource_setup()
+        cls._setup_basic_resources()
+
+    @classmethod
+    def _setup_basic_resources(cls):
+        cls.network = cls.create_network()
+        cls.subnet = cls.create_subnet(cls.network)
+        cls.router = cls.create_router_by_client()
+        cls.create_router_interface(cls.router['id'], cls.subnet['id'])
+        cls.keypair = cls.create_keypair()
+        cls.secgroup = cls.create_security_group(
+            name=data_utils.rand_name('secgroup'))
+        cls.create_loginable_secgroup_rule(secgroup_id=cls.secgroup['id'])
+        cls.create_pingable_secgroup_rule(secgroup_id=cls.secgroup['id'])
+
+    def _test_ipv6_address_configured(self, ssh_client, vm, ipv6_port):
+        ipv6_address = ipv6_port['fixed_ips'][0]['ip_address']
+        ip_command = ip.IPCommand(ssh_client)
+
+        def guest_has_address(expected_address):
+            ip_addresses = [a.address for a in ip_command.list_addresses()]
+            for ip_address in ip_addresses:
+                if expected_address in ip_address:
+                    return True
+            return False
+
+        # Set NIC with IPv6 to be UP and wait until IPv6 address will be
+        # configured on this NIC
+        turn_nic6_on(ssh_client, ipv6_port)
+        # And check if IPv6 address will be properly configured on this NIC
+        utils.wait_until_true(
+            lambda: guest_has_address(ipv6_address),
+            timeout=120,
+            exception=RuntimeError(
+                "Timed out waiting for IP address {!r} to be configured in "
+                "the VM {!r}.".format(ipv6_address, vm['id'])))
+
+    def _test_ipv6_hotplug(self, ra_mode, address_mode):
+        ipv6_networks = [self.create_network() for _ in range(2)]
+        for net in ipv6_networks:
+            subnet = self.create_subnet(
+                network=net, ip_version=6,
+                ipv6_ra_mode=ra_mode, ipv6_address_mode=address_mode)
+            self.create_router_interface(self.router['id'], subnet['id'])
+
+        server_kwargs = {
+            'flavor_ref': CONF.compute.flavor_ref,
+            'image_ref': CONF.compute.image_ref,
+            'key_name': self.keypair['name'],
+            'networks': [
+                {'uuid': self.network['id']},
+                {'uuid': ipv6_networks[0]['id']}],
+            'security_groups': [{'name': self.secgroup['name']}],
+        }
+        vm = self.create_server(**server_kwargs)['server']
+        self.wait_for_server_active(vm)
+        ipv4_port = self.client.list_ports(
+            network_id=self.network['id'],
+            device_id=vm['id'])['ports'][0]
+        fip = self.create_floatingip(port=ipv4_port)
+        ssh_client = ssh.Client(
+            fip['floating_ip_address'], CONF.validation.image_ssh_user,
+            pkey=self.keypair['private_key'])
+
+        ipv6_port = self.client.list_ports(
+            network_id=ipv6_networks[0]['id'],
+            device_id=vm['id'])['ports'][0]
+        self._test_ipv6_address_configured(ssh_client, vm, ipv6_port)
+
+        # Now remove this port IPv6 port from the VM and attach new one
+        self.delete_interface(vm['id'], ipv6_port['id'])
+
+        # And plug VM to the second IPv6 network
+        ipv6_port = self.create_port(ipv6_networks[1])
+        self.create_interface(vm['id'], ipv6_port['id'])
+        waiters.wait_for_interface_status(
+            self.os_primary.interfaces_client, vm['id'],
+            ipv6_port['id'], lib_constants.PORT_STATUS_ACTIVE)
+        self._test_ipv6_address_configured(ssh_client, vm, ipv6_port)
+
+    @decorators.idempotent_id('b13e5408-5250-4a42-8e46-6996ce613e91')
+    def test_ipv6_hotplug_slaac(self):
+        self._test_ipv6_hotplug("slaac", "slaac")
+
+    @decorators.idempotent_id('9aaedbc4-986d-42d5-9177-3e721728e7e0')
+    def test_ipv6_hotplug_dhcpv6stateless(self):
+        self._test_ipv6_hotplug("dhcpv6-stateless", "dhcpv6-stateless")

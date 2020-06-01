@@ -47,3 +47,21 @@ class QosNegativeTestJSON(base.BaseAdminNetworkTest):
                           self.client.create_qos_policy,
                           'test-policy', 'test policy desc1',
                           False, LONG_TENANT_ID_NG)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('0e85f3e4-7a93-4187-b847-8f4e835aae1b')
+    def test_update_policy_with_too_long_name(self):
+        policy = self.create_qos_policy(name='test', description='test policy',
+                                        shared=False)
+        self.assertRaises(lib_exc.BadRequest,
+                          self.client.update_qos_policy, policy['id'],
+                          name=LONG_NAME_NG)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('925c7eaf-474b-4a02-a4ba-76a9f82bc45a')
+    def test_update_policy_with_too_long_description(self):
+        policy = self.create_qos_policy(name='test', description='test policy',
+                                        shared=False)
+        self.assertRaises(lib_exc.BadRequest,
+                          self.client.update_qos_policy, policy['id'],
+                          description=LONG_DESCRIPTION_NG)

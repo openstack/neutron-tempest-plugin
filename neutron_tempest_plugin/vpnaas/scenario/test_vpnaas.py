@@ -17,6 +17,7 @@ import netaddr
 from oslo_config import cfg
 import testtools
 
+from neutron_lib.utils import test
 from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common import ssh
@@ -220,6 +221,7 @@ class Vpnaas(base.BaseTempestTestCase):
             subnet_id, port)
         raise self.fail(msg)
 
+    @test.unstable_test("bug 1882220")
     def _test_vpnaas(self):
         # RIGHT
         right_server = self._create_server(network=self._right_network,

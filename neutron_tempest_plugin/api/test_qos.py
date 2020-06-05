@@ -82,6 +82,33 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         retrieved_policy = policies[0]
         self.assertEqual('test', retrieved_policy['name'])
 
+    @decorators.idempotent_id('dde0b449-a400-4a87-b5a5-4d1c413c917b')
+    def test_list_policy_sort_by_name(self):
+        policyA = 'A' + data_utils.rand_name("policy")
+        policyB = 'B' + data_utils.rand_name("policy")
+        self.create_qos_policy(name=policyA, description='test policy',
+                               shared=False)
+        self.create_qos_policy(name=policyB, description='test policy',
+                               shared=False)
+
+        param = {
+            'sort_key': 'name',
+            'sort_dir': 'asc'
+        }
+        policies = (self.admin_client.list_qos_policies(**param)['policies'])
+        policy_names = [p['name'] for p in policies]
+        self.assertLess(policy_names.index(policyA),
+                        policy_names.index(policyB))
+
+        param = {
+            'sort_key': 'name',
+            'sort_dir': 'desc'
+        }
+        policies = (self.admin_client.list_qos_policies(**param)['policies'])
+        policy_names = [p['name'] for p in policies]
+        self.assertLess(policy_names.index(policyB),
+                        policy_names.index(policyA))
+
     @decorators.idempotent_id('8e88a54b-f0b2-4b7d-b061-a15d93c2c7d6')
     def test_policy_update(self):
         policy = self.create_qos_policy(name='test-policy',

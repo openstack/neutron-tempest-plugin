@@ -16,6 +16,7 @@
         - dhcp_agent_scheduler
         - dns-domain-ports
         - dns-integration
+        - dns-integration-domain-keywords
         - empty-string-filtering
         - expose-port-forwarding-in-fip
         - expose-l3-conntrack-helper

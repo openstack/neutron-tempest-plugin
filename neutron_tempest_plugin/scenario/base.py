@@ -259,8 +259,10 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                                                'server']['id'])['ports'][0]
         self.fip = self.create_floatingip(port=self.port)
 
-    def check_connectivity(self, host, ssh_user, ssh_key, servers=None):
-        ssh_client = ssh.Client(host, ssh_user, pkey=ssh_key)
+    def check_connectivity(self, host, ssh_user, ssh_key,
+                           servers=None, ssh_timeout=None):
+        ssh_client = ssh.Client(host, ssh_user,
+                                pkey=ssh_key, timeout=ssh_timeout)
         try:
             ssh_client.test_connection_auth()
         except lib_exc.SSHTimeout as ssh_e:

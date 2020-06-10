@@ -7,11 +7,13 @@
         - neutron-tempest-plugin-scenario-linuxbridge
         - neutron-tempest-plugin-scenario-openvswitch
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+        - neutron-tempest-plugin-scenario-ovn
     gate:
       jobs:
         - neutron-tempest-plugin-api
         - neutron-tempest-plugin-scenario-linuxbridge
         - neutron-tempest-plugin-scenario-openvswitch
+        - neutron-tempest-plugin-scenario-ovn
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
     #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
     #              the experimental queue when it will be more stable
@@ -104,6 +106,7 @@
         - neutron-tempest-plugin-scenario-linuxbridge-ussuri
         - neutron-tempest-plugin-scenario-openvswitch-ussuri
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-ussuri
+        - neutron-tempest-plugin-scenario-ovn-ussuri
     gate:
       jobs:
         - neutron-tempest-plugin-api-ussuri

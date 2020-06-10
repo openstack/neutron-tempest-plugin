@@ -115,6 +115,16 @@
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
 
 - job:
+    name: neutron-tempest-plugin-scenario-ovn-ussuri
+    parent: neutron-tempest-plugin-scenario-ovn
+    override-checkout: stable/ussuri
+    vars:
+      branch_override: stable/ussuri
+      network_api_extensions: *api_extensions
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+
+- job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-ussuri
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     override-checkout: stable/ussuri

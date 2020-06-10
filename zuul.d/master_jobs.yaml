@@ -183,6 +183,66 @@
               q_agent: linuxbridge
 
 - job:
+    name: neutron-tempest-plugin-scenario-ovn
+    parent: neutron-tempest-plugin-scenario
+    timeout: 10000
+    vars:
+      network_api_extensions: *api_extensions
+      # TODO(haleyb): Remove this blacklist when
+      # https://bugs.launchpad.net/neutron/+bug/1881558 is fixed.
+      tempest_black_regex: "(?:neutron_tempest_plugin.scenario.test_ipv6.IPv6Test)"
+      devstack_localrc:
+        Q_AGENT: ovn
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: ovn,logger
+        Q_ML2_PLUGIN_TYPE_DRIVERS: local,flat,vlan,geneve
+        Q_ML2_TENANT_NETWORK_TYPE: geneve
+        Q_USE_PROVIDERNET_FOR_PUBLIC: true
+        PHYSICAL_NETWORK: public
+        ENABLE_CHASSIS_AS_GW: true
+        OVN_L3_CREATE_PUBLIC_NETWORK: true
+        OVN_DBS_LOG_LEVEL: dbg
+        # TODO(mjozefcz): Stop compiling OVS modules when meter action in kernel
+        # will be released in Ubuntu Bionic.
+        # More info: https://mail.openvswitch.org/pipermail/ovs-discuss/2018-December/048009.html
+        OVN_BUILD_MODULES: True
+        ENABLE_TLS: True
+        OVN_IGMP_SNOOPING_ENABLE: True
+      devstack_services:
+        br-ex-tcpdump: true
+        br-int-flows: true
+        q-ovn-metadata-agent: true
+        ovn-controller: true
+        ovn-northd: true
+        ovs-vswitchd: true
+        ovsdb-server: true
+        q-agt: false
+        q-dhcp: false
+        q-l3: false
+        q-meta: false
+        q-metering: false
+        s-account: false
+        s-container-sync: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+        tls-proxy: true
+        q-qos: true
+      devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              enable_dvr: false
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            ml2:
+              type_drivers: local,flat,vlan,geneve
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_plugin_options:
+              available_type_drivers: local,flat,vlan,geneve
+              is_igmp_snooping_enabled: True
+
+- job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
     parent: tempest-multinode-full
     description: |

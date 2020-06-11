@@ -26,7 +26,9 @@ except ImportError:
     from urllib import parse as urlparse
 
 import eventlet
+
 from tempest.lib import exceptions
+
 
 SCHEMA_PORT_MAPPING = {
     "http": 80,

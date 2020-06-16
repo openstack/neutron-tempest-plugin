@@ -144,7 +144,7 @@
 
 - job:
     name: neutron-tempest-plugin-fwaas-train
-    parent: neutron-tempest-plugin-fwaas
+    parent: neutron-tempest-plugin-fwaas-ussuri
     override-checkout: stable/train
     vars:
       branch_override: stable/train

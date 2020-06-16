@@ -418,27 +418,6 @@
         networking-bagpipe: https://git.openstack.org/openstack/networking-bagpipe
 
 - job:
-    name: neutron-tempest-plugin-fwaas
-    parent: neutron-tempest-plugin-base
-    timeout: 10800
-    required-projects:
-      - openstack/devstack-gate
-      - openstack/neutron-fwaas
-      - openstack/neutron
-      - openstack/neutron-tempest-plugin
-      - openstack/tempest
-    vars:
-      tempest_test_regex: ^neutron_tempest_plugin\.fwaas
-      devstack_plugins:
-        neutron-fwaas: https://opendev.org/openstack/neutron-fwaas.git
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
-      network_api_extensions_common: *api_extensions
-      network_api_extensions_fwaas:
-        - fwaas_v2
-      devstack_localrc:
-        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_fwaas) | join(',') }}"
-
-- job:
     name: neutron-tempest-plugin-dynamic-routing
     parent: neutron-tempest-plugin-base
     description: |

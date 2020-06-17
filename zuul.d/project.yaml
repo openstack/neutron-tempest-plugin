@@ -4,7 +4,6 @@
       jobs:
         - neutron-tempest-plugin-api
         - neutron-tempest-plugin-designate-scenario
-        - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-scenario-linuxbridge
         - neutron-tempest-plugin-scenario-openvswitch
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
@@ -14,19 +13,30 @@
         - neutron-tempest-plugin-scenario-linuxbridge
         - neutron-tempest-plugin-scenario-openvswitch
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario
+
 
 - project-template:
     name: neutron-tempest-plugin-jobs-queens
     check:
       jobs:
         - neutron-tempest-plugin-api-queens
-        - neutron-tempest-plugin-designate-scenario-queens
         - neutron-tempest-plugin-dvr-multinode-scenario-queens
         - neutron-tempest-plugin-scenario-linuxbridge-queens
         - neutron-tempest-plugin-scenario-openvswitch-queens
     gate:
       jobs:
         - neutron-tempest-plugin-api-queens
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-queens
+
 
 - project-template:
     name: neutron-tempest-plugin-jobs-rocky
@@ -34,13 +44,18 @@
       jobs:
         - neutron-tempest-plugin-api-rocky
         - neutron-tempest-plugin-designate-scenario-rocky
-        - neutron-tempest-plugin-dvr-multinode-scenario-rocky
         - neutron-tempest-plugin-scenario-linuxbridge-rocky
         - neutron-tempest-plugin-scenario-openvswitch-rocky
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-rocky
     gate:
       jobs:
         - neutron-tempest-plugin-api-rocky
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-rocky
+
 
 - project-template:
     name: neutron-tempest-plugin-jobs-stein
@@ -48,13 +63,18 @@
       jobs:
         - neutron-tempest-plugin-api-stein
         - neutron-tempest-plugin-designate-scenario-stein
-        - neutron-tempest-plugin-dvr-multinode-scenario-stein
         - neutron-tempest-plugin-scenario-linuxbridge-stein
         - neutron-tempest-plugin-scenario-openvswitch-stein
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-stein
     gate:
       jobs:
         - neutron-tempest-plugin-api-stein
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-stein
+
 
 - project-template:
     name: neutron-tempest-plugin-jobs-train
@@ -62,13 +82,18 @@
       jobs:
         - neutron-tempest-plugin-api-train
         - neutron-tempest-plugin-designate-scenario-train
-        - neutron-tempest-plugin-dvr-multinode-scenario-train
         - neutron-tempest-plugin-scenario-linuxbridge-train
         - neutron-tempest-plugin-scenario-openvswitch-train
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-train
     gate:
       jobs:
         - neutron-tempest-plugin-api-train
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-train
+
 
 - project-template:
     name: neutron-tempest-plugin-jobs-ussuri
@@ -76,13 +101,18 @@
       jobs:
         - neutron-tempest-plugin-api-ussuri
         - neutron-tempest-plugin-designate-scenario-ussuri
-        - neutron-tempest-plugin-dvr-multinode-scenario-ussuri
         - neutron-tempest-plugin-scenario-linuxbridge-ussuri
         - neutron-tempest-plugin-scenario-openvswitch-ussuri
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-ussuri
     gate:
       jobs:
         - neutron-tempest-plugin-api-ussuri
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-ussuri
+
 
 - project:
     templates:

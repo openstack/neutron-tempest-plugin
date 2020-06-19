@@ -459,7 +459,26 @@ class FloatingIpMultipleRoutersTest(base.BaseTempestTestCase):
         self.create_pingable_secgroup_rule(
             secgroup_id=self.secgroup['id'])
 
-    def _create_network_and_servers(self, servers_num=1, fip_addresses=None):
+    def _delete_floating_ip(self, fip_address):
+        ip_address = fip_address['floating_ip_address']
+
+        def _fip_is_free():
+            fips = self.os_admin.network_client.list_floatingips()
+            for fip in fips['floatingips']:
+                if ip_address == fip['floating_ip_address']:
+                    return False
+            return True
+
+        self.delete_floatingip(fip_address)
+        try:
+            common_utils.wait_until_true(_fip_is_free, timeout=30, sleep=5)
+        except common_utils.WaitTimeout:
+            self.fail("Can't reuse IP address %s because it is not free" %
+                      ip_address)
+
+    def _create_network_and_servers(self, servers_num=1, fip_addresses=None,
+                                    delete_fip_ids=None):
+        delete_fip_ids = delete_fip_ids or []
         if fip_addresses:
             self.assertEqual(servers_num, len(fip_addresses),
                              ('Number of specified fip addresses '
@@ -472,12 +491,15 @@ class FloatingIpMultipleRoutersTest(base.BaseTempestTestCase):
         fips = []
         for server in range(servers_num):
             fip = fip_addresses[server] if fip_addresses else None
+            delete_fip = fip['id'] in delete_fip_ids if fip else False
             fips.append(
-                self._create_server_and_fip(
-                    network=network, fip_address=fip))
+                self._create_server_and_fip(network=network,
+                                            fip_address=fip,
+                                            delete_fip_address=delete_fip))
         return fips
 
-    def _create_server_and_fip(self, network, fip_address=None):
+    def _create_server_and_fip(self, network, fip_address=None,
+                               delete_fip_address=False):
         server = self.create_server(
             flavor_ref=CONF.compute.flavor_ref,
             image_ref=CONF.compute.image_ref,
@@ -492,8 +514,10 @@ class FloatingIpMultipleRoutersTest(base.BaseTempestTestCase):
             device_id=server['server']['id'])['ports'][0]
 
         if fip_address:
+            if delete_fip_address:
+                self._delete_floating_ip(fip_address)
             fip = self.create_floatingip(
-                floating_ip_address=fip_address,
+                floating_ip_address=fip_address['floating_ip_address'],
                 client=self.os_admin.network_client,
                 port=port)
             self.addCleanup(
@@ -524,11 +548,13 @@ class FloatingIpMultipleRoutersTest(base.BaseTempestTestCase):
             3. Create and connect 2 VMs to the internal network.
             4. Create FIPs in the external network for the VMs.
             5. Make sure that VM1 can ping VM2 FIP address.
-            6. Delete VM2 FIP but save IP address that it used.
-            7. Create and connect one more router to the external network.
-            8. Create and connect an internal network to the second router.
-            9. Create and connect a VM (VM3) to the internal network of
+            6. Create and connect one more router to the external network.
+            7. Create and connect an internal network to the second router.
+            8. Create and connect a VM (VM3) to the internal network of
                the second router.
+            9. Delete VM2 FIP but save IP address that it used. The FIP is
+               deleted just before the creation of the new IP to "reserve" the
+               IP address associated (see LP#1880976).
             10. Create a FIP for the VM3 in the external network with
                the same IP address that was used for VM2.
             11. Make sure that now VM1 is able to reach VM3 using the FIP.
@@ -542,23 +568,7 @@ class FloatingIpMultipleRoutersTest(base.BaseTempestTestCase):
         [mutable_fip, permanent_fip] = (
             self._create_network_and_servers(servers_num=2))
         self._check_fips_connectivity(mutable_fip, permanent_fip)
-        ip_address = mutable_fip['floating_ip_address']
-        self.delete_floatingip(mutable_fip)
-
-        def _fip_is_free():
-            fips = self.os_admin.network_client.list_floatingips(
-                    )['floatingips']
-            for fip in fips:
-                if ip_address == fip['floating_ip_address']:
-                    return False
-            return True
-
-        try:
-            common_utils.wait_until_true(lambda: _fip_is_free(),
-                                         timeout=30, sleep=5)
-        except common_utils.WaitTimeout:
-            self.fail("Can't reuse IP address because it is not free")
-
         [mutable_fip] = self._create_network_and_servers(
-            servers_num=1, fip_addresses=[ip_address])
+            servers_num=1, fip_addresses=[mutable_fip],
+            delete_fip_ids=[mutable_fip['id']])
         self._check_fips_connectivity(mutable_fip, permanent_fip)

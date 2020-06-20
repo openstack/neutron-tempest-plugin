@@ -22,8 +22,10 @@ import netaddr
 from neutron_lib import constants
 from oslo_log import log
 from oslo_utils import excutils
+from tempest.common import waiters
 
 from neutron_tempest_plugin.common import shell
+from neutron_tempest_plugin.common import utils as common_utils
 
 
 LOG = log.getLogger(__name__)
@@ -375,3 +377,25 @@ def find_valid_cidr(valid_cidr='10.0.0.0/8', used_cidr=None):
     if used_cidr:
         exception_str += ', used CIDR %s' % used_cidr
     raise Exception(exception_str)
+
+
+def wait_for_interface_status(client, server_id, port_id, status,
+                              ssh_client=None, mac_address=None):
+    """Waits for an interface to reach a given status and checks VM NIC
+
+    This method enhances the tempest one. Apart from checking the interface
+    status returned by Nova, this methods access the VM to check if the NIC
+    interface is already detected by the kernel.
+    """
+    body = waiters.wait_for_interface_status(client, server_id, port_id,
+                                             status)
+
+    if ssh_client and mac_address:
+        ip_command = IPCommand(ssh_client)
+        common_utils.wait_until_true(
+            lambda: ip_command.get_nic_name_by_mac(mac_address),
+            timeout=10,
+            exception=RuntimeError('Interface with MAC %s not present in the '
+                                   'VM' % mac_address))
+
+    return body

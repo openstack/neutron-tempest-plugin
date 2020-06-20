@@ -16,7 +16,6 @@
 from neutron_lib import constants as lib_constants
 from oslo_log import log
 from tempest.common import utils as tempest_utils
-from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
@@ -158,9 +157,10 @@ class IPv6Test(base.BaseTempestTestCase):
         # And plug VM to the second IPv6 network
         ipv6_port = self.create_port(ipv6_networks[1])
         self.create_interface(vm['id'], ipv6_port['id'])
-        waiters.wait_for_interface_status(
+        ip.wait_for_interface_status(
             self.os_primary.interfaces_client, vm['id'],
-            ipv6_port['id'], lib_constants.PORT_STATUS_ACTIVE)
+            ipv6_port['id'], lib_constants.PORT_STATUS_ACTIVE,
+            ssh_client=ssh_client, mac_address=ipv6_port['mac_address'])
         self._test_ipv6_address_configured(ssh_client, vm, ipv6_port)
 
     @decorators.idempotent_id('b13e5408-5250-4a42-8e46-6996ce613e91')

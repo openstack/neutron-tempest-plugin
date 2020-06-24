@@ -34,6 +34,8 @@
         neutron-port-forwarding: true
         neutron-conntrack-helper: true
         neutron-tag-ports-during-bulk-creation: true
+        br-ex-tcpdump: true
+        br-int-flows: true
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:

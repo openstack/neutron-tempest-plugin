@@ -97,9 +97,9 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-ussuri
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
-    override-checkout: stable-ussuri
+    override-checkout: stable/ussuri
     vars:
-      branch_override: stable-ussuri
+      branch_override: stable/ussuri
       network_api_extensions: *api_extensions
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"

@@ -62,11 +62,10 @@ def get_ncat_server_cmd(port, protocol, msg=None):
         'udp': udp, 'port': port}
     if msg:
         if CONF.neutron_plugin_options.default_image_is_advanced:
-            cmd += "-c 'echo %s' &" % msg
+            cmd += "-c 'echo %s' " % msg
         else:
-            cmd += "-e echo %s &" % msg
-    else:
-        cmd += "< /dev/zero &"
+            cmd += "-e echo %s " % msg
+    cmd += "< /dev/zero &{0}sleep 0.1{0}".format('\n')
     return cmd
 
 
@@ -497,7 +496,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         try:
             return ssh_client.execute_script(
                 get_ncat_server_cmd(port, protocol, echo_msg),
-                become_root=True)
+                become_root=True, combine_stderr=True)
         except lib_exc.SSHTimeout as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)

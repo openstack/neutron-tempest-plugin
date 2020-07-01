@@ -446,11 +446,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         self.wait_for_server_status(
             server, constants.SERVER_STATUS_ACTIVE, client)
 
-    def check_servers_hostnames(self, servers, log_errors=True):
+    def check_servers_hostnames(self, servers, timeout=None, log_errors=True):
         """Compare hostnames of given servers with their names."""
         try:
             for server in servers:
                 kwargs = {}
+                if timeout:
+                    kwargs['timeout'] = timeout
                 try:
                     kwargs['port'] = (
                         server['port_forwarding_tcp']['external_port'])

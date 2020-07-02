@@ -37,7 +37,7 @@ def _setup_client_args(auth_provider):
     # The disable_ssl appears in identity
     disable_ssl_certificate_validation = (
         CONF.identity.disable_ssl_certificate_validation)
-    ca_certs = None
+    ca_certs = CONF.identity.ca_certificates_file
 
     # Trace in debug section
     trace_requests = CONF.debug.trace_requests

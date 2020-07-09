@@ -26,29 +26,8 @@ from neutron_tempest_plugin.services.bgp import bgp_client
 CONF = config.CONF
 
 
-def _setup_client_args(auth_provider):
-    """Set up ServiceClient arguments using config settings. """
-    service = CONF.network.catalog_type or 'network'
-    region = CONF.network.region or 'regionOne'
-    endpoint_type = CONF.network.endpoint_type
-    build_interval = CONF.network.build_interval
-    build_timeout = CONF.network.build_timeout
-
-    # The disable_ssl appears in identity
-    disable_ssl_certificate_validation = (
-        CONF.identity.disable_ssl_certificate_validation)
-    ca_certs = CONF.identity.ca_certificates_file
-
-    # Trace in debug section
-    trace_requests = CONF.debug.trace_requests
-
-    return [auth_provider, service, region, endpoint_type,
-            build_interval, build_timeout,
-            disable_ssl_certificate_validation, ca_certs,
-            trace_requests]
-
-
 class BgpSpeakerTestJSONBase(base.BaseAdminNetworkTest):
+    credentials = ['primary', 'admin']
 
     default_bgp_speaker_args = {'local_as': '1234',
                                 'ip_version': 4,
@@ -65,18 +44,20 @@ class BgpSpeakerTestJSONBase(base.BaseAdminNetworkTest):
         super(BgpSpeakerTestJSONBase, self).setUp()
 
     @classmethod
-    def _setup_bgp_admin_client(cls):
-        mgr = cls.get_client_manager(credential_type='admin')
-        auth_provider = mgr.auth_provider
-        client_args = _setup_client_args(auth_provider)
-        cls.bgp_adm_client = bgp_client.BgpSpeakerClientJSON(*client_args)
+    def setup_clients(cls):
+        super(BgpSpeakerTestJSONBase, cls).setup_clients()
+        cls.bgp_client = cls.os_primary.bgp_client
+        cls.bgp_adm_client = cls.os_admin.bgp_client
 
     @classmethod
-    def _setup_bgp_non_admin_client(cls):
-        mgr = cls.get_client_manager()
-        auth_provider = mgr.auth_provider
-        client_args = _setup_client_args(auth_provider)
-        cls.bgp_client = bgp_client.BgpSpeakerClientJSON(*client_args)
+    def get_client_manager(cls, credential_type=None, roles=None,
+                           force_new=None):
+        manager = super(BgpSpeakerTestJSONBase, cls).get_client_manager(
+            credential_type=credential_type,
+            roles=roles,
+            force_new=force_new
+        )
+        return bgp_client.Manager(manager.credentials)
 
     @classmethod
     def resource_setup(cls):
@@ -89,8 +70,6 @@ class BgpSpeakerTestJSONBase(base.BaseAdminNetworkTest):
         cls.admin_floatingips = []
         cls.admin_routers = []
         cls.ext_net_id = CONF.network.public_network_id
-        cls._setup_bgp_admin_client()
-        cls._setup_bgp_non_admin_client()
 
     @classmethod
     def resource_cleanup(cls):

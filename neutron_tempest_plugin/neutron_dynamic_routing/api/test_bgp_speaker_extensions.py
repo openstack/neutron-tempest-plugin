@@ -149,6 +149,19 @@ class BgpSpeakerTestJSONBase(base.BaseAdminNetworkTest):
     def delete_address_scope(self, id):
         return self.admin_client.delete_address_scope(id)
 
+    def create_router(self, ext_gw_info):
+        try:
+            router = self.admin_client.create_router(
+                                            'my-router',
+                                            external_gateway_info=ext_gw_info,
+                                            distributed=False)
+        # Retry if not running with DVR enabled
+        except lib_exc.BadRequest:
+            router = self.admin_client.create_router(
+                                            'my-router',
+                                            external_gateway_info=ext_gw_info)
+        return router['router']
+
 
 class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
 
@@ -253,16 +266,12 @@ class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
         tenant_net = self.create_network()
         tenant_subnet = self.create_subnet(tenant_net)
         ext_gw_info = {'network_id': self.ext_net_id}
-        router = self.admin_client.create_router(
-                                            'my-router',
-                                            external_gateway_info=ext_gw_info,
-                                            admin_state_up=True,
-                                            distributed=False)
-        self.admin_routers.append(router['router'])
+        router = self.create_router(ext_gw_info)
+        self.admin_routers.append(router)
         self.admin_client.add_router_interface_with_subnet_id(
-                                                       router['router']['id'],
+                                                       router['id'],
                                                        tenant_subnet['id'])
-        self.admin_routerports.append({'router_id': router['router']['id'],
+        self.admin_routerports.append({'router_id': router['id'],
                                        'subnet_id': tenant_subnet['id']})
         tenant_port = self.create_port(tenant_net)
         floatingip = self.create_floatingip(self.ext_net_id)
@@ -302,10 +311,7 @@ class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
                                        ip_version=4,
                                        subnetpool_id=tenant_subnetpool['id'])
         ext_gw_info = {'network_id': ext_net['id']}
-        router = self.admin_client.create_router(
-                                            'my-router',
-                                            external_gateway_info=ext_gw_info,
-                                            distributed=False)['router']
+        router = self.create_router(ext_gw_info)
         self.admin_routers.append(router)
         self.admin_client.add_router_interface_with_subnet_id(
                                                        router['id'],

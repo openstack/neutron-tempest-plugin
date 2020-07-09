@@ -98,10 +98,7 @@ class BgpSpeakerTestJSONNegative(test_base.BgpSpeakerTestJSONBase):
                                        ip_version=4,
                                        subnetpool_id=tenant_subnetpool2['id'])
         ext_gw_info = {'network_id': ext_net['id']}
-        router = self.admin_client.create_router(
-                                  'my-router',
-                                  distributed=False,
-                                  external_gateway_info=ext_gw_info)['router']
+        router = self.create_router(ext_gw_info)
         self.admin_routers.append(router)
         self.admin_client.add_router_interface_with_subnet_id(
                                                        router['id'],

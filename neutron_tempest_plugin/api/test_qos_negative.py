@@ -12,6 +12,7 @@
 
 from neutron_lib.api.definitions import qos as qos_apidef
 from neutron_lib.db import constants as db_const
+from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
@@ -65,3 +66,35 @@ class QosNegativeTestJSON(base.BaseAdminNetworkTest):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.update_qos_policy, policy['id'],
                           description=LONG_DESCRIPTION_NG)
+
+
+class QosBandwidthLimitRuleNegativeTestJSON(base.BaseAdminNetworkTest):
+
+    required_extensions = [qos_apidef.ALIAS]
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('e9ce8042-c828-4cb9-b1f1-85bd35e6553a')
+    def test_rule_update_rule_nonexistent_policy(self):
+        non_exist_id = data_utils.rand_name('qos_policy')
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        rule = self.create_qos_bandwidth_limit_rule(policy_id=policy['id'],
+                                                    max_kbps=1,
+                                                    max_burst_kbps=1)
+        self.assertRaises(
+            lib_exc.NotFound,
+            self.admin_client.update_bandwidth_limit_rule,
+            non_exist_id, rule['id'], max_kbps=200, max_burst_kbps=1337)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('a2c72066-0c32-4f28-be7f-78fa721588b6')
+    def test_rule_update_rule_nonexistent_rule(self):
+        non_exist_id = data_utils.rand_name('qos_rule')
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        self.assertRaises(
+            lib_exc.NotFound,
+            self.admin_client.update_bandwidth_limit_rule,
+            policy['id'], non_exist_id, max_kbps=200, max_burst_kbps=1337)

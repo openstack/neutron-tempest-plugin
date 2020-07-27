@@ -302,7 +302,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     def _check_remote_connectivity(self, source, dest, count,
                                    should_succeed=True,
                                    nic=None, mtu=None, fragmentation=True,
-                                   timeout=None, pattern=None):
+                                   timeout=None, pattern=None,
+                                   forbid_packet_loss=False):
         """check ping server via source ssh connection
 
         :param source: RemoteClient: an ssh connection from which to ping
@@ -314,6 +315,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         :param fragmentation: Flag for packet fragmentation
         :param timeout: Timeout for all ping packet(s) to succeed
         :param pattern: hex digits included in ICMP messages
+        :param forbid_packet_loss: forbid or allow some lost packets
         :returns: boolean -- should_succeed == ping
         :returns: ping is false if ping failed
         """
@@ -352,6 +354,10 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 return not should_succeed
             LOG.debug('ping result: %s', result)
 
+            if forbid_packet_loss and ' 0% packet loss' not in result:
+                LOG.debug('Packet loss detected')
+                return not should_succeed
+
             if validators.validate_ip_address(dest) is None:
                 # Assert that the return traffic was from the correct
                 # source address.
@@ -366,12 +372,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                                   nic=None, mtu=None, fragmentation=True,
                                   servers=None, timeout=None,
                                   ping_count=CONF.validation.ping_count,
-                                  pattern=None):
+                                  pattern=None, forbid_packet_loss=False):
         try:
             self.assertTrue(self._check_remote_connectivity(
                 source, dest, ping_count, should_succeed, nic, mtu,
                 fragmentation,
-                timeout=timeout, pattern=pattern))
+                timeout=timeout, pattern=pattern,
+                forbid_packet_loss=forbid_packet_loss))
         except lib_exc.SSHTimeout as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)

@@ -27,7 +27,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-api-queens
-        - neutron-tempest-plugin-dvr-multinode-scenario-queens
         - neutron-tempest-plugin-scenario-linuxbridge-queens
         - neutron-tempest-plugin-scenario-openvswitch-queens
     gate:

@@ -136,28 +136,6 @@ class PortsTestJSON(base.BaseNetworkTest):
         expected = [s['id'], s['id']]
         self.assertEqual(expected, subnets)
 
-    @decorators.idempotent_id('9700828d-86eb-4f21-9fa3-da487a2d77f2')
-    @utils.requires_ext(extension="uplink-status-propagation",
-                        service="network")
-    def test_create_port_with_propagate_uplink_status(self):
-        body = self.create_port(self.network, propagate_uplink_status=True)
-        self.assertTrue(body['propagate_uplink_status'])
-        body = self.client.list_ports(id=body['id'])['ports'][0]
-        self.assertTrue(body['propagate_uplink_status'])
-        body = self.client.show_port(body['id'])['port']
-        self.assertTrue(body['propagate_uplink_status'])
-
-    @decorators.idempotent_id('c396a880-0c7b-409d-a80b-800a3d09bdc4')
-    @utils.requires_ext(extension="uplink-status-propagation",
-                        service="network")
-    def test_create_port_without_propagate_uplink_status(self):
-        body = self.create_port(self.network)
-        self.assertFalse(body['propagate_uplink_status'])
-        body = self.client.list_ports(id=body['id'])['ports'][0]
-        self.assertFalse(body['propagate_uplink_status'])
-        body = self.client.show_port(body['id'])['port']
-        self.assertFalse(body['propagate_uplink_status'])
-
 
 class PortsSearchCriteriaTest(base.BaseSearchCriteriaTest):
 

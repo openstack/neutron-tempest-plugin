@@ -115,6 +115,12 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+      devstack_local_conf:
+        post-config:
+          $NEUTRON_L3_CONF:
+            DEFAULT:
+              # NOTE(slaweq): on Xenial keepalived don't knows this option yet
+              keepalived_use_no_track: False
       # NOTE(bcafarel): newer tests, unstable on rocky branch
       tempest_black_regex: "\
           (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
@@ -152,6 +158,12 @@
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+      devstack_local_conf:
+        post-config:
+          $NEUTRON_L3_CONF:
+            DEFAULT:
+              # NOTE(slaweq): on Xenial keepalived don't knows this option yet
+              keepalived_use_no_track: False
       # TODO(bcafarel): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
       # NOTE(bcafarel): other are newer tests, unstable on rocky branch
@@ -209,6 +221,10 @@
           /$NEUTRON_CORE_PLUGIN_CONF:
             ml2:
               type_drivers: flat,vlan,local,vxlan
+          $NEUTRON_L3_CONF:
+            DEFAULT:
+              # NOTE(slaweq): on Xenial keepalived don't knows this option yet
+              keepalived_use_no_track: False
         test-config:
           # NOTE: ignores linux bridge's trunk delete on bound port test
           # for rocky branch (as https://review.opendev.org/#/c/605589/

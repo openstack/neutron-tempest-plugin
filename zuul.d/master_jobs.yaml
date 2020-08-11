@@ -112,6 +112,7 @@
           $NEUTRON_CONF:
             DEFAULT:
               enable_dvr: false
+              l3_ha: true
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
           # devstack-tempest job will be switched to use lib/neutron instead of
           # lib/neutron-legacy
@@ -146,6 +147,7 @@
           $NEUTRON_CONF:
             DEFAULT:
               enable_dvr: false
+              l3_ha: true
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
           # devstack-tempest job will be switched to use lib/neutron instead of
           # lib/neutron-legacy
@@ -188,6 +190,7 @@
             DEFAULT:
               enable_dvr: false
               vlan_transparent: true
+              l3_ha: true
             AGENT:
               debug_iptables_rules: true
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when

@@ -538,3 +538,32 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
         # make sure the rbac-policy is invisible to the tenant for which it's
         # being shared
         self.assertFalse(self.client.list_rbac_policies()['rbac_policies'])
+
+
+class SecGroupSearchCriteriaTest(base.BaseSearchCriteriaTest):
+
+    required_extensions = ['security-group']
+    resource = 'security-group'
+
+    @classmethod
+    def resource_setup(cls):
+        super(SecGroupSearchCriteriaTest, cls).resource_setup()
+        cls.security_group = cls.create_security_group()
+        for name in cls.resource_names:
+            cls.create_security_group(name=name)
+
+    @decorators.idempotent_id('0064aa80-8a29-442d-a8de-9101af8210fa')
+    def test_list_sorts_by_name_asc(self):
+        self._test_list_sorts_asc()
+
+    @decorators.idempotent_id('35e86832-53cd-4e63-97ec-31a2413da591')
+    def test_list_sorts_by_name_desc(self):
+        self._test_list_sorts_desc()
+
+    @decorators.idempotent_id('b9654cdc-80bc-43f8-844e-dfe88fd2f125')
+    def test_list_pagination(self):
+        self._test_list_pagination()
+
+    @decorators.idempotent_id('5c78bd57-e6e9-4e71-a05c-9c4082a3f139')
+    def test_list_no_pagination_limit_0(self):
+        self._test_list_no_pagination_limit_0()

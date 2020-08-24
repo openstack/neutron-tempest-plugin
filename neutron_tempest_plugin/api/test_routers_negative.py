@@ -67,6 +67,27 @@ class RoutersNegativePolicyTest(RoutersNegativeTestBase):
             client2.add_router_interface_with_subnet_id(
                 self.router['id'], subnet['id'])
 
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('8010d27e-4ab7-4ea3-98b1-3995b7910efd')
+    def test_add_interface_in_use(self):
+        port = self.create_port(self.network)
+        self.client.add_router_interface_with_port_id(
+            self.router['id'], port['id'])
+        self.assertRaises(
+            lib_exc.Conflict,
+            self.client.add_router_interface_with_port_id,
+            self.router['id'], port['id'])
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('ed84c800-ee29-4b76-9419-d6d7b143fc47')
+    def test_add_interface_port_nonexist(self):
+        # port id is not a valid UUID
+        invalid_id = data_utils.rand_name('port')
+        self.assertRaises(
+            lib_exc.BadRequest,
+            self.client.add_router_interface_with_port_id,
+            self.router['id'], invalid_id)
+
 
 class DvrRoutersNegativeTest(RoutersNegativeTestBase):
 

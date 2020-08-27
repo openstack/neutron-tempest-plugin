@@ -14,6 +14,7 @@
 #    under the License.
 
 from neutron_lib import constants
+from neutron_lib.utils import test
 from oslo_log import log
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -108,6 +109,7 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                     "Timed out waiting for message from server {!r} ".format(
                         server['id'])))
 
+    @test.unstable_test("bug 1896735")
     @decorators.idempotent_id('ab40fc48-ca8d-41a0-b2a3-f6679c847bfe')
     def test_port_forwarding_to_2_servers(self):
         udp_sg_rule = {'protocol': constants.PROTO_NAME_UDP,
@@ -123,6 +125,7 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
         # And now test UDP port forwarding using nc
         self._test_udp_port_forwarding(servers)
 
+    @test.unstable_test("bug 1896735")
     @decorators.idempotent_id('aa19d46c-a4a6-11ea-bb37-0242ac130002')
     def test_port_forwarding_editing_and_deleting_tcp_rule(self):
         server = self._prepare_resources(

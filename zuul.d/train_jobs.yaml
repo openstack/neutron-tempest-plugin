@@ -1,6 +1,7 @@
 - job:
     name: neutron-tempest-plugin-api-train
     parent: neutron-tempest-plugin-api
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/train
     vars:
       branch_override: stable/train
@@ -83,6 +84,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-train
     parent: neutron-tempest-plugin-scenario-openvswitch
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/train
     vars:
       branch_override: stable/train
@@ -93,6 +95,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-train
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/train
     vars:
       branch_override: stable/train
@@ -103,6 +106,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-train
     parent: neutron-tempest-plugin-scenario-linuxbridge
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/train
     vars:
       branch_override: stable/train
@@ -113,6 +117,7 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-train
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-bionic
     override-checkout: stable/train
     vars:
       network_api_extensions_common: *api_extensions
@@ -121,6 +126,7 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-train
     parent: neutron-tempest-plugin-designate-scenario
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/train
     vars:
       branch_override: stable/train
@@ -129,6 +135,7 @@
 - job:
     name: neutron-tempest-plugin-sfc-train
     parent: neutron-tempest-plugin-sfc
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/train
     vars:
       branch_override: stable/train
@@ -137,6 +144,7 @@
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-train
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/train
     vars:
       branch_override: stable/train
@@ -145,6 +153,7 @@
 - job:
     name: neutron-tempest-plugin-fwaas-train
     parent: neutron-tempest-plugin-fwaas-ussuri
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/train
     vars:
       branch_override: stable/train

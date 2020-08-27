@@ -158,6 +158,9 @@
     name: neutron-tempest-plugin-scenario-linuxbridge
     parent: neutron-tempest-plugin-scenario
     timeout: 10000
+    roles:
+      - zuul: openstack/neutron
+    pre-run: playbooks/linuxbridge-scenario-pre-run.yaml
     vars:
       network_api_extensions: *api_extensions
       devstack_localrc:
@@ -202,10 +205,6 @@
         ENABLE_CHASSIS_AS_GW: true
         OVN_L3_CREATE_PUBLIC_NETWORK: true
         OVN_DBS_LOG_LEVEL: dbg
-        # TODO(mjozefcz): Stop compiling OVS modules when meter action in kernel
-        # will be released in Ubuntu Bionic.
-        # More info: https://mail.openvswitch.org/pipermail/ovs-discuss/2018-December/048009.html
-        OVN_BUILD_MODULES: True
         ENABLE_TLS: True
         OVN_IGMP_SNOOPING_ENABLE: True
       devstack_services:

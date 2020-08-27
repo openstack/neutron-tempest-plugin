@@ -1,6 +1,7 @@
 - job:
     name: neutron-tempest-plugin-api-stein
     parent: neutron-tempest-plugin-api
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/stein
     vars:
       branch_override: stable/stein
@@ -78,6 +79,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-stein
     parent: neutron-tempest-plugin-scenario-openvswitch
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/stein
     vars:
       branch_override: stable/stein
@@ -88,6 +90,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-stein
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/stein
     vars:
       branch_override: stable/stein
@@ -98,6 +101,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-stein
     parent: neutron-tempest-plugin-scenario-linuxbridge
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/stein
     vars:
       branch_override: stable/stein
@@ -108,6 +112,7 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-stein
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-bionic
     override-checkout: stable/stein
     vars:
       network_api_extensions_common: *api_extensions
@@ -116,6 +121,7 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-stein
     parent: neutron-tempest-plugin-designate-scenario
+    nodeset: openstack-single-node-bionic
     override-checkout: stable/stein
     required-projects:
       - openstack/devstack-gate

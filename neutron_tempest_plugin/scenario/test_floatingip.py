@@ -392,6 +392,7 @@ class TestFloatingIPUpdate(FloatingIpTestCasesMixin,
 
     same_network = None
 
+    @test.unstable_test("bug 1897326")
     @decorators.idempotent_id('1bdd849b-03dd-4b8f-994f-457cf8a36f93')
     def test_floating_ip_update(self):
         """Test updating FIP with another port.

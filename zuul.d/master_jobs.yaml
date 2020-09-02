@@ -85,7 +85,9 @@
       devstack_services:
         neutron-log: true
       devstack_localrc:
-        NEUTRON_DEPLOY_MOD_WSGI: true
+        # TODO(lucasagomes): Re-enable MOD_WSGI after
+        # https://bugs.launchpad.net/neutron/+bug/1912359 is implemented
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         post-config:
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
@@ -116,10 +118,27 @@
     parent: neutron-tempest-plugin-scenario
     timeout: 10000
     vars:
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:
         Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
       devstack_local_conf:
         post-config:
@@ -163,6 +182,21 @@
     parent: neutron-tempest-plugin-scenario
     timeout: 10000
     vars:
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       # TODO(slaweq): remove trunks subport_connectivity test from blacklist
@@ -170,6 +204,8 @@
       tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)"
       devstack_localrc:
         Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
       devstack_local_conf:
         post-config:
@@ -219,6 +255,21 @@
       - zuul: openstack/neutron
     pre-run: playbooks/linuxbridge-scenario-pre-run.yaml
     vars:
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       network_api_extensions: *api_extensions
       network_api_extensions_linuxbridge:
         - vlan-transparent
@@ -229,6 +280,8 @@
       devstack_localrc:
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_linuxbridge) | join(',') }}"
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch,linuxbridge
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -546,6 +599,8 @@
       devstack_localrc:
         DESIGNATE_BACKEND_DRIVER: bind9
         Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         # In this job advanced image is not needed, so it's name should be
         # empty
         ADVANCED_IMAGE_NAME: ""
@@ -569,6 +624,20 @@
       devstack_services:
         cinder: false
         designate: true
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       tempest_plugins:
         - designate-tempest-plugin
         - neutron-tempest-plugin
@@ -659,10 +728,26 @@
         - bgp_4byte_asn
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_bgp) | join(',') }}"
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
       devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-meta: true
+        q-metering: true
+        q-l3: true
         neutron-dr: true
         neutron-dr-agent: true
-        q-l3: true
       tempest_concurrency: 1
       tempest_test_regex: ^neutron_tempest_plugin\.neutron_dynamic_routing
 

@@ -240,6 +240,7 @@
           $TEMPEST_CONFIG:
             neutron_plugin_options:
               available_type_drivers: local,flat,vlan,geneve
+              ipv6_metadata: False
               is_igmp_snooping_enabled: True
 
 - job:

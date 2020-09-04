@@ -93,6 +93,11 @@
       network_api_extensions: *api_extensions
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+      devstack_local_conf:
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_plugin_options:
+              ipv6_metadata: False
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-ussuri
@@ -103,6 +108,11 @@
       network_api_extensions: *api_extensions
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+      devstack_local_conf:
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_plugin_options:
+              ipv6_metadata: False
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-ussuri
@@ -113,6 +123,11 @@
       network_api_extensions: *api_extensions
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+      devstack_local_conf:
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_plugin_options:
+              ipv6_metadata: False
 
 - job:
     name: neutron-tempest-plugin-scenario-ovn-ussuri

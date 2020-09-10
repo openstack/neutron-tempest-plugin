@@ -478,7 +478,7 @@ class BaseNetworkTest(test.BaseTestCase):
         """
 
         if not cls.try_reserve_subnet_cidr(addr, **ipnetwork_kwargs):
-            raise ValueError('Subnet CIDR already reserved: %r'.format(
+            raise ValueError('Subnet CIDR already reserved: {0!r}'.format(
                 addr))
 
     @classmethod

@@ -295,7 +295,7 @@ def get_port_device_name(addresses, port):
     for address in list_ip_addresses(addresses=addresses, port=port):
         return address.device.name
 
-    msg = "Port %r fixed IPs not found on server.".format(port['id'])
+    msg = "Port {0!r} fixed IPs not found on server.".format(port['id'])
     raise ValueError(msg)
 
 

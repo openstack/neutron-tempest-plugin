@@ -33,13 +33,15 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
     required_extensions = ['router', 'security-group']
 
     def _verify_http_connection(self, ssh_client, ssh_server,
-                                test_ip, test_port, should_pass=True):
+                                test_ip, test_port, servers, should_pass=True):
         """Verify if HTTP connection works using remote hosts.
 
         :param ssh.Client ssh_client: The client host active SSH client.
         :param ssh.Client ssh_server: The HTTP server host active SSH client.
         :param string test_ip: IP address of HTTP server
         :param string test_port: Port of HTTP server
+        :param list servers: List of servers for which console output will be
+                             logged in case when test case
         :param bool should_pass: Wheter test should pass or not.
 
         :return: if passed or not
@@ -57,6 +59,8 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
         except Exception as e:
             if not should_pass:
                 return
+            self._log_console_output(servers)
+            self._log_local_network_status()
             raise e
 
     @classmethod
@@ -378,6 +382,7 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
                 ssh_clients[0],
                 ssh_clients[2],
                 test_ip, port,
+                servers,
                 should_pass=False)
 
         # add two remote-group rules with port-ranges
@@ -399,7 +404,8 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
             self._verify_http_connection(
                 ssh_clients[0],
                 ssh_clients[2],
-                test_ip, port)
+                test_ip, port,
+                servers)
 
     @decorators.idempotent_id('f07d0159-8f9e-4faa-87f5-a869ab0ad490')
     def test_intra_sg_isolation(self):

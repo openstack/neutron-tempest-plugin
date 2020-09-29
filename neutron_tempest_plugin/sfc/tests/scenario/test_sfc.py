@@ -14,6 +14,7 @@
 
 import time
 
+from neutron_lib.utils import test
 from oslo_log import log
 from tempest.common import utils
 from tempest import config
@@ -953,6 +954,7 @@ class TestSfc(base.SfcScenarioTest):
             username=self.ssh_user,
             private_key=self.keypair['private_key'])
 
+    @test.unstable_test("bug 1897753")
     @decorators.idempotent_id('f970f6b3-6541-47ac-a9ea-f769be1e21ba')
     @utils.services('compute', 'network')
     def test_update_port_pair_group_remove_port_pairs(self):

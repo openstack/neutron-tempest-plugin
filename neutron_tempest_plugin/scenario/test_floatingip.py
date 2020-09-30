@@ -392,7 +392,6 @@ class TestFloatingIPUpdate(FloatingIpTestCasesMixin,
 
     same_network = None
 
-    @test.unstable_test("bug 1897326")
     @decorators.idempotent_id('1bdd849b-03dd-4b8f-994f-457cf8a36f93')
     def test_floating_ip_update(self):
         """Test updating FIP with another port.
@@ -435,8 +434,7 @@ class TestFloatingIPUpdate(FloatingIpTestCasesMixin,
 
         # The FIP is now associated with the port of the second server.
         try:
-            common_utils.wait_until_true(_wait_for_fip_associated,
-                                         timeout=15, sleep=3)
+            common_utils.wait_until_true(_wait_for_fip_associated, sleep=3)
         except common_utils.WaitTimeout:
             self._log_console_output(servers[-1:])
             self.fail(

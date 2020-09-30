@@ -267,6 +267,9 @@ class TrunkTest(base.BaseTempestTestCase):
             use_advanced_image=use_advanced_image)
 
         for vm in [vm1, vm2]:
+            self.check_connectivity(
+                host=vm.floating_ip['floating_ip_address'],
+                ssh_client=vm.ssh_client)
             self._configure_vlan_subport(vm=vm,
                                          vlan_tag=vlan_tag,
                                          vlan_subnet=vlan_subnet)

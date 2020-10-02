@@ -353,6 +353,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._update_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
         self._check_l3_bgpvpn()
 
+    @test.unstable_test("bug 1897408")
     @decorators.idempotent_id('c8bfd695-f731-47a6-86e3-3dfa492e08e0')
     @utils.services('compute', 'network')
     def test_bgpvpn_update_rt_and_keep_local_connectivity_variant1(self):
@@ -404,6 +405,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
         self._check_l3_bgpvpn(self.servers[1], self.servers[3])
 
+    @test.unstable_test("bug 1897408")
     @decorators.idempotent_id('758a8731-5070-4b1e-9a66-d6ff05bb5be1')
     @utils.services('compute', 'network')
     def test_bgpvpn_update_rt_and_keep_local_connectivity_variant2(self):
@@ -544,6 +546,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             to_server_ip=IP_C_S1_1,
             validate_server=destination_srv_2)
 
+    @test.unstable_test("bug 1897408")
     @decorators.idempotent_id('f762e6ac-920e-4d0f-aa67-02bdd4ab8433')
     @utils.services('compute', 'network')
     def test_bgpvpn_tenant_separation_and_local_connectivity(self):

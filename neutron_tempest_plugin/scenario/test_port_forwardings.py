@@ -45,9 +45,14 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
         cls.secgroup = cls.create_security_group(
             name=data_utils.rand_name("test_port_secgroup"))
         cls.create_loginable_secgroup_rule(secgroup_id=cls.secgroup['id'])
+        udp_sg_rule = {'protocol': constants.PROTO_NAME_UDP,
+                       'direction': constants.INGRESS_DIRECTION,
+                       'remote_ip_prefix': '0.0.0.0/0'}
+        cls.create_secgroup_rules(
+            [udp_sg_rule], secgroup_id=cls.secgroup['id'])
         cls.keypair = cls.create_keypair()
 
-    def _prepare_resources(self, num_servers, internal_tcp_port, protocol,
+    def _prepare_resources(self, num_servers, internal_tcp_port=22,
                            external_port_base=1025):
         servers = []
         for i in range(1, num_servers + 1):
@@ -82,7 +87,7 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
             servers.append(server)
         return servers
 
-    def _test_udp_port_forwarding(self, servers):
+    def _test_udp_port_forwarding(self, servers, timeout=None):
 
         def _message_received(server, ssh_client, expected_msg):
             self.nc_listen(ssh_client,
@@ -103,23 +108,22 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                 CONF.validation.image_ssh_user,
                 pkey=self.keypair['private_key'],
                 port=server['port_forwarding_tcp']['external_port'])
+            wait_params = {
+                'exception': RuntimeError(
+                    "Timed out waiting for message from server {!r} ".format(
+                        server['id']))
+            }
+            if timeout:
+                wait_params['timeout'] = timeout
             utils.wait_until_true(
                 lambda: _message_received(server, ssh_client, expected_msg),
-                exception=RuntimeError(
-                    "Timed out waiting for message from server {!r} ".format(
-                        server['id'])))
+                **wait_params)
 
     @test.unstable_test("bug 1896735")
     @decorators.idempotent_id('ab40fc48-ca8d-41a0-b2a3-f6679c847bfe')
     def test_port_forwarding_to_2_servers(self):
-        udp_sg_rule = {'protocol': constants.PROTO_NAME_UDP,
-                       'direction': constants.INGRESS_DIRECTION,
-                       'remote_ip_prefix': '0.0.0.0/0'}
-        self.create_secgroup_rules(
-            [udp_sg_rule], secgroup_id=self.secgroup['id'])
-        servers = self._prepare_resources(
-            num_servers=2, internal_tcp_port=22,
-            protocol=constants.PROTO_NAME_TCP)
+        servers = self._prepare_resources(num_servers=2,
+                                          external_port_base=1035)
         # Test TCP port forwarding by SSH to each server
         self.check_servers_hostnames(servers)
         # And now test UDP port forwarding using nc
@@ -128,25 +132,16 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
     @test.unstable_test("bug 1896735")
     @decorators.idempotent_id('aa19d46c-a4a6-11ea-bb37-0242ac130002')
     def test_port_forwarding_editing_and_deleting_tcp_rule(self):
-        server = self._prepare_resources(
-            num_servers=1, internal_tcp_port=22,
-            protocol=constants.PROTO_NAME_TCP,
-            external_port_base=1035)
+        test_ext_port = 3333
+        server = self._prepare_resources(num_servers=1,
+                                         external_port_base=1045)
         fip_id = server[0]['port_forwarding_tcp']['floatingip_id']
         pf_id = server[0]['port_forwarding_tcp']['id']
 
         # Check connectivity with the original parameters
         self.check_servers_hostnames(server)
 
-        # Use a reasonable timeout to verify that connections will not
-        # happen. Default would be 196 seconds, which is an overkill.
-        test_ssh_connect_timeout = 6
-
-        # Update external port and check connectivity with original parameters
-        # Port under server[0]['port_forwarding_tcp']['external_port'] should
-        # not answer at this point.
-
-        def fip_pf_connectivity():
+        def fip_pf_connectivity(test_ssh_connect_timeout=60):
             try:
                 self.check_servers_hostnames(
                     server, timeout=test_ssh_connect_timeout)
@@ -155,9 +150,13 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                 return False
 
         def no_fip_pf_connectivity():
-            return not fip_pf_connectivity()
+            return not fip_pf_connectivity(6)
 
-        self.client.update_port_forwarding(fip_id, pf_id, external_port=3333)
+        # Update external port and check connectivity with original parameters
+        # Port under server[0]['port_forwarding_tcp']['external_port'] should
+        # not answer at this point.
+        self.client.update_port_forwarding(fip_id, pf_id,
+                                           external_port=test_ext_port)
         utils.wait_until_true(
             no_fip_pf_connectivity,
             exception=RuntimeError(
@@ -167,7 +166,7 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                     server[0]['port_forwarding_tcp']['external_port'])))
 
         # Check connectivity with the new parameters
-        server[0]['port_forwarding_tcp']['external_port'] = 3333
+        server[0]['port_forwarding_tcp']['external_port'] = test_ext_port
         utils.wait_until_true(
             fip_pf_connectivity,
             exception=RuntimeError(
@@ -187,3 +186,105 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                 "port {!r} is still possible.".format(
                     server[0]['id'],
                     server[0]['port_forwarding_tcp']['external_port'])))
+
+    @test.unstable_test("bug 1896735")
+    @decorators.idempotent_id('6d05b1b2-6109-4c30-b402-1503f4634acb')
+    def test_port_forwarding_editing_and_deleting_udp_rule(self):
+        test_ext_port = 3344
+        server = self._prepare_resources(num_servers=1,
+                                         external_port_base=1055)
+        fip_id = server[0]['port_forwarding_udp']['floatingip_id']
+        pf_id = server[0]['port_forwarding_udp']['id']
+
+        # Check connectivity with the original parameters
+        self.check_servers_hostnames(server)
+
+        def fip_pf_udp_connectivity(test_udp_timeout=60):
+            try:
+                self._test_udp_port_forwarding(server, test_udp_timeout)
+                return True
+            except (AssertionError, RuntimeError):
+                return False
+
+        def no_fip_pf_udp_connectivity():
+            return not fip_pf_udp_connectivity(6)
+
+        # Update external port and check connectivity with original parameters
+        # Port under server[0]['port_forwarding_udp']['external_port'] should
+        # not answer at this point.
+        self.client.update_port_forwarding(fip_id, pf_id,
+                                           external_port=test_ext_port)
+        utils.wait_until_true(
+            no_fip_pf_udp_connectivity,
+            exception=RuntimeError(
+                "Connection to the server {!r} through "
+                "port {!r} is still possible.".format(
+                    server[0]['id'],
+                    server[0]['port_forwarding_udp']['external_port'])))
+
+        # Check connectivity with the new parameters
+        server[0]['port_forwarding_udp']['external_port'] = test_ext_port
+        utils.wait_until_true(
+            fip_pf_udp_connectivity,
+            exception=RuntimeError(
+                "Connection to the server {!r} through "
+                "port {!r} is not possible.".format(
+                    server[0]['id'],
+                    server[0]['port_forwarding_udp']['external_port'])))
+
+        # Remove port forwarding and ensure connection stops working.
+        self.client.delete_port_forwarding(fip_id, pf_id)
+        self.assertRaises(lib_exc.NotFound, self.client.get_port_forwarding,
+                          fip_id, pf_id)
+        utils.wait_until_true(
+            no_fip_pf_udp_connectivity,
+            exception=RuntimeError(
+                "Connection to the server {!r} through "
+                "port {!r} is still possible.".format(
+                    server[0]['id'],
+                    server[0]['port_forwarding_udp']['external_port'])))
+
+    @test.unstable_test("bug 1896735")
+    @decorators.idempotent_id('5971881d-06a0-459e-b636-ce5d1929e2d4')
+    def test_port_forwarding_to_2_fixed_ips(self):
+        port = self.create_port(self.network,
+            security_groups=[self.secgroup['id']])
+        name = data_utils.rand_name("server-0")
+        server = self.create_server(flavor_ref=CONF.compute.flavor_ref,
+            image_ref=CONF.compute.image_ref, key_name=self.keypair['name'],
+            name=name, networks=[{'port': port['id']}])['server']
+        server['name'] = name
+        self.wait_for_server_active(server)
+
+        # Add a second fixed_ip address to port (same subnet)
+        internal_subnet_id = port['fixed_ips'][0]['subnet_id']
+        port['fixed_ips'].append({'subnet_id': internal_subnet_id})
+        port = self.update_port(port, fixed_ips=port['fixed_ips'])
+        internal_ip_address1 = port['fixed_ips'][0]['ip_address']
+        internal_ip_address2 = port['fixed_ips'][1]['ip_address']
+        pfs = []
+        for ip_address, external_port in [(internal_ip_address1, 1066),
+                                          (internal_ip_address2, 1067)]:
+            pf = self.create_port_forwarding(
+                self.fip['id'], internal_port_id=port['id'],
+                internal_ip_address=ip_address,
+                internal_port=22, external_port=external_port,
+                protocol=constants.PROTO_NAME_TCP)
+            pfs.append(pf)
+
+        test_ssh_connect_timeout = 32
+        number_of_connects = 0
+        for pf in pfs:
+            try:
+                self.check_servers_hostnames(
+                    [server], timeout=test_ssh_connect_timeout,
+                    external_port=pf['external_port'])
+                number_of_connects += 1
+            except (AssertionError, lib_exc.SSHTimeout):
+                pass
+
+        # TODO(flaviof): Quite possibly, the server is using only one of the
+        # fixed ips associated with the neutron port. Being so, we should not
+        # fail the test, as long as at least one connection was successful.
+        self.assertGreaterEqual(
+            number_of_connects, 1, "Did not connect via FIP port forwarding")

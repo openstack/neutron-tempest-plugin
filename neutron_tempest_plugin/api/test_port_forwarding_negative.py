@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions
@@ -81,3 +82,43 @@ class PortForwardingNegativeTestJSON(base.BaseNetworkTest):
             internal_ip_address=port['fixed_ips'][0]['ip_address'],
             internal_port=1111, external_port=5555,
             protocol="tcp")
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('e9d3ffb6-e5bf-421d-acaa-ee6010dfbf14')
+    def test_out_of_range_ports(self):
+        port = self.create_port(self.network)
+        fip_for_pf = self.create_floatingip()
+
+        pf_params = {
+            'internal_port_id': port['id'],
+            'internal_ip_address': port['fixed_ips'][0]['ip_address'],
+            'internal_port': 1111,
+            'external_port': 3333,
+            'protocol': "tcp"}
+        pf = self.create_port_forwarding(fip_for_pf['id'], **pf_params)
+
+        # Check: Invalid input for external_port update
+        self.assertRaises(
+            exceptions.BadRequest,
+            self.update_port_forwarding,
+            fip_for_pf['id'], pf['id'], external_port=108343)
+
+        # Check: Invalid input for internal_port update
+        self.assertRaises(
+            exceptions.BadRequest,
+            self.update_port_forwarding,
+            fip_for_pf['id'], pf['id'], internal_port=108343)
+
+        # Check: Invalid input for external_port create
+        pf_params['internal_port'] = 4444
+        pf_params['external_port'] = 333333
+        self.assertRaises(
+            exceptions.BadRequest,
+            self.create_port_forwarding, fip_for_pf['id'], **pf_params)
+
+        # Check: Invalid input for internal_port create
+        pf_params['internal_port'] = 444444
+        pf_params['external_port'] = 3333
+        self.assertRaises(
+            exceptions.BadRequest,
+            self.create_port_forwarding, fip_for_pf['id'], **pf_params)

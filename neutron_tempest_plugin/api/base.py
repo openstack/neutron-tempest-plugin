@@ -702,6 +702,12 @@ class BaseNetworkTest(test.BaseTestCase):
         return pf
 
     @classmethod
+    def update_port_forwarding(cls, fip_id, pf_id, client=None, **kwargs):
+        """Wrapper utility for update_port_forwarding."""
+        client = client or cls.client
+        return client.update_port_forwarding(fip_id, pf_id, **kwargs)
+
+    @classmethod
     def delete_port_forwarding(cls, pf, client=None):
         """Delete port forwarding
 

@@ -120,7 +120,6 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                 lambda: _message_received(server, ssh_client, expected_msg),
                 **wait_params)
 
-    @test.unstable_test("bug 1896735")
     @decorators.idempotent_id('ab40fc48-ca8d-41a0-b2a3-f6679c847bfe')
     def test_port_forwarding_to_2_servers(self):
         servers = self._prepare_resources(num_servers=2,
@@ -130,7 +129,6 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
         # And now test UDP port forwarding using nc
         self._test_udp_port_forwarding(servers)
 
-    @test.unstable_test("bug 1896735")
     @decorators.idempotent_id('aa19d46c-a4a6-11ea-bb37-0242ac130002')
     def test_port_forwarding_editing_and_deleting_tcp_rule(self):
         test_ext_port = 3333

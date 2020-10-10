@@ -952,8 +952,6 @@ class NetworkClientJSON(service_client.RestClient):
         return service_client.ResponseBody(resp, body)
 
     def list_floatingips(self, **kwargs):
-        post_body = {'floatingips': kwargs}
-        body = jsonutils.dumps(post_body)
         uri = '%s/floatingips' % self.uri_prefix
         if kwargs:
             uri += '?' + urlparse.urlencode(kwargs, doseq=1)

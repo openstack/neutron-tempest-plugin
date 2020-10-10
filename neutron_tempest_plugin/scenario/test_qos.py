@@ -190,32 +190,26 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
 
     @decorators.idempotent_id('00682a0c-b72e-11e8-b81e-8c16450ea513')
     def test_qos_basic_and_update(self):
-        """This test covers both:
+        """This test covers following scenarios:
 
-            1) Basic QoS functionality
-            This is a basic test that check that a QoS policy with
-            a bandwidth limit rule is applied correctly by sending
-            a file from the instance to the test node.
-            Then calculating the bandwidth every ~1 sec by the number of bits
-            received / elapsed time.
+            1) Create a QoS policy associated with the network.
+            Expected result: BW is limited according the values set in
+            QoS policy rule.
 
-            2) Update QoS policy
-            Administrator has the ability to update existing QoS policy,
-            this test is planned to verify that:
-            - actual BW is affected as expected after updating QoS policy.
-            Test scenario:
-            1) Associating QoS Policy with "Original_bandwidth"
-               to the test node
-            2) BW validation - by downloading file on test node.
-               ("Original_bandwidth" is expected)
-            3) Updating existing QoS Policy to a new BW value
-               "Updated_bandwidth"
-            4) BW validation - by downloading file on test node.
-               ("Updated_bandwidth" is expected)
-            Note:
-            There are two options to associate QoS policy to VM:
-            "Neutron Port" or "Network", in this test
-            both options are covered.
+            2) Update QoS policy associated with the network.
+            Expected result: BW is limited according the new values
+            set in QoS policy rule.
+
+            3) Create a new QoS policy associated with the VM port.
+            Expected result: BW is limited according the values set in
+            new QoS policy rule.
+            Note: Neutron port is prioritized higher than Network, means
+            that: "Neutron Port Priority" is also covered.
+
+            4) Update QoS policy associated with the VM port.
+            Expected result: BW is limited according the new values set
+            in QoS policy rule.
+
         """
 
         # Setup resources
@@ -243,7 +237,10 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             self.fip['floating_ip_address'],
             port=self.NC_PORT),
             timeout=self.CHECK_TIMEOUT,
-            sleep=1)
+            sleep=1,
+            exception=RuntimeError(
+                'Failed scenario: "Create a QoS policy associated with'
+                ' the network" Actual BW is not as expected!'))
 
         # As admin user update QoS rule
         self.os_admin.network_client.update_bandwidth_limit_rule(
@@ -260,7 +257,10 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             port=self.NC_PORT,
             expected_bw=QoSTest.LIMIT_BYTES_SEC * 2),
             timeout=self.CHECK_TIMEOUT,
-            sleep=1)
+            sleep=1,
+            exception=RuntimeError(
+                'Failed scenario: "Update QoS policy associated with'
+                ' the network" Actual BW is not as expected!'))
 
         # Create a new QoS policy
         bw_limit_policy_id_new = self._create_qos_policy()
@@ -283,7 +283,10 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             self.fip['floating_ip_address'],
             port=self.NC_PORT),
             timeout=self.CHECK_TIMEOUT,
-            sleep=1)
+            sleep=1,
+            exception=RuntimeError(
+                'Failed scenario: "Create a new QoS policy associated with'
+                ' the VM port" Actual BW is not as expected!'))
 
         # As admin user update QoS rule
         self.os_admin.network_client.update_bandwidth_limit_rule(
@@ -300,7 +303,10 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             port=self.NC_PORT,
             expected_bw=QoSTest.LIMIT_BYTES_SEC * 3),
             timeout=self.CHECK_TIMEOUT,
-            sleep=1)
+            sleep=1,
+            exception=RuntimeError(
+                'Failed scenario: "Update QoS policy associated with'
+                ' the VM port" Actual BW is not as expected!'))
 
     @decorators.idempotent_id('66e5673e-0522-11ea-8d71-362b9e155667')
     def test_attach_previously_used_port_to_new_instance(self):

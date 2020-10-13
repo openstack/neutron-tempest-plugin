@@ -28,13 +28,13 @@ class TagTestJSON(base.BaseAdminNetworkTest):
 
     def _get_and_compare_tags(self, tags):
         res_body = self.client.get_tags(self.resource, self.res_id)
-        self.assertItemsEqual(tags, res_body['tags'])
+        self.assertCountEqual(tags, res_body['tags'])
 
     def _test_tag_operations(self):
         # create and get tags
         tags = ['red', 'blue']
         res_body = self.client.update_tags(self.resource, self.res_id, tags)
-        self.assertItemsEqual(tags, res_body['tags'])
+        self.assertCountEqual(tags, res_body['tags'])
         self._get_and_compare_tags(tags)
 
         # add a tag
@@ -52,7 +52,7 @@ class TagTestJSON(base.BaseAdminNetworkTest):
         # replace tags
         tags = ['red', 'yellow', 'purple']
         res_body = self.client.update_tags(self.resource, self.res_id, tags)
-        self.assertItemsEqual(tags, res_body['tags'])
+        self.assertCountEqual(tags, res_body['tags'])
         self._get_and_compare_tags(tags)
 
         # get tag
@@ -477,7 +477,7 @@ class UpdateTagsTest(base.BaseAdminNetworkTest):
         # nothing specific about networks here, just a resource that is
         # available in all setups
         res_body = self.client.get_tags('networks', res_id)
-        self.assertItemsEqual(tags, res_body['tags'])
+        self.assertCountEqual(tags, res_body['tags'])
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('74c56fb1-a3b1-4a62-a8d2-d04dca6bd4cd')

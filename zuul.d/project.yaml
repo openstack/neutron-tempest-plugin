@@ -136,6 +136,30 @@
         - neutron-tempest-plugin-dvr-multinode-scenario-ussuri
 
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-victoria
+    check:
+      jobs:
+        - neutron-tempest-plugin-api-victoria
+        - neutron-tempest-plugin-designate-scenario-victoria:
+            # TODO(slaweq): switch it to be voting when bug
+            # https://bugs.launchpad.net/neutron/+bug/1891309
+            # will be fixed
+            voting: false
+        - neutron-tempest-plugin-scenario-linuxbridge-victoria
+        - neutron-tempest-plugin-scenario-openvswitch-victoria
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-victoria
+        - neutron-tempest-plugin-scenario-ovn-victoria
+    gate:
+      jobs:
+        - neutron-tempest-plugin-api-victoria
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-victoria
+
+
 - project:
     templates:
       - build-openstack-docs-pti
@@ -143,6 +167,7 @@
       - neutron-tempest-plugin-jobs-stein
       - neutron-tempest-plugin-jobs-train
       - neutron-tempest-plugin-jobs-ussuri
+      - neutron-tempest-plugin-jobs-victoria
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3
@@ -151,6 +176,7 @@
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-sfc-train
         - neutron-tempest-plugin-sfc-ussuri
+        - neutron-tempest-plugin-sfc-victoria
         - neutron-tempest-plugin-bgpvpn-bagpipe:
             # TODO(slaweq): switch it to be voting when bug
             # https://bugs.launchpad.net/networking-bagpipe/+bug/1897408
@@ -158,6 +184,11 @@
             voting: false
         - neutron-tempest-plugin-bgpvpn-bagpipe-train
         - neutron-tempest-plugin-bgpvpn-bagpipe-ussuri:
+            # TODO(slaweq): switch it to be voting when bug
+            # https://bugs.launchpad.net/networking-bagpipe/+bug/1897408
+            # will be fixed
+            voting: false
+        - neutron-tempest-plugin-bgpvpn-bagpipe-victoria:
             # TODO(slaweq): switch it to be voting when bug
             # https://bugs.launchpad.net/networking-bagpipe/+bug/1897408
             # will be fixed
@@ -172,8 +203,10 @@
             voting: false
         - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-dynamic-routing-ussuri
+        - neutron-tempest-plugin-dynamic-routing-victoria
         - neutron-tempest-plugin-vpnaas
         - neutron-tempest-plugin-vpnaas-ussuri
+        - neutron-tempest-plugin-vpnaas-victoria
 
     gate:
       jobs:

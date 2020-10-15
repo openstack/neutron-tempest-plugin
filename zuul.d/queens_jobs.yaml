@@ -67,6 +67,7 @@
         - dvr
       devstack_localrc:
         USE_PYTHON3: false
+        CIRROS_VERSION: 0.3.5
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
 
@@ -95,13 +96,17 @@
           (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
       devstack_localrc:
         USE_PYTHON3: false
+        CIRROS_VERSION: 0.3.5
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-queens
-    parent: neutron-tempest-plugin-scenario-linuxbridge
+    parent: neutron-tempest-plugin-scenario
     nodeset: openstack-single-node-xenial
+    timeout: 10000
+    roles:
+      - zuul: openstack/neutron
     override-checkout: stable/queens
     required-projects:
       - openstack/devstack-gate
@@ -118,15 +123,30 @@
           (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
       devstack_localrc:
         USE_PYTHON3: false
+        CIRROS_VERSION: 0.3.5
+        Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
       devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              enable_dvr: false
+            AGENT:
+              debug_iptables_rules: true
+          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+          # devstack-tempest job will be switched to use lib/neutron instead of
+          # lib/neutron-legacy
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            ml2:
+              type_drivers: flat,vlan,local,vxlan
         test-config:
           # NOTE: ignores linux bridge's trunk delete on bound port test
-          # for queens branch (as https://review.opendev.org/#/c/605589/
-          # fix will not apply for queens branch)
+          # for rocky branch (as https://review.opendev.org/#/c/605589/
+          # fix will not apply for rocky branch)
           $TEMPEST_CONFIG:
             neutron_plugin_options:
+              available_type_drivers: flat,vlan,local,vxlan
               q_agent: None
 
 - job:
@@ -152,6 +172,7 @@
           (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
       devstack_localrc:
         USE_PYTHON3: false
+        CIRROS_VERSION: 0.3.5
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
 
 - job:
@@ -176,4 +197,5 @@
           (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
       devstack_localrc:
         USE_PYTHON3: false
+        CIRROS_VERSION: 0.3.5
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'

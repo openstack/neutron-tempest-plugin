@@ -176,10 +176,13 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-rocky
-    parent: neutron-tempest-plugin-scenario-linuxbridge
+    parent: neutron-tempest-plugin-scenario
+    timeout: 10000
     description: |
       This job run on py2 for stable/rocky gate.
     nodeset: openstack-single-node-xenial
+    roles:
+      - zuul: openstack/neutron
     override-checkout: stable/rocky
     required-projects: *required-projects-rocky
     vars: &linuxbridge_vars_rocky
@@ -187,15 +190,29 @@
       network_api_extensions: *api_extensions
       devstack_localrc:
         USE_PYTHON3: false
+        Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
       devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              enable_dvr: false
+            AGENT:
+              debug_iptables_rules: true
+          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+          # devstack-tempest job will be switched to use lib/neutron instead of
+          # lib/neutron-legacy
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            ml2:
+              type_drivers: flat,vlan,local,vxlan
         test-config:
           # NOTE: ignores linux bridge's trunk delete on bound port test
           # for rocky branch (as https://review.opendev.org/#/c/605589/
           # fix will not apply for rocky branch)
           $TEMPEST_CONFIG:
             neutron_plugin_options:
+              available_type_drivers: flat,vlan,local,vxlan
               q_agent: None
       # NOTE(bcafarel): newer tests, unstable on rocky branch
       tempest_black_regex: "\
@@ -206,17 +223,23 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-rocky
-    parent: neutron-tempest-plugin-scenario-linuxbridge
+    parent: neutron-tempest-plugin-scenario
     nodeset: openstack-single-node-xenial
+    timeout: 10000
     description: |
       This job run on py3 for other than stable/rocky gate
       which is nothing but neutron-tempest-pluign master gate.
+    roles:
+      - zuul: openstack/neutron
     override-checkout: stable/rocky
     required-projects: *required-projects-rocky
     vars:
       <<: *linuxbridge_vars_rocky
       devstack_localrc:
         USE_PYTHON3: True
+        Q_AGENT: linuxbridge
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
     branches: ^(?!stable/rocky).*$
 
 - job:

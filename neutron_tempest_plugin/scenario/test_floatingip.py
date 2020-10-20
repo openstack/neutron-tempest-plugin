@@ -417,6 +417,7 @@ class TestFloatingIPUpdate(FloatingIpTestCasesMixin,
             servers.append(server)
         for server in servers:
             self.wait_for_server_active(server)
+            self.wait_for_guest_os_ready(server)
 
         self.fip = self.create_floatingip(port=ports[0])
         self.check_connectivity(self.fip['floating_ip_address'],

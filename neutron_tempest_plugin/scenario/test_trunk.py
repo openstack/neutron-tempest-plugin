@@ -161,6 +161,7 @@ class TrunkTest(base.BaseTempestTestCase):
 
     def _configure_vlan_subport(self, vm, vlan_tag, vlan_subnet):
         self.wait_for_server_active(server=vm.server)
+        self.wait_for_guest_os_ready(vm.server)
         self._wait_for_trunk(trunk=vm.trunk)
         self._wait_for_port(port=vm.port)
         self._wait_for_port(port=vm.subport)
@@ -199,6 +200,7 @@ class TrunkTest(base.BaseTempestTestCase):
         vm2 = self._create_server_with_trunk_port()
         for vm in (vm1, vm2):
             self.wait_for_server_active(server=vm.server)
+            self.wait_for_guest_os_ready(vm.server)
             self._wait_for_trunk(vm.trunk)
             self._assert_has_ssh_connectivity(vm.ssh_client)
 
@@ -325,6 +327,7 @@ class TrunkTest(base.BaseTempestTestCase):
                                 use_advanced_image=use_advanced_image)
         for role in ['migrate', 'connection_test']:
             self.wait_for_server_active(servers[role].server)
+            self.wait_for_guest_os_ready(servers[role].server)
             self._configure_vlan_subport(vm=servers[role],
                                          vlan_tag=vlan_tag,
                                          vlan_subnet=vlan_subnet)
@@ -377,6 +380,7 @@ class TrunkTest(base.BaseTempestTestCase):
                                      vlan_subnet=vlan_subnet)
         for vm in vms:
             self.wait_for_server_active(vm.server)
+            self.wait_for_guest_os_ready(vm.server)
 
         # allow ICMP traffic
         sg_rule = self.create_pingable_secgroup_rule(self.security_group['id'])

@@ -70,6 +70,7 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                 networks=[{'port': port['id']}])['server']
             server['name'] = name
             self.wait_for_server_active(server)
+            self.wait_for_guest_os_ready(server)
             server['port_forwarding_tcp'] = self.create_port_forwarding(
                 self.fip['id'],
                 internal_port_id=port['id'],
@@ -255,6 +256,7 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
             name=name, networks=[{'port': port['id']}])['server']
         server['name'] = name
         self.wait_for_server_active(server)
+        self.wait_for_guest_os_ready(server)
 
         # Add a second fixed_ip address to port (same subnet)
         internal_subnet_id = port['fixed_ips'][0]['subnet_id']

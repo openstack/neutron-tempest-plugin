@@ -138,6 +138,7 @@ class IPv6Test(base.BaseTempestTestCase):
         }
         vm = self.create_server(**server_kwargs)['server']
         self.wait_for_server_active(vm)
+        self.wait_for_guest_os_ready(vm)
         ipv4_port = self.client.list_ports(
             network_id=self.network['id'],
             device_id=vm['id'])['ports'][0]

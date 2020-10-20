@@ -121,9 +121,11 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         if not kwargs.get('security_groups'):
             kwargs['security_groups'] = [{'name': 'default'}]
 
-        client = self.os_primary.servers_client
-        if kwargs.get('availability_zone'):
-            client = self.os_admin.servers_client
+        client = kwargs.pop('client', None)
+        if client is None:
+            client = self.os_primary.servers_client
+            if kwargs.get('availability_zone'):
+                client = self.os_admin.servers_client
 
         server = client.create_server(
             flavorRef=flavor_ref,
@@ -139,6 +141,10 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         client.delete_server,
                         server['server']['id'])
+
+        self.wait_for_server_active(server['server'], client=client)
+        self.wait_for_guest_os_ready(server['server'], client=client)
+
         return server
 
     @classmethod
@@ -252,7 +258,6 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             server_kwargs['name'] = server_name
 
         self.server = self.create_server(**server_kwargs)
-        self.wait_for_server_active(self.server['server'])
         self.port = self.client.list_ports(network_id=self.network['id'],
                                            device_id=self.server[
                                                'server']['id'])['ports'][0]
@@ -451,6 +456,28 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         """
         self.wait_for_server_status(
             server, constants.SERVER_STATUS_ACTIVE, client)
+
+    def wait_for_guest_os_ready(self, server, client=None):
+        if not CONF.compute_feature_enabled.console_output:
+            LOG.debug('Console output not supported, cannot check if server '
+                      '%s is ready.', server['server']['id'])
+            return
+
+        client = client or self.os_primary.servers_client
+
+        def system_booted():
+            console_output = client.get_console_output(server['id'])['output']
+            for line in console_output.split('\n'):
+                if 'login:' in line.lower():
+                    return True
+            return False
+
+        try:
+            utils.wait_until_true(system_booted, sleep=5)
+        except utils.WaitTimeout:
+            LOG.debug("No correct output in console of server %s found. "
+                      "Guest operating system status can't be checked.",
+                      server['id'])
 
     def check_servers_hostnames(self, servers, timeout=None, log_errors=True,
                                 external_port=None):

@@ -201,6 +201,7 @@ class BaseMulticastTest(object):
             security_groups=[{'name': self.secgroup['security_group']['name']}]
         )['server']
         self.wait_for_server_active(server)
+        self.wait_for_guest_os_ready(server)
         port = self.client.list_ports(
             network_id=self.network['id'], device_id=server['id'])['ports'][0]
         server['fip'] = self.create_floatingip(port=port)

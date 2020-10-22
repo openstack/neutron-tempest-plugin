@@ -15,6 +15,7 @@
 
 from neutron_lib import constants as lib_constants
 from oslo_log import log
+from paramiko import ssh_exception as ssh_exc
 from tempest.common import utils as tempest_utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -108,16 +109,22 @@ class IPv6Test(base.BaseTempestTestCase):
                     return True
             return False
 
-        # Set NIC with IPv6 to be UP and wait until IPv6 address will be
-        # configured on this NIC
-        turn_nic6_on(ssh_client, ipv6_port)
-        # And check if IPv6 address will be properly configured on this NIC
-        utils.wait_until_true(
-            lambda: guest_has_address(ipv6_address),
-            timeout=120,
-            exception=RuntimeError(
-                "Timed out waiting for IP address {!r} to be configured in "
-                "the VM {!r}.".format(ipv6_address, vm['id'])))
+        try:
+            # Set NIC with IPv6 to be UP and wait until IPv6 address will be
+            # configured on this NIC
+            turn_nic6_on(ssh_client, ipv6_port)
+            # And check if IPv6 address will be properly configured on this NIC
+            utils.wait_until_true(
+                lambda: guest_has_address(ipv6_address),
+                timeout=120,
+                exception=RuntimeError(
+                    "Timed out waiting for IP address {!r} to be configured "
+                    "in the VM {!r}.".format(ipv6_address, vm['id'])))
+        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+            LOG.debug(ssh_e)
+            self._log_console_output([vm])
+            self._log_local_network_status()
+            raise
 
     def _test_ipv6_hotplug(self, ra_mode, address_mode):
         ipv6_networks = [self.create_network() for _ in range(2)]

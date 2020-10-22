@@ -21,6 +21,7 @@ import netaddr
 from neutron_lib.api import validators
 from neutron_lib import constants as neutron_lib_constants
 from oslo_log import log
+from paramiko import ssh_exception as ssh_exc
 from tempest.common.utils import net_utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
@@ -264,7 +265,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                                 pkey=ssh_key, timeout=ssh_timeout)
         try:
             ssh_client.test_connection_auth()
-        except lib_exc.SSHTimeout as ssh_e:
+        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)
             self._log_local_network_status()
@@ -379,12 +380,14 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 fragmentation,
                 timeout=timeout, pattern=pattern,
                 forbid_packet_loss=forbid_packet_loss))
-        except lib_exc.SSHTimeout as ssh_e:
+        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)
+            self._log_local_network_status()
             raise
         except AssertionError:
             self._log_console_output(servers)
+            self._log_local_network_status()
             raise
 
     def ping_ip_address(self, ip_address, should_succeed=True,
@@ -472,15 +475,17 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                     **kwargs)
                 self.assertIn(server['name'],
                               ssh_client.exec_command('hostname'))
-        except lib_exc.SSHTimeout as ssh_e:
+        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
             LOG.debug(ssh_e)
             if log_errors:
                 self._log_console_output(servers)
+                self._log_local_network_status()
             raise
         except AssertionError as assert_e:
             LOG.debug(assert_e)
             if log_errors:
                 self._log_console_output(servers)
+                self._log_local_network_status()
             raise
 
     def ensure_nc_listen(self, ssh_client, port, protocol, echo_msg=None,
@@ -505,9 +510,10 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             return ssh_client.execute_script(
                 get_ncat_server_cmd(port, protocol, echo_msg),
                 become_root=True, combine_stderr=True)
-        except lib_exc.SSHTimeout as ssh_e:
+        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)
+            self._log_local_network_status()
             raise
 
     def nc_client(self, ip_address, port, protocol):

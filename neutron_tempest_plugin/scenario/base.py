@@ -295,10 +295,20 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                           "for the console log", server['id'])
 
     def _log_local_network_status(self):
-        local_routes = ip_utils.IPCommand().list_routes()
-        LOG.debug('Local routes:\n%s', '\n'.join(str(r) for r in local_routes))
+        self._log_ns_network_status()
+        for ns_name in ip_utils.IPCommand().list_namespaces():
+            self._log_ns_network_status(ns_name=ns_name)
+
+    def _log_ns_network_status(self, ns_name=None):
+        local_ips = ip_utils.IPCommand(namespace=ns_name).list_addresses()
+        LOG.debug('Namespace %s; IP Addresses:\n%s',
+                  ns_name, '\n'.join(str(r) for r in local_ips))
+        local_routes = ip_utils.IPCommand(namespace=ns_name).list_routes()
+        LOG.debug('Namespace %s; Local routes:\n%s',
+                  ns_name, '\n'.join(str(r) for r in local_routes))
         arp_table = ip_utils.arp_table()
-        LOG.debug('Local ARP table:\n%s', '\n'.join(str(r) for r in arp_table))
+        LOG.debug('Namespace %s; Local ARP table:\n%s',
+                  ns_name, '\n'.join(str(r) for r in arp_table))
 
     def _check_remote_connectivity(self, source, dest, count,
                                    should_succeed=True,

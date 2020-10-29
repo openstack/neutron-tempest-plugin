@@ -175,6 +175,7 @@ class QoSTestMixin(object):
 
         server = self.create_server(**server_kwargs)
         self.wait_for_server_active(server['server'])
+        self.wait_for_guest_os_ready(server['server'])
         self.check_connectivity(self.fip['floating_ip_address'],
                                 CONF.validation.image_ssh_user,
                                 keypair['private_key'])

@@ -126,6 +126,7 @@ class MetadataTest(base.BaseTempestTestCase):
         vm = self._create_server_with_network(
             self.network, use_advanced_image=use_advanced_image)
         self.wait_for_server_active(server=vm.server)
+        self.wait_for_guest_os_ready(vm.server)
         self._assert_has_ssh_connectivity(vm.ssh_client)
         interface = self._get_primary_interface(vm.ssh_client)
 

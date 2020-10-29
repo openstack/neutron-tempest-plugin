@@ -65,6 +65,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
 
         for vm in vms:
             self.wait_for_server_active(vm['server'])
+            self.wait_for_guest_os_ready(vm['server'])
 
         return vms
 
@@ -231,6 +232,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             networks=[{'uuid': network['id']}],
             security_groups=[{'name': self.secgroup['name']}])
         self.wait_for_server_active(vm['server'])
+        self.wait_for_guest_os_ready(vm['server'])
 
         vm_port = self.client.list_ports(
             network_id=network['id'], device_id=vm['server']['id'])['ports'][0]

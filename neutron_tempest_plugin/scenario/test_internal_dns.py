@@ -52,6 +52,7 @@ class InternalDNSTest(base.BaseTempestTestCase):
                 {'name': self.security_groups[-1]['name']}],
             name='leia')
         self.wait_for_server_active(leia['server'])
+        self.wait_for_guest_os_ready(leia['server'])
 
         ssh_client = ssh.Client(
             self.fip['floating_ip_address'],

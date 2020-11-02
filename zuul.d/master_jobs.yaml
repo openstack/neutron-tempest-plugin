@@ -292,6 +292,11 @@
         neutron-log: true
         neutron-port-forwarding: true
         cinder: true
+        # We don't need Swift to be run in the Neutron jobs
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -354,6 +359,11 @@
           neutron-trunk: true
           neutron-log: true
           neutron-port-forwarding: true
+          # We don't need Swift to be run in the Neutron jobs
+          s-account: false
+          s-container: false
+          s-object: false
+          s-proxy: false
         devstack_localrc:
           USE_PYTHON3: true
         devstack_local_conf:

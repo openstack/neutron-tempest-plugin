@@ -38,6 +38,11 @@
         neutron-tag-ports-during-bulk-creation: true
         br-ex-tcpdump: true
         br-int-flows: true
+        # We don't need Swift to be run in the Neutron jobs
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:

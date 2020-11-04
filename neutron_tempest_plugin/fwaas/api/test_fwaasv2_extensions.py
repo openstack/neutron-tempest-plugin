@@ -13,7 +13,6 @@
 #    under the License.
 
 import netaddr
-import six
 
 from tempest.common import utils
 from tempest import config
@@ -212,7 +211,7 @@ class FWaaSv2ExtensionTestJSON(v2_base.BaseFWaaSTest):
         # show a created firewall rule
         fw_rule = self.firewall_rules_client.show_firewall_rule(
             self.fw_rule_1['id'])
-        for key, value in six.iteritems(fw_rule['firewall_rule']):
+        for key, value in fw_rule['firewall_rule'].items():
             if key != 'firewall_policy_id':
                 self.assertEqual(self.fw_rule_1[key], value)
             # This check is placed because we cannot modify policy during
@@ -258,7 +257,7 @@ class FWaaSv2ExtensionTestJSON(v2_base.BaseFWaaSTest):
         fw_policy = self.firewall_policies_client.show_firewall_policy(
             self.fw_policy_1['id'])
         fw_policy = fw_policy['firewall_policy']
-        for key, value in six.iteritems(fw_policy):
+        for key, value in fw_policy.items():
             self.assertEqual(self.fw_policy_1[key], value)
 
     @decorators.idempotent_id('48dfcd75-3924-479d-bb65-b3ed33397663')
@@ -283,7 +282,7 @@ class FWaaSv2ExtensionTestJSON(v2_base.BaseFWaaSTest):
             fwg_id)
         fwg = firewall_group['firewall_group']
 
-        for key, value in six.iteritems(fwg):
+        for key, value in fwg.items():
             if key == 'status':
                 continue
             self.assertEqual(created_firewall_group[key], value)

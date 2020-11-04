@@ -14,7 +14,6 @@
 #    under the License.
 
 import netaddr
-import six
 
 from neutron_lib import constants as const
 from tempest.common import utils
@@ -123,8 +122,8 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
         self.assertIn('resource_request', port)
         vnic_trait = 'CUSTOM_VNIC_TYPE_%s' % vnic_type.upper()
         physnet_trait = 'CUSTOM_PHYSNET_%s' % self.physnet_name.upper()
-        six.assertCountEqual(self, [physnet_trait, vnic_trait],
-                             port['resource_request']['required'])
+        self.assertCountEqual([physnet_trait, vnic_trait],
+                              port['resource_request']['required'])
 
         self.assertEqual(
             {'NET_BW_EGR_KILOBIT_PER_SEC': self.EGRESS_KBPS,

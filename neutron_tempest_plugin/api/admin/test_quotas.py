@@ -13,7 +13,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import six
 from tempest.common import utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
@@ -145,7 +144,7 @@ class QuotasTest(QuotasTestBase):
         # as requested for tenant
         quota_set = self.admin_client.show_details_quota(tenant_id)
         quota_set = quota_set['quota']
-        for key, value in six.iteritems(new_quotas):
+        for key, value in new_quotas.items():
             self.assertEqual(new_quotas[key]['limit'],
                              quota_set[key]['limit'])
             self.assertEqual(new_quotas[key]['reserved'],
@@ -155,5 +154,5 @@ class QuotasTest(QuotasTestBase):
 
         # validate 'default' action for old extension
         quota_limit = self.admin_client.show_quotas(tenant_id)['quota']
-        for key, value in six.iteritems(new_quotas):
+        for key, value in new_quotas.items():
             self.assertEqual(new_quotas[key]['limit'], quota_limit[key])

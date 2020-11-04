@@ -65,6 +65,8 @@
         - trunk-details
       network_api_extensions_tempest:
         - dvr
+      network_available_features: &available_features
+        -
       devstack_localrc:
         USE_PYTHON3: false
         CIRROS_VERSION: 0.3.5
@@ -87,6 +89,7 @@
     vars:
       branch_override: stable/queens
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       # TODO(slaweq): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
       # NOTE(bcafarel): remove DNS test as queens pinned version does not have
@@ -117,6 +120,7 @@
     vars:
       branch_override: stable/queens
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       # NOTE(bcafarel): remove DNS test as queens pinned version does not have
       # fix for https://bugs.launchpad.net/neutron/+bug/1826419
       tempest_black_regex: "\

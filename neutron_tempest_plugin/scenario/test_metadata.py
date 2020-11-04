@@ -16,6 +16,7 @@ import collections
 
 from neutron_lib import constants as nlib_const
 from oslo_log import log as logging
+from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 import testtools
@@ -43,6 +44,12 @@ class MetadataTest(base.BaseTempestTestCase):
 
     credentials = ['primary', 'admin']
     force_tenant_isolation = False
+
+    @classmethod
+    def skip_checks(cls):
+        super(MetadataTest, cls).skip_checks()
+        if not utils.is_network_feature_enabled('ipv6_metadata'):
+            raise cls.skipException("Metadata over IPv6 is not enabled")
 
     @classmethod
     def resource_setup(cls):
@@ -113,11 +120,9 @@ class MetadataTest(base.BaseTempestTestCase):
         return interface
 
     @testtools.skipUnless(
-        (CONF.neutron_plugin_options.ipv6_metadata and
-         (CONF.neutron_plugin_options.advanced_image_ref or
-          CONF.neutron_plugin_options.default_image_is_advanced)),
-        'Advanced image and neutron_plugin_options.ipv6_metadata=True '
-        'is required to run this test.')
+        CONF.neutron_plugin_options.advanced_image_ref or
+        CONF.neutron_plugin_options.default_image_is_advanced,
+        'Advanced image is required to run this test.')
     @decorators.idempotent_id('e680949a-f1cc-11ea-b49a-cba39bbbe5ad')
     def test_metadata_routed(self):
         use_advanced_image = (

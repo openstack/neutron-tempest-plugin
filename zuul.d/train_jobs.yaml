@@ -78,6 +78,8 @@
         - uplink-status-propagation
       network_api_extensions_tempest:
         - dvr
+      network_available_features: &available_features
+        -
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
 
@@ -89,11 +91,14 @@
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: ""
             neutron_plugin_options:
               ipv6_metadata: False
 
@@ -105,11 +110,14 @@
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: ""
             neutron_plugin_options:
               ipv6_metadata: False
 
@@ -121,11 +129,14 @@
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: ""
             neutron_plugin_options:
               ipv6_metadata: False
 

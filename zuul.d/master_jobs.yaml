@@ -79,6 +79,8 @@
         - uplink-status-propagation
       network_api_extensions_tempest:
         - dvr
+      network_available_features: &available_features
+        - ipv6_metadata
       tempest_test_regex: ^neutron_tempest_plugin\.api
       devstack_services:
         neutron-log: true
@@ -99,6 +101,7 @@
     timeout: 10000
     vars:
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       devstack_localrc:
         Q_AGENT: openvswitch
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
@@ -118,6 +121,8 @@
               bridge_mappings: public:br-ex
         test-config:
           $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
 
@@ -127,6 +132,7 @@
     timeout: 10000
     vars:
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       # TODO(slaweq): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
       tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)"
@@ -151,6 +157,8 @@
               firewall_driver: iptables_hybrid
         test-config:
           $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
 
@@ -163,6 +171,7 @@
     pre-run: playbooks/linuxbridge-scenario-pre-run.yaml
     vars:
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       devstack_localrc:
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
@@ -181,6 +190,8 @@
               type_drivers: flat,vlan,local,vxlan
         test-config:
           $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               q_agent: linuxbridge
@@ -242,9 +253,10 @@
               type_drivers: local,flat,vlan,geneve
         test-config:
           $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: ""
             neutron_plugin_options:
               available_type_drivers: local,flat,vlan,geneve
-              ipv6_metadata: False
               is_igmp_snooping_enabled: True
 
 - job:
@@ -347,6 +359,8 @@
               keystone: "cors request_id catch_errors osprofiler authtoken keystonecontext extensions neutronapiapp_v2_0"
         test-config:
           $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: *available_features
             neutron_plugin_options:
               provider_vlans: foo,
               agent_availability_zone: nova

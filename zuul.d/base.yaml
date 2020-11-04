@@ -104,7 +104,10 @@
       # default test timeout set to 1200 seconds may be not enough if job is
       # run on slow node
       tempest_test_timeout: 2400
-      tempest_test_regex: ^neutron_tempest_plugin\.scenario
+      tempest_test_regex: "\
+          (^neutron_tempest_plugin.scenario)|\
+          (^tempest.api.compute.servers.test_attach_interfaces)|\
+          (^tempest.api.compute.servers.test_multiple_create)"
       devstack_localrc:
         PHYSICAL_NETWORK: default
         CIRROS_VERSION: 0.5.1

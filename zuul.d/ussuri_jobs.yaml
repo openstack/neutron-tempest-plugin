@@ -85,6 +85,7 @@
       network_available_features: &available_features
         -
       devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
 
 

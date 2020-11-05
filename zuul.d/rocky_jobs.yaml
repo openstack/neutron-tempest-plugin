@@ -75,6 +75,7 @@
       network_api_extensions_tempest:
         - dvr
       devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin

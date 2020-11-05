@@ -84,6 +84,8 @@
       tempest_test_regex: ^neutron_tempest_plugin\.api
       devstack_services:
         neutron-log: true
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: true
       devstack_local_conf:
         post-config:
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when

@@ -68,6 +68,7 @@
       network_available_features: &available_features
         -
       devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
         USE_PYTHON3: false
         CIRROS_VERSION: 0.3.5
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"

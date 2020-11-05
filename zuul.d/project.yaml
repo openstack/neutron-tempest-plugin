@@ -177,22 +177,10 @@
         - neutron-tempest-plugin-sfc-train
         - neutron-tempest-plugin-sfc-ussuri
         - neutron-tempest-plugin-sfc-victoria
-        - neutron-tempest-plugin-bgpvpn-bagpipe:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/networking-bagpipe/+bug/1897408
-            # will be fixed
-            voting: false
+        - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-bgpvpn-bagpipe-train
-        - neutron-tempest-plugin-bgpvpn-bagpipe-ussuri:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/networking-bagpipe/+bug/1897408
-            # will be fixed
-            voting: false
-        - neutron-tempest-plugin-bgpvpn-bagpipe-victoria:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/networking-bagpipe/+bug/1897408
-            # will be fixed
-            voting: false
+        - neutron-tempest-plugin-bgpvpn-bagpipe-ussuri
+        - neutron-tempest-plugin-bgpvpn-bagpipe-victoria
         - neutron-tempest-plugin-fwaas-train:
             # TODO(slaweq): switch it to be voting when bug
             # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
@@ -211,8 +199,5 @@
     gate:
       jobs:
         - neutron-tempest-plugin-sfc
-        # TODO(slaweq): make bgpvpn-bagpipe job gating again when
-        # https://bugs.launchpad.net/networking-bagpipe/+bug/1897408
-        # will be fixed
-        #- neutron-tempest-plugin-bgpvpn-bagpipe
+        - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-dynamic-routing

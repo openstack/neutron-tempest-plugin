@@ -475,7 +475,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     def wait_for_guest_os_ready(self, server, client=None):
         if not CONF.compute_feature_enabled.console_output:
             LOG.debug('Console output not supported, cannot check if server '
-                      '%s is ready.', server['server']['id'])
+                      '%s is ready.', server['id'])
             return
 
         client = client or self.os_primary.servers_client

@@ -12,6 +12,9 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import ipaddress
+
+from oslo_log import log as logging
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -20,6 +23,7 @@ from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
 from neutron_tempest_plugin.scenario import constants as const
 
+LOG = logging.getLogger(__name__)
 CONF = config.CONF
 
 
@@ -78,3 +82,34 @@ class PortsTest(base.BaseTempestTestCase):
                 self.os_primary.servers_client,
                 servers[0]['server']['id'])
             self._try_delete_resource(self.delete_floatingip, fips[0])
+
+    @decorators.idempotent_id('62e32802-1d21-11eb-b322-74e5f9e2a801')
+    def test_port_with_fixed_ip(self):
+        """Test scenario:
+
+        1) Get the last IP from the range of Subnet "Allocation pool"
+        2) Create Port with fixed_ip resolved in #1
+        3) Create a VM using updated Port in #2 and add Floating IP
+        4) Check SSH access to VM
+        """
+        ip_range = [str(ip) for ip in ipaddress.IPv4Network(
+            self.subnet['cidr'])]
+        # Because of the tests executed in Parallel the IP may already
+        # be in use, so we'll try using IPs from Allocation pool
+        # (in reverse order) up until Port is successfully created.
+        for ip in reversed(ip_range):
+            try:
+                port = self.create_port(
+                    self.network,
+                    name=data_utils.rand_name("fixed_ip_port"),
+                    security_groups=[self.secgroup['id']],
+                    fixed_ips=[{'ip_address': ip}])
+                if port is not None:
+                    break
+            except Exception as e:
+                LOG.warn('Failed to create Port, using Fixed_IP:{}, '
+                         'the Error was:{}'.format(ip, e))
+        fip, server = self._create_instance_with_port(port)
+        self.check_connectivity(fip[0]['floating_ip_address'],
+                                CONF.validation.image_ssh_user,
+                                self.keypair['private_key'])

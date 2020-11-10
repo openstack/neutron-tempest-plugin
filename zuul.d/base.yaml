@@ -25,7 +25,6 @@
       tempest_plugins:
         - neutron-tempest-plugin
       devstack_services:
-        tls-proxy: false
         tempest: true
         neutron-dns: true
         neutron-qos: true
@@ -69,11 +68,6 @@
           $NEUTRON_DHCP_CONF:
             agent:
               availability_zone: nova
-          /etc/neutron/api-paste.ini:
-            composite:neutronapi_v2_0:
-              use: call:neutron.auth:pipeline_factory
-              noauth: cors request_id catch_errors osprofiler extensions neutronapiapp_v2_0
-              keystone: cors request_id catch_errors osprofiler authtoken keystonecontext extensions neutronapiapp_v2_0
         test-config:
           $TEMPEST_CONFIG:
             neutron_plugin_options:

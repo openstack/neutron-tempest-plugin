@@ -19,7 +19,6 @@ import time
 
 from oslo_log import log
 import paramiko
-import six
 from tempest.lib.common import ssh
 from tempest.lib import exceptions
 import tenacity
@@ -33,13 +32,7 @@ LOG = log.getLogger(__name__)
 
 
 RETRY_EXCEPTIONS = (exceptions.TimeoutException, paramiko.SSHException,
-                    socket.error)
-if six.PY2:
-    # NOTE(ralonsoh): TimeoutError was added in 3.3 and corresponds to
-    # OSError(errno.ETIMEDOUT)
-    RETRY_EXCEPTIONS += (OSError, )
-else:
-    RETRY_EXCEPTIONS += (TimeoutError, )
+                    socket.error, TimeoutError)
 
 
 class Client(ssh.Client):

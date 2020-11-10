@@ -11,9 +11,9 @@
 #    under the License.
 
 import time
+from urllib import parse as urlparse
 
 from oslo_serialization import jsonutils
-from six.moves.urllib import parse as urlparse
 from tempest.lib.common import rest_client as service_client
 from tempest.lib import exceptions as lib_exc
 

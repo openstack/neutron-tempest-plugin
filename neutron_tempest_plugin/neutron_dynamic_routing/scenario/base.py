@@ -19,7 +19,6 @@ import threading
 import time
 
 import netaddr
-import six
 
 from os_ken.tests.integrated.common import docker_base as ctn_base
 from tempest.common import utils
@@ -125,10 +124,10 @@ class BgpSpeakerScenarioTestJSONBase(base.BaseAdminNetworkTest):
         while True:
             with self.lock:
                 try:
-                    yield (i, str(six.next(subnet_gen)))
+                    yield (i, str(next(subnet_gen)))
                 except StopIteration:
                     subnet_gen = netaddr.iter_iprange(start, end, step=step)
-                    yield (i, str(six.next(subnet_gen)))
+                    yield (i, str(next(subnet_gen)))
                 i += 1
 
     def net_resource_cleanup(self):

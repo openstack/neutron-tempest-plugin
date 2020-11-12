@@ -37,6 +37,12 @@
         neutron-tag-ports-during-bulk-creation: true
         br-ex-tcpdump: true
         br-int-flows: true
+        # Cinder services
+        c-api: false
+        c-bak: false
+        c-sch: false
+        c-vol: false
+        cinder: false
         # We don't need Swift to be run in the Neutron jobs
         s-account: false
         s-container: false
@@ -107,6 +113,3 @@
         ADVANCED_INSTANCE_TYPE: ds512M
         ADVANCED_INSTANCE_USER: ubuntu
         BUILD_TIMEOUT: 784
-      devstack_services:
-        cinder: true
-

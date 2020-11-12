@@ -228,13 +228,19 @@
         q-l3: false
         q-meta: false
         q-metering: false
+        q-qos: true
+        tls-proxy: true
+        # Cinder services
+        c-api: false
+        c-bak: false
+        c-sch: false
+        c-vol: false
+        cinder: false
         s-account: false
         s-container-sync: false
         s-container: false
         s-object: false
         s-proxy: false
-        tls-proxy: true
-        q-qos: true
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -299,7 +305,12 @@
         neutron-trunk: true
         neutron-log: true
         neutron-port-forwarding: true
-        cinder: true
+        # Cinder services
+        c-api: false
+        c-bak: false
+        c-sch: false
+        c-vol: false
+        cinder: false
         # We don't need Swift to be run in the Neutron jobs
         s-account: false
         s-container: false
@@ -367,6 +378,9 @@
           neutron-trunk: true
           neutron-log: true
           neutron-port-forwarding: true
+          # Cinder services
+          c-bak: false
+          c-vol: false
           # We don't need Swift to be run in the Neutron jobs
           s-account: false
           s-container: false

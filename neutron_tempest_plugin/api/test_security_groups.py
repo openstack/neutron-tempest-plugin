@@ -127,6 +127,21 @@ class SecGroupTest(base.BaseAdminNetworkTest):
             self.assertIn(secgrp['name'], sec_nm)
             self.assertIsNotNone(secgrp['id'])
 
+    @decorators.idempotent_id('e93f33d8-57ea-11eb-b69b-74e5f9e2a801')
+    def test_create_sec_groups_with_the_same_name(self):
+        same_name_sg_number = 5
+        sg_name = 'sg_zahlabut'
+        sg_names = [sg_name] * same_name_sg_number
+        for name in sg_names:
+            self.create_security_group(name=name)
+        sec_groups = [item['id'] for item in
+                      self.client.list_security_groups(
+                          name=sg_name)['security_groups']]
+        self.assertEqual(
+            same_name_sg_number, len(set(sec_groups)),
+            'Failed - expected number of groups with the same name'
+            ' is: {}'.format(same_name_sg_number))
+
 
 class BaseSecGroupQuota(base.BaseAdminNetworkTest):
 

@@ -205,7 +205,6 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         else:
             router = cls.create_admin_router(**kwargs)
         LOG.debug("Created router %s", router['name'])
-        cls.routers.append(router)
         return router
 
     @removals.remove(version='Stein',

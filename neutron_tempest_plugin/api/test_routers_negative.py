@@ -33,19 +33,6 @@ class RoutersNegativeTestBase(base.BaseRouterTest):
         cls.subnet = cls.create_subnet(cls.network)
 
 
-class RoutersNegativeTest(RoutersNegativeTestBase):
-
-    @decorators.attr(type='negative')
-    @decorators.idempotent_id('e3e751af-15a2-49cc-b214-a7154579e94f')
-    def test_delete_router_in_use(self):
-        # This port is deleted after a test by remove_router_interface.
-        port = self.create_port(self.network)
-        self.client.add_router_interface_with_port_id(
-            self.router['id'], port['id'])
-        with testtools.ExpectedException(lib_exc.Conflict):
-            self.client.delete_router(self.router['id'])
-
-
 class RoutersNegativePolicyTest(RoutersNegativeTestBase):
 
     credentials = ['admin', 'primary', 'alt']

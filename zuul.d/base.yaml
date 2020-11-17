@@ -116,3 +116,4 @@
         ADVANCED_INSTANCE_TYPE: ds512M
         ADVANCED_INSTANCE_USER: ubuntu
         BUILD_TIMEOUT: 784
+      tempest_concurrency: 3  # out of 4

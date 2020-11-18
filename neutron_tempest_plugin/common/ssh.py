@@ -286,6 +286,13 @@ class Client(ssh.Client):
                 command=shell, host=self.host, script=script, stderr=stderr,
                 stdout=stdout, exit_status=exit_status)
 
+    def get_hostname(self):
+        """Retrieve the remote machine hostname"""
+        try:
+            return self.exec_command('hostname')
+        except exceptions.SSHExecCommandFailed:
+            return self.exec_command('cat /etc/hostname')
+
 
 def _buffer_to_string(data_buffer, encoding):
     return data_buffer.decode(encoding).replace("\r\n", "\n").replace(

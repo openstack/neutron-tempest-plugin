@@ -519,7 +519,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                     pkey=self.keypair['private_key'],
                     **kwargs)
                 self.assertIn(server['name'],
-                              ssh_client.exec_command('hostname'))
+                              ssh_client.get_hostname())
         except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
             LOG.debug(ssh_e)
             if log_errors:

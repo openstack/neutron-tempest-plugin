@@ -59,7 +59,7 @@ class InternalDNSTest(base.BaseTempestTestCase):
             CONF.validation.image_ssh_user,
             pkey=self.keypair['private_key'])
 
-        self.assertIn('luke', ssh_client.exec_command('hostname'))
+        self.assertIn('luke', ssh_client.get_hostname())
 
         leia_port = self.client.list_ports(
             network_id=self.network['id'],

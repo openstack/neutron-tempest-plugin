@@ -140,6 +140,17 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.conntrack_helpers = []
 
     @classmethod
+    def reserve_external_subnet_cidrs(cls):
+        client = cls.os_admin.network_client
+        ext_nets = client.list_networks(
+            **{"router:external": True})['networks']
+        for ext_net in ext_nets:
+            ext_subnets = client.list_subnets(
+                network_id=ext_net['id'])['subnets']
+            for ext_subnet in ext_subnets:
+                cls.reserve_subnet_cidr(ext_subnet['cidr'])
+
+    @classmethod
     def resource_cleanup(cls):
         if CONF.service_available.neutron:
             # Clean up trunks

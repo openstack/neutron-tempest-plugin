@@ -49,6 +49,7 @@ class MetadataTest(base.BaseTempestTestCase):
         super(MetadataTest, cls).resource_setup()
         cls.rand_name = data_utils.rand_name(
             cls.__name__.rsplit('.', 1)[-1])
+        cls.reserve_external_subnet_cidrs()
         cls.network = cls.create_network(name=cls.rand_name)
         cls.subnet_v4 = cls.create_subnet(
             network=cls.network, name=cls.rand_name)

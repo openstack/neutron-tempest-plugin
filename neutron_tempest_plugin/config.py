@@ -120,18 +120,6 @@ NeutronPluginOptions = [
                     'This is required if advanced image has to be used in '
                     'tests.'),
 
-    # Enable/disable metadata over IPv6 tests. This feature naturally
-    # does not have an API extension, but at the time of first implementation
-    # it works only on victoria+ deployments with dhcp- and/or l3-agents
-    # (which in the gate is the same as non-ovn jobs).
-    cfg.BoolOpt('ipv6_metadata',
-                default=True,
-                help='Enable metadata over IPv6 tests where the feature is '
-                     'implemented, disable where it is not. Use this instead '
-                     'of network-feature-enabled.api_extensions, since API '
-                     'extensions do not make sense for a feature not '
-                     'exposed on the API.'),
-
     # Option for creating QoS policies configures as "shared".
     # The default is false in order to prevent undesired usage
     # while testing in parallel.

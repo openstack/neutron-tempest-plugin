@@ -108,6 +108,8 @@
     vars: &scenario_vars_rocky
       branch_override: stable/rocky
       network_api_extensions: *api_extensions
+      network_available_features: &available_features
+        -
       devstack_localrc:
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"

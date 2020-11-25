@@ -84,6 +84,7 @@ class IPv6Test(base.BaseTempestTestCase):
     @tempest_utils.requires_ext(extension="router", service="network")
     def resource_setup(cls):
         super(IPv6Test, cls).resource_setup()
+        cls.reserve_external_subnet_cidrs()
         cls._setup_basic_resources()
 
     @classmethod

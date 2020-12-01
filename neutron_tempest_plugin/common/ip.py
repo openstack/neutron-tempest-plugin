@@ -57,6 +57,20 @@ class IPCommand(object):
         return shell.execute(command_line, ssh_client=self.ssh_client,
                              timeout=self.timeout).stdout
 
+    def configure_vlan(self, addresses, port, vlan_tag, subport_ips):
+        port_device = get_port_device_name(addresses=addresses, port=port)
+        subport_device = '{!s}.{!s}'.format(port_device, vlan_tag)
+        LOG.debug('Configuring VLAN subport interface %r on top of interface '
+                  '%r with IPs: %s', subport_device, port_device,
+                  ', '.join(subport_ips))
+
+        self.add_link(link=port_device, name=subport_device, link_type='vlan',
+                      segmentation_id=vlan_tag)
+        self.set_link(device=subport_device, state='up')
+        for subport_ip in subport_ips:
+            self.add_address(address=subport_ip, device=subport_device)
+        return subport_device
+
     def configure_vlan_subport(self, port, subport, vlan_tag, subnets):
         addresses = self.list_addresses()
         try:
@@ -77,18 +91,19 @@ class IPCommand(object):
                 "Unable to get IP address and subnet prefix lengths for "
                 "subport")
 
-        port_device = get_port_device_name(addresses=addresses, port=port)
-        subport_device = '{!s}.{!s}'.format(port_device, vlan_tag)
-        LOG.debug('Configuring VLAN subport interface %r on top of interface '
-                  '%r with IPs: %s', subport_device, port_device,
-                  ', '.join(subport_ips))
+        return self.configure_vlan(addresses, port, vlan_tag, subport_ips)
 
-        self.add_link(link=port_device, name=subport_device, link_type='vlan',
-                      segmentation_id=vlan_tag)
-        self.set_link(device=subport_device, state='up')
-        for subport_ip in subport_ips:
-            self.add_address(address=subport_ip, device=subport_device)
-        return subport_device
+    def configure_vlan_transparent(self, port, vlan_tag, ip_addresses):
+        addresses = self.list_addresses()
+        try:
+            subport_device = get_vlan_device_name(addresses, ip_addresses)
+        except ValueError:
+            pass
+        else:
+            LOG.debug('Interface %r already configured.', subport_device)
+            return subport_device
+
+        return self.configure_vlan(addresses, port, vlan_tag, ip_addresses)
 
     def list_namespaces(self):
         namespaces_output = self.execute("netns")
@@ -127,6 +142,23 @@ class IPCommand(object):
     def add_address(self, address, device):
         # ip addr add 192.168.1.1/24 dev em1
         return self.execute('address', 'add', address, 'dev', device)
+
+    def delete_address(self, address, device):
+        # ip addr del 192.168.1.1/24 dev em1
+        return self.execute('address', 'del', address, 'dev', device)
+
+    def add_route(self, address, device, gateway=None):
+        if gateway:
+            # ip route add 192.168.1.0/24 via 192.168.22.1 dev em1
+            return self.execute(
+                'route', 'add', address, 'via', gateway, 'dev', device)
+        else:
+            # ip route add 192.168.1.0/24 dev em1
+            return self.execute('route', 'add', address, 'dev', device)
+
+    def delete_route(self, address, device):
+        # ip route del 192.168.1.0/24 dev em1
+        return self.execute('route', 'del', address, 'dev', device)
 
     def list_routes(self, *args):
         output = self.execute('route', 'show', *args)
@@ -309,6 +341,15 @@ def get_port_device_name(addresses, port):
         return address.device.name
 
     msg = "Port {0!r} fixed IPs not found on server.".format(port['id'])
+    raise ValueError(msg)
+
+
+def get_vlan_device_name(addresses, ip_addresses):
+    for address in list_ip_addresses(addresses=addresses,
+            ip_addresses=ip_addresses):
+        return address.device.name
+
+    msg = "Fixed IPs {0!r} not found on server.".format(' '.join(ip_addresses))
     raise ValueError(msg)
 
 

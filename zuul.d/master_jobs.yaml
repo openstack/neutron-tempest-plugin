@@ -173,15 +173,21 @@
     pre-run: playbooks/linuxbridge-scenario-pre-run.yaml
     vars:
       network_api_extensions: *api_extensions
+      network_api_extensions_linuxbridge:
+        - vlan-transparent
       network_available_features: *available_features
+      # TODO(eolivare): remove VLAN Transparency tests from blacklist
+      # when bug https://bugs.launchpad.net/neutron/+bug/1907548 will be fixed
+      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest)"
       devstack_localrc:
         Q_AGENT: linuxbridge
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_linuxbridge) | join(',') }}"
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
             DEFAULT:
               enable_dvr: false
+              vlan_transparent: true
             AGENT:
               debug_iptables_rules: true
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
@@ -190,6 +196,7 @@
           /$NEUTRON_CORE_PLUGIN_CONF:
             ml2:
               type_drivers: flat,vlan,local,vxlan
+              mechanism_drivers: linuxbridge
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
@@ -204,6 +211,8 @@
     timeout: 10000
     vars:
       network_api_extensions: *api_extensions
+      network_api_extensions_ovn:
+        - vlan-transparent
       # TODO(haleyb): Remove IPv6Test from blacklist when
       # https://bugs.launchpad.net/neutron/+bug/1881558 is fixed.
       # TODO(slaweq): Remove test_trunk_subport_lifecycle test from the
@@ -217,7 +226,7 @@
           (^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest)"
       devstack_localrc:
         Q_AGENT: ovn
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_ovn) | join(',') }}"
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: ovn,logger
         Q_ML2_PLUGIN_TYPE_DRIVERS: local,flat,vlan,geneve
         Q_ML2_TENANT_NETWORK_TYPE: geneve
@@ -228,6 +237,11 @@
         OVN_DBS_LOG_LEVEL: dbg
         ENABLE_TLS: True
         OVN_IGMP_SNOOPING_ENABLE: True
+        # TODO(eolivare): Remove OVN_BUILD_FROM_SOURCE once vlan-transparency
+        # is included in an ovn released version
+        OVN_BUILD_FROM_SOURCE: True
+        OVN_BRANCH: "v20.12.0"
+        OVS_BRANCH: "branch-2.15"
       devstack_services:
         br-ex-tcpdump: true
         br-int-flows: true
@@ -259,6 +273,7 @@
           $NEUTRON_CONF:
             DEFAULT:
               enable_dvr: false
+              vlan_transparent: true
           /$NEUTRON_CORE_PLUGIN_CONF:
             ml2:
               type_drivers: local,flat,vlan,geneve

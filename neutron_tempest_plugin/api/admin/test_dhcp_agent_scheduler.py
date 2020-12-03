@@ -13,6 +13,7 @@
 #    under the License.
 
 from neutron_lib import constants
+from neutron_lib.utils import test
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base
@@ -33,6 +34,7 @@ class DHCPAgentSchedulersTestJSON(base.BaseAdminNetworkTest):
         cls.cidr = cls.subnet['cidr']
         cls.port = cls.create_port(cls.network)
 
+    @test.unstable_test("bug 1906654")
     @decorators.idempotent_id('f164801e-1dd8-4b8b-b5d3-cc3ac77cfaa5')
     def test_dhcp_port_status_active(self):
 

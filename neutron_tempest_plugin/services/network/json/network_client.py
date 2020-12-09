@@ -923,8 +923,6 @@ class NetworkClientJSON(service_client.RestClient):
         return service_client.ResponseBody(resp, body)
 
     def list_security_groups(self, **kwargs):
-        post_body = {'security_groups': kwargs}
-        body = jsonutils.dumps(post_body)
         uri = '%s/security-groups' % self.uri_prefix
         if kwargs:
             uri += '?' + urlparse.urlencode(kwargs, doseq=1)
@@ -941,8 +939,6 @@ class NetworkClientJSON(service_client.RestClient):
         return service_client.ResponseBody(resp, body)
 
     def list_ports(self, **kwargs):
-        post_body = {'ports': kwargs}
-        body = jsonutils.dumps(post_body)
         uri = '%s/ports' % self.uri_prefix
         if kwargs:
             uri += '?' + urlparse.urlencode(kwargs, doseq=1)

@@ -15,6 +15,7 @@
 
 import copy
 
+from neutron_lib import constants as lib_constants
 from tempest.common import utils
 from tempest.lib import decorators
 
@@ -127,6 +128,28 @@ class PortsTestJSON(base.BaseNetworkTest):
     @decorators.idempotent_id('1d6d8683-8691-43c6-a7ba-c69723258726')
     def test_add_ips_to_port(self):
         s = self.create_subnet(self.network)
+        port = self.create_port(self.network)
+        # request another IP on the same subnet
+        port['fixed_ips'].append({'subnet_id': s['id']})
+        updated = self.client.update_port(port['id'],
+                                          fixed_ips=port['fixed_ips'])
+        subnets = [ip['subnet_id'] for ip in updated['port']['fixed_ips']]
+        expected = [s['id'], s['id']]
+        self.assertEqual(expected, subnets)
+
+
+class PortsIpv6TestJSON(base.BaseNetworkTest):
+
+    _ip_version = lib_constants.IP_VERSION_6
+
+    @classmethod
+    def resource_setup(cls):
+        super(PortsIpv6TestJSON, cls).resource_setup()
+        cls.network = cls.create_network()
+
+    @decorators.idempotent_id('b85879fb-4852-4b99-aa32-3f8a7a6a3f01')
+    def test_add_ipv6_ips_to_port(self):
+        s = self.create_subnet(self.network, ip_version=self._ip_version)
         port = self.create_port(self.network)
         # request another IP on the same subnet
         port['fixed_ips'].append({'subnet_id': s['id']})

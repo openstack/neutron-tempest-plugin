@@ -60,6 +60,20 @@ class PortsTestJSON(base.BaseNetworkTest):
         body = self.client.list_ports(id=body['port']['id'])['ports'][0]
         self.assertEqual('d2', body['description'])
 
+    @decorators.idempotent_id('3ae162e8-ff00-490c-a423-6a88e48f1ed6')
+    def test_create_update_port_security(self):
+        body = self.create_port(self.network,
+                                port_security_enabled=True)
+        self.assertTrue(body['port_security_enabled'])
+        body = self.client.list_ports(id=body['id'])['ports'][0]
+        self.assertTrue(body['port_security_enabled'])
+        body = self.client.update_port(body['id'],
+                                       port_security_enabled=False,
+                                       security_groups=[])
+        self.assertFalse(body['port']['port_security_enabled'])
+        body = self.client.list_ports(id=body['port']['id'])['ports'][0]
+        self.assertFalse(body['port_security_enabled'])
+
     @decorators.idempotent_id('539fbefe-fb36-48aa-9a53-8c5fbd44e492')
     @utils.requires_ext(extension="dns-integration",
                        service="network")

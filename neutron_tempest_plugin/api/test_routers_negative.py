@@ -19,6 +19,10 @@ from tempest.lib import exceptions as lib_exc
 import testtools
 
 from neutron_tempest_plugin.api import base_routers as base
+from neutron_tempest_plugin import config
+
+
+CONF = config.CONF
 
 
 class RoutersNegativeTestBase(base.BaseRouterTest):
@@ -87,6 +91,23 @@ class RoutersNegativePolicyTest(RoutersNegativeTestBase):
             lib_exc.BadRequest,
             self.client.add_router_interface_with_port_id,
             self.router['id'], invalid_id)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('dad7a8ba-2726-11eb-82dd-74e5f9e2a801')
+    def test_remove_associated_ports(self):
+        self.client.update_router(
+            self.router['id'],
+            external_gateway_info={
+                'network_id': CONF.network.public_network_id})
+        network = self.create_network()
+        subnet = self.create_subnet(network)
+        self.create_router_interface(self.router['id'], subnet['id'])
+        port_ids = [
+            item['id'] for item in self.admin_client.list_ports(
+                device_id=self.router['id'])['ports']]
+        for port_id in port_ids:
+            with testtools.ExpectedException(lib_exc.Conflict):
+                self.admin_client.delete_port(port_id)
 
 
 class DvrRoutersNegativeTest(RoutersNegativeTestBase):

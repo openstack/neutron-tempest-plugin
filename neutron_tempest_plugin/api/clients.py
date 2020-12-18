@@ -13,6 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from tempest import clients as tempest_clients
+from tempest.lib.services import clients
 from tempest.lib.services.compute import availability_zone_client
 from tempest.lib.services.compute import hypervisor_client
 from tempest.lib.services.compute import interfaces_client
@@ -20,7 +22,6 @@ from tempest.lib.services.compute import keypairs_client
 from tempest.lib.services.compute import servers_client
 from tempest.lib.services.identity.v2 import tenants_client
 from tempest.lib.services.identity.v3 import projects_client
-from tempest import manager
 
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.services.network.json import network_client
@@ -28,7 +29,7 @@ from neutron_tempest_plugin.services.network.json import network_client
 CONF = config.CONF
 
 
-class Manager(manager.Manager):
+class Manager(clients.ServiceClients):
     """Top level manager for OpenStack tempest clients"""
     default_params = {
         'disable_ssl_certificate_validation':
@@ -47,7 +48,15 @@ class Manager(manager.Manager):
     default_params_with_timeout_values.update(default_params)
 
     def __init__(self, credentials=None, service=None):
-        super(Manager, self).__init__(credentials=credentials)
+        dscv = CONF.identity.disable_ssl_certificate_validation
+        _, uri = tempest_clients.get_auth_provider_class(credentials)
+        super(Manager, self).__init__(
+            credentials=credentials,
+            identity_uri=uri,
+            scope='project',
+            disable_ssl_certificate_validation=dscv,
+            ca_certs=CONF.identity.ca_certificates_file,
+            trace_requests=CONF.debug.trace_requests)
 
         self._set_identity_clients()
 

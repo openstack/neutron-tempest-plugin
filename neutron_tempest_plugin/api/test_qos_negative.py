@@ -67,6 +67,28 @@ class QosNegativeTestJSON(base.BaseAdminNetworkTest):
                           self.client.update_qos_policy, policy['id'],
                           description=LONG_DESCRIPTION_NG)
 
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('88b54ab0-804b-446c-bc19-8e54222d70ef')
+    def test_get_non_existent_qos_policy(self):
+        non_exist_id = data_utils.rand_name('qos_policy')
+        self.assertRaises(lib_exc.NotFound,
+                          self.admin_client.show_qos_policy, non_exist_id)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('21050859-1284-4bf5-b05a-13846f83988f')
+    def test_update_non_existent_qos_policy(self):
+        non_exist_id = data_utils.rand_name('qos_policy')
+        self.assertRaises(lib_exc.NotFound,
+                          self.admin_client.update_qos_policy, non_exist_id,
+                          shared=False)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('09e435b7-44d3-4f9d-8aa8-c295d46b5866')
+    def test_delete_non_existent_qos_policy(self):
+        non_exist_id = data_utils.rand_name('qos_policy')
+        self.assertRaises(lib_exc.NotFound,
+                          self.admin_client.delete_qos_policy, non_exist_id)
+
 
 class QosBandwidthLimitRuleNegativeTestJSON(base.BaseAdminNetworkTest):
 

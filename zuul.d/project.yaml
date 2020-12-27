@@ -164,7 +164,6 @@
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
-      - neutron-tempest-plugin-jobs-stein
       - neutron-tempest-plugin-jobs-train
       - neutron-tempest-plugin-jobs-ussuri
       - neutron-tempest-plugin-jobs-victoria

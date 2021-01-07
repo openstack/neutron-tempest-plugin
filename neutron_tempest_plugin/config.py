@@ -97,6 +97,9 @@ NeutronPluginOptions = [
     cfg.IntOpt('ssh_proxy_jump_port',
                default=22,
                help='Port used to connect to "ssh_proxy_jump_host".'),
+    cfg.IntOpt('reboots_in_test',
+               default=1,
+               help='Number of reboots to apply if tests requires reboots'),
 
     # Options for special, "advanced" image like e.g. Ubuntu. Such image can be
     # used in tests which require some more advanced tool than available in

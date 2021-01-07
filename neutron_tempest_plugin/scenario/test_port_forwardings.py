@@ -14,7 +14,6 @@
 #    under the License.
 
 from neutron_lib import constants
-from neutron_lib.utils import test
 from oslo_log import log
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
@@ -186,7 +185,6 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                     server[0]['id'],
                     server[0]['port_forwarding_tcp']['external_port'])))
 
-    @test.unstable_test("bug 1896735")
     @decorators.idempotent_id('6d05b1b2-6109-4c30-b402-1503f4634acb')
     def test_port_forwarding_editing_and_deleting_udp_rule(self):
         test_ext_port = 3344
@@ -243,7 +241,6 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
                     server[0]['id'],
                     server[0]['port_forwarding_udp']['external_port'])))
 
-    @test.unstable_test("bug 1896735")
     @decorators.idempotent_id('5971881d-06a0-459e-b636-ce5d1929e2d4')
     def test_port_forwarding_to_2_fixed_ips(self):
         port = self.create_port(self.network,

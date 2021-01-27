@@ -23,6 +23,7 @@ import testtools
 
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
+from neutron_tempest_plugin import exceptions
 from neutron_tempest_plugin.scenario import base
 
 LOG = logging.getLogger(__name__)
@@ -133,17 +134,22 @@ class MetadataTest(base.BaseTempestTestCase):
             self.network, use_advanced_image=use_advanced_image)
         self.wait_for_server_active(server=vm.server)
         self.wait_for_guest_os_ready(vm.server)
-        self._assert_has_ssh_connectivity(vm.ssh_client)
+        self.check_connectivity(host=vm.floating_ip['floating_ip_address'],
+                                ssh_client=vm.ssh_client)
         interface = self._get_primary_interface(vm.ssh_client)
 
-        out = vm.ssh_client.exec_command(
-            'curl http://[%(address)s%%25%(interface)s]/' % {
-                'address': nlib_const.METADATA_V6_IP,
-                'interface': interface})
-        self.assertIn('latest', out)
+        try:
+            out = vm.ssh_client.exec_command(
+                'curl http://[%(address)s%%25%(interface)s]/' % {
+                    'address': nlib_const.METADATA_V6_IP,
+                    'interface': interface})
+            self.assertIn('latest', out)
 
-        out = vm.ssh_client.exec_command(
-            'curl http://[%(address)s%%25%(interface)s]/openstack/' % {
-                'address': nlib_const.METADATA_V6_IP,
-                'interface': interface})
-        self.assertIn('latest', out)
+            out = vm.ssh_client.exec_command(
+                'curl http://[%(address)s%%25%(interface)s]/openstack/' % {
+                    'address': nlib_const.METADATA_V6_IP,
+                    'interface': interface})
+            self.assertIn('latest', out)
+        except exceptions.SSHExecCommandFailed:
+            self._log_console_output()
+            self._log_local_network_status()

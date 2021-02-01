@@ -125,6 +125,8 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.qos_rules = []
         cls.qos_policies = []
         cls.ethertype = "IPv" + str(cls._ip_version)
+        cls.address_groups = []
+        cls.admin_address_groups = []
         cls.address_scopes = []
         cls.admin_address_scopes = []
         cls.subnetpools = []
@@ -821,6 +823,16 @@ class BaseNetworkTest(test.BaseTestCase):
         return body['subnetpool']
 
     @classmethod
+    def create_address_group(cls, name, is_admin=False, **kwargs):
+        if is_admin:
+            body = cls.admin_client.create_address_group(name=name, **kwargs)
+            cls.admin_address_groups.append(body['address_group'])
+        else:
+            body = cls.client.create_address_group(name=name, **kwargs)
+            cls.address_groups.append(body['address_group'])
+        return body['address_group']
+
+    @classmethod
     def create_project(cls, name=None, description=None):
         test_project = name or data_utils.rand_name('test_project_')
         test_description = description or data_utils.rand_name('desc_')
@@ -886,6 +898,9 @@ class BaseNetworkTest(test.BaseTestCase):
         ip_version = ip_version or cls._ip_version
         default_params = (
             constants.DEFAULT_SECURITY_GROUP_RULE_PARAMS[ip_version])
+        if ('remote_address_group_id' in kwargs and 'remote_ip_prefix' in
+                default_params):
+            default_params.pop('remote_ip_prefix')
         for key, value in default_params.items():
             kwargs.setdefault(key, value)
 

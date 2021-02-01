@@ -6,6 +6,7 @@
       # neutron repository and keep it different per branch,
       # then it could be removed from here
       network_api_extensions_common: &api_extensions
+        - address-group
         - address-scope
         - agent
         - allowed-address-pairs
@@ -54,6 +55,7 @@
         - qos-fip
         - quotas
         - quota_details
+        - rbac-address-group
         - rbac-address-scope
         - rbac-policies
         - rbac-security-groups

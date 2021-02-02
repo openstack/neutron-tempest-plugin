@@ -15,11 +15,11 @@
 
 import netaddr
 from neutron_lib import constants
-from neutron_lib.utils import test
 from oslo_log import log
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
+from neutron_tempest_plugin.common import ip
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
@@ -111,11 +111,12 @@ with open('%(result_file)s', 'w') as f:
            'result_file': result_file}
 
 
-def get_unregistered_script(group, result_file):
+def get_unregistered_script(interface, group, result_file):
     return """#!/bin/bash
 export LC_ALL=en_US.UTF-8
-tcpdump -i any -s0 -vv host %(group)s -vvneA -s0 -l &> %(result_file)s &
-    """ % {'group': group,
+tcpdump -i %(interface)s host %(group)s -vvneA -s0 -l -c1 &> %(result_file)s &
+    """ % {'interface': interface,
+           'group': group,
            'result_file': result_file}
 
 
@@ -202,9 +203,9 @@ class BaseMulticastTest(object):
         )['server']
         self.wait_for_server_active(server)
         self.wait_for_guest_os_ready(server)
-        port = self.client.list_ports(
+        server['port'] = self.client.list_ports(
             network_id=self.network['id'], device_id=server['id'])['ports'][0]
-        server['fip'] = self.create_floatingip(port=port)
+        server['fip'] = self.create_floatingip(port=server['port'])
         server['ssh_client'] = ssh.Client(server['fip']['floating_ip_address'],
                                           self.username,
                                           pkey=self.keypair['private_key'])
@@ -242,18 +243,21 @@ class BaseMulticastTest(object):
             'echo "%s" > /tmp/multicast_traffic_receiver.py' % check_script)
 
     def _prepare_unregistered(self, server, mcast_address):
-        check_script = get_unregistered_script(
-            group=mcast_address, result_file=self.unregistered_output_file)
         ssh_client = ssh.Client(
             server['fip']['floating_ip_address'],
             self.username,
             pkey=self.keypair['private_key'])
+        ip_command = ip.IPCommand(ssh_client=ssh_client)
+        addresses = ip_command.list_addresses(port=server['port'])
+        port_iface = ip.get_port_device_name(addresses, server['port'])
+        check_script = get_unregistered_script(
+            interface=port_iface, group=mcast_address,
+            result_file=self.unregistered_output_file)
         self._check_cmd_installed_on_server(ssh_client, server['id'],
                                             'tcpdump')
         server['ssh_client'].execute_script(
             'echo "%s" > /tmp/unregistered_traffic_receiver.sh' % check_script)
 
-    @test.unstable_test("bug 1850288")
     @decorators.idempotent_id('113486fc-24c9-4be4-8361-03b1c9892867')
     def test_multicast_between_vms_on_same_network(self):
         """Test multicast messaging between two servers on the same network
@@ -343,19 +347,40 @@ class BaseMulticastTest(object):
         for receiver_id in receiver_ids:
             self.assertIn(receiver_id, replies_result)
 
-        # Kill the tcpdump command running on the unregistered node so
-        # tcpdump flushes its output to the output file
-        unregistered['ssh_client'].execute_script(
-            "killall tcpdump && sleep 2", become_root=True)
+        def check_unregistered_host():
+            unregistered_result = unregistered['ssh_client'].execute_script(
+                "cat {path} || echo '{path} not exists yet'".format(
+                    path=self.unregistered_output_file))
+            LOG.debug("Unregistered VM result: %s", unregistered_result)
+            return expected_result in unregistered_result
 
-        unregistered_result = unregistered['ssh_client'].execute_script(
-            "cat {path} || echo '{path} not exists yet'".format(
-                path=self.unregistered_output_file))
-        LOG.debug("Unregistered VM result: %s", unregistered_result)
-        expected_result = '0 packets captured'
-        if self._is_multicast_traffic_expected(mcast_address):
-            expected_result = '1 packet captured'
-        self.assertIn(expected_result, unregistered_result)
+        expected_result = '1 packet captured'
+        unregistered_error_message = (
+            'Unregistered server did not received expected packet.')
+        if not self._is_multicast_traffic_expected(mcast_address):
+            # Kill the tcpdump command runs on the unregistered node with "-c"
+            # option so it will be stopped automatically if it will receive
+            # packet matching filters,
+            # We don't expect any packets to be captured really in this case
+            # so let's kill tcpdump so it flushes its output to the output
+            # file.
+            expected_result = (
+                '0 packets captured\n0 packets received by filter')
+            unregistered_error_message = (
+                'Unregistered server received unexpected packet(s).')
+            try:
+                unregistered['ssh_client'].execute_script(
+                    "killall tcpdump && sleep 2", become_root=True)
+            except exceptions.SSHScriptFailed:
+                # Probably some packet was captured by tcpdump and due to that
+                # it is already stopped
+                self.assertTrue(check_unregistered_host(),
+                                unregistered_error_message)
+                return
+
+        utils.wait_until_true(
+            check_unregistered_host,
+            exception=RuntimeError(unregistered_error_message))
 
 
 class MulticastTestIPv4(BaseMulticastTest, base.BaseTempestTestCase):

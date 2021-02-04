@@ -15,9 +15,12 @@
 
 import netaddr
 
+from neutron_lib import constants as const
+
 from tempest.common import utils as tutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin.api import base_routers
@@ -453,3 +456,57 @@ class RoutersSearchCriteriaTest(base.BaseSearchCriteriaTest):
     @decorators.idempotent_id('fb102124-20f8-4cb3-8c81-f16f5e41d192')
     def test_list_no_pagination_limit_0(self):
         self._test_list_no_pagination_limit_0()
+
+
+class RoutersDeleteTest(base_routers.BaseRouterTest):
+    """The only test in this class is a test that removes router!
+
+    * We cannot delete common and mandatory resources (router in this case)
+    * using the existing classes, as it will cause failure in other tests
+    * running in parallel.
+    """
+    @classmethod
+    def resource_setup(cls):
+        super(RoutersDeleteTest, cls).resource_setup()
+        cls.secgroup = cls.create_security_group(
+            name=data_utils.rand_name("test_port_secgroup"))
+        router_kwargs = {
+            'router_name': data_utils.rand_name('router_to_delete'),
+            'external_network_id': CONF.network.public_network_id}
+        cls.router = cls.create_router(**router_kwargs)
+
+    @decorators.idempotent_id('dbbc5c74-63c8-11eb-8881-74e5f9e2a801')
+    def test_delete_router(self):
+        # Create a port on tenant network and associate to the router.
+        # Try to delete router. Expected result: "Conflict Error" is raised.
+        network = self.create_network()
+        subnet = self.create_subnet(network)
+        self.create_router_interface(self.router['id'], subnet['id'])
+        port = self.create_port(
+            network, name=data_utils.rand_name("port"),
+            security_groups=[self.secgroup['id']])
+        self.create_floatingip(port=port)
+        self.assertRaises(
+            lib_exc.Conflict, self.client.delete_router, self.router['id'])
+        # Delete the associated port
+        # Try to delete router. Expected result: "Conflict Error" is raised.
+        # Note: there are still interfaces in use.
+        self.client.delete_port(port['id'])
+        self.assertRaises(
+            lib_exc.Conflict, self.client.delete_router, self.router['id'])
+        # Delete the rest of the router's ports
+        # Try to delete router. Expected result: "PASS"
+        interfaces = [
+            port for port in self.client.list_router_interfaces(
+                self.router['id'])['ports']
+            if port['device_owner'] in const.ROUTER_INTERFACE_OWNERS]
+        for i in interfaces:
+            try:
+                self.assertRaises(
+                    lib_exc.Conflict, self.client.delete_router,
+                    self.router['id'])
+                self.client.remove_router_interface_with_subnet_id(
+                    self.router['id'], i['fixed_ips'][0]['subnet_id'])
+            except lib_exc.NotFound:
+                pass
+        self.client.delete_router(self.router['id'])

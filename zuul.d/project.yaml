@@ -3,11 +3,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-api
-        - neutron-tempest-plugin-designate-scenario:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/neutron/+bug/1891309
-            # will be fixed
-            voting: false
         - neutron-tempest-plugin-scenario-linuxbridge
         - neutron-tempest-plugin-scenario-openvswitch
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
@@ -24,6 +19,10 @@
     experimental:
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario
+        # TODO(slaweq): move it back to the check queue when bug
+        # https://bugs.launchpad.net/neutron/+bug/1891309
+        # will be fixed
+        - neutron-tempest-plugin-designate-scenario
 
 
 - project-template:
@@ -48,11 +47,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-api-rocky
-        - neutron-tempest-plugin-designate-scenario-rocky:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/neutron/+bug/1891309
-            # will be fixed
-            voting: false
         - neutron-tempest-plugin-scenario-linuxbridge-rocky
         - neutron-tempest-plugin-scenario-openvswitch-rocky
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-rocky
@@ -64,6 +58,10 @@
     experimental:
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario-rocky
+        # TODO(slaweq): move it back to the check queue when bug
+        # https://bugs.launchpad.net/neutron/+bug/1891309
+        # will be fixed
+        - neutron-tempest-plugin-designate-scenario-rocky
 
 
 - project-template:
@@ -71,11 +69,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-api-stein
-        - neutron-tempest-plugin-designate-scenario-stein:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/neutron/+bug/1891309
-            # will be fixed
-            voting: false
         - neutron-tempest-plugin-scenario-linuxbridge-stein
         - neutron-tempest-plugin-scenario-openvswitch-stein
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-stein
@@ -87,6 +80,10 @@
     experimental:
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario-stein
+        # TODO(slaweq): move it back to the check queue when bug
+        # https://bugs.launchpad.net/neutron/+bug/1891309
+        # will be fixed
+        - neutron-tempest-plugin-designate-scenario-stein
 
 
 - project-template:
@@ -94,11 +91,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-api-train
-        - neutron-tempest-plugin-designate-scenario-train:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/neutron/+bug/1891309
-            # will be fixed
-            voting: false
         - neutron-tempest-plugin-scenario-linuxbridge-train
         - neutron-tempest-plugin-scenario-openvswitch-train
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-train
@@ -110,6 +102,10 @@
     experimental:
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario-train
+        # TODO(slaweq): move it back to the check queue when bug
+        # https://bugs.launchpad.net/neutron/+bug/1891309
+        # will be fixed
+        - neutron-tempest-plugin-designate-scenario-train
 
 
 - project-template:
@@ -117,11 +113,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-api-ussuri
-        - neutron-tempest-plugin-designate-scenario-ussuri:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/neutron/+bug/1891309
-            # will be fixed
-            voting: false
         - neutron-tempest-plugin-scenario-linuxbridge-ussuri
         - neutron-tempest-plugin-scenario-openvswitch-ussuri
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-ussuri
@@ -134,6 +125,10 @@
     experimental:
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario-ussuri
+        # TODO(slaweq): move it back to the check queue when bug
+        # https://bugs.launchpad.net/neutron/+bug/1891309
+        # will be fixed
+        - neutron-tempest-plugin-designate-scenario-ussuri
 
 
 - project-template:
@@ -141,11 +136,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-api-victoria
-        - neutron-tempest-plugin-designate-scenario-victoria:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/neutron/+bug/1891309
-            # will be fixed
-            voting: false
         - neutron-tempest-plugin-scenario-linuxbridge-victoria
         - neutron-tempest-plugin-scenario-openvswitch-victoria
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-victoria
@@ -158,6 +148,10 @@
     experimental:
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario-victoria
+        # TODO(slaweq): move it back to the check queue when bug
+        # https://bugs.launchpad.net/neutron/+bug/1891309
+        # will be fixed
+        - neutron-tempest-plugin-designate-scenario-victoria
 
 
 - project:

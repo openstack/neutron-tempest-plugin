@@ -96,6 +96,20 @@
               tunnel_types: gre,vxlan
             network_log:
               local_output_log_base: /tmp/test_log.log
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^neutron/agent/.*$
+      - ^neutron/privileged/.*$
+      - ^neutron_tempest_plugin/scenario/.*$
+
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch
@@ -127,6 +141,22 @@
               available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
+    irrelevant-files: &openvswitch-scenario-irrelevant-files
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^neutron/agent/ovn/.*$
+      - ^neutron/agent/windows/.*$
+      - ^neutron/plugins/ml2/drivers/linuxbridge/.*$
+      - ^neutron/plugins/ml2/drivers/macvtap/.*$
+      - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
+      - ^neutron/plugins/ml2/drivers/ovn/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
@@ -163,6 +193,23 @@
               available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^neutron/agent/linux/openvswitch_firewall/.*$
+      - ^neutron/agent/ovn/.*$
+      - ^neutron/agent/windows/.*$
+      - ^neutron/plugins/ml2/drivers/linuxbridge/.*$
+      - ^neutron/plugins/ml2/drivers/macvtap/.*$
+      - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
+      - ^neutron/plugins/ml2/drivers/ovn/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge
@@ -204,6 +251,23 @@
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               q_agent: linuxbridge
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^neutron/agent/linux/openvswitch_firewall/.*$
+      - ^neutron/agent/ovn/.*$
+      - ^neutron/agent/windows/.*$
+      - ^neutron/plugins/ml2/drivers/openvswitch/.*$
+      - ^neutron/plugins/ml2/drivers/macvtap/.*$
+      - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
+      - ^neutron/plugins/ml2/drivers/ovn/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario-ovn
@@ -284,6 +348,32 @@
             neutron_plugin_options:
               available_type_drivers: local,flat,vlan,geneve
               is_igmp_snooping_enabled: True
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^neutron/agent/dhcp/.*$
+      - ^neutron/agent/l2/.*$
+      - ^neutron/agent/l3/.*$
+      - ^neutron/agent/metadata/.*$
+      - ^neutron/agent/windows/.*$
+      - ^neutron/agent/dhcp_agent.py
+      - ^neutron/agent/l3_agent.py
+      - ^neutron/agent/metadata_agent.py
+      - ^neutron/agent/resource_cache.py
+      - ^neutron/agent/rpc.py
+      - ^neutron/agent/securitygroup_rpc.py
+      - ^neutron/plugins/ml2/drivers/linuxbridge/.*$
+      - ^neutron/plugins/ml2/drivers/openvswitch/.*$
+      - ^neutron/plugins/ml2/drivers/macvtap/.*$
+      - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
+      - ^neutron/scheduler/.*$
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
@@ -440,16 +530,7 @@
                 agent_mode: dvr_snat
               agent:
                 availability_zone: nova
-    irrelevant-files: &tempest-irrelevant-files
-      - ^(test-|)requirements.txt$
-      - ^releasenotes/.*$
-      - ^doc/.*$
-      - ^setup.cfg$
-      - ^.*\.rst$
-      - ^neutron.*/locale/.*$
-      - ^neutron.*/tests/unit/.*$
-      - ^tools/.*$
-      - ^tox.ini$
+    irrelevant-files: *openvswitch-scenario-irrelevant-files
 
 - job:
     name: neutron-tempest-plugin-designate-scenario
@@ -492,7 +573,22 @@
         - designate-tempest-plugin
         - neutron-tempest-plugin
       tempest_test_regex: ^neutron_tempest_plugin\.scenario\.test_dns_integration
-    irrelevant-files: *tempest-irrelevant-files
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^neutron/agent/.*$
+      - ^neutron/cmd/.*$
+      - ^neutron/privileged/.*$
+      - ^neutron/plugins/ml2/drivers/.*$
+      - ^neutron/scheduler/.*$
+      - ^neutron/services/(?!externaldns).*$
 
 - job:
     name: neutron-tempest-plugin-sfc
@@ -591,4 +687,3 @@
       devstack_localrc:
         IPSEC_PACKAGE: strongswan
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_vpnaas) | join(',') }}"
-    irrelevant-files: *tempest-irrelevant-files

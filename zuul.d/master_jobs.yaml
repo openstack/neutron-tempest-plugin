@@ -411,6 +411,11 @@
               available_type_drivers: local,flat,vlan,geneve
               is_igmp_snooping_enabled: True
               firewall_driver: ovn
+      zuul_copy_output:
+        '{{ devstack_base_dir }}/data/ovs': 'logs'
+        '{{ devstack_base_dir }}/data/ovn': 'logs'
+        '{{ devstack_log_dir }}/ovsdb-server-nb.log': 'logs'
+        '{{ devstack_log_dir }}/ovsdb-server-sb.log': 'logs'
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$

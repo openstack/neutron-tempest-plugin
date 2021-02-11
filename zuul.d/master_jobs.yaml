@@ -137,7 +137,7 @@
       network_available_features: *available_features
       # TODO(slaweq): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
-      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)"
+      tempest_exclude_regex: "(^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)"
       devstack_localrc:
         Q_AGENT: openvswitch
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
@@ -178,7 +178,7 @@
       network_available_features: *available_features
       # TODO(eolivare): remove VLAN Transparency tests from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1907548 will be fixed
-      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest)"
+      tempest_exclude_regex: "(^neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest)"
       devstack_localrc:
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_linuxbridge) | join(',') }}"
@@ -220,7 +220,7 @@
       # be fixed
       # TODO(jlibosva): Remove the NetworkWritableMtuTest test from the list
       # once east/west fragmentation is supported in core OVN
-      tempest_black_regex: "\
+      tempest_exclude_regex: "\
           (?:neutron_tempest_plugin.scenario.test_ipv6.IPv6Test)|\
           (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_trunk_subport_lifecycle)|\
           (^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest)"

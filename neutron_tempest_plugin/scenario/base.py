@@ -207,6 +207,21 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         LOG.debug("Created router %s", router['name'])
         return router
 
+    @classmethod
+    def skip_if_no_extension_enabled_in_l3_agents(cls, extension):
+        l3_agents = cls.os_admin.network_client.list_agents(
+                binary='neutron-l3-agent')['agents']
+        if not l3_agents:
+            # the tests should not be skipped when neutron-l3-agent does not
+            # exist (this validation doesn't apply to the setups like
+            # e.g. ML2/OVN)
+            return
+        for agent in l3_agents:
+            if extension in agent['configurations'].get('extensions', []):
+                return
+        raise cls.skipTest("No L3 agent with '%s' extension enabled found." %
+                           extension)
+
     @removals.remove(version='Stein',
                      message="Please use create_floatingip method instead of "
                              "create_and_associate_floatingip.")

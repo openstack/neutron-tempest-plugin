@@ -31,11 +31,13 @@ LOG = log.getLogger(__name__)
 
 class PortForwardingTestJSON(base.BaseTempestTestCase):
 
+    credentials = ['primary', 'admin']
     required_extensions = ['router', 'floating-ip-port-forwarding']
 
     @classmethod
     def resource_setup(cls):
         super(PortForwardingTestJSON, cls).resource_setup()
+        cls.skip_if_no_extension_enabled_in_l3_agents("port_forwarding")
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
         cls.router = cls.create_router_by_client()

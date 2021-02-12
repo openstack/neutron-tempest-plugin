@@ -341,15 +341,6 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
     def resource_setup(cls):
         super(FloatingIPQosTest, cls).resource_setup()
 
-    def skip_if_no_extension_enabled_in_l3_agents(self, extension):
-        l3_agents = self.os_admin.network_client.list_agents(
-                binary='neutron-l3-agent')['agents']
-        for agent in l3_agents:
-            if extension in agent['configurations'].get('extensions', []):
-                return
-        raise self.skipTest("No L3 agent with '%s' extension enabled found." %
-                            extension)
-
     @decorators.idempotent_id('5eb48aea-eaba-4c20-8a6f-7740070a0aa3')
     def test_qos(self):
         """Test floating IP is binding to a QoS policy with

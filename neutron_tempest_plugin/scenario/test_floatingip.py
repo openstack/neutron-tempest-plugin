@@ -341,6 +341,11 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
     def resource_setup(cls):
         super(FloatingIPQosTest, cls).resource_setup()
 
+    @classmethod
+    def setup_clients(cls):
+        super(FloatingIPQosTest, cls).setup_clients()
+        cls.admin_client = cls.os_admin.network_client
+
     @decorators.idempotent_id('5eb48aea-eaba-4c20-8a6f-7740070a0aa3')
     def test_qos(self):
         """Test floating IP is binding to a QoS policy with

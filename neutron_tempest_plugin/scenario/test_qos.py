@@ -137,6 +137,7 @@ class QoSTestMixin(object):
                                         name='test-policy',
                                         description='test-qos-policy',
                                         shared=True)
+        self.qos_policies.append(policy['policy'])
         return policy['policy']['id']
 
     def _create_server_by_port(self, port=None):
@@ -188,6 +189,11 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
     @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
     def resource_setup(cls):
         super(QoSTest, cls).resource_setup()
+
+    @classmethod
+    def setup_clients(cls):
+        super(QoSTest, cls).setup_clients()
+        cls.admin_client = cls.os_admin.network_client
 
     @decorators.idempotent_id('00682a0c-b72e-11e8-b81e-8c16450ea513')
     def test_qos_basic_and_update(self):

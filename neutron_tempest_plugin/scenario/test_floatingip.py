@@ -359,8 +359,12 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
         self.skip_if_no_extension_enabled_in_l3_agents("fip_qos")
 
         self._test_basic_resources()
+
+        # Create a new QoS policy
         policy_id = self._create_qos_policy()
         ssh_client = self._create_ssh_client()
+
+        # As admin user create a new QoS rules
         self.os_admin.network_client.create_bandwidth_limit_rule(
             policy_id, max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
             max_burst_kbps=constants.LIMIT_KILO_BYTES,
@@ -378,6 +382,7 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
             self.fip['id'])['floatingip']
         self.assertEqual(self.port['id'], fip['port_id'])
 
+        # Associate QoS to the FIP
         self.os_admin.network_client.update_floatingip(
             self.fip['id'],
             qos_policy_id=policy_id)
@@ -386,12 +391,38 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
             self.fip['id'])['floatingip']
         self.assertEqual(policy_id, fip['qos_policy_id'])
 
+        # Basic test, Check that actual BW while downloading file
+        # is as expected (Original BW)
         common_utils.wait_until_true(lambda: self._check_bw(
             ssh_client,
             self.fip['floating_ip_address'],
             port=self.NC_PORT),
             timeout=120,
-            sleep=1)
+            sleep=1,
+            exception=RuntimeError(
+                'Failed scenario: "Create a QoS policy associated with FIP" '
+                'Actual BW is not as expected!'))
+
+        # As admin user update QoS rules
+        for rule in rules['bandwidth_limit_rules']:
+            self.os_admin.network_client.update_bandwidth_limit_rule(
+                policy_id,
+                rule['id'],
+                max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 2,
+                max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 2)
+
+        # Check that actual BW while downloading file
+        # is as expected (Update BW)
+        common_utils.wait_until_true(lambda: self._check_bw(
+            ssh_client,
+            self.fip['floating_ip_address'],
+            port=self.NC_PORT,
+            expected_bw=test_qos.QoSTestMixin.LIMIT_BYTES_SEC * 2),
+            timeout=120,
+            sleep=1,
+            exception=RuntimeError(
+                'Failed scenario: "Update QoS policy associated with FIP" '
+                'Actual BW is not as expected!'))
 
 
 class TestFloatingIPUpdate(FloatingIpTestCasesMixin,

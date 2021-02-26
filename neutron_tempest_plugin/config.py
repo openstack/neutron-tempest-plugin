@@ -68,6 +68,11 @@ NeutronPluginOptions = [
                default=None,
                choices=['None', 'linuxbridge', 'ovs', 'sriov'],
                help='Agent used for devstack@q-agt.service'),
+    cfg.StrOpt('firewall_driver',
+               default=None,
+               choices=['None', 'openvswitch', 'ovn',
+                        'iptables_hybrid', 'iptables'],
+               help='Driver for security groups firewall in the L2 agent'),
 
     # Multicast tests settings
     cfg.StrOpt('multicast_group_range',

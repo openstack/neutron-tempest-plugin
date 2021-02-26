@@ -158,13 +158,14 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 if sg['name'] == constants.DEFAULT_SECURITY_GROUP:
                     secgroup_id = sg['id']
                     break
-
+        resp = []
         for rule in rule_list:
             direction = rule.pop('direction')
-            client.create_security_group_rule(
-                direction=direction,
-                security_group_id=secgroup_id,
-                **rule)
+            resp.append(client.create_security_group_rule(
+                        direction=direction,
+                        security_group_id=secgroup_id,
+                        **rule)['security_group_rule'])
+        return resp
 
     @classmethod
     def create_loginable_secgroup_rule(cls, secgroup_id=None,

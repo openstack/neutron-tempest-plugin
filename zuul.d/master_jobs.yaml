@@ -64,6 +64,7 @@
         - router-admin-state-down-before-update
         - router_availability_zone
         - security-group
+        - security-groups-remote-address-group
         - segment
         - service-type
         - sorting
@@ -162,6 +163,7 @@
               available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
+              firewall_driver: openvswitch
     irrelevant-files: &openvswitch-scenario-irrelevant-files
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
@@ -231,6 +233,7 @@
               available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
+              firewall_driver: iptables_hybrid
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
@@ -306,6 +309,7 @@
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               q_agent: linuxbridge
+              firewall_driver: iptables
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
@@ -403,6 +407,7 @@
             neutron_plugin_options:
               available_type_drivers: local,flat,vlan,geneve
               is_igmp_snooping_enabled: True
+              firewall_driver: ovn
     irrelevant-files:
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
@@ -543,6 +548,7 @@
               image_is_advanced: true
               available_type_drivers: flat,geneve,vlan,gre,local,vxlan
               l3_agent_mode: dvr_snat
+              firewall_driver: openvswitch
     group-vars:
       subnode:
         devstack_services:

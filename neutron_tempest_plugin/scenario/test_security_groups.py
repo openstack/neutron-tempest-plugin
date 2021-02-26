@@ -12,8 +12,12 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-from neutron_lib import constants
 
+import netaddr
+from neutron_lib import constants
+import testtools
+
+from tempest.common import utils as tempest_utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
@@ -306,6 +310,95 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
         self.check_remote_connectivity(
             server_ssh_clients[0], fips[1]['fixed_ip_address'],
             servers=servers)
+        # make sure ICMP connectivity doesn't work from framework
+        self.ping_ip_address(fips[0]['floating_ip_address'],
+                             should_succeed=False)
+
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.firewall_driver == 'openvswitch',
+        "Openvswitch agent is required to run this test")
+    @decorators.idempotent_id('678dd4c0-2953-4626-b89c-8e7e4110ec4b')
+    @tempest_utils.requires_ext(extension="address-group", service="network")
+    @tempest_utils.requires_ext(
+        extension="security-groups-remote-address-group", service="network")
+    def test_remote_group_and_remote_address_group(self):
+        """Test SG rules with remote group and remote address group
+
+        This test checks the ICMP connection among two servers using a security
+        group rule with remote group and another rule with remote address
+        group. The connection should be granted when at least one of the rules
+        is applied. When both rules are applied (overlapped), removing one of
+        them should not disable the connection.
+        """
+        # create a new sec group
+        ssh_secgrp_name = data_utils.rand_name('ssh_secgrp')
+        ssh_secgrp = self.os_primary.network_client.create_security_group(
+            name=ssh_secgrp_name)
+        # add cleanup
+        self.security_groups.append(ssh_secgrp['security_group'])
+        # configure sec group to support SSH connectivity
+        self.create_loginable_secgroup_rule(
+            secgroup_id=ssh_secgrp['security_group']['id'])
+        # spawn two instances with the sec group created
+        server_ssh_clients, fips, servers = self.create_vm_testing_sec_grp(
+            security_groups=[{'name': ssh_secgrp_name}])
+        # verify SSH functionality
+        for i in range(2):
+            self.check_connectivity(fips[i]['floating_ip_address'],
+                                    CONF.validation.image_ssh_user,
+                                    self.keypair['private_key'])
+        # try to ping instances without ICMP permissions
+        self.check_remote_connectivity(
+            server_ssh_clients[0], fips[1]['fixed_ip_address'],
+            should_succeed=False)
+        # add ICMP support to the remote group
+        rule_list = [{'protocol': constants.PROTO_NUM_ICMP,
+                      'direction': constants.INGRESS_DIRECTION,
+                      'remote_group_id': ssh_secgrp['security_group']['id']}]
+        remote_sg_rid = self.create_secgroup_rules(
+            rule_list, secgroup_id=ssh_secgrp['security_group']['id'])[0]['id']
+        # verify ICMP connectivity between instances works
+        self.check_remote_connectivity(
+            server_ssh_clients[0], fips[1]['fixed_ip_address'],
+            servers=servers)
+        # make sure ICMP connectivity doesn't work from framework
+        self.ping_ip_address(fips[0]['floating_ip_address'],
+                             should_succeed=False)
+
+        # add ICMP rule with remote address group
+        test_ag = self.create_address_group(
+            name=data_utils.rand_name('test_ag'),
+            addresses=[str(netaddr.IPNetwork(fips[0]['fixed_ip_address']))])
+        rule_list = [{'protocol': constants.PROTO_NUM_ICMP,
+                      'direction': constants.INGRESS_DIRECTION,
+                      'remote_address_group_id': test_ag['id']}]
+        remote_ag_rid = self.create_secgroup_rules(
+            rule_list, secgroup_id=ssh_secgrp['security_group']['id'])[0]['id']
+        # verify ICMP connectivity between instances still works
+        self.check_remote_connectivity(
+            server_ssh_clients[0], fips[1]['fixed_ip_address'],
+            servers=servers)
+        # make sure ICMP connectivity doesn't work from framework
+        self.ping_ip_address(fips[0]['floating_ip_address'],
+                             should_succeed=False)
+
+        # Remove the ICMP rule with remote group
+        self.client.delete_security_group_rule(remote_sg_rid)
+        # verify ICMP connectivity between instances still works as granted
+        # by the rule with remote address group
+        self.check_remote_connectivity(
+            server_ssh_clients[0], fips[1]['fixed_ip_address'],
+            servers=servers)
+        # make sure ICMP connectivity doesn't work from framework
+        self.ping_ip_address(fips[0]['floating_ip_address'],
+                             should_succeed=False)
+
+        # Remove the ICMP rule with remote address group
+        self.client.delete_security_group_rule(remote_ag_rid)
+        # verify ICMP connectivity between instances doesn't work now
+        self.check_remote_connectivity(
+            server_ssh_clients[0], fips[1]['fixed_ip_address'],
+            should_succeed=False)
         # make sure ICMP connectivity doesn't work from framework
         self.ping_ip_address(fips[0]['floating_ip_address'],
                              should_succeed=False)

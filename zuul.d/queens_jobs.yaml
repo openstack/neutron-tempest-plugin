@@ -10,6 +10,21 @@
         override-checkout: 0.3.0
       - openstack/tempest
     vars:
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       branch_override: stable/queens
       # TODO(slaweq): find a way to put this list of extensions in
       # neutron repository and keep it different per branch,
@@ -73,6 +88,24 @@
         CIRROS_VERSION: 0.3.5
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
+        ML2_L3_PLUGIN: router
+      devstack_local_conf:
+        post-config:
+          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+          # devstack-tempest job will be switched to use lib/neutron instead of
+          # lib/neutron-legacy
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            AGENT:
+              tunnel_types: gre,vxlan
+            ml2:
+              type_drivers: flat,geneve,vlan,gre,local,vxlan
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_plugin_options:
+              available_type_drivers: flat,geneve,vlan,gre,local,vxlan
 
 
 

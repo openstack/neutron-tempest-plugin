@@ -43,35 +43,41 @@ def turn_nic6_on(ssh, ipv6_port):
     """
     ip_command = ip.IPCommand(ssh)
     nic = ip_command.get_nic_name_by_mac(ipv6_port['mac_address'])
+    ip_command.set_link(nic, "up")
 
-    # NOTE(slaweq): on RHEL based OS ifcfg file for new interface is
-    # needed to make IPv6 working on it, so if
-    # /etc/sysconfig/network-scripts directory exists ifcfg-%(nic)s file
-    # should be added in it
-    if sysconfig_network_scripts_dir_exists(ssh):
+
+def configure_eth_connection_profile_NM(ssh):
+    """Prepare a Network manager profile for ipv6 port
+
+    By default the NetworkManager uses IPv6 privacy
+    format it isn't supported by neutron then we create
+    a ether profile with eui64 supported format
+
+    @param ssh: RemoteClient ssh instance to server
+    """
+    # NOTE(ccamposr): on RHEL based OS we need a ether profile with
+    # eui64 format
+    if nmcli_command_exists(ssh):
         try:
-            ssh.execute_script(
-                'echo -e "DEVICE=%(nic)s\\nNAME=%(nic)s\\nIPV6INIT=yes" | '
-                'tee /etc/sysconfig/network-scripts/ifcfg-%(nic)s; '
-                'nmcli connection reload' % {'nic': nic},
-                become_root=True)
-            ssh.execute_script('nmcli connection up %s' % nic,
+            ssh.execute_script('nmcli connection add type ethernet con-name '
+                               'ether ifname "*"', become_root=True)
+            ssh.execute_script('nmcli con mod ether ipv6.addr-gen-mode eui64',
                                become_root=True)
+
         except lib_exc.SSHExecCommandFailed as e:
             # NOTE(slaweq): Sometimes it can happen that this SSH command
             # will fail because of some error from network manager in
             # guest os.
             # But even then doing ip link set up below is fine and
             # IP address should be configured properly.
-            LOG.debug("Error during restarting %(nic)s interface on "
-                      "instance. Error message: %(error)s",
-                      {'nic': nic, 'error': e})
-    ip_command.set_link(nic, "up")
+            LOG.debug("Error creating NetworkManager profile. "
+                      "Error message: %(error)s",
+                      {'error': e})
 
 
-def sysconfig_network_scripts_dir_exists(ssh):
+def nmcli_command_exists(ssh):
     return "False" not in ssh.execute_script(
-        'test -d /etc/sysconfig/network-scripts/ || echo "False"')
+        'if ! type nmcli > /dev/null ; then echo "False"; fi')
 
 
 class IPv6Test(base.BaseTempestTestCase):
@@ -165,6 +171,8 @@ class IPv6Test(base.BaseTempestTestCase):
 
         # And plug VM to the second IPv6 network
         ipv6_port = self.create_port(ipv6_networks[1])
+        # Add NetworkManager profile with ipv6 eui64 format to guest OS
+        configure_eth_connection_profile_NM(ssh_client)
         self.create_interface(vm['id'], ipv6_port['id'])
         ip.wait_for_interface_status(
             self.os_primary.interfaces_client, vm['id'],

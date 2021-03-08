@@ -7,7 +7,6 @@
     roles:
       - zuul: openstack/devstack
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - openstack/neutron-tempest-plugin
       - openstack/tempest

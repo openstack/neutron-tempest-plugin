@@ -4,7 +4,6 @@
     nodeset: openstack-single-node-bionic
     override-checkout: stable/stein
     required-projects: &required-projects-stein
-      - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 1.3.0
@@ -194,7 +193,6 @@
     nodeset: openstack-single-node-bionic
     override-checkout: stable/stein
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 1.3.0

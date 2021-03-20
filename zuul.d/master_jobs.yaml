@@ -368,6 +368,7 @@
         OVN_BUILD_FROM_SOURCE: True
         OVN_BRANCH: "v20.12.0"
         OVS_BRANCH: "branch-2.15"
+        OVS_SYSCONFDIR: "/usr/local/etc/openvswitch"
       devstack_services:
         br-ex-tcpdump: true
         br-int-flows: true

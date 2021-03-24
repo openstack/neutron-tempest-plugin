@@ -217,7 +217,6 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
     def resource_setup(cls):
         super(FloatingIPPortDetailsTest, cls).resource_setup()
 
-    @test.unstable_test("bug 1815585")
     @decorators.idempotent_id('a663aeee-dd81-492b-a207-354fd6284dbe')
     def test_floatingip_port_details(self):
         """Tests the following:

@@ -97,6 +97,37 @@ class TrunkTest(base.BaseTempestTestCase):
                                    floating_ip=floating_ip, server=server,
                                    ssh_client=ssh_client)
 
+    def _create_advanced_servers_with_trunk_port(self, num_servers=1,
+                                                 subport_network=None,
+                                                 segmentation_id=None,
+                                                 vlan_subnet=None,
+                                                 use_advanced_image=False):
+        server_list = []
+        for _ in range(0, num_servers):
+            vm = self._create_server_with_trunk_port(
+                subport_network,
+                segmentation_id,
+                use_advanced_image)
+            server_list.append(vm)
+            self._configure_vlan_subport(
+                vm=vm,
+                vlan_tag=segmentation_id,
+                vlan_subnet=vlan_subnet)
+
+        for server in server_list:
+            self.check_connectivity(
+                host=vm.floating_ip['floating_ip_address'],
+                ssh_client=vm.ssh_client)
+
+        return server_list
+
+    def _check_servers_remote_connectivity(self, vms=None,
+                                           should_succeed=True):
+        self.check_remote_connectivity(
+            vms[0].ssh_client,
+            vms[1].subport['fixed_ips'][0]['ip_address'],
+            should_succeed=should_succeed)
+
     def _create_server_port(self, network=None, **params):
         network = network or self.network
         return self.create_port(network=network, name=self.rand_name,
@@ -247,53 +278,73 @@ class TrunkTest(base.BaseTempestTestCase):
             self._wait_for_trunk(vm.trunk)
             self._assert_has_ssh_connectivity(vm1.ssh_client)
 
+    @testtools.skipUnless(
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
+    @testtools.skipUnless(
+         (CONF.neutron_plugin_options.reboots_in_test > 0),
+         "Number of reboots > 0 is reqired for this test")
+    @decorators.idempotent_id('a8a02c9b-b453-49b5-89a2-cce7da6680fb')
+    def test_subport_connectivity_soft_reboot(self):
+        vlan_tag = 10
+        vlan_network = self.create_network()
+        vlan_subnet = self.create_subnet(network=vlan_network, gateway=None)
+        use_advanced_image = (
+            not CONF.neutron_plugin_options.default_image_is_advanced)
+
+        # allow intra-security-group traffic
+        sg_rule = self.create_pingable_secgroup_rule(self.security_group['id'])
+        self.addCleanup(
+            self.os_primary.network_client.delete_security_group_rule,
+            sg_rule['id'])
+
+        vms = self._create_advanced_servers_with_trunk_port(
+            num_servers=2,
+            subport_network=vlan_network,
+            segmentation_id=vlan_tag,
+            vlan_subnet=vlan_subnet,
+            use_advanced_image=use_advanced_image)
+        # check remote connectivity true before reboots
+        self._check_servers_remote_connectivity(vms=vms)
+        client = self.os_tempest.compute.ServersClient()
+        for _ in range(CONF.neutron_plugin_options.reboots_in_test):
+            client.reboot_server(vms[1].server['id'],
+                                 **{'type': 'SOFT'})
+            self.wait_for_server_active(vms[1].server)
+            self._configure_vlan_subport(vm=vms[1],
+                                         vlan_tag=vlan_tag,
+                                         vlan_subnet=vlan_subnet)
+            self._check_servers_remote_connectivity(vms=vms)
+
     @test.unstable_test("bug 1897796")
     @testtools.skipUnless(
         (CONF.neutron_plugin_options.advanced_image_ref or
          CONF.neutron_plugin_options.default_image_is_advanced),
         "Advanced image is required to run this test.")
-    @decorators.idempotent_id('a8a02c9b-b453-49b5-89a2-cce7da66aafb')
+    @decorators.idempotent_id('a8a02c9b-b453-49b5-89a2-cce7da66bbcb')
     def test_subport_connectivity(self):
         vlan_tag = 10
         vlan_network = self.create_network()
         vlan_subnet = self.create_subnet(network=vlan_network, gateway=None)
-
         use_advanced_image = (
             not CONF.neutron_plugin_options.default_image_is_advanced)
-
-        vm1 = self._create_server_with_trunk_port(
+        vms = self._create_advanced_servers_with_trunk_port(
+            num_servers=2,
             subport_network=vlan_network,
             segmentation_id=vlan_tag,
+            vlan_subnet=vlan_subnet,
             use_advanced_image=use_advanced_image)
-        vm2 = self._create_server_with_trunk_port(
-            subport_network=vlan_network,
-            segmentation_id=vlan_tag,
-            use_advanced_image=use_advanced_image)
-
-        for vm in [vm1, vm2]:
-            self.check_connectivity(
-                host=vm.floating_ip['floating_ip_address'],
-                ssh_client=vm.ssh_client)
-            self._configure_vlan_subport(vm=vm,
-                                         vlan_tag=vlan_tag,
-                                         vlan_subnet=vlan_subnet)
-
         # Ping from server1 to server2 via VLAN interface should fail because
         # we haven't allowed ICMP
-        self.check_remote_connectivity(
-            vm1.ssh_client,
-            vm2.subport['fixed_ips'][0]['ip_address'],
-            should_succeed=False)
-
+        self._check_servers_remote_connectivity(vms=vms,
+                                                should_succeed=False)
         # allow intra-security-group traffic
         sg_rule = self.create_pingable_secgroup_rule(self.security_group['id'])
         self.addCleanup(
                 self.os_primary.network_client.delete_security_group_rule,
                 sg_rule['id'])
-        self.check_remote_connectivity(
-            vm1.ssh_client,
-            vm2.subport['fixed_ips'][0]['ip_address'],
-            servers=[vm1, vm2])
+        self._check_servers_remote_connectivity(vms=vms)
 
     @testtools.skipUnless(CONF.compute_feature_enabled.cold_migration,
                           'Cold migration is not available.')

@@ -325,7 +325,9 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         try:
             local_ips = ip_utils.IPCommand(namespace=ns_name).list_addresses()
             local_routes = ip_utils.IPCommand(namespace=ns_name).list_routes()
-            arp_table = ip_utils.arp_table()
+            arp_table = ip_utils.arp_table(namespace=ns_name)
+            iptables = ip_utils.list_iptables(namespace=ns_name)
+            lsockets = ip_utils.list_listening_sockets(namespace=ns_name)
         except exceptions.ShellCommandFailed:
             LOG.debug('Namespace %s has been deleted synchronously during the '
                       'host network collection process', ns_name)
@@ -337,6 +339,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                   ns_name, '\n'.join(str(r) for r in local_routes))
         LOG.debug('Namespace %s; Local ARP table:\n%s',
                   ns_name, '\n'.join(str(r) for r in arp_table))
+        LOG.debug('Namespace %s; Local iptables:\n%s', ns_name, iptables)
+        LOG.debug('Namespace %s; Listening sockets:\n%s', ns_name, lsockets)
 
     def _check_remote_connectivity(self, source, dest, count,
                                    should_succeed=True,

@@ -21,7 +21,7 @@ CONF = config.CONF
 
 
 class PortSecurityTest(base.BaseTempestTestCase):
-    credentials = ['primary']
+    credentials = ['primary', 'admin']
     required_extensions = ['port-security']
 
     @decorators.idempotent_id('61ab176e-d48b-42b7-b38a-1ba571ecc033')

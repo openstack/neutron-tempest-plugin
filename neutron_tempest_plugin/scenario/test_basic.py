@@ -24,7 +24,7 @@ CONF = config.CONF
 
 
 class NetworkBasicTest(base.BaseTempestTestCase):
-    credentials = ['primary']
+    credentials = ['primary', 'admin']
     force_tenant_isolation = False
 
     # Default to ipv4.

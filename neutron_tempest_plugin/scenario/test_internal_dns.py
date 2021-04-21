@@ -24,6 +24,7 @@ CONF = config.CONF
 
 
 class InternalDNSTest(base.BaseTempestTestCase):
+    credentials = ['primary', 'admin']
 
     @utils.requires_ext(extension="dns-integration", service="network")
     @decorators.idempotent_id('988347de-07af-471a-abfa-65aea9f452a6')

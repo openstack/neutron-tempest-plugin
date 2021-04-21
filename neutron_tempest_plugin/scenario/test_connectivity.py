@@ -88,6 +88,8 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         ap2_rt = self.create_router(
             router_name=data_utils.rand_name("ap2_rt"),
             admin_state_up=True)
+        self._wait_for_router_ha_active(ap1_rt['id'])
+        self._wait_for_router_ha_active(ap2_rt['id'])
 
         ap1_internal_port = self.create_port(
             ap1_net, security_groups=[self.secgroup['id']])
@@ -140,6 +142,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             router_name=data_utils.rand_name("east_west_traffic_router"),
             admin_state_up=True,
             external_network_id=CONF.network.public_network_id)
+        self._wait_for_router_ha_active(router['id'])
 
         internal_port_1 = self.create_port(
             net_1, security_groups=[self.secgroup['id']])

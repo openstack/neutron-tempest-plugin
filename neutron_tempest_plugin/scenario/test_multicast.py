@@ -122,7 +122,7 @@ tcpdump -i %(interface)s host %(group)s -vvneA -s0 -l -c1 &> %(result_file)s &
 
 class BaseMulticastTest(object):
 
-    credentials = ['primary']
+    credentials = ['primary', 'admin']
     force_tenant_isolation = False
 
     # Import configuration options

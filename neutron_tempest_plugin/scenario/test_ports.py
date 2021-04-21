@@ -28,7 +28,7 @@ CONF = config.CONF
 
 
 class PortsTest(base.BaseTempestTestCase):
-    credentials = ['primary']
+    credentials = ['primary', 'admin']
 
     @classmethod
     def resource_setup(cls):

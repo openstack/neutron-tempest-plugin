@@ -383,6 +383,23 @@ def arp_table(namespace=None):
     return arp_table
 
 
+def list_iptables(version=constants.IP_VERSION_4, namespace=None):
+    cmd = ''
+    if namespace:
+        cmd = 'sudo ip netns exec %s ' % namespace
+    cmd += ('iptables-save' if version == constants.IP_VERSION_4 else
+            'ip6tables-save')
+    return shell.execute(cmd).stdout
+
+
+def list_listening_sockets(namespace=None):
+    cmd = ''
+    if namespace:
+        cmd = 'sudo ip netns exec %s ' % namespace
+    cmd += 'netstat -nlp'
+    return shell.execute(cmd).stdout
+
+
 class Route(HasProperties,
             collections.namedtuple('Route',
                                    ['dest', 'properties'])):

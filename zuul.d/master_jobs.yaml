@@ -452,7 +452,6 @@
     roles:
       - zuul: openstack/devstack
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - openstack/neutron-tempest-plugin
       - openstack/tempest
@@ -681,7 +680,6 @@
     parent: neutron-tempest-plugin-base
     timeout: 10800
     required-projects:
-      - openstack/devstack-gate
       - openstack/networking-sfc
       - openstack/neutron
       - openstack/neutron-tempest-plugin
@@ -773,7 +771,6 @@
     parent: neutron-tempest-plugin-base
     timeout: 3900
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - openstack/neutron-vpnaas
       - openstack/neutron-tempest-plugin

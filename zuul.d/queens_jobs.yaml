@@ -4,7 +4,6 @@
     parent: neutron-tempest-plugin-api
     override-checkout: stable/queens
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 0.3.0
@@ -115,7 +114,6 @@
     nodeset: openstack-single-node-xenial
     override-checkout: stable/queens
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 0.3.0
@@ -152,7 +150,6 @@
       - zuul: openstack/neutron
     override-checkout: stable/queens
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 0.3.0
@@ -203,7 +200,6 @@
     nodeset: openstack-two-node-xenial
     override-checkout: stable/queens
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 0.3.0
@@ -229,7 +225,6 @@
     nodeset: openstack-single-node-xenial
     override-checkout: stable/queens
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 0.3.0

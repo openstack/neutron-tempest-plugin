@@ -263,7 +263,6 @@
     timeout: 10800
     override-checkout: stable/ussuri
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron-fwaas
       - openstack/neutron
       - openstack/neutron-tempest-plugin

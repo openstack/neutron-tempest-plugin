@@ -110,6 +110,15 @@ class QosBandwidthLimitRuleNegativeTestJSON(base.BaseAdminNetworkTest):
             non_exist_id, rule['id'], max_kbps=200, max_burst_kbps=1337)
 
     @decorators.attr(type='negative')
+    @decorators.idempotent_id('1b592566-745f-4e15-a439-073afe341244')
+    def test_rule_create_rule_non_existent_policy(self):
+        non_exist_id = data_utils.rand_name('qos_policy')
+        self.assertRaises(
+            lib_exc.NotFound,
+            self.admin_client.create_bandwidth_limit_rule,
+            non_exist_id, max_kbps=200, max_burst_kbps=300)
+
+    @decorators.attr(type='negative')
     @decorators.idempotent_id('a2c72066-0c32-4f28-be7f-78fa721588b6')
     def test_rule_update_rule_nonexistent_rule(self):
         non_exist_id = data_utils.rand_name('qos_rule')

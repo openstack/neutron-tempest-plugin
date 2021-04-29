@@ -42,7 +42,7 @@ else:
 
 
 class BaseDNSIntegrationTests(base.BaseTempestTestCase, DNSMixin):
-    credentials = ['primary']
+    credentials = ['primary', 'admin']
 
     @classmethod
     def setup_clients(cls):

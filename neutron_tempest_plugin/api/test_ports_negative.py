@@ -54,10 +54,13 @@ class PortsNegativeTestJSON(base.BaseNetworkTest):
     @decorators.idempotent_id('7cf473ae-7ec8-4834-ae17-9ef6ec6b8a32')
     def test_add_port_with_nonexist_network_id(self):
         network = self.network
+        # Copy and restore net ID so the cleanup will delete correct net
+        original_network_id = network['id']
         network['id'] = uuidutils.generate_uuid()
         self.assertRaises(lib_exc.NotFound,
                           self.create_port,
                           network)
+        network['id'] = original_network_id
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('cad2d349-25fa-490e-9675-cd2ea24164bc')

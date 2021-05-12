@@ -685,6 +685,21 @@
       - openstack/neutron-tempest-plugin
       - openstack/tempest
     vars:
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services that are not used by OVN
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       network_api_extensions_common: *api_extensions
       tempest_test_regex: ^neutron_tempest_plugin\.sfc
       devstack_plugins:
@@ -694,6 +709,9 @@
         - flow_classifier
         - sfc
       devstack_localrc:
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_sfc) | join(',') }}"
       # TODO(bcafarel): tests still fail from time to time in parallel
       # https://bugs.launchpad.net/neutron/+bug/1851500
@@ -707,12 +725,30 @@
       - openstack/networking-bagpipe
       - openstack/networking-bgpvpn
     vars:
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services that are not used by OVN
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       tempest_test_regex: ^neutron_tempest_plugin\.bgpvpn
       network_api_extensions: *api_extensions
       network_api_extensions_bgpvpn:
         - bgpvpn
         - bgpvpn-routes-control
       devstack_localrc:
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORKING_BGPVPN_DRIVER: "BGPVPN:BaGPipe:networking_bgpvpn.neutron.services.service_drivers.bagpipe.bagpipe_v2.BaGPipeBGPVPNDriver:default"
         BAGPIPE_DATAPLANE_DRIVER_IPVPN: "ovs"
         BAGPIPE_BGP_PEERS: "-"

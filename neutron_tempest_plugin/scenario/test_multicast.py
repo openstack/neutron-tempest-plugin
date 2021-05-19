@@ -364,8 +364,7 @@ class BaseMulticastTest(object):
             # We don't expect any packets to be captured really in this case
             # so let's kill tcpdump so it flushes its output to the output
             # file.
-            expected_result = (
-                '0 packets captured\n0 packets received by filter')
+            expected_result = ('0 packets captured')
             unregistered_error_message = (
                 'Unregistered server received unexpected packet(s).')
             try:

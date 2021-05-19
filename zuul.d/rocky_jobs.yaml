@@ -132,33 +132,85 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-rocky
-    parent: neutron-tempest-plugin-scenario-openvswitch
+    parent: neutron-tempest-plugin-scenario
     description: |
       This job run on py2 for stable/rocky gate.
     nodeset: openstack-single-node-xenial
+    timeout: 10000
     override-checkout: stable/rocky
     required-projects: *required-projects-rocky
     vars: &scenario_vars_rocky
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       branch_override: stable/rocky
       network_api_extensions: *api_extensions
       network_available_features: &available_features
         -
       devstack_localrc:
         USE_PYTHON3: false
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
       devstack_local_conf:
         post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              enable_dvr: false
+              l3_ha: true
+          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+          # devstack-tempest job will be switched to use lib/neutron instead of
+          # lib/neutron-legacy
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            agent:
+              tunnel_types: vxlan,gre
+            ovs:
+              tunnel_bridge: br-tun
+              bridge_mappings: public:br-ex
           $NEUTRON_L3_CONF:
             DEFAULT:
               # NOTE(slaweq): on Xenial keepalived don't knows this option yet
               keepalived_use_no_track: False
-      # NOTE(bcafarel): newer tests, unstable on rocky branch
+        test-config:
+          $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: "{{ network_available_features | join(',') }}"
+            neutron_plugin_options:
+              available_type_drivers: flat,vlan,local,vxlan
+              firewall_driver: openvswitch
       tempest_black_regex: "\
           (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
           (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
     branches:
       - stable/rocky
+    irrelevant-files: &openvswitch-scenario-irrelevant-files
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^neutron/agent/windows/.*$
+      - ^neutron/plugins/ml2/drivers/linuxbridge/.*$
+      - ^neutron/plugins/ml2/drivers/macvtap/.*$
+      - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-rocky
@@ -174,28 +226,70 @@
       devstack_localrc:
         USE_PYTHON3: True
     branches: ^(?!stable/rocky).*$
+    irrelevant-files: *openvswitch-scenario-irrelevant-files
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-rocky
-    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    parent: neutron-tempest-plugin-scenario
     nodeset: openstack-single-node-xenial
+    timeout: 10000
     description: |
       This job run on py2 for stable/rocky gate.
     override-checkout: stable/rocky
     required-projects: *required-projects-rocky
     vars: &openvswitch_vars_rocky
-      branch_override: stable/rocky
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
       network_api_extensions: *api_extensions
+      network_available_features: *available_features
       devstack_localrc:
         USE_PYTHON3: false
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
       devstack_local_conf:
         post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              enable_dvr: false
+              l3_ha: true
+          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+          # devstack-tempest job will be switched to use lib/neutron instead of
+          # lib/neutron-legacy
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            agent:
+              tunnel_types: vxlan,gre
+            ovs:
+              tunnel_bridge: br-tun
+              bridge_mappings: public:br-ex
+            securitygroup:
+              firewall_driver: iptables_hybrid
           $NEUTRON_L3_CONF:
             DEFAULT:
               # NOTE(slaweq): on Xenial keepalived don't knows this option yet
               keepalived_use_no_track: False
+        test-config:
+          $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: "{{ network_available_features | join(',') }}"
+            neutron_plugin_options:
+              available_type_drivers: flat,vlan,local,vxlan
+              firewall_driver: iptables_hybrid
       # TODO(bcafarel): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
       # NOTE(bcafarel): other are newer tests, unstable on rocky branch
@@ -205,11 +299,27 @@
           (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
     branches:
       - stable/rocky
+    irrelevant-files: &iptables_hybrid_irrelevant_files
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^neutron/agent/linux/openvswitch_firewall/.*$
+      - ^neutron/agent/windows/.*$
+      - ^neutron/plugins/ml2/drivers/linuxbridge/.*$
+      - ^neutron/plugins/ml2/drivers/macvtap/.*$
+      - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-rocky
-    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    parent: neutron-tempest-plugin-scenario
     nodeset: openstack-single-node-xenial
+    timeout: 10000
     description: |
       This job run on py3 for other than stable/rocky gate
       which is nothing but neutron-tempest-pluign master gate.
@@ -220,6 +330,7 @@
       devstack_localrc:
         USE_PYTHON3: True
     branches: ^(?!stable/rocky).*$
+    irrelevant-files: *iptables_hybrid_irrelevant_files
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-rocky
@@ -295,28 +406,171 @@
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
-    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    parent: tempest-multinode-full
     description: |
       This job run on py2 for stable/rocky gate.
     nodeset: openstack-two-node-xenial
     override-checkout: stable/rocky
+    roles:
+      - zuul: openstack/devstack
     required-projects: *required-projects-rocky
+    pre-run: playbooks/dvr-multinode-scenario-pre-run.yaml
+    voting: false
     vars: &multinode_scenario_vars_rocky
-      branch_override: stable/rocky
+      tempest_concurrency: 4
+      tox_envlist: all
+      tempest_test_regex: ^neutron_tempest_plugin\.scenario
+      # NOTE(slaweq): in case of some tests, which requires advanced image,
+      # default test timeout set to 1200 seconds may be not enough if job is
+      # run on slow node
+      tempest_test_timeout: 2400
       network_api_extensions_common: *api_extensions
+      network_api_extensions_dvr:
+        - dvr
       devstack_localrc:
         USE_PYTHON3: false
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_dvr) | join(',') }}"
+        PHYSICAL_NETWORK: default
+        CIRROS_VERSION: 0.5.1
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        BUILD_TIMEOUT: 784
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+      devstack_plugins:
+        neutron: https://opendev.org/openstack/neutron.git
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
+      tempest_plugins:
+        - neutron-tempest-plugin
+      devstack_services:
+        tls-proxy: false
+        tempest: true
+        neutron-dns: true
+        neutron-qos: true
+        neutron-segments: true
+        neutron-trunk: true
+        neutron-log: true
+        neutron-port-forwarding: true
+        # Cinder services
+        c-api: false
+        c-bak: false
+        c-sch: false
+        c-vol: false
+        cinder: false
+        # We don't need Swift to be run in the Neutron jobs
+        s-account: false
+        s-container: false
+        s-object: false
+        s-proxy: false
+      devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            quotas:
+              quota_router: 100
+              quota_floatingip: 500
+              quota_security_group: 100
+              quota_security_group_rule: 1000
+            DEFAULT:
+              router_distributed: True
+          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+          # devstack-tempest job will be switched to use lib/neutron instead of
+          # lib/neutron-legacy
+          "/$NEUTRON_CORE_PLUGIN_CONF":
+            ml2:
+              type_drivers: flat,geneve,vlan,gre,local,vxlan
+              mechanism_drivers: openvswitch,l2population
+            ml2_type_vlan:
+              network_vlan_ranges: foo:1:10
+            ml2_type_vxlan:
+              vni_ranges: 1:2000
+            ml2_type_gre:
+              tunnel_id_ranges: 1:1000
+            agent:
+              enable_distributed_routing: True
+              l2_population: True
+              tunnel_types: vxlan,gre
+            ovs:
+              tunnel_bridge: br-tun
+              bridge_mappings: public:br-ex
+          $NEUTRON_L3_CONF:
+            DEFAULT:
+              agent_mode: dvr_snat
+            agent:
+              availability_zone: nova
+          $NEUTRON_DHCP_CONF:
+            agent:
+              availability_zone: nova
+          "/etc/neutron/api-paste.ini":
+            "composite:neutronapi_v2_0":
+              use: "call:neutron.auth:pipeline_factory"
+              noauth: "cors request_id catch_errors osprofiler extensions neutronapiapp_v2_0"
+              keystone: "cors request_id catch_errors osprofiler authtoken keystonecontext extensions neutronapiapp_v2_0"
+        test-config:
+          $TEMPEST_CONFIG:
+            network-feature-enabled:
+              available_features: *available_features
+            neutron_plugin_options:
+              provider_vlans: foo,
+              agent_availability_zone: nova
+              image_is_advanced: true
+              available_type_drivers: flat,geneve,vlan,gre,local,vxlan
+              l3_agent_mode: dvr_snat
+              firewall_driver: openvswitch
+      branch_override: stable/rocky
       # NOTE(bcafarel): newer tests, unstable on rocky branch
       tempest_black_regex: "\
           (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
           (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
     branches:
       - stable/rocky
+    group-vars: &multinode_scenario_group_vars_rocky
+      subnode:
+        devstack_services:
+          tls-proxy: false
+          q-agt: true
+          q-l3: true
+          q-meta: true
+          neutron-qos: true
+          neutron-trunk: true
+          neutron-log: true
+          neutron-port-forwarding: true
+          # Cinder services
+          c-bak: false
+          c-vol: false
+          # We don't need Swift to be run in the Neutron jobs
+          s-account: false
+          s-container: false
+          s-object: false
+          s-proxy: false
+        devstack_localrc:
+          USE_PYTHON3: true
+        devstack_local_conf:
+          post-config:
+            $NEUTRON_CONF:
+              DEFAULT:
+                router_distributed: True
+            # NOTE(slaweq): We can get rid of this hardcoded absolute path when
+            # devstack-tempest job will be switched to use lib/neutron instead of
+            # lib/neutron-legacy
+            "/$NEUTRON_CORE_PLUGIN_CONF":
+              agent:
+                enable_distributed_routing: True
+                l2_population: True
+                tunnel_types: vxlan,gre
+              ovs:
+                tunnel_bridge: br-tun
+                bridge_mappings: public:br-ex
+            $NEUTRON_L3_CONF:
+              DEFAULT:
+                agent_mode: dvr_snat
+              agent:
+                availability_zone: nova
+    irrelevant-files: *openvswitch-scenario-irrelevant-files
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-rocky
-    parent: neutron-tempest-plugin-dvr-multinode-scenario
+    parent: tempest-multinode-full
     nodeset: openstack-two-node-xenial
     description: |
       This job run on py3 for other than stable/rocky gate
@@ -328,6 +582,7 @@
         USE_PYTHON3: True
     required-projects: *required-projects-rocky
     group-vars:
+      <<: *multinode_scenario_group_vars_rocky
       subnode:
         devstack_localrc:
           USE_PYTHON3: True

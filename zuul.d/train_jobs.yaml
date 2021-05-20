@@ -3,6 +3,11 @@
     parent: neutron-tempest-plugin-api
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
+    required-projects: &required-projects-train
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.5.0
+      - openstack/tempest
     vars:
       devstack_services:
         # Disable OVN services
@@ -122,6 +127,7 @@
     parent: neutron-tempest-plugin-scenario-openvswitch
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
+    required-projects: *required-projects-train
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions
@@ -146,6 +152,7 @@
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
+    required-projects: *required-projects-train
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions
@@ -170,6 +177,7 @@
     parent: neutron-tempest-plugin-scenario-linuxbridge
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
+    required-projects: *required-projects-train
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions
@@ -194,6 +202,7 @@
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     nodeset: openstack-two-node-bionic
     override-checkout: stable/train
+    required-projects: *required-projects-train
     vars:
       network_api_extensions_common: *api_extensions
       branch_override: stable/train
@@ -203,6 +212,7 @@
     parent: neutron-tempest-plugin-designate-scenario
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
+    required-projects: *required-projects-train
     vars:
       branch_override: stable/train
       network_api_extensions_common: *api_extensions
@@ -212,6 +222,7 @@
     parent: neutron-tempest-plugin-sfc
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
+    required-projects: *required-projects-train
     vars:
       branch_override: stable/train
       network_api_extensions_common: *api_extensions
@@ -221,6 +232,7 @@
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
+    required-projects: *required-projects-train
     vars:
       branch_override: stable/train
       network_api_extensions: *api_extensions
@@ -230,6 +242,7 @@
     parent: neutron-tempest-plugin-fwaas-ussuri
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
+    required-projects: *required-projects-train
     vars:
       branch_override: stable/train
       network_api_extensions_common: *api_extensions

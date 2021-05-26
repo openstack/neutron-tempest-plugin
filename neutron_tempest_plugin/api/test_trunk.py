@@ -247,21 +247,23 @@ class TrunkTestMtusJSONBase(TrunkTestJSONBase):
     @classmethod
     def skip_checks(cls):
         super(TrunkTestMtusJSONBase, cls).skip_checks()
-        if not all(cls.is_type_driver_enabled(t) for t in ['gre', 'vxlan']):
-            msg = "Either vxlan or gre type driver not enabled."
+        if not all(cls.is_type_driver_enabled(t) for t in ['vlan', 'vxlan']):
+            msg = "Either vxlan or vlan type driver not enabled."
             raise cls.skipException(msg)
 
     def setUp(self):
         super(TrunkTestMtusJSONBase, self).setUp()
+        physnet_name = CONF.neutron_plugin_options.provider_vlans[0]
 
-        # VXLAN autocomputed MTU (1450) is smaller than that of GRE (1458)
+        # VXLAN autocomputed MTU (1450) is smaller than that of VLAN (1480)
         self.smaller_mtu_net = self.create_network(
             name=data_utils.rand_name('vxlan-net'),
             provider_network_type='vxlan')
 
         self.larger_mtu_net = self.create_network(
-            name=data_utils.rand_name('gre-net'),
-            provider_network_type='gre')
+            name=data_utils.rand_name('vlan-net'),
+            provider_network_type='vlan',
+            provider_physical_network=physnet_name)
 
         self.smaller_mtu_port = self.create_port(self.smaller_mtu_net)
         self.smaller_mtu_port_2 = self.create_port(self.smaller_mtu_net)

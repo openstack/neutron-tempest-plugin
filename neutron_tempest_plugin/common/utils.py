@@ -136,3 +136,74 @@ def spawn_http_server(ssh_client, port, message):
 def call_url_remote(ssh_client, url):
     cmd = "curl %s --retry 3 --connect-timeout 2" % url
     return ssh_client.exec_command(cmd)
+
+
+class StatefulConnection:
+    """Class to test connection that should remain opened
+
+    Can be used to perform some actions while the initiated connection
+    remain opened
+    """
+
+    def __init__(self, client_ssh, server_ssh, target_ip, target_port):
+        self.client_ssh = client_ssh
+        self.server_ssh = server_ssh
+        self.ip = target_ip
+        self.port = target_port
+        self.connection_started = False
+        self.test_attempt = 0
+
+    def __enter__(self):
+        return self
+
+    @property
+    def test_str(self):
+        return 'attempt_{}'.format(str(self.test_attempt).zfill(3))
+
+    def _start_connection(self):
+        self.server_ssh.exec_command(
+                'echo "{}" > input.txt'.format(self.test_str))
+        self.server_ssh.exec_command('tail -f input.txt | nc -lp '
+                '{} &> output.txt &'.format(self.port))
+        self.client_ssh.exec_command(
+                'echo "{}" > input.txt'.format(self.test_str))
+        self.client_ssh.exec_command('tail -f input.txt | nc {} {} &>'
+                'output.txt &'.format(self.ip, self.port))
+
+    def _test_connection(self):
+        if not self.connection_started:
+            self._start_connection()
+        else:
+            self.server_ssh.exec_command(
+                    'echo "{}" >> input.txt'.format(self.test_str))
+            self.client_ssh.exec_command(
+                    'echo "{}" >> input.txt & sleep 1'.format(self.test_str))
+        try:
+            self.server_ssh.exec_command(
+                    'grep {} output.txt'.format(self.test_str))
+            self.client_ssh.exec_command(
+                    'grep {} output.txt'.format(self.test_str))
+            if not self.should_pass:
+                return False
+            else:
+                if not self.connection_started:
+                    self.connection_started = True
+                return True
+        except exceptions.SSHExecCommandFailed:
+            if self.should_pass:
+                return False
+            else:
+                return True
+        finally:
+            self.test_attempt += 1
+
+    def test_connection(self, should_pass=True, timeout=10, sleep_timer=1):
+        self.should_pass = should_pass
+        wait_until_true(
+                self._test_connection, timeout=timeout, sleep=sleep_timer)
+
+    def __exit__(self, type, value, traceback):
+        self.server_ssh.exec_command('sudo killall nc || killall nc')
+        self.server_ssh.exec_command('sudo killall tail || killall tail')
+        self.client_ssh.exec_command('sudo killall nc || killall nc')
+        self.client_ssh.exec_command('sudo killall tail || killall tail')

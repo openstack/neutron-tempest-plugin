@@ -81,6 +81,8 @@ class AllowedAddressPairTestJSON(base.BaseNetworkTest):
         body = self.client.update_port(
             port_id, allowed_address_pairs=allowed_address_pairs)
         allowed_address_pair = body['port']['allowed_address_pairs']
+        for pair in allowed_address_pair:
+            pair.pop('active', None)
         self.assertCountEqual(allowed_address_pair, allowed_address_pairs)
 
     @decorators.idempotent_id('9599b337-272c-47fd-b3cf-509414414ac4')

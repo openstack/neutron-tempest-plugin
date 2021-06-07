@@ -784,6 +784,15 @@ class BaseNetworkTest(test.BaseTestCase):
         return qos_rule
 
     @classmethod
+    def create_qos_dscp_marking_rule(cls, policy_id, dscp_mark):
+        """Wrapper utility that creates and returns a QoS dscp rule."""
+        body = cls.admin_client.create_dscp_marking_rule(
+            policy_id, dscp_mark)
+        qos_rule = body['dscp_marking_rule']
+        cls.qos_rules.append(qos_rule)
+        return qos_rule
+
+    @classmethod
     def delete_router(cls, router, client=None):
         client = client or cls.client
         if 'routes' in router:

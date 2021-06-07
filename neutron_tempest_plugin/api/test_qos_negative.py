@@ -90,42 +90,122 @@ class QosNegativeTestJSON(base.BaseAdminNetworkTest):
                           self.admin_client.delete_qos_policy, non_exist_id)
 
 
-class QosBandwidthLimitRuleNegativeTestJSON(base.BaseAdminNetworkTest):
+class QosRuleNegativeBaseTestJSON(base.BaseAdminNetworkTest):
 
     required_extensions = [qos_apidef.ALIAS]
 
-    @decorators.attr(type='negative')
-    @decorators.idempotent_id('e9ce8042-c828-4cb9-b1f1-85bd35e6553a')
-    def test_rule_update_rule_nonexistent_policy(self):
+    def _test_rule_update_rule_nonexistent_policy(self, create_params,
+                                                  update_params):
         non_exist_id = data_utils.rand_name('qos_policy')
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=False)
-        rule = self.create_qos_bandwidth_limit_rule(policy_id=policy['id'],
-                                                    max_kbps=1,
-                                                    max_burst_kbps=1)
+        rule = self.rule_create_m(policy_id=policy['id'], **create_params)
         self.assertRaises(
             lib_exc.NotFound,
-            self.admin_client.update_bandwidth_limit_rule,
-            non_exist_id, rule['id'], max_kbps=200, max_burst_kbps=1337)
+            self.rule_update_m,
+            non_exist_id, rule['id'], **update_params)
 
-    @decorators.attr(type='negative')
-    @decorators.idempotent_id('1b592566-745f-4e15-a439-073afe341244')
-    def test_rule_create_rule_non_existent_policy(self):
+    def _test_rule_create_rule_non_existent_policy(self, create_params):
         non_exist_id = data_utils.rand_name('qos_policy')
         self.assertRaises(
             lib_exc.NotFound,
-            self.admin_client.create_bandwidth_limit_rule,
-            non_exist_id, max_kbps=200, max_burst_kbps=300)
+            self.rule_create_m,
+            non_exist_id, **create_params)
 
-    @decorators.attr(type='negative')
-    @decorators.idempotent_id('a2c72066-0c32-4f28-be7f-78fa721588b6')
-    def test_rule_update_rule_nonexistent_rule(self):
+    def _test_rule_update_rule_nonexistent_rule(self, update_params):
         non_exist_id = data_utils.rand_name('qos_rule')
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=False)
         self.assertRaises(
             lib_exc.NotFound,
-            self.admin_client.update_bandwidth_limit_rule,
-            policy['id'], non_exist_id, max_kbps=200, max_burst_kbps=1337)
+            self.rule_update_m,
+            policy['id'], non_exist_id, **update_params)
+
+
+class QosBandwidthLimitRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
+
+    @classmethod
+    def resource_setup(cls):
+        cls.rule_create_m = cls.create_qos_bandwidth_limit_rule
+        cls.rule_update_m = cls.admin_client.update_bandwidth_limit_rule
+        super(QosBandwidthLimitRuleNegativeTestJSON, cls).resource_setup()
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('e9ce8042-c828-4cb9-b1f1-85bd35e6553a')
+    def test_rule_update_rule_nonexistent_policy(self):
+        create_params = {'max_kbps': 1, 'max_burst_kbps': 1}
+        update_params = {'max_kbps': 200, 'max_burst_kbps': 1337}
+        self._test_rule_update_rule_nonexistent_policy(
+            create_params, update_params)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('1b592566-745f-4e15-a439-073afe341244')
+    def test_rule_create_rule_non_existent_policy(self):
+        create_params = {'max_kbps': 200, 'max_burst_kbps': 300}
+        self._test_rule_create_rule_non_existent_policy(create_params)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('a2c72066-0c32-4f28-be7f-78fa721588b6')
+    def test_rule_update_rule_nonexistent_rule(self):
+        update_params = {'max_kbps': 200, 'max_burst_kbps': 1337}
+        self._test_rule_update_rule_nonexistent_rule(update_params)
+
+
+class QosMinimumBandwidthRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
+
+    @classmethod
+    def resource_setup(cls):
+        cls.rule_create_m = cls.create_qos_minimum_bandwidth_rule
+        cls.rule_update_m = cls.admin_client.update_minimum_bandwidth_rule
+        super(QosMinimumBandwidthRuleNegativeTestJSON, cls).resource_setup()
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('08b8455b-4d4f-4119-bad3-9357085c3a80')
+    def test_rule_update_rule_nonexistent_policy(self):
+        create_params = {'min_kbps': 1}
+        update_params = {'min_kbps': 200}
+        self._test_rule_update_rule_nonexistent_policy(
+            create_params, update_params)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('5a714a4a-bfbc-4cf9-b0c0-13fd185204f7')
+    def test_rule_create_rule_non_existent_policy(self):
+        create_params = {'min_kbps': 200}
+        self._test_rule_create_rule_non_existent_policy(create_params)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('8470cbe0-8ca5-46ab-9c66-7cf69301b121')
+    def test_rule_update_rule_nonexistent_rule(self):
+        update_params = {'min_kbps': 200}
+        self._test_rule_update_rule_nonexistent_rule(update_params)
+
+
+class QosDscpRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
+
+    @classmethod
+    def resource_setup(cls):
+        cls.rule_create_m = cls.create_qos_dscp_marking_rule
+        cls.rule_update_m = cls.admin_client.update_dscp_marking_rule
+        super(QosDscpRuleNegativeTestJSON, cls).resource_setup()
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('d47d5fbe-3e98-476f-b2fd-97818175dea5')
+    def test_rule_update_rule_nonexistent_policy(self):
+        create_params = {'dscp_mark': 26}
+        update_params = {'dscp_mark': 16}
+        self._test_rule_update_rule_nonexistent_policy(
+            create_params, update_params)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('07d17f09-3dc4-4c24-9bb1-49081a153c5a')
+    def test_rule_create_rule_non_existent_policy(self):
+        create_params = {'dscp_mark': 16}
+        self._test_rule_create_rule_non_existent_policy(create_params)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('9c0bd085-5a7a-496f-a984-50dc631a64f2')
+    def test_rule_update_rule_nonexistent_rule(self):
+        update_params = {'dscp_mark': 16}
+        self._test_rule_update_rule_nonexistent_rule(update_params)

@@ -28,6 +28,119 @@ LOG = log.getLogger(__name__)
 ADDRESS_GROUP_NAME = 'test-address-group'
 
 
+class AddressGroupTest(base.BaseAdminNetworkTest):
+
+    credentials = ['primary', 'admin']
+    required_extensions = ['address-group']
+
+    @decorators.idempotent_id('496fef1b-22ce-483b-ab93-d28bf46954b0')
+    def test_address_group_lifecycle(self):
+        ag_description = "Test AG description"
+        ag_name = data_utils.rand_name(ADDRESS_GROUP_NAME)
+        addresses = ['10.10.10.3/32', '192.168.0.10/24', '2001:db8::f00/64']
+        expected_addresses = [
+            '10.10.10.3/32', '192.168.0.0/24', '2001:db8::/64']
+        ag = self.create_address_group(
+            description=ag_description,
+            name=ag_name,
+            addresses=addresses)
+        self.assertEqual(ag_description, ag['description'])
+        self.assertEqual(ag_name, ag['name'])
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(ag['addresses']))
+
+        new_description = 'New AG description'
+        updated_ag = self.client.update_address_group(
+            ag['id'], description=new_description)['address_group']
+        self.assertEqual(new_description, updated_ag['description'])
+        self.assertEqual(ag_name, updated_ag['name'])
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(updated_ag['addresses']))
+
+        self.client.delete_address_group(ag['id'])
+        with testtools.ExpectedException(exceptions.NotFound):
+            self.client.show_address_group(ag['id'])
+
+    @decorators.idempotent_id('8a42029a-40eb-4b44-a7cf-38500046f9b8')
+    def test_address_group_create_with_wrong_address(self):
+        with testtools.ExpectedException(exceptions.BadRequest):
+            self.create_address_group(
+                name=data_utils.rand_name(ADDRESS_GROUP_NAME),
+                addresses=['10.20.30.40'])
+
+        with testtools.ExpectedException(exceptions.BadRequest):
+            self.create_address_group(
+                name=data_utils.rand_name(ADDRESS_GROUP_NAME),
+                addresses=['this is bad IP address'])
+
+    @decorators.idempotent_id('27c03921-bb12-4b9a-b32e-7083bc90ff1f')
+    def test_edit_addresses_in_address_group(self):
+        addresses = ['10.10.10.3/32', '192.168.0.10/24', '2001:db8::f00/64']
+        expected_addresses = [
+            '10.10.10.3/32', '192.168.0.0/24', '2001:db8::/64']
+        ag = self.create_address_group(
+            name=data_utils.rand_name(ADDRESS_GROUP_NAME),
+            addresses=addresses)
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(ag['addresses']))
+
+        added_addresses = ['10.20.30.40/32']
+        self.client.add_addresses_to_address_group(
+            ag['id'], addresses=added_addresses)
+        updated_ag = self.client.show_address_group(ag['id'])['address_group']
+        expected_addresses += added_addresses
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(updated_ag['addresses']))
+
+        removed_addresses = [expected_addresses.pop(0)]
+        self.client.remove_addresses_from_address_group(
+            ag['id'], addresses=removed_addresses)
+        updated_ag = self.client.show_address_group(ag['id'])['address_group']
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(updated_ag['addresses']))
+
+    @decorators.idempotent_id('feec6747-b4b8-49e3-8cff-817d3f097f2c')
+    def test_add_wrong_address_to_address_group(self):
+        addresses = ['10.10.10.3/32', '192.168.0.10/24', '2001:db8::f00/64']
+        expected_addresses = [
+            '10.10.10.3/32', '192.168.0.0/24', '2001:db8::/64']
+        ag = self.create_address_group(
+            name=data_utils.rand_name(ADDRESS_GROUP_NAME),
+            addresses=addresses)
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(ag['addresses']))
+        with testtools.ExpectedException(exceptions.BadRequest):
+            self.client.add_addresses_to_address_group(
+                ag['id'], addresses=['this is bad IP address'])
+        updated_ag = self.client.show_address_group(ag['id'])['address_group']
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(updated_ag['addresses']))
+
+    @decorators.idempotent_id('74f6fd4c-257b-4725-887b-470e96960e24')
+    def test_remove_wrong_address_from_address_group(self):
+        addresses = ['10.10.10.3/32', '192.168.0.10/24', '2001:db8::f00/64']
+        expected_addresses = [
+            '10.10.10.3/32', '192.168.0.0/24', '2001:db8::/64']
+        ag = self.create_address_group(
+            name=data_utils.rand_name(ADDRESS_GROUP_NAME),
+            addresses=addresses)
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(ag['addresses']))
+        with testtools.ExpectedException(exceptions.NotFound):
+            self.client.remove_addresses_from_address_group(
+                ag['id'], addresses=['10.200.200.200'])
+        updated_ag = self.client.show_address_group(ag['id'])['address_group']
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(updated_ag['addresses']))
+
+        with testtools.ExpectedException(exceptions.BadRequest):
+            self.client.remove_addresses_from_address_group(
+                ag['id'], addresses=['this is bad IP address'])
+        updated_ag = self.client.show_address_group(ag['id'])['address_group']
+        self.assertListEqual(
+            sorted(expected_addresses), sorted(updated_ag['addresses']))
+
+
 class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
 
     force_tenant_isolation = True

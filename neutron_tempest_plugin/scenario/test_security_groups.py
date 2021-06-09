@@ -277,6 +277,50 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
                       'remote_ip_prefix': cidr}]
         self._test_ip_prefix(rule_list, should_succeed=False)
 
+    @decorators.idempotent_id('01f0ddca-b049-47eb-befd-82acb502c9ec')
+    def test_established_tcp_session_after_re_attachinging_sg(self):
+        """Test existing connection remain open after sg has been re-attached
+
+        Verifies that new packets can pass over the existing connection when
+        the security group has been removed from the server and then added
+        back
+        """
+
+        ssh_sg = self.create_security_group()
+        self.create_loginable_secgroup_rule(secgroup_id=ssh_sg['id'])
+        vm_ssh, fips, vms = self.create_vm_testing_sec_grp(
+                security_groups=[{'name': ssh_sg['name']}])
+        sg = self.create_security_group()
+        nc_rule = [{'protocol': constants.PROTO_NUM_TCP,
+                    'direction': constants.INGRESS_DIRECTION,
+                    'port_range_min': 6666,
+                    'port_range_max': 6666}]
+        self.create_secgroup_rules(nc_rule, secgroup_id=sg['id'])
+        srv_port = self.client.list_ports(network_id=self.network['id'],
+                device_id=vms[1]['server']['id'])['ports'][0]
+        srv_ip = srv_port['fixed_ips'][0]['ip_address']
+        with utils.StatefulConnection(
+                vm_ssh[0], vm_ssh[1], srv_ip, 6666) as con:
+            self.client.update_port(srv_port['id'],
+                    security_groups=[ssh_sg['id'], sg['id']])
+            con.test_connection()
+        with utils.StatefulConnection(
+                vm_ssh[0], vm_ssh[1], srv_ip, 6666) as con:
+            self.client.update_port(
+                    srv_port['id'], security_groups=[ssh_sg['id']])
+            con.test_connection(should_pass=False)
+        with utils.StatefulConnection(
+                vm_ssh[0], vm_ssh[1], srv_ip, 6666) as con:
+            self.client.update_port(srv_port['id'],
+                    security_groups=[ssh_sg['id'], sg['id']])
+            con.test_connection()
+            self.client.update_port(srv_port['id'],
+                    security_groups=[ssh_sg['id']])
+            con.test_connection(should_pass=False)
+            self.client.update_port(srv_port['id'],
+                    security_groups=[ssh_sg['id'], sg['id']])
+            con.test_connection()
+
     @decorators.idempotent_id('7ed39b86-006d-40fb-887a-ae46693dabc9')
     def test_remote_group(self):
         # create a new sec group

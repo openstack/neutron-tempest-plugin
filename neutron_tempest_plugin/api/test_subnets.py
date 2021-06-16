@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import netaddr
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base
@@ -69,3 +70,38 @@ class SubnetsSearchCriteriaTest(base.BaseSearchCriteriaTest):
         self._test_list_validation_filters(self.list_kwargs)
         self._test_list_validation_filters({
             'unknown_filter': 'value'}, filter_is_valid=False)
+
+
+class SubnetServiceTypeTestJSON(base.BaseNetworkTest):
+
+    required_extensions = ['service-type']
+
+    @classmethod
+    def resource_setup(cls):
+        super(SubnetServiceTypeTestJSON, cls).resource_setup()
+        cls.network = cls.create_network()
+
+    @decorators.idempotent_id('7e0edb66-1bb2-4473-ab83-d039cddced0d')
+    def test_allocate_ips_are_from_correct_subnet(self):
+        cidr_1 = netaddr.IPNetwork('192.168.1.0/24')
+        cidr_2 = netaddr.IPNetwork('192.168.2.0/24')
+
+        self.create_subnet(self.network,
+                           service_types=['test:type_1'],
+                           cidr=str(cidr_1))
+        self.create_subnet(self.network,
+                           service_types=['test:type_2'],
+                           cidr=str(cidr_2))
+        port_type_1 = self.create_port(self.network,
+                                       device_owner="test:type_1")
+        port_type_2 = self.create_port(self.network,
+                                       device_owner="test:type_2")
+
+        self.assertEqual(1, len(port_type_1['fixed_ips']))
+        self.assertEqual(1, len(port_type_2['fixed_ips']))
+        self.assertIn(
+            netaddr.IPAddress(port_type_1['fixed_ips'][0]['ip_address']),
+            cidr_1)
+        self.assertIn(
+            netaddr.IPAddress(port_type_2['fixed_ips'][0]['ip_address']),
+            cidr_2)

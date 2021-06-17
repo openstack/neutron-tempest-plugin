@@ -222,18 +222,12 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
 
         error_msg = (
             "Router %s is not active on any of the L3 agents" % router_id)
-        # NOTE(slaweq): Due to bug
-        # the bug https://launchpad.net/bugs/1923633 let's temporary skip test
-        # if router will not become active on any of the L3 agents in 600
-        # seconds. When that bug will be fixed, we should get rid of that skip
-        # and lower timeout to e.g. 300 seconds, or even less
-        try:
-            utils.wait_until_true(
-                _router_active_on_l3_agent,
-                timeout=600, sleep=5,
-                exception=lib_exc.TimeoutException(error_msg))
-        except lib_exc.TimeoutException:
-            raise cls.skipException("Bug 1923633. %s" % error_msg)
+        # NOTE(slaweq): timeout here should be lower for sure, but due to
+        # the bug https://launchpad.net/bugs/1923633 let's wait even 10
+        # minutes until router will be active on some of the L3 agents
+        utils.wait_until_true(_router_active_on_l3_agent,
+                              timeout=600, sleep=5,
+                              exception=lib_exc.TimeoutException(error_msg))
 
     @classmethod
     def skip_if_no_extension_enabled_in_l3_agents(cls, extension):

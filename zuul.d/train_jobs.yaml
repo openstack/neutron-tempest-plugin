@@ -92,6 +92,7 @@
         - standard-attr-tag
         - standard-attr-timestamp
         - subnet_allocation
+        - subnet-service-types
         - subnetpool-prefix-ops
         - trunk
         - trunk-details

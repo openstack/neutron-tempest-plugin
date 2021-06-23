@@ -88,6 +88,7 @@
         - standard-attr-tag
         - standard-attr-timestamp
         - subnet_allocation
+        - subnet-service-types
         - trunk
         - trunk-details
         - uplink-status-propagation

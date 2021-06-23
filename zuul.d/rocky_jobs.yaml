@@ -84,6 +84,7 @@
         - standard-attr-timestamp
         - standard-attr-tag
         - subnet_allocation
+        - subnet-service-types
         - trunk
         - trunk-details
       network_api_extensions_tempest:

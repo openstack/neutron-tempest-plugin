@@ -76,6 +76,7 @@
         - standard-attr-timestamp
         - subnet_allocation
         - subnet-dns-publish-fixed-ip
+        - subnet-service-types
         - subnetpool-prefix-ops
         - tag-ports-during-bulk-creation
         - trunk

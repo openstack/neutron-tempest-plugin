@@ -199,3 +199,56 @@ class DNSIntegrationExtraTests(BaseDNSIntegrationTests):
         self.client.delete_port(port['id'])
         self._verify_dns_records(addr_v6, name, record_type='AAAA',
                                  found=False)
+
+
+class DNSIntegrationDomainPerProjectTests(BaseDNSIntegrationTests):
+
+    credentials = ['primary', 'admin']
+
+    required_extensions = ['subnet-dns-publish-fixed-ip',
+                           'dns-integration-domain-keywords']
+
+    @classmethod
+    def resource_setup(cls):
+        super(BaseDNSIntegrationTests, cls).resource_setup()
+
+        name = data_utils.rand_name('test-domain')
+        zone_name = "%s.%s.%s.zone." % (cls.client.user_id,
+                                        cls.client.tenant_id,
+                                        name)
+        dns_domain_template = "<user_id>.<project_id>.%s.zone." % name
+
+        _, cls.zone = cls.dns_client.create_zone(name=zone_name)
+        cls.addClassResourceCleanup(cls.dns_client.delete_zone,
+            cls.zone['id'], ignore_errors=lib_exc.NotFound)
+        dns_waiters.wait_for_zone_status(
+            cls.dns_client, cls.zone['id'], 'ACTIVE')
+
+        cls.network = cls.create_network(dns_domain=dns_domain_template)
+        cls.subnet = cls.create_subnet(cls.network,
+                                       dns_publish_fixed_ip=True)
+        cls.subnet_v6 = cls.create_subnet(cls.network,
+                                          ip_version=6,
+                                          dns_publish_fixed_ip=True)
+        cls.router = cls.create_router_by_client()
+        cls.create_router_interface(cls.router['id'], cls.subnet['id'])
+        cls.keypair = cls.create_keypair()
+
+    @decorators.idempotent_id('43a67509-3161-4125-8f2c-0d4a67599721')
+    def test_port_with_dns_name(self):
+        name = data_utils.rand_name('port-test')
+        port = self.create_port(self.network,
+                                dns_name=name)
+        addr = port['fixed_ips'][0]['ip_address']
+        self._verify_dns_records(addr, name)
+        self.client.delete_port(port['id'])
+        self._verify_dns_records(addr, name, found=False)
+
+    @decorators.idempotent_id('ac89db9b-5ca4-43bd-85ba-40fbeb47e208')
+    def test_fip_admin_delete(self):
+        name = data_utils.rand_name('fip-test')
+        fip = self._create_floatingip_with_dns(name)
+        addr = fip['floating_ip_address']
+        self._verify_dns_records(addr, name)
+        self.delete_floatingip(fip, client=self.admin_client)
+        self._verify_dns_records(addr, name, found=False)

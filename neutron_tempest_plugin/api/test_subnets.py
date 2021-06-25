@@ -74,7 +74,7 @@ class SubnetsSearchCriteriaTest(base.BaseSearchCriteriaTest):
 
 class SubnetServiceTypeTestJSON(base.BaseNetworkTest):
 
-    required_extensions = ['service-type']
+    required_extensions = ['subnet-service-types']
 
     @classmethod
     def resource_setup(cls):

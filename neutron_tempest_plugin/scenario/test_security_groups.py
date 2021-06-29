@@ -54,6 +54,7 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
         utils.kill_nc_process(ssh_server)
         url = 'http://%s:%d' % (test_ip, test_port)
         utils.spawn_http_server(ssh_server, port=test_port, message='foo_ok')
+        utils.process_is_running(ssh_server, 'nc')
         try:
             ret = utils.call_url_remote(ssh_client, url)
             if should_pass:
@@ -616,3 +617,45 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
             ssh_clients[0], fips[1]['fixed_ip_address'])
         self.check_remote_connectivity(
             ssh_clients[1], fips[0]['fixed_ip_address'])
+
+    @decorators.idempotent_id('cd66b826-d86c-4fb4-ab37-17c8391753cb')
+    def test_overlapping_sec_grp_rules(self):
+        """Test security group rules with overlapping port ranges"""
+        client_ssh, _, vms = self.create_vm_testing_sec_grp(num_servers=2)
+        tmp_ssh, _, tmp_vm = self.create_vm_testing_sec_grp(num_servers=1)
+        srv_ssh = tmp_ssh[0]
+        srv_vm = tmp_vm[0]
+        srv_port = self.client.list_ports(network_id=self.network['id'],
+                device_id=srv_vm['server']['id'])['ports'][0]
+        srv_ip = srv_port['fixed_ips'][0]['ip_address']
+        secgrps = []
+        for i, vm in enumerate(vms):
+            sg = self.create_security_group(name='secgrp-%d' % i)
+            self.create_loginable_secgroup_rule(secgroup_id=sg['id'])
+            port = self.client.list_ports(network_id=self.network['id'],
+                    device_id=vm['server']['id'])['ports'][0]
+            self.client.update_port(port['id'], security_groups=[sg['id']])
+            secgrps.append(sg)
+        tcp_port = 3000
+        rule_list = [{'protocol': constants.PROTO_NUM_TCP,
+                      'direction': constants.INGRESS_DIRECTION,
+                      'port_range_min': tcp_port,
+                      'port_range_max': tcp_port,
+                      'remote_group_id': secgrps[0]['id']},
+                     {'protocol': constants.PROTO_NUM_TCP,
+                      'direction': constants.INGRESS_DIRECTION,
+                      'port_range_min': tcp_port,
+                      'port_range_max': tcp_port + 2,
+                      'remote_group_id': secgrps[1]['id']}]
+        self.client.update_port(srv_port['id'],
+                security_groups=[secgrps[0]['id'], secgrps[1]['id']])
+        self.create_secgroup_rules(rule_list, secgroup_id=secgrps[0]['id'])
+        # The conntrack entries are ruled by the OF definitions but conntrack
+        # status can change the datapath. Let's check the rules in two
+        # attempts
+        for _ in range(2):
+            self._verify_http_connection(client_ssh[0], srv_ssh, srv_ip,
+                                         tcp_port, [])
+            for port in range(tcp_port, tcp_port + 3):
+                self._verify_http_connection(client_ssh[1], srv_ssh, srv_ip,
+                                             port, [])

@@ -240,12 +240,14 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
 
     def _create_security_group_rules(self, amount, port_index=1):
         for i in range(amount):
-            self.create_security_group_rule(**{
+            ingress_rule = self.create_security_group_rule(**{
                 'project_id': self.client.tenant_id,
                 'direction': 'ingress',
                 'port_range_max': port_index + i,
                 'port_range_min': port_index + i,
                 'protocol': 'tcp'})
+            self.addCleanup(
+                self.client.delete_security_group_rule, ingress_rule['id'])
 
     def _increase_sg_rules_quota(self):
         sg_rules_quota = self._get_sg_rules_quota()

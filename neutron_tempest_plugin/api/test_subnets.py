@@ -86,12 +86,18 @@ class SubnetServiceTypeTestJSON(base.BaseNetworkTest):
         cidr_1 = netaddr.IPNetwork('192.168.1.0/24')
         cidr_2 = netaddr.IPNetwork('192.168.2.0/24')
 
-        self.create_subnet(self.network,
-                           service_types=['test:type_1'],
-                           cidr=str(cidr_1))
-        self.create_subnet(self.network,
-                           service_types=['test:type_2'],
-                           cidr=str(cidr_2))
+        # NOTE(slaweq): service_type "network:distributed" is needed for
+        # ML2/OVN backend. It's needed because OVN driver creates additional
+        # port for metadata service in each subnet with enabled dhcp and such
+        # port needs to have allocated IP address from the subnet also.
+        self.create_subnet(
+            self.network,
+            service_types=['test:type_1', 'network:distributed'],
+            cidr=str(cidr_1))
+        self.create_subnet(
+            self.network,
+            service_types=['test:type_2', 'network:distributed'],
+            cidr=str(cidr_2))
         port_type_1 = self.create_port(self.network,
                                        device_owner="test:type_1")
         port_type_2 = self.create_port(self.network,

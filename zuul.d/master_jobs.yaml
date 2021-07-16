@@ -403,7 +403,6 @@
         q-meta: false
         q-metering: false
         q-qos: true
-        tls-proxy: true
         # Cinder services
         c-api: false
         c-bak: false
@@ -504,7 +503,6 @@
       tempest_plugins:
         - neutron-tempest-plugin
       devstack_services:
-        tls-proxy: false
         tempest: true
         neutron-dns: true
         neutron-qos: true
@@ -580,7 +578,6 @@
     group-vars:
       subnode:
         devstack_services:
-          tls-proxy: false
           q-agt: true
           q-l3: true
           q-meta: true

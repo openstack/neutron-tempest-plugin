@@ -503,6 +503,9 @@
         ADVANCED_INSTANCE_TYPE: ds512M
         ADVANCED_INSTANCE_USER: ubuntu
         BUILD_TIMEOUT: 784
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
       devstack_plugins:
         neutron: https://opendev.org/openstack/neutron.git
         neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
@@ -510,6 +513,20 @@
         - neutron-tempest-plugin
       devstack_services:
         tempest: true
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
         neutron-dns: true
         neutron-qos: true
         neutron-segments: true
@@ -584,6 +601,15 @@
     group-vars:
       subnode:
         devstack_services:
+          br-ex-tcpdump: false
+          br-int-flows: false
+          # Disable OVN services
+          ovn-controller: false
+          ovn-northd: false
+          ovs-vswitchd: false
+          ovsdb-server: false
+          q-ovn-metadata-agent: false
+          # Neutron services
           q-agt: true
           q-l3: true
           q-meta: true
@@ -601,6 +627,9 @@
           s-proxy: false
         devstack_localrc:
           USE_PYTHON3: true
+          Q_AGENT: openvswitch
+          Q_ML2_TENANT_NETWORK_TYPE: vxlan
+          Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         devstack_local_conf:
           post-config:
             $NEUTRON_CONF:

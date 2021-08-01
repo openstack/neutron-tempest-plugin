@@ -512,6 +512,7 @@
       tempest_plugins:
         - neutron-tempest-plugin
       devstack_services:
+        tls-proxy: true
         tempest: true
         # Disable OVN services
         br-ex-tcpdump: false
@@ -601,6 +602,7 @@
     group-vars:
       subnode:
         devstack_services:
+          tls-proxy: true
           br-ex-tcpdump: false
           br-int-flows: false
           # Disable OVN services

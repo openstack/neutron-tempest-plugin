@@ -275,6 +275,34 @@
       - ^neutron/plugins/ml2/drivers/ovn/.*$
 
 - job:
+    name: neutron-tempest-plugin-scenario-openvswitch-distributed-dhcp
+    parent: neutron-tempest-plugin-scenario-openvswitch
+    timeout: 10000
+    vars:
+      # NOTE: DHCP extra options and dns services aren't supported with
+      # distributed DHCP L2 agent extension
+      tempest_exclude_regex: "\
+          (^neutron_tempest_plugin.scenario.test_dhcp.DHCPTest.test_extra_dhcp_opts)|\
+          (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
+      devstack_services:
+        q-dhcp: false
+        q-distributed-dhcp: true
+
+- job:
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-distributed-dhcp
+    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    timeout: 10000
+    vars:
+      # NOTE: DHCP extra options and dns services aren't supported with
+      # distributed DHCP L2 agent extension
+      tempest_exclude_regex: "\
+          (^neutron_tempest_plugin.scenario.test_dhcp.DHCPTest.test_extra_dhcp_opts)|\
+          (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)"
+      devstack_services:
+        q-dhcp: false
+        q-distributed-dhcp: true
+
+- job:
     name: neutron-tempest-plugin-scenario-linuxbridge
     parent: neutron-tempest-plugin-scenario
     timeout: 10000

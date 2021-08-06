@@ -896,3 +896,93 @@
       devstack_localrc:
         IPSEC_PACKAGE: strongswan
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_vpnaas) | join(',') }}"
+
+- job:
+    name: neutron-tempest-plugin-tap-as-a-service
+    parent: neutron-tempest-plugin-base
+    description: |
+      Perform setup common to all tap-as-a-service tempest tests
+    roles:
+      - zuul: openstack/devstack
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - openstack/tap-as-a-service
+      - openstack/tempest
+    vars:
+      tempest_test_regex: ^neutron_tempest_plugin\.tap_as_a_service
+      tox_envlist: all
+      network_api_extensions_common: *api_extensions
+      network_api_extensions_tempest:
+        - taas
+        - taas-vlan-filter
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
+        DOWNLOAD_DEFAULT_IMAGES: false
+        IMAGE_URLS: "http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img,https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img"
+        DEFAULT_IMAGE_NAME: cirros-0.3.4-i386-disk
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        BUILD_TIMEOUT: 784
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
+      devstack_local_conf:
+        post-config:
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            AGENT:
+              tunnel_types: vxlan,gre
+        test-config:
+          $TEMPEST_CONFIG:
+            taas_plugin_options:
+              advanced_image_ref: ubuntu-18.04-server-cloudimg-amd64
+              advanced_image_ssh_user: ubuntu
+              provider_physical_network: public
+              provider_segmentation_id: 100
+            image_feature_enabled:
+              api_v2: true
+      devstack_plugins:
+        neutron: git://opendev.org/openstack/neutron.git
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
+        tap-as-a-service: git://opendev.org/openstack/tap-as-a-service.git
+      devstack_services:
+        # Disable OVN services
+        ovn-controller: false
+        ovn-northd: false
+        ovs-vswitchd: false
+        ovsdb-server: false
+        q-ovn-metadata-agent: false
+        # Enable Neutron services that are not used by OVN
+        q-agt: true
+        q-dhcp: true
+        q-l3: true
+        q-meta: true
+        q-metering: true
+        br-ex-tcpdump: true
+        br-int-flows: true
+        base: false
+        key: true
+        mysql: true
+        rabbit: true
+        g-api: true
+        g-reg: true
+        n-api: true
+        n-cond: true
+        n-cpu: true
+        n-crt: true
+        n-sch: true
+        placement-api: true
+        n-api-meta: true
+        q-svc: true
+        quantum: true
+        taas: true
+        taas_openvswitch_agent: true
+        tempest: true
+        dstat: true
+    irrelevant-files: &tempest-irrelevant-files
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^.*\.rst$
+      - ^tools/.*$
+      - ^tox.ini$

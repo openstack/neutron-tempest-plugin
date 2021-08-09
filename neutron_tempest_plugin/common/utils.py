@@ -204,6 +204,8 @@ class StatefulConnection:
 
     def __exit__(self, type, value, traceback):
         self.server_ssh.exec_command('sudo killall nc || killall nc')
-        self.server_ssh.exec_command('sudo killall tail || killall tail')
+        self.server_ssh.exec_command(
+                'sudo killall tail || killall tail || echo "True"')
         self.client_ssh.exec_command('sudo killall nc || killall nc')
-        self.client_ssh.exec_command('sudo killall tail || killall tail')
+        self.client_ssh.exec_command(
+                'sudo killall tail || killall tail || echo "True"')

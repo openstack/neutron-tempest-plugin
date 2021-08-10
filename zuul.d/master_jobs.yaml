@@ -88,25 +88,16 @@
         - ipv6_metadata
       tempest_test_regex: ^neutron_tempest_plugin\.api
       devstack_services:
-        # Disable OVN services
-        br-ex-tcpdump: false
-        br-int-flows: false
-        ovn-controller: false
-        ovn-northd: false
-        ovs-vswitchd: false
-        ovsdb-server: false
-        q-ovn-metadata-agent: false
-        # Neutron services
-        q-agt: true
-        q-dhcp: true
-        q-l3: true
-        q-meta: true
-        q-metering: true
         neutron-log: true
       devstack_localrc:
-        Q_AGENT: openvswitch
-        Q_ML2_TENANT_NETWORK_TYPE: vxlan
-        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
+        # TODO(lucasagomes): Re-enable MOD_WSGI after
+        # https://bugs.launchpad.net/neutron/+bug/1912359 is implemented
+        NEUTRON_DEPLOY_MOD_WSGI: false
+        # TODO(ralonsoh): remove OVN_BUILD_FROM_SOURCE once the OS packages
+        # include at least OVN v20.12.0.
+        OVN_BUILD_FROM_SOURCE: True
+        OVN_BRANCH: "v21.03.0"
+        OVS_BRANCH: "8dc1733eaea866dce033b3c44853e1b09bf59fc7"
       devstack_local_conf:
         post-config:
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when

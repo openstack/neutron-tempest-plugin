@@ -28,9 +28,11 @@ class LoggingTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('8d2e1ba5-455b-4519-a88e-e587002faba6')
     def test_log_lifecycle(self):
+        security_group = self.create_security_group()
         name = data_utils.rand_name('test-log')
         description = data_utils.rand_name('test-log-desc')
         log = self.create_log(name=name, description=description,
+                              resource_id=security_group['id'],
                               resource_type='security_group', enabled=True)
 
         # Test 'show log'
@@ -72,3 +74,27 @@ class LoggingTestJSON(base.BaseAdminNetworkTest):
         # Verify that only required fields present in logging types
         for log_type in actual_list_log_types:
             self.assertEqual(tuple(expected_log_keys), tuple(log_type.keys()))
+
+    @decorators.idempotent_id('1ab4eb2a-76f5-45b9-816b-1aa497a71eea')
+    def test_log_deleted_with_corresponding_security_group(self):
+        security_group = self.create_security_group()
+        name = data_utils.rand_name('test-log')
+        log = self.create_log(
+            name=name,
+            resource_type='security_group',
+            resource_id=security_group['id'],
+            enabled=True)
+
+        # Ensure log was created
+        retrieved_log = self.admin_client.show_log(log['id'])['log']
+        self.assertEqual(name, retrieved_log['name'])
+        self.assertEqual(security_group['id'], retrieved_log['resource_id'])
+        self.assertEqual('security_group', retrieved_log['resource_type'])
+        self.assertTrue(retrieved_log['enabled'])
+
+        # Delete SG
+        self.delete_security_group(security_group)
+
+        # Ensure log is also deleted
+        self.assertRaises(exceptions.NotFound,
+                          self.admin_client.show_log, log['id'])

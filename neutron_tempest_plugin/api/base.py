@@ -1105,12 +1105,13 @@ class BaseAdminNetworkTest(BaseNetworkTest):
                    target_id=None, event='ALL', enabled=True):
         """Wrapper utility that returns a test log object."""
         log_args = {'name': name,
-                    'description': description,
                     'resource_type': resource_type,
                     'resource_id': resource_id,
                     'target_id': target_id,
                     'event': event,
                     'enabled': enabled}
+        if description:
+            log_args['description'] = description
         body = cls.admin_client.create_log(**log_args)
         log_object = body['log']
         cls.log_objects.append(log_object)

@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib import constants
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
@@ -48,9 +49,14 @@ class ExtraDHCPOptionsTestJSON(base.BaseNetworkTest):
         cls.ip_server = ('123.123.123.45' if cls._ip_version == 4
                          else '2015::badd')
         cls.extra_dhcp_opts = [
-            {'opt_value': 'pxelinux.0', 'opt_name': 'bootfile-name'},
-            {'opt_value': cls.ip_tftp, 'opt_name': 'tftp-server'},
-            {'opt_value': cls.ip_server, 'opt_name': 'server-ip-address'}
+            {'opt_value': 'pxelinux.0',
+             'opt_name': 'bootfile-name'},  # default ip_version is 4
+            {'opt_value': cls.ip_tftp,
+             'opt_name': 'tftp-server',
+             'ip_version': cls._ip_version},
+            {'opt_value': cls.ip_server,
+             'opt_name': 'server-ip-address',
+             'ip_version': cls._ip_version}
         ]
 
     @decorators.idempotent_id('d2c17063-3767-4a24-be4f-a23dbfa133c9')
@@ -85,8 +91,11 @@ class ExtraDHCPOptionsTestJSON(base.BaseNetworkTest):
         self.assertEqual(len(retrieved), len(extra_dhcp_opts))
         for retrieved_option in retrieved:
             for option in extra_dhcp_opts:
+                # default ip_version is 4
+                ip_version = option.get('ip_version', constants.IP_VERSION_4)
                 if (retrieved_option['opt_value'] == option['opt_value'] and
-                    retrieved_option['opt_name'] == option['opt_name']):
+                    retrieved_option['opt_name'] == option['opt_name'] and
+                    retrieved_option['ip_version'] == ip_version):
                     break
             else:
                 self.fail('Extra DHCP option not found in port %s' %

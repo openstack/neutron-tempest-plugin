@@ -491,7 +491,7 @@
         CIRROS_VERSION: 0.5.1
         IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
         ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
-        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_TYPE: ntp_image_384M
         ADVANCED_INSTANCE_USER: ubuntu
         BUILD_TIMEOUT: 784
         Q_AGENT: openvswitch

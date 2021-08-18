@@ -20,6 +20,7 @@ if [[ "$1" == "stack" ]]; then
         test-config)
             echo_summary "Configuring neutron-tempest-plugin tempest options"
             configure_advanced_image
+            create_flavor_for_advance_image ntp_image_384M 384 4 1
             configure_flavor_for_advanced_image
     esac
 fi

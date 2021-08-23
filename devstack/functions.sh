@@ -85,3 +85,13 @@ function configure_flavor_for_advanced_image {
     fi
     iniset $TEMPEST_CONFIG neutron_plugin_options advanced_image_flavor_ref $flavor_ref
 }
+
+
+function create_flavor_for_advance_image {
+    local name=$1
+    local ram=$2
+    local disk=$3
+    local vcpus=$4
+
+    openstack flavor create --ram $ram --disk $disk --vcpus $vcpus $name
+}

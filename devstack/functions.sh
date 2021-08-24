@@ -93,5 +93,7 @@ function create_flavor_for_advance_image {
     local disk=$3
     local vcpus=$4
 
-    openstack flavor create --ram $ram --disk $disk --vcpus $vcpus $name
+    if [[ -z $(openstack flavor list | grep $name) ]]; then
+        openstack flavor create --ram $ram --disk $disk --vcpus $vcpus $name
+    fi
 }

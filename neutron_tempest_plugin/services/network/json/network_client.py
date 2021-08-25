@@ -1126,3 +1126,21 @@ class NetworkClientJSON(service_client.RestClient):
             self.uri_prefix, resource_type, resource_id, tag)
         resp, body = self.delete(uri)
         self.expected_success(204, resp.status)
+
+    def add_addresses_to_address_group(self, address_group_id, addresses):
+        uri = '%s/address-groups/%s/add_addresses' % (
+            self.uri_prefix, address_group_id)
+        request_body = {'addresses': addresses}
+        resp, response_body = self.put(uri, jsonutils.dumps(request_body))
+        self.expected_success(200, resp.status)
+        return service_client.ResponseBody(
+            resp, jsonutils.loads(response_body))
+
+    def remove_addresses_from_address_group(self, address_group_id, addresses):
+        uri = '%s/address-groups/%s/remove_addresses' % (
+            self.uri_prefix, address_group_id)
+        request_body = {'addresses': addresses}
+        resp, response_body = self.put(uri, jsonutils.dumps(request_body))
+        self.expected_success(200, resp.status)
+        return service_client.ResponseBody(
+            resp, jsonutils.loads(response_body))

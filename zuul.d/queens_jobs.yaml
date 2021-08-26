@@ -141,6 +141,7 @@
         CIRROS_VERSION: 0.3.5
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        ADVANCED_INSTANCE_TYPE: ds512M
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-queens
@@ -169,6 +170,7 @@
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        ADVANCED_INSTANCE_TYPE: ds512M
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:

@@ -167,6 +167,7 @@
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        ADVANCED_INSTANCE_TYPE: ds512M
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -226,6 +227,7 @@
       <<: *scenario_vars_rocky
       devstack_localrc:
         USE_PYTHON3: True
+        ADVANCED_INSTANCE_TYPE: ds512M
     branches: ^(?!stable/rocky).*$
     irrelevant-files: *openvswitch-scenario-irrelevant-files
 
@@ -263,6 +265,7 @@
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        ADVANCED_INSTANCE_TYPE: ds512M
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -330,6 +333,7 @@
       <<: *openvswitch_vars_rocky
       devstack_localrc:
         USE_PYTHON3: True
+        ADVANCED_INSTANCE_TYPE: ds512M
     branches: ^(?!stable/rocky).*$
     irrelevant-files: *iptables_hybrid_irrelevant_files
 
@@ -352,6 +356,7 @@
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        ADVANCED_INSTANCE_TYPE: ds512M
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -403,6 +408,7 @@
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
+        ADVANCED_INSTANCE_TYPE: ds512M
     branches: ^(?!stable/rocky).*$
 
 - job:

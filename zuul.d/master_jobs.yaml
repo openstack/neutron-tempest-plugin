@@ -120,6 +120,7 @@
       - ^tox.ini$
       - ^neutron/agent/.*$
       - ^neutron/privileged/.*$
+      - ^neutron_lib/tests/unit/.*$
       - ^neutron_tempest_plugin/scenario/.*$
 
 

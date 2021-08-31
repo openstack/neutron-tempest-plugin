@@ -130,6 +130,7 @@
       network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        ADVANCED_INSTANCE_TYPE: ds512M
       devstack_local_conf:
         post-config:
           $NEUTRON_L3_CONF:
@@ -177,6 +178,7 @@
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        ADVANCED_INSTANCE_TYPE: ds512M
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -263,6 +265,7 @@
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_linuxbridge) | join(',') }}"
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch,linuxbridge
+        ADVANCED_INSTANCE_TYPE: ds512M
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:

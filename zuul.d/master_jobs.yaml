@@ -46,6 +46,7 @@
         - network-segment-range
         - pagination
         - port-resource-request
+        - port-resource-request-groups
         - port-mac-address-regenerate
         - port-security
         - port-security-groups-filtering
@@ -99,6 +100,7 @@
         OVN_BUILD_FROM_SOURCE: True
         OVN_BRANCH: "v21.03.0"
         OVS_BRANCH: "8dc1733eaea866dce033b3c44853e1b09bf59fc7"
+        NETWORK_API_EXTENSIONS: "{{ network_api_extensions_common | join(',') }}"
       devstack_local_conf:
         post-config:
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
@@ -131,7 +133,6 @@
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
       - ^zuul.d/base-nested-switch.yaml$
-
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch

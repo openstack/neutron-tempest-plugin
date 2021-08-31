@@ -11,7 +11,10 @@
 #    under the License.
 
 from neutron_lib.api.definitions import qos as qos_apidef
+from neutron_lib import constants as n_constants
 from neutron_lib.db import constants as db_const
+from neutron_lib.services.qos import constants as qos_consts
+from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
@@ -103,6 +106,8 @@ class QosRuleNegativeBaseTestJSON(base.BaseAdminNetworkTest):
         rule = self.rule_create_m(policy['id'], **create_params)
         if "minimum_bandwidth_rule" in rule.keys():
             rule_id = rule['minimum_bandwidth_rule']['id']
+        if "minimum_packet_rate_rule" in rule.keys():
+            rule_id = rule['minimum_packet_rate_rule']['id']
         if "bandwidth_limit_rule" in rule.keys():
             rule_id = rule['bandwidth_limit_rule']['id']
         if "dscp_mark" in rule.keys():
@@ -195,6 +200,41 @@ class QosMinimumBandwidthRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
     @decorators.idempotent_id('8470cbe0-8ca5-46ab-9c66-7cf69301b121')
     def test_rule_update_rule_nonexistent_rule(self):
         update_params = {'min_kbps': 200}
+        self._test_rule_update_rule_nonexistent_rule(update_params)
+
+
+class QosMinimumPpsRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
+
+    @classmethod
+    @utils.requires_ext(service='network',
+                        extension='port-resource-request-groups')
+    def resource_setup(cls):
+        cls.rule_create_m = cls.os_admin.qos_minimum_packet_rate_rules_client.\
+            create_minimum_packet_rate_rule
+        cls.rule_update_m = cls.os_admin.qos_minimum_packet_rate_rules_client.\
+            update_minimum_packet_rate_rule
+        super(QosMinimumPpsRuleNegativeTestJSON, cls).resource_setup()
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('ddd16824-3e10-11ec-928d-5b1ef3fb9f43')
+    def test_rule_update_rule_nonexistent_policy(self):
+        create_params = {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+                         qos_consts.MIN_KPPS: 1}
+        update_params = {qos_consts.MIN_KPPS: 200}
+        self._test_rule_update_rule_nonexistent_policy(
+            create_params, update_params)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('de4f5540-3e10-11ec-9700-4bf3629b843e')
+    def test_rule_create_rule_non_existent_policy(self):
+        create_params = {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+                         qos_consts.MIN_KPPS: 200}
+        self._test_rule_create_rule_non_existent_policy(create_params)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('deb914ee-3e10-11ec-b3dc-03e52f9269c9')
+    def test_rule_update_rule_nonexistent_rule(self):
+        update_params = {qos_consts.MIN_KPPS: 200}
         self._test_rule_update_rule_nonexistent_rule(update_params)
 
 

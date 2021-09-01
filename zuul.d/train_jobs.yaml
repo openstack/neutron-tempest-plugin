@@ -220,6 +220,8 @@
     vars:
       branch_override: stable/train
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        ADVANCED_INSTANCE_TYPE: ds512M
 
 - job:
     name: neutron-tempest-plugin-sfc-train

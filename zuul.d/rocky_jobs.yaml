@@ -615,6 +615,7 @@
       devstack_localrc:
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
+        ADVANCED_INSTANCE_TYPE: ds512M
     branches:
       - stable/rocky
 

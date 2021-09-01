@@ -338,3 +338,5 @@
     vars:
       branch_override: stable/stein
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        ADVANCED_INSTANCE_TYPE: ds512M

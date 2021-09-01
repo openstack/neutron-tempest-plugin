@@ -245,3 +245,4 @@
         USE_PYTHON3: false
         CIRROS_VERSION: 0.3.5
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
+        ADVANCED_INSTANCE_TYPE: ds512M

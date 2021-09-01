@@ -100,11 +100,17 @@ class QosRuleNegativeBaseTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name='test-policy',
                                         description='test policy',
                                         shared=False)
-        rule = self.rule_create_m(policy_id=policy['id'], **create_params)
+        rule = self.rule_create_m(policy['id'], **create_params)
+        if "minimum_bandwidth_rule" in rule.keys():
+            rule_id = rule['minimum_bandwidth_rule']['id']
+        if "bandwidth_limit_rule" in rule.keys():
+            rule_id = rule['bandwidth_limit_rule']['id']
+        if "dscp_mark" in rule.keys():
+            rule_id = rule['id']
         self.assertRaises(
             lib_exc.NotFound,
             self.rule_update_m,
-            non_exist_id, rule['id'], **update_params)
+            non_exist_id, rule_id, **update_params)
 
     def _test_rule_create_rule_non_existent_policy(self, create_params):
         non_exist_id = data_utils.rand_name('qos_policy')
@@ -127,9 +133,17 @@ class QosRuleNegativeBaseTestJSON(base.BaseAdminNetworkTest):
 class QosBandwidthLimitRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
 
     @classmethod
+    def setup_clients(cls):
+        super(QosBandwidthLimitRuleNegativeTestJSON, cls).setup_clients()
+        cls.qos_bw_limit_rule_client = \
+            cls.os_admin.qos_limit_bandwidth_rules_client
+
+    @classmethod
     def resource_setup(cls):
-        cls.rule_create_m = cls.create_qos_bandwidth_limit_rule
-        cls.rule_update_m = cls.admin_client.update_bandwidth_limit_rule
+        cls.rule_create_m = \
+            cls.qos_bw_limit_rule_client.create_limit_bandwidth_rule
+        cls.rule_update_m = \
+            cls.qos_bw_limit_rule_client.update_limit_bandwidth_rule
         super(QosBandwidthLimitRuleNegativeTestJSON, cls).resource_setup()
 
     @decorators.attr(type='negative')
@@ -157,8 +171,10 @@ class QosMinimumBandwidthRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
 
     @classmethod
     def resource_setup(cls):
-        cls.rule_create_m = cls.create_qos_minimum_bandwidth_rule
-        cls.rule_update_m = cls.admin_client.update_minimum_bandwidth_rule
+        cls.rule_create_m = cls.os_admin.qos_minimum_bandwidth_rules_client.\
+            create_minimum_bandwidth_rule
+        cls.rule_update_m = cls.os_admin.qos_minimum_bandwidth_rules_client.\
+            update_minimum_bandwidth_rule
         super(QosMinimumBandwidthRuleNegativeTestJSON, cls).resource_setup()
 
     @decorators.attr(type='negative')

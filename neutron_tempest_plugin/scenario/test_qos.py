@@ -20,6 +20,7 @@ from neutron_lib.services.qos import constants as qos_consts
 from oslo_log import log as logging
 from tempest.common import utils as tutils
 from tempest.common import waiters
+from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base as base_api
@@ -138,7 +139,19 @@ class QoSTestMixin(object):
                                         description='test-qos-policy',
                                         shared=True)
         self.qos_policies.append(policy['policy'])
+        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
+            self.os_admin.network_client.delete_qos_policy, policy)
         return policy['policy']['id']
+
+    def _create_qos_bw_limit_rule(self, policy_id, rule_data):
+        rule = self.qos_bw_limit_rule_client.create_limit_bandwidth_rule(
+            qos_policy_id=policy_id,
+            **rule_data)['bandwidth_limit_rule']
+        self.addCleanup(
+            test_utils.call_and_ignore_notfound_exc,
+            self.qos_bw_limit_rule_client.delete_limit_bandwidth_rule,
+            policy_id, rule['id'])
+        return rule
 
     def _create_server_by_port(self, port=None):
         """Launch an instance using a port interface;
@@ -194,6 +207,8 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
     def setup_clients(cls):
         super(QoSTest, cls).setup_clients()
         cls.admin_client = cls.os_admin.network_client
+        cls.qos_bw_limit_rule_client = \
+            cls.os_admin.qos_limit_bandwidth_rules_client
 
     @decorators.idempotent_id('00682a0c-b72e-11e8-b81e-8c16450ea513')
     def test_qos_basic_and_update(self):
@@ -227,11 +242,11 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
         bw_limit_policy_id = self._create_qos_policy()
 
         # As admin user create QoS rule
-        rule_id = self.os_admin.network_client.create_bandwidth_limit_rule(
-            policy_id=bw_limit_policy_id,
-            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
-            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)[
-                'bandwidth_limit_rule']['id']
+        rule_data = {
+            'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND,
+            'max_burst_kbps': constants.LIMIT_KILO_BITS_PER_SECOND}
+        rule_id = self._create_qos_bw_limit_rule(
+            bw_limit_policy_id, rule_data)['id']
 
         # Associate QoS to the network
         self.os_admin.network_client.update_network(
@@ -250,11 +265,12 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
                 ' the network" Actual BW is not as expected!'))
 
         # As admin user update QoS rule
-        self.os_admin.network_client.update_bandwidth_limit_rule(
-            bw_limit_policy_id,
-            rule_id,
-            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 2,
-            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 2)
+        rule_update_data = {
+            'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND * 2,
+            'max_burst_kbps': constants.LIMIT_KILO_BITS_PER_SECOND * 2}
+        self.qos_bw_limit_rule_client.update_limit_bandwidth_rule(
+            qos_policy_id=bw_limit_policy_id, rule_id=rule_id,
+            **rule_update_data)
 
         # Check that actual BW while downloading file
         # is as expected (Update BW)
@@ -273,11 +289,11 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
         bw_limit_policy_id_new = self._create_qos_policy()
 
         # As admin user create a new QoS rule
-        rule_id_new = self.os_admin.network_client.create_bandwidth_limit_rule(
-            policy_id=bw_limit_policy_id_new,
-            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
-            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)[
-                'bandwidth_limit_rule']['id']
+        rule_data_new = {
+            'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND,
+            'max_burst_kbps': constants.LIMIT_KILO_BITS_PER_SECOND}
+        rule_id_new = self._create_qos_bw_limit_rule(
+            bw_limit_policy_id_new, rule_data_new)['id']
 
         # Associate a new QoS policy to Neutron port
         self.os_admin.network_client.update_port(
@@ -296,11 +312,12 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
                 ' the VM port" Actual BW is not as expected!'))
 
         # As admin user update QoS rule
-        self.os_admin.network_client.update_bandwidth_limit_rule(
-            bw_limit_policy_id_new,
-            rule_id_new,
-            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 3,
-            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 3)
+        rule_update_data = {
+            'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND * 3,
+            'max_burst_kbps': constants.LIMIT_KILO_BITS_PER_SECOND * 3}
+        self.qos_bw_limit_rule_client.update_limit_bandwidth_rule(
+            qos_policy_id=bw_limit_policy_id_new, rule_id=rule_id_new,
+            **rule_update_data)
 
         # Check that actual BW while downloading file
         # is as expected (Update BW)
@@ -334,11 +351,10 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             description='policy for attach',
             shared=False)['policy']
 
-        rule = self.os_admin.network_client.create_bandwidth_limit_rule(
-            policy_id=port_policy['id'],
-            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
-            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)[
-                    'bandwidth_limit_rule']
+        rule_data = {
+            'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND,
+            'max_burst_kbps': constants.LIMIT_KILO_BITS_PER_SECOND}
+        rule = self._create_qos_bw_limit_rule(port_policy['id'], rule_data)
 
         self.os_admin.network_client.update_port(
             vm_port['id'], qos_policy_id=port_policy['id'])
@@ -378,10 +394,10 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             name='network-policy',
             shared=False)['policy']
 
-        rule = self.os_admin.network_client.create_bandwidth_limit_rule(
-            policy_id=qos_policy['id'],
-            max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
-            max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND)
+        rule_data = {
+            'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND,
+            'max_burst_kbps': constants.LIMIT_KILO_BITS_PER_SECOND}
+        rule = self._create_qos_bw_limit_rule(qos_policy['id'], rule_data)
 
         network = self.os_admin.network_client.update_network(
                   network['id'],
@@ -399,9 +415,9 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
                            retrieved_net['network']['qos_policy_id'])
         retrieved_rule_id = retrieved_policy['policy']['rules'][0]['id']
 
-        self.assertEqual(rule['bandwidth_limit_rule']['id'],
+        self.assertEqual(rule['id'],
                          retrieved_rule_id,
                          """The expected rule ID is {0},
                          the actual value is {1}""".
-                         format(rule['bandwidth_limit_rule']['id'],
+                         format(rule['id'],
                                 retrieved_rule_id))

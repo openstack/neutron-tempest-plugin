@@ -344,6 +344,8 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
     def setup_clients(cls):
         super(FloatingIPQosTest, cls).setup_clients()
         cls.admin_client = cls.os_admin.network_client
+        cls.qos_bw_limit_rule_client = \
+            cls.os_admin.qos_limit_bandwidth_rules_client
 
     @decorators.idempotent_id('5eb48aea-eaba-4c20-8a6f-7740070a0aa3')
     def test_qos(self):
@@ -364,16 +366,19 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
         ssh_client = self._create_ssh_client()
 
         # As admin user create a new QoS rules
-        self.os_admin.network_client.create_bandwidth_limit_rule(
-            policy_id, max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
-            max_burst_kbps=constants.LIMIT_KILO_BYTES,
-            direction=lib_constants.INGRESS_DIRECTION)
-        self.os_admin.network_client.create_bandwidth_limit_rule(
-            policy_id, max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND,
-            max_burst_kbps=constants.LIMIT_KILO_BYTES,
-            direction=lib_constants.EGRESS_DIRECTION)
+        rule_data = {'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND,
+                     'max_burst_kbps': constants.LIMIT_KILO_BYTES,
+                     'direction': lib_constants.INGRESS_DIRECTION}
+        self.qos_bw_limit_rule_client.create_limit_bandwidth_rule(
+             qos_policy_id=policy_id, **rule_data)
 
-        rules = self.os_admin.network_client.list_bandwidth_limit_rules(
+        rule_data = {'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND,
+                     'max_burst_kbps': constants.LIMIT_KILO_BYTES,
+                     'direction': lib_constants.EGRESS_DIRECTION}
+        self.qos_bw_limit_rule_client.create_limit_bandwidth_rule(
+             qos_policy_id=policy_id, **rule_data)
+
+        rules = self.qos_bw_limit_rule_client.list_limit_bandwidth_rules(
             policy_id)
         self.assertEqual(2, len(rules['bandwidth_limit_rules']))
 
@@ -404,11 +409,10 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
 
         # As admin user update QoS rules
         for rule in rules['bandwidth_limit_rules']:
-            self.os_admin.network_client.update_bandwidth_limit_rule(
-                policy_id,
-                rule['id'],
-                max_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 2,
-                max_burst_kbps=constants.LIMIT_KILO_BITS_PER_SECOND * 2)
+            self.qos_bw_limit_rule_client.update_limit_bandwidth_rule(
+                policy_id, rule['id'],
+                **{'max_kbps': constants.LIMIT_KILO_BITS_PER_SECOND * 2,
+                   'max_burst_kbps': constants.LIMIT_KILO_BITS_PER_SECOND * 2})
 
         # Check that actual BW while downloading file
         # is as expected (Update BW)

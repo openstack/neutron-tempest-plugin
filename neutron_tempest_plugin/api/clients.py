@@ -22,6 +22,8 @@ from tempest.lib.services.compute import keypairs_client
 from tempest.lib.services.compute import servers_client
 from tempest.lib.services.identity.v2 import tenants_client
 from tempest.lib.services.identity.v3 import projects_client
+from tempest.lib.services.network import qos_limit_bandwidth_rules_client
+from tempest.lib.services.network import qos_minimum_bandwidth_rules_client
 
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.services.network.json import network_client
@@ -91,6 +93,26 @@ class Manager(clients.ServiceClients):
             self.auth_provider, **params)
         self.az_client = availability_zone_client.AvailabilityZoneClient(
             self.auth_provider, **params)
+
+        self.qos_limit_bandwidth_rules_client = \
+            qos_limit_bandwidth_rules_client.QosLimitBandwidthRulesClient(
+                self.auth_provider,
+                CONF.network.catalog_type,
+                CONF.network.region or CONF.identity.region,
+                endpoint_type=CONF.network.endpoint_type,
+                build_interval=CONF.network.build_interval,
+                build_timeout=CONF.network.build_timeout,
+                **self.default_params)
+
+        self.qos_minimum_bandwidth_rules_client = \
+            qos_minimum_bandwidth_rules_client.QosMinimumBandwidthRulesClient(
+                self.auth_provider,
+                CONF.network.catalog_type,
+                CONF.network.region or CONF.identity.region,
+                endpoint_type=CONF.network.endpoint_type,
+                build_interval=CONF.network.build_interval,
+                build_timeout=CONF.network.build_timeout,
+                **self.default_params)
 
     def _set_identity_clients(self):
         params = {

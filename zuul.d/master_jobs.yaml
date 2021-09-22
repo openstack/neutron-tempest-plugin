@@ -412,7 +412,7 @@
         # TODO(eolivare): Remove OVN_BUILD_FROM_SOURCE once vlan-transparency
         # is included in an ovn released version
         OVN_BUILD_FROM_SOURCE: True
-        OVN_BRANCH: "v20.12.0"
+        OVN_BRANCH: "v21.06.0"
         OVS_BRANCH: "branch-2.15"
         OVS_SYSCONFDIR: "/usr/local/etc/openvswitch"
       devstack_services:

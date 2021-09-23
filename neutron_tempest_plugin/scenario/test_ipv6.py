@@ -20,6 +20,7 @@ from tempest.common import utils as tempest_utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
+import testtools
 
 from neutron_tempest_plugin.common import ip
 from neutron_tempest_plugin.common import ssh
@@ -85,6 +86,12 @@ class IPv6Test(base.BaseTempestTestCase):
 
     ipv6_ra_mode = 'slaac'
     ipv6_address_mode = 'slaac'
+
+    @classmethod
+    def skip_checks(cls):
+        super(IPv6Test, cls).skip_checks()
+        if not CONF.network_feature_enabled.ipv6:
+            raise cls.skipException("IPv6 is not enabled")
 
     @classmethod
     @tempest_utils.requires_ext(extension="router", service="network")
@@ -180,10 +187,14 @@ class IPv6Test(base.BaseTempestTestCase):
             ssh_client=ssh_client, mac_address=ipv6_port['mac_address'])
         self._test_ipv6_address_configured(ssh_client, vm, ipv6_port)
 
+    @testtools.skipUnless(CONF.network_feature_enabled.ipv6_subnet_attributes,
+                          "DHCPv6 attributes are not enabled.")
     @decorators.idempotent_id('b13e5408-5250-4a42-8e46-6996ce613e91')
     def test_ipv6_hotplug_slaac(self):
         self._test_ipv6_hotplug("slaac", "slaac")
 
+    @testtools.skipUnless(CONF.network_feature_enabled.ipv6_subnet_attributes,
+                          "DHCPv6 attributes are not enabled.")
     @decorators.idempotent_id('9aaedbc4-986d-42d5-9177-3e721728e7e0')
     def test_ipv6_hotplug_dhcpv6stateless(self):
         self._test_ipv6_hotplug("dhcpv6-stateless", "dhcpv6-stateless")

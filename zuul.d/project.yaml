@@ -186,6 +186,7 @@
         - neutron-tempest-plugin-vpnaas-ussuri
         - neutron-tempest-plugin-vpnaas-victoria
         - neutron-tempest-plugin-vpnaas-wallaby
+        - neutron-tempest-plugin-tap-as-a-service
 
     gate:
       jobs:

@@ -94,16 +94,27 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
         cls.prov_network = cls.create_provider_network(
             physnet_name=cls.physnet_name, start_segmentation_id=base_segm)
 
+    @classmethod
+    def setup_clients(cls):
+        super(PortTestCasesResourceRequest, cls).setup_clients()
+        cls.qos_minimum_bandwidth_rules_client = \
+            cls.os_admin.qos_minimum_bandwidth_rules_client
+        cls.qos_bw_limit_rule_client = \
+            cls.os_admin.qos_limit_bandwidth_rules_client
+
     def _create_qos_policy_and_port(self, network, vnic_type,
                                     network_policy=False):
         qos_policy = self.create_qos_policy(
             name=data_utils.rand_name('test_policy'), shared=True)
-        self.create_qos_minimum_bandwidth_rule(qos_policy['id'],
-                                               self.EGRESS_KBPS,
-                                               const.EGRESS_DIRECTION)
-        self.create_qos_minimum_bandwidth_rule(qos_policy['id'],
-                                               self.INGRESS_KBPS,
-                                               const.INGRESS_DIRECTION)
+        self.qos_minimum_bandwidth_rules_client.create_minimum_bandwidth_rule(
+            qos_policy_id=qos_policy['id'],
+            **{'direction': const.EGRESS_DIRECTION,
+               'min_kbps': self.EGRESS_KBPS})
+
+        self.qos_minimum_bandwidth_rules_client.create_minimum_bandwidth_rule(
+            qos_policy_id=qos_policy['id'],
+            **{'direction': const.INGRESS_DIRECTION,
+               'min_kbps': self.INGRESS_KBPS})
 
         port_policy_id = qos_policy['id'] if not network_policy else None
         port_kwargs = {
@@ -163,9 +174,11 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
 
         # Note(lajoskatona): Add a non-minimum-bandwidth-rule to the policy
         # to make sure that the resource request is not filled with it.
-        self.create_qos_bandwidth_limit_rule(qos_policy['id'],
-                                             self.EGRESS_KBPS, 800,
-                                             const.EGRESS_DIRECTION)
+        self.qos_bw_limit_rule_client.create_limit_bandwidth_rule(
+            qos_policy['id'],
+            **{'max_kbps': self.EGRESS_KBPS,
+               'max_burst_kbps': 800,
+               'direction': const.EGRESS_DIRECTION})
 
         port_kwargs = {
             'qos_policy_id': qos_policy['id'],

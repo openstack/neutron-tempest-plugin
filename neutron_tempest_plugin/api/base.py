@@ -763,27 +763,6 @@ class BaseNetworkTest(test.BaseTestCase):
         return qos_policy
 
     @classmethod
-    def create_qos_bandwidth_limit_rule(cls, policy_id, max_kbps,
-                                        max_burst_kbps,
-                                        direction=const.EGRESS_DIRECTION):
-        """Wrapper utility that returns a test QoS bandwidth limit rule."""
-        body = cls.admin_client.create_bandwidth_limit_rule(
-            policy_id, max_kbps, max_burst_kbps, direction)
-        qos_rule = body['bandwidth_limit_rule']
-        cls.qos_rules.append(qos_rule)
-        return qos_rule
-
-    @classmethod
-    def create_qos_minimum_bandwidth_rule(cls, policy_id, min_kbps,
-                                          direction=const.EGRESS_DIRECTION):
-        """Wrapper utility that creates and returns a QoS min bw rule."""
-        body = cls.admin_client.create_minimum_bandwidth_rule(
-            policy_id, direction, min_kbps)
-        qos_rule = body['minimum_bandwidth_rule']
-        cls.qos_rules.append(qos_rule)
-        return qos_rule
-
-    @classmethod
     def create_qos_dscp_marking_rule(cls, policy_id, dscp_mark):
         """Wrapper utility that creates and returns a QoS dscp rule."""
         body = cls.admin_client.create_dscp_marking_rule(

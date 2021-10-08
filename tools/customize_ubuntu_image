@@ -16,6 +16,13 @@
 INSTALL_GUEST_PACKAGES=(
    socat  # used to replace nc for testing advanced network features like
           # multicast
+   iperf3
+   iputils-ping
+   ncat
+   psmisc  # provides killall command
+   python3
+   tcpdump
+   vlan
 )
 
 # Function to be executed once after chroot on guest image
@@ -33,8 +40,8 @@ function customize_image {
     # Install desired packages to Ubuntu guest image
     (
         DEBIAN_FRONTEND=noninteractive
-        apt-get update -y
-        apt-get install -y "${INSTALL_GUEST_PACKAGES[@]}"
+        sudo apt-get update -y
+        sudo apt-get install -y "${INSTALL_GUEST_PACKAGES[@]}"
     )
 }
 

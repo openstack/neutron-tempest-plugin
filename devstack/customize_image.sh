@@ -149,6 +149,7 @@ function overridden_openstack {
 function customize_image {
     local image_file=$1
     local top_dir=$(dirname "${NEUTRON_TEMPEST_PLUGIN_DIR}")
+    install_customize_image_tools
     (
         export TEMP_DIR DISK_FORMAT RC_DIR
         if [[ "$(basename ${image_file})" == ubuntu-* ]]; then

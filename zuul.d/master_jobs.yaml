@@ -404,6 +404,14 @@
         Q_ML2_TENANT_NETWORK_TYPE: geneve
         Q_USE_PROVIDERNET_FOR_PUBLIC: true
         PHYSICAL_NETWORK: public
+        # NOTE(slaweq): In the job with OVN backend we can't use Ubuntu minimal
+        # image because kernel in that image don't supports MULTICAST traffic
+        # thus multicast scenario test with IGMP snooping enabled would fail
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ntp_image_384M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
         ENABLE_CHASSIS_AS_GW: true
         OVN_L3_CREATE_PUBLIC_NETWORK: true
         OVN_DBS_LOG_LEVEL: dbg
@@ -518,10 +526,11 @@
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_dvr) | join(',') }}"
         PHYSICAL_NETWORK: default
         CIRROS_VERSION: 0.5.1
-        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
-        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
-        ADVANCED_INSTANCE_TYPE: ntp_image_384M
+        IMAGE_URLS: https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-20.04-minimal-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ntp_image_256M
         ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: true
         BUILD_TIMEOUT: 784
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
@@ -938,9 +947,9 @@
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         DOWNLOAD_DEFAULT_IMAGES: false
-        IMAGE_URLS: "http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img,https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img"
+        IMAGE_URLS: "http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img,https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img"
         DEFAULT_IMAGE_NAME: cirros-0.3.4-i386-disk
-        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_IMAGE_NAME: ubuntu-20.04-minimal-cloudimg-amd64
         BUILD_TIMEOUT: 784
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
@@ -953,7 +962,7 @@
         test-config:
           $TEMPEST_CONFIG:
             taas_plugin_options:
-              advanced_image_ref: ubuntu-18.04-server-cloudimg-amd64
+              advanced_image_ref: ubuntu-20.04-minimal-cloudimg-amd64
               advanced_image_ssh_user: ubuntu
               provider_physical_network: public
               provider_segmentation_id: 100

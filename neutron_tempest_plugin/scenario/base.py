@@ -615,3 +615,38 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         result = shell.execute_local_command(cmd)
         self.assertEqual(0, result.exit_status)
         return result.stdout
+
+    def _ensure_public_router(self, client=None, tenant_id=None):
+        """Retrieve a router for the given tenant id.
+
+        If a public router has been configured, it will be returned.
+
+        If a public router has not been configured, but a public
+        network has, a tenant router will be created and returned that
+        routes traffic to the public network.
+        """
+        if not client:
+            client = self.client
+        if not tenant_id:
+            tenant_id = client.tenant_id
+        router_id = CONF.network.public_router_id
+        network_id = CONF.network.public_network_id
+        if router_id:
+            body = client.show_router(router_id)
+            return body['router']
+        elif network_id:
+            router = self.create_router_by_client()
+            self.addCleanup(test_utils.call_and_ignore_notfound_exc,
+                            client.delete_router, router['id'])
+            kwargs = {'external_gateway_info': dict(network_id=network_id)}
+            router = client.update_router(router['id'], **kwargs)['router']
+            return router
+        else:
+            raise Exception("Neither of 'public_router_id' or "
+                            "'public_network_id' has been defined.")
+
+    def _update_router_admin_state(self, router, admin_state_up):
+        kwargs = dict(admin_state_up=admin_state_up)
+        router = self.client.update_router(
+            router['id'], **kwargs)['router']
+        self.assertEqual(admin_state_up, router['admin_state_up'])

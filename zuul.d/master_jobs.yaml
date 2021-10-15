@@ -1091,24 +1091,28 @@
         - taas-vlan-filter
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
-        DOWNLOAD_DEFAULT_IMAGES: false
-        IMAGE_URLS: "http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-i386-disk.img,https://cloud-images.ubuntu.com/minimal/releases/focal/release/ubuntu-20.04-minimal-cloudimg-amd64.img"
-        DEFAULT_IMAGE_NAME: cirros-0.3.4-i386-disk
-        ADVANCED_IMAGE_NAME: ubuntu-20.04-minimal-cloudimg-amd64
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ntp_image_384M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
         BUILD_TIMEOUT: 784
         Q_AGENT: openvswitch
-        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan,vlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
       devstack_local_conf:
         post-config:
           /$NEUTRON_CORE_PLUGIN_CONF:
             AGENT:
-              tunnel_types: vxlan,gre
+              tunnel_types: vxlan
+            ml2_type_vlan:
+              network_vlan_ranges: public
         test-config:
           $TEMPEST_CONFIG:
-            taas_plugin_options:
-              advanced_image_ref: ubuntu-20.04-minimal-cloudimg-amd64
-              advanced_image_ssh_user: ubuntu
+            neutron_plugin_options:
+              image_is_advanced: true
+              advanced_image_flavor_ref: d1
+            taas:
               provider_physical_network: public
               provider_segmentation_id: 100
             image_feature_enabled:

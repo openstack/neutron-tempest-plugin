@@ -47,8 +47,7 @@ class BaseDNSIntegrationTests(base.BaseTempestTestCase, DNSMixin):
     @classmethod
     def setup_clients(cls):
         super(BaseDNSIntegrationTests, cls).setup_clients()
-        cls.dns_client = cls.os_tempest.zones_client
-        cls.query_client = cls.os_tempest.query_client
+        cls.dns_client = cls.os_tempest.dns_v2.ZonesClient()
         cls.query_client.build_timeout = 30
 
     @classmethod

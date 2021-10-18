@@ -697,46 +697,15 @@
       network_api_extensions_common: *api_extensions
       devstack_localrc:
         DESIGNATE_BACKEND_DRIVER: bind9
-        Q_AGENT: openvswitch
-        Q_ML2_TENANT_NETWORK_TYPE: vxlan
-        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         # In this job advanced image is not needed, so it's name should be
         # empty
         ADVANCED_IMAGE_NAME: ""
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions_common | join(',') }}"
-      devstack_local_conf:
-        post-config:
-          $NEUTRON_CONF:
-            DEFAULT:
-              enable_dvr: false
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
-          /$NEUTRON_CORE_PLUGIN_CONF:
-            agent:
-              tunnel_types: vxlan,gre
-            ovs:
-              tunnel_bridge: br-tun
-              bridge_mappings: public:br-ex
       devstack_plugins:
         designate: https://opendev.org/openstack/designate.git
       devstack_services:
         cinder: false
         designate: true
-        # Disable OVN services
-        br-ex-tcpdump: false
-        br-int-flows: false
-        ovn-controller: false
-        ovn-northd: false
-        ovs-vswitchd: false
-        ovsdb-server: false
-        q-ovn-metadata-agent: false
-        # Neutron services
-        q-agt: true
-        q-dhcp: true
-        q-l3: true
-        q-meta: true
-        q-metering: true
       tempest_plugins:
         - designate-tempest-plugin
         - neutron-tempest-plugin

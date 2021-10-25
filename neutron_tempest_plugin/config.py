@@ -141,6 +141,12 @@ NeutronPluginOptions = [
                      'If True, multicast test(s) will assert that multicast '
                      'traffic is not being flooded to all ports. Defaults '
                      'to False.'),
+    # Option for scheduling BGP speakers to agents explicitly
+    # The default is false with automatic scheduling on creation
+    # happening with the default scheduler
+    cfg.BoolOpt('bgp_schedule_speakers_to_agents',
+                default=False,
+                help='Schedule BGP speakers to agents explicitly.'),
 ]
 
 # TODO(amuller): Redo configuration options registration as part of the planned

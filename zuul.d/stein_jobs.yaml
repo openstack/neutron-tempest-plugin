@@ -136,7 +136,12 @@
       tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
         ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         post-config:
           $NEUTRON_L3_CONF:
@@ -188,7 +193,12 @@
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
         ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -275,7 +285,12 @@
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_linuxbridge) | join(',') }}"
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch,linuxbridge
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
         ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -349,4 +364,9 @@
       branch_override: stable/stein
       network_api_extensions_common: *api_extensions
       devstack_localrc:
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
         ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false

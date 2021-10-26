@@ -96,9 +96,14 @@
         - dvr
       network_available_features: &available_features
         -
-      # NOTE(bcafarel): remove port forwarding test as pinned version
-      # used in this EM branch is unstable
-      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)"
+      # NOTE(bcafarel): filtering out unstable tests or tests with known
+      # issues in the used pinned version for this EM branch
+      tempest_black_regex: &stein_tempest_exclude "\
+          (^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest.test_connectivity_min_max_mtu)|\
+          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
+          (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_parent_port_connectivity_after_trunk_deleted_lb)|\
+          (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)|\
+          (^neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest)"
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
@@ -131,9 +136,7 @@
       branch_override: stable/stein
       network_api_extensions: *api_extensions
       network_available_features: *available_features
-      # NOTE(bcafarel): remove port forwarding test as pinned version
-      # used in this EM branch is unstable
-      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)"
+      tempest_black_regex: *stein_tempest_exclude
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         ADVANCED_INSTANCE_TYPE: ds512M
@@ -176,13 +179,7 @@
         q-metering: true
       network_api_extensions: *api_extensions
       network_available_features: *available_features
-      # TODO(slaweq): remove trunks subport_connectivity test from blacklist
-      # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
-      # NOTE(bcafarel): remove port forwarding test as pinned version
-      # used in this EM branch is unstable
-      tempest_black_regex: "\
-          (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)|\
-          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)"
+      tempest_black_regex: *stein_tempest_exclude
       devstack_localrc:
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
@@ -267,9 +264,7 @@
       network_api_extensions_linuxbridge:
         - vlan-transparent
       network_available_features: *available_features
-      # TODO(eolivare): remove VLAN Transparency tests from blacklist
-      # when bug https://bugs.launchpad.net/neutron/+bug/1907548 will be fixed
-      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest)"
+      tempest_black_regex: *stein_tempest_exclude
       devstack_localrc:
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_linuxbridge) | join(',') }}"

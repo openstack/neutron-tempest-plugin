@@ -25,8 +25,8 @@ from tempest.common import utils
 from tempest import config
 
 from neutron_tempest_plugin.api import base
+from neutron_tempest_plugin import config as nconfig
 from neutron_tempest_plugin.services.bgp import bgp_client
-
 
 CONF = config.CONF
 
@@ -149,6 +149,9 @@ class BgpSpeakerScenarioTestJSONBase(base.BaseAdminNetworkTest):
         if auto_delete:
             self.addCleanup(self.bgp_adm_client.delete_bgp_speaker,
                             bgp_speaker_id)
+        if nconfig.CONF.neutron_plugin_options.bgp_schedule_speakers_to_agents:
+            self.add_bgp_speaker_to_dragent(self.get_dragent_id(),
+                                            bgp_speaker_id)
         return bgp_speaker['bgp_speaker']
 
     def delete_bgp_speaker(self, id):

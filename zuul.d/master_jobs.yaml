@@ -380,7 +380,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-ovn
     parent: neutron-tempest-plugin-scenario
-    timeout: 10000
+    timeout: 10800
     vars:
       network_api_extensions: *api_extensions
       network_api_extensions_ovn:

@@ -74,6 +74,7 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
 
     EGRESS_KBPS = 1000
     INGRESS_KBPS = 2000
+    ANY_KPPS = 500
 
     @classmethod
     def skip_checks(cls):
@@ -101,9 +102,11 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
             cls.os_admin.qos_minimum_bandwidth_rules_client
         cls.qos_bw_limit_rule_client = \
             cls.os_admin.qos_limit_bandwidth_rules_client
+        cls.qos_minimum_packet_rate_rules_client = \
+            cls.os_admin.qos_minimum_packet_rate_rules_client
 
     def _create_qos_policy_and_port(self, network, vnic_type,
-                                    network_policy=False):
+                                    network_policy=False, min_kpps=False):
         qos_policy = self.create_qos_policy(
             name=data_utils.rand_name('test_policy'), shared=True)
         self.qos_minimum_bandwidth_rules_client.create_minimum_bandwidth_rule(
@@ -115,6 +118,13 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
             qos_policy_id=qos_policy['id'],
             **{'direction': const.INGRESS_DIRECTION,
                'min_kbps': self.INGRESS_KBPS})
+
+        if min_kpps:
+            self.qos_minimum_packet_rate_rules_client.\
+                create_minimum_packet_rate_rule(
+                    qos_policy_id=qos_policy['id'],
+                    **{'direction': const.ANY_DIRECTION,
+                    'min_kpps': min_kpps})
 
         port_policy_id = qos_policy['id'] if not network_policy else None
         port_kwargs = {
@@ -129,13 +139,14 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
         port_id = self.create_port(network, **port_kwargs)['id']
         return self.admin_client.show_port(port_id)['port']
 
-    def _assert_resource_request(self, port, vnic_type):
+    def _assert_resource_request(self, port, vnic_type, min_kpps=None):
         self.assertIn('resource_request', port)
         vnic_trait = 'CUSTOM_VNIC_TYPE_%s' % vnic_type.upper()
         physnet_trait = 'CUSTOM_PHYSNET_%s' % self.physnet_name.upper()
         if utils.is_extension_enabled('port-resource-request-groups',
                                       'network'):
             min_bw_group_found = False
+            min_pps_group_found = False if min_kpps else True
             for rg in port['resource_request']['request_groups']:
                 self.assertIn(rg['id'],
                               port['resource_request']['same_subtree'])
@@ -151,11 +162,21 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
                         rg['resources']
                     )
                     min_bw_group_found = True
+                elif (('NET_PACKET_RATE_KILOPACKET_PER_SEC' in
+                        rg['resources'] and min_kpps) and
+                        not min_pps_group_found):
+                    self.assertCountEqual([vnic_trait], rg['required'])
+
+                    self.assertEqual(
+                        {'NET_PACKET_RATE_KILOPACKET_PER_SEC': min_kpps},
+                        rg['resources']
+                    )
+                    min_pps_group_found = True
                 else:
                     self.fail('"resource_request" contains unexpected request '
                               'group: %s', rg)
 
-            if not min_bw_group_found:
+            if not min_bw_group_found or not min_pps_group_found:
                 self.fail('Did not find expected request groups in '
                           '"resource_request": %s',
                           port['resource_request']['request_groups'])
@@ -176,6 +197,27 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
         port_id = port['id']
 
         self._assert_resource_request(port, self.vnic_type)
+
+        # Note(lajoskatona): port-resource-request is an admin only feature,
+        # so test if non-admin user can't see the new field.
+        port = self.client.show_port(port_id)['port']
+        self.assertNotIn('resource_request', port)
+
+        self.update_port(port, **{'qos_policy_id': None})
+        port = self.admin_client.show_port(port_id)['port']
+        self.assertIsNone(port['resource_request'])
+
+    @decorators.idempotent_id('5ae93aa0-408a-11ec-bbca-17b1a60f3438')
+    @utils.requires_ext(service='network',
+                        extension='port-resource-request-groups')
+    def test_port_resource_request_min_bw_and_min_pps(self):
+        port = self._create_qos_policy_and_port(
+            network=self.prov_network, vnic_type=self.vnic_type,
+            network_policy=False, min_kpps=self.ANY_KPPS)
+        port_id = port['id']
+
+        self._assert_resource_request(port, self.vnic_type,
+                                      min_kpps=self.ANY_KPPS)
 
         # Note(lajoskatona): port-resource-request is an admin only feature,
         # so test if non-admin user can't see the new field.

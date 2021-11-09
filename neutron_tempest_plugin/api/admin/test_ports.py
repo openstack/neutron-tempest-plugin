@@ -220,8 +220,12 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('b6c34ae4-44c8-47f0-86de-7ef9866fa000')
     def test_port_resource_request_inherited_policy(self):
+        base_segm = CONF.neutron_plugin_options.provider_net_base_segm_id
+        prov_network = self.create_provider_network(
+            physnet_name=self.physnet_name,
+            start_segmentation_id=base_segm)
         port = self._create_qos_policy_and_port(
-            network=self.prov_network, vnic_type=self.vnic_type,
+            network=prov_network, vnic_type=self.vnic_type,
             network_policy=True)
 
         self._assert_resource_request(port, self.vnic_type)

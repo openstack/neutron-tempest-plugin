@@ -231,7 +231,13 @@
     parent: neutron-tempest-plugin-designate-scenario
     nodeset: openstack-single-node-bionic
     override-checkout: stable/train
-    required-projects: *required-projects-train
+    required-projects:
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.5.0
+      - openstack/tempest
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
     vars:
       branch_override: stable/train
       network_api_extensions_common: *api_extensions

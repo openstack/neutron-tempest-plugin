@@ -3,6 +3,11 @@
     parent: neutron-tempest-plugin-api
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: &required-projects-ussuri
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.8.0
+      - openstack/tempest
     vars:
       devstack_services:
         # Disable OVN services
@@ -128,6 +133,7 @@
     parent: neutron-tempest-plugin-scenario-openvswitch
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       branch_override: stable/ussuri
       network_api_extensions: *api_extensions
@@ -153,6 +159,7 @@
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       branch_override: stable/ussuri
       network_api_extensions: *api_extensions
@@ -177,6 +184,7 @@
     parent: neutron-tempest-plugin-scenario-linuxbridge
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       branch_override: stable/ussuri
       network_api_extensions: *api_extensions
@@ -201,6 +209,7 @@
     parent: neutron-tempest-plugin-scenario-ovn
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       branch_override: stable/ussuri
       network_api_extensions: *api_extensions
@@ -226,6 +235,7 @@
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     nodeset: openstack-two-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       network_api_extensions_common: *api_extensions
       branch_override: stable/ussuri
@@ -235,6 +245,12 @@
     parent: neutron-tempest-plugin-designate-scenario
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects:
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.8.0
+      - openstack/tempest
+      - openstack/designate-tempest-plugin
     vars:
       branch_override: stable/ussuri
       network_api_extensions_common: *api_extensions
@@ -244,6 +260,7 @@
     parent: neutron-tempest-plugin-sfc
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       branch_override: stable/ussuri
       network_api_extensions_common: *api_extensions
@@ -253,6 +270,7 @@
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       branch_override: stable/ussuri
       network_api_extensions: *api_extensions
@@ -266,7 +284,8 @@
     required-projects:
       - openstack/neutron-fwaas
       - openstack/neutron
-      - openstack/neutron-tempest-plugin
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.8.0
       - openstack/tempest
     vars:
       branch_override: stable/ussuri
@@ -285,6 +304,7 @@
     parent: neutron-tempest-plugin-dynamic-routing
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       branch_override: stable/ussuri
       network_api_extensions_common: *api_extensions
@@ -294,6 +314,7 @@
     parent: neutron-tempest-plugin-vpnaas
     nodeset: openstack-single-node-bionic
     override-checkout: stable/ussuri
+    required-projects: *required-projects-ussuri
     vars:
       branch_override: stable/ussuri
       network_api_extensions_common: *api_extensions

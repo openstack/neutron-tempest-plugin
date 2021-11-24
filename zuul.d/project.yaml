@@ -162,7 +162,6 @@
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
-      - neutron-tempest-plugin-jobs-ussuri
       - neutron-tempest-plugin-jobs-victoria
       - neutron-tempest-plugin-jobs-wallaby
       - check-requirements
@@ -171,19 +170,15 @@
     check:
       jobs:
         - neutron-tempest-plugin-sfc
-        - neutron-tempest-plugin-sfc-ussuri
         - neutron-tempest-plugin-sfc-victoria
         - neutron-tempest-plugin-sfc-wallaby
         - neutron-tempest-plugin-bgpvpn-bagpipe
-        - neutron-tempest-plugin-bgpvpn-bagpipe-ussuri
         - neutron-tempest-plugin-bgpvpn-bagpipe-victoria
         - neutron-tempest-plugin-bgpvpn-bagpipe-wallaby
         - neutron-tempest-plugin-dynamic-routing
-        - neutron-tempest-plugin-dynamic-routing-ussuri
         - neutron-tempest-plugin-dynamic-routing-victoria
         - neutron-tempest-plugin-dynamic-routing-wallaby
         - neutron-tempest-plugin-vpnaas
-        - neutron-tempest-plugin-vpnaas-ussuri
         - neutron-tempest-plugin-vpnaas-victoria
         - neutron-tempest-plugin-vpnaas-wallaby
         - neutron-tempest-plugin-tap-as-a-service
@@ -193,10 +188,3 @@
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-dynamic-routing
-
-    experimental:
-      jobs:
-        - neutron-tempest-plugin-fwaas-ussuri:
-            # TODO(slaweq): switch it to be voting when bug
-            # https://bugs.launchpad.net/neutron/+bug/1858645 will be fixed
-            voting: false

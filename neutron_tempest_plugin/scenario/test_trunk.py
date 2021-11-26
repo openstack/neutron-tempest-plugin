@@ -114,11 +114,6 @@ class TrunkTest(base.BaseTempestTestCase):
                 vlan_tag=segmentation_id,
                 vlan_subnet=vlan_subnet)
 
-        for server in server_list:
-            self.check_connectivity(
-                host=vm.floating_ip['floating_ip_address'],
-                ssh_client=vm.ssh_client)
-
         return server_list
 
     def _check_servers_remote_connectivity(self, vms=None,
@@ -197,6 +192,10 @@ class TrunkTest(base.BaseTempestTestCase):
         self._wait_for_trunk(trunk=vm.trunk)
         self._wait_for_port(port=vm.port)
         self._wait_for_port(port=vm.subport)
+        self.check_connectivity(
+            host=vm.floating_ip['floating_ip_address'],
+            ssh_client=vm.ssh_client,
+            servers=[vm.server])
 
         ip_command = ip.IPCommand(ssh_client=vm.ssh_client)
         for address in ip_command.list_addresses(port=vm.port):

@@ -14,8 +14,10 @@
 #    under the License.
 
 from oslo_log import log
+from paramiko import ssh_exception as ssh_exc
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils
@@ -116,17 +118,22 @@ class MacLearningTest(base.BaseTempestTestCase):
                                           pkey=self.keypair['private_key'])
         return server
 
-    def _check_cmd_installed_on_server(self, ssh_client, server_id, cmd):
+    def _check_cmd_installed_on_server(self, ssh_client, server, cmd):
         try:
             ssh_client.execute_script('which %s' % cmd)
+        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+            LOG.debug(ssh_e)
+            self._log_console_output([server])
+            self._log_local_network_status()
+            raise
         except exceptions.SSHScriptFailed:
             raise self.skipException(
-                "%s is not available on server %s" % (cmd, server_id))
+                "%s is not available on server %s" % (cmd, server['id']))
 
     def _prepare_sender(self, server, address):
         check_script = get_sender_script(self.sender_output_file, address,
                                          self.completed_message)
-        self._check_cmd_installed_on_server(server['ssh_client'], server['id'],
+        self._check_cmd_installed_on_server(server['ssh_client'], server,
                                             'tcpdump')
         server['ssh_client'].execute_script(
             'echo "%s" > %s' % (check_script, self.sender_script_file))
@@ -135,7 +142,7 @@ class MacLearningTest(base.BaseTempestTestCase):
         check_script = get_receiver_script(
             result_file=self.output_file,
             packets_expected=n_packets)
-        self._check_cmd_installed_on_server(server['ssh_client'], server['id'],
+        self._check_cmd_installed_on_server(server['ssh_client'], server,
                                             'tcpdump')
         server['ssh_client'].execute_script(
             'echo "%s" > %s' % (check_script, self.receiver_script_file))

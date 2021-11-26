@@ -16,8 +16,10 @@
 import netaddr
 from neutron_lib import constants
 from oslo_log import log
+from paramiko import ssh_exception as ssh_exc
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.common import ip
 from neutron_tempest_plugin.common import ssh
@@ -210,15 +212,20 @@ class BaseMulticastTest(object):
                                           self.username,
                                           pkey=self.keypair['private_key'])
         self._check_cmd_installed_on_server(server['ssh_client'],
-                                            server['id'], PYTHON3_BIN)
+                                            server, PYTHON3_BIN)
         return server
 
-    def _check_cmd_installed_on_server(self, ssh_client, server_id, cmd):
+    def _check_cmd_installed_on_server(self, ssh_client, server, cmd):
         try:
             ssh_client.execute_script('which %s' % cmd)
+        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+            LOG.debug(ssh_e)
+            self._log_console_output([server])
+            self._log_local_network_status()
+            raise
         except exceptions.SSHScriptFailed:
             raise self.skipException(
-                "%s is not available on server %s" % (cmd, server_id))
+                "%s is not available on server %s" % (cmd, server['id']))
 
     def _prepare_sender(self, server, mcast_address):
         check_script = get_sender_script(
@@ -237,7 +244,7 @@ class BaseMulticastTest(object):
             server['fip']['floating_ip_address'],
             self.username,
             pkey=self.keypair['private_key'])
-        self._check_cmd_installed_on_server(ssh_client, server['id'],
+        self._check_cmd_installed_on_server(ssh_client, server,
                                             PYTHON3_BIN)
         server['ssh_client'].execute_script(
             'echo "%s" > /tmp/multicast_traffic_receiver.py' % check_script)
@@ -253,7 +260,7 @@ class BaseMulticastTest(object):
         check_script = get_unregistered_script(
             interface=port_iface, group=mcast_address,
             result_file=self.unregistered_output_file)
-        self._check_cmd_installed_on_server(ssh_client, server['id'],
+        self._check_cmd_installed_on_server(ssh_client, server,
                                             'tcpdump')
         server['ssh_client'].execute_script(
             'echo "%s" > /tmp/unregistered_traffic_receiver.sh' % check_script)

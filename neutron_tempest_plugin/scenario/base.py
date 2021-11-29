@@ -534,7 +534,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             return False
 
         try:
-            utils.wait_until_true(system_booted, sleep=5)
+            utils.wait_until_true(system_booted, timeout=90, sleep=5)
         except utils.WaitTimeout:
             LOG.debug("No correct output in console of server %s found. "
                       "Guest operating system status can't be checked.",

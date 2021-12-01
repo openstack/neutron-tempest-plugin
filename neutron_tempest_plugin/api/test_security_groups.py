@@ -143,6 +143,47 @@ class SecGroupTest(base.BaseAdminNetworkTest):
             ' is: {}'.format(same_name_sg_number))
 
 
+class StatelessSecGroupTest(base.BaseAdminNetworkTest):
+
+    required_extensions = ['security-group', 'stateful-security-group']
+
+    @decorators.idempotent_id('0a6c1476-3d1a-11ec-b0ec-0800277ac3d9')
+    def test_stateless_security_group_update(self):
+        security_group = self.create_security_group(stateful=True)
+
+        # List security groups and verify if created group is there in response
+        security_groups = self.client.list_security_groups()['security_groups']
+        found = False
+        for sg in security_groups:
+            if sg['id'] == security_group['id']:
+                found = True
+                break
+        self.assertTrue(found)
+        self.assertTrue(sg['stateful'])
+
+        # Switch to stateless
+        updated_security_group = self.client.update_security_group(
+            security_group['id'], stateful=False)['security_group']
+
+        # Verify if security group is updated
+        self.assertFalse(updated_security_group['stateful'])
+
+        observed_security_group = self.client.show_security_group(
+            security_group['id'])['security_group']
+        self.assertFalse(observed_security_group['stateful'])
+
+        # Switch back to stateful
+        updated_security_group = self.client.update_security_group(
+            security_group['id'], stateful=True)['security_group']
+
+        # Verify if security group is stateful again
+        self.assertTrue(updated_security_group['stateful'])
+
+        observed_security_group = self.client.show_security_group(
+            security_group['id'])['security_group']
+        self.assertTrue(observed_security_group['stateful'])
+
+
 class BaseSecGroupQuota(base.BaseAdminNetworkTest):
 
     def _create_max_allowed_sg_amount(self):

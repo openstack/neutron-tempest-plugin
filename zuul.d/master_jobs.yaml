@@ -74,6 +74,7 @@
         - standard-attr-segment
         - standard-attr-tag
         - standard-attr-timestamp
+        - stateful-security-group
         - subnet_allocation
         - subnet-dns-publish-fixed-ip
         - subnet-service-types

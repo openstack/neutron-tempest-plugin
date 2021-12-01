@@ -28,6 +28,14 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
     credentials = ['primary', 'admin']
 
     @classmethod
+    def setup_clients(cls):
+        super(FloatingIpTestCasesAdmin, cls).setup_clients()
+        # admin_client set in BaseAdminNetworkTest but here we inherit from
+        # BaseNetworkTest
+        if not cls.admin_client:
+            cls.admin_client = cls.os_admin.network_client
+
+    @classmethod
     @utils.requires_ext(extension="router", service="network")
     def resource_setup(cls):
         super(FloatingIpTestCasesAdmin, cls).resource_setup()
@@ -75,7 +83,7 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
             waiters.wait_for_server_status(
                 self.os_admin.servers_client, server['server']['id'],
                 const.SERVER_STATUS_ACTIVE)
-            port = self.client.list_ports(
+            port = self.admin_client.list_ports(
                 network_id=self.network['id'],
                 device_id=server['server']['id']
             )['ports'][0]

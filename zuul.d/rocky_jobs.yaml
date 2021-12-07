@@ -200,9 +200,21 @@
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               firewall_driver: openvswitch
-      tempest_black_regex: "\
+      # NOTE(bcafarel): filtering out unstable tests or tests with known
+      # issues in the used pinned version for this EM branch
+      tempest_black_regex: &rocky_tempest_exclude "\
+          (^neutron_tempest_plugin.scenario.admin.test_floatingip.FloatingIpTestCasesAdmin.test_two_vms_fips)|\
+          (^neutron_tempest_plugin.scenario.test_floatingip.FloatingIPQosTest.test_qos)|\
+          (^neutron_tempest_plugin.scenario.test_internal_dns.InternalDNSTest.test_dns_domain_and_name)|\
           (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
-          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
+          (^neutron_tempest_plugin.scenario.test_ports.PortsTest.test_previously_used_port)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_ip_prefix)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_secgroup_inheritance)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_remote_group)|\
+          (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)|\
+          (^tempest.api.compute.servers.test_attach_interfaces.AttachInterfacesTestJSON.test_reassign_port_between_servers)|\
+          (^tempest.api.compute.servers.test_attach_interfaces.AttachInterfacesUnderV243Test.test_add_remove_fixed_ip)"
     branches:
       - stable/rocky
     irrelevant-files: &openvswitch-scenario-irrelevant-files
@@ -306,13 +318,7 @@
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               firewall_driver: iptables_hybrid
-      # TODO(bcafarel): remove trunks subport_connectivity test from blacklist
-      # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
-      # NOTE(bcafarel): other are newer tests, unstable on rocky branch
-      tempest_black_regex: "\
-          (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)|\
-          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
-          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
+      tempest_black_regex: *rocky_tempest_exclude
     branches:
       - stable/rocky
     irrelevant-files: &iptables_hybrid_irrelevant_files
@@ -400,10 +406,7 @@
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               q_agent: None
-      # NOTE(bcafarel): newer tests, unstable on rocky branch
-      tempest_black_regex: "\
-          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
-          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
+      tempest_black_regex: *rocky_tempest_exclude
     branches:
       - stable/rocky
 
@@ -543,10 +546,7 @@
               l3_agent_mode: dvr_snat
               firewall_driver: openvswitch
       branch_override: stable/rocky
-      # NOTE(bcafarel): newer tests, unstable on rocky branch
-      tempest_black_regex: "\
-          (^neutron_tempest_plugin.scenario.test_port_forwardings.PortForwardingTestJSON.test_port_forwarding_to_2_servers)|\
-          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_multiple_ports_portrange_remote)"
+      tempest_black_regex: *rocky_tempest_exclude
     branches:
       - stable/rocky
     group-vars: &multinode_scenario_group_vars_rocky
@@ -634,6 +634,9 @@
         USE_PYTHON3: false
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
         ADVANCED_INSTANCE_TYPE: ds512M
+      # NOTE(bcafarel): filtering out unstable tests or tests with known
+      # issues in the used pinned version for this EM branch
+      tempest_black_regex: "(^neutron_tempest_plugin.scenario.test_dns_integration.DNSIntegrationAdminTests.test_port_on_special_network)"
     branches:
       - stable/rocky
 

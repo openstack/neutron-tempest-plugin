@@ -38,9 +38,13 @@ class AgentManagementTestJSON(base.BaseAdminNetworkTest):
         # Heartbeats must be excluded from comparison
         self.agent.pop('heartbeat_timestamp', None)
         self.agent.pop('configurations', None)
+        # Exclude alive as it can happen that when testclass'
+        # resource_setup executed the selected agent is not up
+        self.agent.pop('alive', None)
         for agent in agents:
             agent.pop('heartbeat_timestamp', None)
             agent.pop('configurations', None)
+            agent.pop('alive', None)
         self.assertIn(self.agent, agents)
 
     @decorators.idempotent_id('e335be47-b9a1-46fd-be30-0874c0b751e6')

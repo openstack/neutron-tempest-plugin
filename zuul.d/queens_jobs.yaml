@@ -86,6 +86,8 @@
         NEUTRON_DEPLOY_MOD_WSGI: false
         USE_PYTHON3: false
         CIRROS_VERSION: 0.3.5
+        DEFAULT_IMAGE_NAME: cirros-0.3.5-x86_64-uec
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.3.5-x86_64-uec.tar.gz
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
         Q_AGENT: openvswitch
@@ -139,6 +141,8 @@
       devstack_localrc:
         USE_PYTHON3: false
         CIRROS_VERSION: 0.3.5
+        DEFAULT_IMAGE_NAME: cirros-0.3.5-x86_64-uec
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.3.5-x86_64-uec.tar.gz
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
         # NOTE(slaweq) some tests are not running fine with ubuntu minimal on
@@ -173,6 +177,8 @@
       devstack_localrc:
         USE_PYTHON3: false
         CIRROS_VERSION: 0.3.5
+        DEFAULT_IMAGE_NAME: cirros-0.3.5-x86_64-uec
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.3.5-x86_64-uec.tar.gz
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
@@ -232,6 +238,8 @@
       devstack_localrc:
         USE_PYTHON3: false
         CIRROS_VERSION: 0.3.5
+        DEFAULT_IMAGE_NAME: cirros-0.3.5-x86_64-uec
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.3.5-x86_64-uec.tar.gz
         TEMPEST_PLUGINS: /opt/stack/neutron-tempest-plugin
 
 - job:
@@ -256,5 +264,7 @@
       devstack_localrc:
         USE_PYTHON3: false
         CIRROS_VERSION: 0.3.5
+        DEFAULT_IMAGE_NAME: cirros-0.3.5-x86_64-uec
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.3.5-x86_64-uec.tar.gz
         TEMPEST_PLUGINS: '"/opt/stack/designate-tempest-plugin /opt/stack/neutron-tempest-plugin"'
         ADVANCED_INSTANCE_TYPE: ds512M

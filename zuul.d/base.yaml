@@ -83,14 +83,20 @@
               provider_net_base_segm_id: 1
     irrelevant-files:
       - ^(test-|)requirements.txt$
+      - lower-constraints.txt
       - ^releasenotes/.*$
       - ^doc/.*$
+      - ^.*\.conf\.sample$
       - ^setup.cfg$
       - ^.*\.rst$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario

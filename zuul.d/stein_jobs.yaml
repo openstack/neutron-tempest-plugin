@@ -233,6 +233,8 @@
       - ^.*\.rst$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
       - ^neutron/agent/linux/openvswitch_firewall/.*$
@@ -323,6 +325,8 @@
       - ^.*\.rst$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
       - ^neutron/agent/linux/openvswitch_firewall/.*$

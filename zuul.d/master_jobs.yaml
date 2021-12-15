@@ -111,18 +111,24 @@
               local_output_log_base: /tmp/test_log.log
     irrelevant-files:
       - ^(test-|)requirements.txt$
+      - lower-constraints.txt
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.conf\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
       - ^neutron/agent/.*$
       - ^neutron/privileged/.*$
       - ^neutron_lib/tests/unit/.*$
       - ^neutron_tempest_plugin/scenario/.*$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
 
 
 - job:
@@ -176,12 +182,16 @@
               firewall_driver: openvswitch
     irrelevant-files: &openvswitch-scenario-irrelevant-files
       - ^(test-|)requirements.txt$
+      - lower-constraints.txt
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.conf\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
       - ^neutron/agent/ovn/.*$
@@ -190,6 +200,8 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
@@ -251,12 +263,16 @@
               firewall_driver: iptables_hybrid
     irrelevant-files:
       - ^(test-|)requirements.txt$
+      - lower-constraints.txt
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.conf\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
       - ^neutron/agent/linux/openvswitch_firewall/.*$
@@ -266,6 +282,8 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-distributed-dhcp
@@ -362,12 +380,16 @@
               firewall_driver: iptables
     irrelevant-files:
       - ^(test-|)requirements.txt$
+      - lower-constraints.txt
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.conf\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
       - ^neutron/agent/linux/openvswitch_firewall/.*$
@@ -377,6 +399,8 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
 
 - job:
     name: neutron-tempest-plugin-scenario-ovn
@@ -473,12 +497,16 @@
         '{{ devstack_log_dir }}/ovsdb-server-sb.log': 'logs'
     irrelevant-files:
       - ^(test-|)requirements.txt$
+      - lower-constraints.txt
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.conf\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
       - ^neutron/agent/dhcp/.*$
@@ -497,6 +525,8 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/scheduler/.*$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
@@ -715,12 +745,16 @@
       tempest_test_regex: ^neutron_tempest_plugin\.scenario\.test_dns_integration
     irrelevant-files:
       - ^(test-|)requirements.txt$
+      - lower-constraints.txt
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.conf\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
       - ^neutron/agent/.*$
@@ -729,6 +763,8 @@
       - ^neutron/plugins/ml2/drivers/.*$
       - ^neutron/scheduler/.*$
       - ^neutron/services/(?!externaldns).*$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
 
 - job:
     name: neutron-tempest-plugin-sfc

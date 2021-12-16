@@ -129,6 +129,7 @@
       - ^neutron_tempest_plugin/scenario/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 
 - job:
@@ -200,8 +201,11 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
@@ -282,8 +286,11 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-distributed-dhcp
@@ -399,8 +406,11 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-scenario-ovn
@@ -525,8 +535,11 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/scheduler/.*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
@@ -763,8 +776,11 @@
       - ^neutron/plugins/ml2/drivers/.*$
       - ^neutron/scheduler/.*$
       - ^neutron/services/(?!externaldns).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-sfc
@@ -808,6 +824,25 @@
       # https://bugs.launchpad.net/neutron/+bug/1851500
       # https://bugs.launchpad.net/networking-sfc/+bug/1660366
       tempest_concurrency: 1
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - lower-constraints.txt
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^.*\.conf\.sample$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe
@@ -847,6 +882,25 @@
       devstack_plugins:
         networking-bgpvpn: https://git.openstack.org/openstack/networking-bgpvpn
         networking-bagpipe: https://git.openstack.org/openstack/networking-bagpipe
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - lower-constraints.txt
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^.*\.conf\.sample$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/(fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing
@@ -892,6 +946,24 @@
         neutron-dr-agent: true
       tempest_concurrency: 1
       tempest_test_regex: ^neutron_tempest_plugin\.neutron_dynamic_routing
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - lower-constraints.txt
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^.*\.conf\.sample$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|sfc|tap_as_a_service|vpnaas).*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-vpnaas
@@ -931,6 +1003,25 @@
         q-meta: true
         q-metering: true
         q-l3: true
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - lower-constraints.txt
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^.*\.conf\.sample$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service
@@ -1014,10 +1105,22 @@
         taas_openvswitch_agent: true
         tempest: true
         dstat: true
-    irrelevant-files: &tempest-irrelevant-files
+    irrelevant-files:
       - ^(test-|)requirements.txt$
+      - lower-constraints.txt
       - ^releasenotes/.*$
       - ^doc/.*$
+      - ^.*\.conf\.sample$
+      - ^setup.cfg$
       - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
+      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$

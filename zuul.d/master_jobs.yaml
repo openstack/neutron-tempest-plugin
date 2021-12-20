@@ -130,11 +130,12 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch
-    parent: neutron-tempest-plugin-scenario
+    parent: neutron-tempest-plugin-scenario-nested-switch
     timeout: 10000
     vars:
       devstack_services:
@@ -206,10 +207,11 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
-    parent: neutron-tempest-plugin-scenario
+    parent: neutron-tempest-plugin-scenario-nested-switch
     timeout: 10000
     vars:
       devstack_services:
@@ -291,6 +293,7 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-distributed-dhcp
@@ -322,7 +325,7 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge
-    parent: neutron-tempest-plugin-scenario
+    parent: neutron-tempest-plugin-scenario-nested-switch
     timeout: 10000
     roles:
       - zuul: openstack/neutron
@@ -411,10 +414,11 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-scenario-ovn
-    parent: neutron-tempest-plugin-scenario
+    parent: neutron-tempest-plugin-scenario-nested-switch
     timeout: 10800
     vars:
       network_api_extensions: *api_extensions
@@ -540,6 +544,7 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
@@ -732,7 +737,7 @@
 
 - job:
     name: neutron-tempest-plugin-designate-scenario
-    parent: neutron-tempest-plugin-scenario
+    parent: neutron-tempest-plugin-scenario-nested-switch
     description: Neutron designate integration scenario
     required-projects:
       - openstack/designate
@@ -781,6 +786,7 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-sfc
@@ -843,6 +849,7 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe
@@ -901,6 +908,7 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing
@@ -964,6 +972,7 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-vpnaas
@@ -1022,6 +1031,7 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service
@@ -1124,3 +1134,4 @@
       - ^rally-jobs/.*$
       - ^vagrant/.*$
       - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
+      - ^zuul.d/base-nested-switch.yaml$

@@ -158,12 +158,33 @@
         - neutron-tempest-plugin-dvr-multinode-scenario-wallaby
 
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-xena
+    check:
+      jobs:
+        - neutron-tempest-plugin-api-xena
+        - neutron-tempest-plugin-scenario-linuxbridge-xena
+        - neutron-tempest-plugin-scenario-openvswitch-xena
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-xena
+        - neutron-tempest-plugin-scenario-ovn-xena
+        - neutron-tempest-plugin-designate-scenario-xena
+    gate:
+      jobs:
+        - neutron-tempest-plugin-api-xena
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-xena
+
+
 - project:
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
       - neutron-tempest-plugin-jobs-victoria
       - neutron-tempest-plugin-jobs-wallaby
+      - neutron-tempest-plugin-jobs-xena
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3
@@ -172,16 +193,21 @@
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-sfc-victoria
         - neutron-tempest-plugin-sfc-wallaby
+        - neutron-tempest-plugin-sfc-xena
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-bgpvpn-bagpipe-victoria
         - neutron-tempest-plugin-bgpvpn-bagpipe-wallaby
+        - neutron-tempest-plugin-bgpvpn-bagpipe-xena
         - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-dynamic-routing-victoria
         - neutron-tempest-plugin-dynamic-routing-wallaby
+        - neutron-tempest-plugin-dynamic-routing-xena
         - neutron-tempest-plugin-vpnaas
         - neutron-tempest-plugin-vpnaas-victoria
         - neutron-tempest-plugin-vpnaas-wallaby
+        - neutron-tempest-plugin-vpnaas-xena
         - neutron-tempest-plugin-tap-as-a-service
+        - neutron-tempest-plugin-tap-as-a-service-xena
 
     gate:
       jobs:

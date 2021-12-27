@@ -139,18 +139,21 @@
         ovsdb-server: false
         q-ovn-metadata-agent: false
         # Neutron services
+        neutron-local-ip-static: true
         q-agt: true
         q-dhcp: true
         q-l3: true
         q-meta: true
         q-metering: true
       network_api_extensions: *api_extensions
+      network_api_extensions_openvswitch:
+        - local_ip
       network_available_features: *available_features
       devstack_localrc:
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_openvswitch) | join(',') }}"
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -205,12 +208,15 @@
         ovsdb-server: false
         q-ovn-metadata-agent: false
         # Neutron services
+        neutron-local-ip: true
         q-agt: true
         q-dhcp: true
         q-l3: true
         q-meta: true
         q-metering: true
       network_api_extensions: *api_extensions
+      network_api_extensions_openvswitch:
+        - local_ip
       network_available_features: *available_features
       # TODO(slaweq): remove trunks subport_connectivity test from blacklist
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
@@ -223,7 +229,7 @@
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_openvswitch) | join(',') }}"
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:

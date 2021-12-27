@@ -367,7 +367,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                                    should_succeed=True,
                                    nic=None, mtu=None, fragmentation=True,
                                    timeout=None, pattern=None,
-                                   forbid_packet_loss=False):
+                                   forbid_packet_loss=False,
+                                   check_response_ip=True):
         """check ping server via source ssh connection
 
         :param source: RemoteClient: an ssh connection from which to ping
@@ -380,6 +381,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         :param timeout: Timeout for all ping packet(s) to succeed
         :param pattern: hex digits included in ICMP messages
         :param forbid_packet_loss: forbid or allow some lost packets
+        :param check_response_ip: check response ip
         :returns: boolean -- should_succeed == ping
         :returns: ping is false if ping failed
         """
@@ -422,7 +424,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 LOG.debug('Packet loss detected')
                 return not should_succeed
 
-            if validators.validate_ip_address(dest) is None:
+            if (check_response_ip and
+                    validators.validate_ip_address(dest) is None):
                 # Assert that the return traffic was from the correct
                 # source address.
                 from_source = 'from %s' % dest
@@ -436,13 +439,15 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                                   nic=None, mtu=None, fragmentation=True,
                                   servers=None, timeout=None,
                                   ping_count=CONF.validation.ping_count,
-                                  pattern=None, forbid_packet_loss=False):
+                                  pattern=None, forbid_packet_loss=False,
+                                  check_response_ip=True):
         try:
             self.assertTrue(self._check_remote_connectivity(
                 source, dest, ping_count, should_succeed, nic, mtu,
                 fragmentation,
                 timeout=timeout, pattern=pattern,
-                forbid_packet_loss=forbid_packet_loss))
+                forbid_packet_loss=forbid_packet_loss,
+                check_response_ip=check_response_ip))
         except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)

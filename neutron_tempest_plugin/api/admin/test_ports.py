@@ -133,14 +133,41 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
         self.assertIn('resource_request', port)
         vnic_trait = 'CUSTOM_VNIC_TYPE_%s' % vnic_type.upper()
         physnet_trait = 'CUSTOM_PHYSNET_%s' % self.physnet_name.upper()
-        self.assertCountEqual([physnet_trait, vnic_trait],
-                              port['resource_request']['required'])
+        if utils.is_extension_enabled('port-resource-request-groups',
+                                      'network'):
+            min_bw_group_found = False
+            for rg in port['resource_request']['request_groups']:
+                self.assertIn(rg['id'],
+                              port['resource_request']['same_subtree'])
+                if (('NET_BW_EGR_KILOBIT_PER_SEC' in rg['resources'] or
+                        'NET_BW_IGR_KILOBIT_PER_SEC' in rg['resources']) and
+                        not min_bw_group_found):
+                    self.assertCountEqual([physnet_trait, vnic_trait],
+                                          rg['required'])
 
-        self.assertEqual(
-            {'NET_BW_EGR_KILOBIT_PER_SEC': self.EGRESS_KBPS,
-             'NET_BW_IGR_KILOBIT_PER_SEC': self.INGRESS_KBPS},
-            port['resource_request']['resources']
-        )
+                    self.assertEqual(
+                        {'NET_BW_EGR_KILOBIT_PER_SEC': self.EGRESS_KBPS,
+                        'NET_BW_IGR_KILOBIT_PER_SEC': self.INGRESS_KBPS},
+                        rg['resources']
+                    )
+                    min_bw_group_found = True
+                else:
+                    self.fail('"resource_request" contains unexpected request '
+                              'group: %s', rg)
+
+            if not min_bw_group_found:
+                self.fail('Did not find expected request groups in '
+                          '"resource_request": %s',
+                          port['resource_request']['request_groups'])
+        else:
+            self.assertCountEqual([physnet_trait, vnic_trait],
+                                  port['resource_request']['required'])
+
+            self.assertEqual(
+                {'NET_BW_EGR_KILOBIT_PER_SEC': self.EGRESS_KBPS,
+                'NET_BW_IGR_KILOBIT_PER_SEC': self.INGRESS_KBPS},
+                port['resource_request']['resources']
+            )
 
     @decorators.idempotent_id('ebb86dc4-716c-4558-8516-6dfc4a67601f')
     def test_port_resource_request(self):

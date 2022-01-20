@@ -1376,6 +1376,226 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
         self.assertNotIn(rule2['id'], rules_ids)
 
 
+class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
+    RULE_NAME = qos_consts.RULE_TYPE_MINIMUM_PACKET_RATE + "_rule"
+    RULES_NAME = RULE_NAME + "s"
+    required_extensions = [qos_apidef.ALIAS]
+
+    @classmethod
+    @utils.requires_ext(service='network',
+                        extension='port-resource-request-groups')
+    def resource_setup(cls):
+        super(QosMinimumPpsRuleTestJSON, cls).resource_setup()
+
+    @classmethod
+    def setup_clients(cls):
+        super(QosMinimumPpsRuleTestJSON, cls).setup_clients()
+        cls.min_pps_client = cls.os_admin.qos_minimum_packet_rate_rules_client
+        cls.min_pps_client_primary = \
+            cls.os_primary.qos_minimum_packet_rate_rules_client
+
+    def _create_qos_min_pps_rule(self, policy_id, rule_data):
+        rule = self.min_pps_client.create_minimum_packet_rate_rule(
+            policy_id, **rule_data)['minimum_packet_rate_rule']
+        self.addCleanup(
+            test_utils.call_and_ignore_notfound_exc,
+            self.min_pps_client.delete_minimum_packet_rate_rule,
+            policy_id, rule['id'])
+        return rule
+
+    @decorators.idempotent_id('66a5b9b4-d4f9-4af8-b238-9e1881b78487')
+    def test_rule_create(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        rule = self._create_qos_min_pps_rule(
+            policy['id'],
+            {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 1138})
+
+        # Test 'show rule'
+        retrieved_rule = self.min_pps_client.show_minimum_packet_rate_rule(
+            policy['id'], rule['id'])[self.RULE_NAME]
+        self.assertEqual(rule['id'], retrieved_rule['id'])
+        self.assertEqual(1138, retrieved_rule[qos_consts.MIN_KPPS])
+        self.assertEqual(n_constants.EGRESS_DIRECTION,
+                         retrieved_rule[qos_consts.DIRECTION])
+
+        # Test 'list rules'
+        rules = self.min_pps_client.list_minimum_packet_rate_rules(
+            policy['id'])
+        rules = rules[self.RULES_NAME]
+        rules_ids = [r['id'] for r in rules]
+        self.assertIn(rule['id'], rules_ids)
+
+        # Test 'show policy'
+        retrieved_policy = self.admin_client.show_qos_policy(policy['id'])
+        policy_rules = retrieved_policy['policy']['rules']
+        self.assertEqual(1, len(policy_rules))
+        self.assertEqual(rule['id'], policy_rules[0]['id'])
+        self.assertEqual('minimum_packet_rate',
+                         policy_rules[0]['type'])
+
+    @decorators.idempotent_id('6b656b57-d2bf-47f9-89a9-1baad1bd5418')
+    def test_rule_create_fail_for_missing_min_kpps(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        self.assertRaises(exceptions.BadRequest,
+                          self._create_qos_min_pps_rule,
+                          policy['id'],
+                          {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION})
+
+    @decorators.idempotent_id('f41213e5-2ab8-4916-b106-38d2cac5e18c')
+    def test_rule_create_fail_for_the_same_type(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        self._create_qos_min_pps_rule(policy['id'],
+            {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 200})
+
+        self.assertRaises(exceptions.Conflict,
+                          self._create_qos_min_pps_rule,
+                          policy['id'],
+                          {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+                           qos_consts.MIN_KPPS: 201})
+
+    @decorators.idempotent_id('ceb8e41e-3d72-11ec-a446-d7faae6daec2')
+    def test_rule_create_any_direction_when_egress_direction_exists(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        self._create_qos_min_pps_rule(policy['id'],
+            {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 200})
+
+        self.assertRaises(exceptions.Conflict,
+                          self._create_qos_min_pps_rule,
+                          policy['id'],
+                          {qos_consts.DIRECTION: n_constants.ANY_DIRECTION,
+                           qos_consts.MIN_KPPS: 201})
+
+    @decorators.idempotent_id('a147a71e-3d7b-11ec-8097-278b1afd5fa2')
+    def test_rule_create_egress_direction_when_any_direction_exists(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        self._create_qos_min_pps_rule(policy['id'],
+            {qos_consts.DIRECTION: n_constants.ANY_DIRECTION,
+             qos_consts.MIN_KPPS: 200})
+
+        self.assertRaises(exceptions.Conflict,
+                          self._create_qos_min_pps_rule,
+                          policy['id'],
+                          {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+                           qos_consts.MIN_KPPS: 201})
+
+    @decorators.idempotent_id('522ed09a-1d7f-4c1b-9195-61f19caf916f')
+    def test_rule_update(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        rule = self._create_qos_min_pps_rule(
+            policy['id'],
+            {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 300})
+
+        self.min_pps_client.update_minimum_packet_rate_rule(
+            policy['id'], rule['id'],
+            **{qos_consts.MIN_KPPS: 350,
+               qos_consts.DIRECTION: n_constants.ANY_DIRECTION})
+
+        retrieved_rule = self.min_pps_client.show_minimum_packet_rate_rule(
+            policy['id'], rule['id'])[self.RULE_NAME]
+        self.assertEqual(350, retrieved_rule[qos_consts.MIN_KPPS])
+        self.assertEqual(n_constants.ANY_DIRECTION,
+                         retrieved_rule[qos_consts.DIRECTION])
+
+    @decorators.idempotent_id('a020e186-3d60-11ec-88ca-d7f5eec22764')
+    def test_rule_update_direction_conflict(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        rule1 = self._create_qos_min_pps_rule(
+            policy['id'],
+            {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 300})
+
+        rule2 = self._create_qos_min_pps_rule(
+            policy['id'],
+            {qos_consts.DIRECTION: n_constants.INGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 300})
+
+        retrieved_rule1 = self.min_pps_client.show_minimum_packet_rate_rule(
+            policy['id'], rule1['id'])[self.RULE_NAME]
+        self.assertEqual(n_constants.EGRESS_DIRECTION,
+                         retrieved_rule1[qos_consts.DIRECTION])
+        retrieved_rule2 = self.min_pps_client.show_minimum_packet_rate_rule(
+            policy['id'], rule2['id'])[self.RULE_NAME]
+        self.assertEqual(n_constants.INGRESS_DIRECTION,
+                         retrieved_rule2[qos_consts.DIRECTION])
+
+        self.assertRaises(exceptions.Conflict,
+                          self.min_pps_client.update_minimum_packet_rate_rule,
+                          policy['id'], rule2['id'],
+                          **{qos_consts.DIRECTION: n_constants.ANY_DIRECTION})
+
+    @decorators.idempotent_id('c49018b6-d358-49a1-a94b-d53224165045')
+    def test_rule_delete(self):
+        policy = self.create_qos_policy(name='test-policy',
+                                        description='test policy',
+                                        shared=False)
+        rule = self._create_qos_min_pps_rule(
+            policy['id'],
+            {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 200})
+
+        retrieved_rule = self.min_pps_client.show_minimum_packet_rate_rule(
+            policy['id'], rule['id'])[self.RULE_NAME]
+        self.assertEqual(rule['id'], retrieved_rule['id'])
+
+        self.min_pps_client.delete_minimum_packet_rate_rule(policy['id'],
+                                                            rule['id'])
+        self.assertRaises(exceptions.NotFound,
+                          self.min_pps_client.show_minimum_packet_rate_rule,
+                          policy['id'], rule['id'])
+
+    @decorators.idempotent_id('1a6b6128-3d3e-11ec-bf49-57b326d417c0')
+    def test_rule_create_forbidden_for_regular_tenants(self):
+        self.assertRaises(
+            exceptions.Forbidden,
+            self.min_pps_client_primary.create_minimum_packet_rate_rule,
+            'policy', **{qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+                         qos_consts.MIN_KPPS: 300})
+
+    @decorators.idempotent_id('1b94f4e2-3d3e-11ec-bb21-6f98e4044b8b')
+    def test_get_rules_by_policy(self):
+        policy1 = self.create_qos_policy(name='test-policy1',
+                                         description='test policy1',
+                                         shared=False)
+        rule1 = self._create_qos_min_pps_rule(
+            policy1['id'],
+            {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 200})
+
+        policy2 = self.create_qos_policy(name='test-policy2',
+                                         description='test policy2',
+                                         shared=False)
+        rule2 = self._create_qos_min_pps_rule(
+            policy2['id'],
+            {qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+             qos_consts.MIN_KPPS: 5000})
+
+        # Test 'list rules'
+        rules = self.min_pps_client.list_minimum_packet_rate_rules(
+            policy1['id'])
+        rules = rules[self.RULES_NAME]
+        rules_ids = [r['id'] for r in rules]
+        self.assertIn(rule1['id'], rules_ids)
+        self.assertNotIn(rule2['id'], rules_ids)
+
+
 class QosSearchCriteriaTest(base.BaseSearchCriteriaTest,
                             base.BaseAdminNetworkTest):
 

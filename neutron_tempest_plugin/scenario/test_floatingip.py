@@ -18,6 +18,7 @@ import time
 from neutron_lib import constants as lib_constants
 from neutron_lib.services.qos import constants as qos_consts
 from neutron_lib.utils import test
+from oslo_log import log
 from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
@@ -37,6 +38,7 @@ from neutron_tempest_plugin.scenario import test_qos
 
 
 CONF = config.CONF
+LOG = log.getLogger(__name__)
 
 
 load_tests = testscenarios.load_tests_apply_scenarios
@@ -244,11 +246,17 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
             self._check_port_details(
                 fip, port, status=lib_constants.PORT_STATUS_ACTIVE,
                 device_id=server['server']['id'], device_owner='compute:nova')
+            LOG.debug('Port check for server %s and FIP %s finished, '
+                      'lets detach port %s from server!',
+                      server['server']['id'], fip['id'], port['id'])
 
             # detach the port from the server; this is a cast in the compute
             # API so we have to poll the port until the device_id is unset.
             self.delete_interface(server['server']['id'], port['id'])
             port = self._wait_for_port_detach(port['id'])
+            LOG.debug('Port %s has been detached from server %s, lets check '
+                      'the status of port in FIP %s details!',
+                      port['id'], server['server']['id'], fip['id'])
             fip = self._wait_for_fip_port_down(fip['id'])
             self._check_port_details(
                 fip, port, status=lib_constants.PORT_STATUS_DOWN,
@@ -323,6 +331,8 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
                            (fip_id, status, timeout, port))
                 raise exceptions.TimeoutException(message)
 
+        LOG.debug('Port %s attached to FIP %s is down after %s!',
+                  fip.get("port_id"), fip_id, int(time.time()) - start)
         return fip
 
 

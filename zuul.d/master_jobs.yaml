@@ -204,6 +204,16 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^neutron/services/ovn_l3/.*$
+      - ^neutron/services/logapi/drivers/ovn/.*$
+      - ^neutron/services/portforwarding/drivers/ovn/.*$
+      - ^neutron/services/qos/drivers/linuxbridge/.*$
+      - ^neutron/services/qos/drivers/ovn/.*$
+      - ^neutron/services/trunk/drivers/linuxbridge/.*$
+      - ^neutron/services/trunk/drivers/ovn/.*$
+      - ^neutron/cmd/ovn/.*$
+      - ^neutron/common/ovn/.*$
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -290,6 +300,16 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^neutron/services/ovn_l3/.*$
+      - ^neutron/services/logapi/drivers/ovn/.*$
+      - ^neutron/services/portforwarding/drivers/ovn/.*$
+      - ^neutron/services/qos/drivers/linuxbridge/.*$
+      - ^neutron/services/qos/drivers/ovn/.*$
+      - ^neutron/services/trunk/drivers/linuxbridge/.*$
+      - ^neutron/services/trunk/drivers/ovn/.*$
+      - ^neutron/cmd/ovn/.*$
+      - ^neutron/common/ovn/.*$
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -411,6 +431,17 @@
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
       - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^neutron/services/ovn_l3/.*$
+      - ^neutron/services/logapi/drivers/openvswitch/.*$
+      - ^neutron/services/logapi/drivers/ovn/.*$
+      - ^neutron/services/portforwarding/drivers/ovn/.*$
+      - ^neutron/services/qos/drivers/openvswitch/.*$
+      - ^neutron/services/qos/drivers/ovn/.*$
+      - ^neutron/services/trunk/drivers/openvswitch/.*$
+      - ^neutron/services/trunk/drivers/ovn/.*$
+      - ^neutron/cmd/ovn/.*$
+      - ^neutron/common/ovn/.*$
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -540,7 +571,12 @@
       - ^neutron/plugins/ml2/drivers/openvswitch/.*$
       - ^neutron/plugins/ml2/drivers/macvtap/.*$
       - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
+      - ^neutron/services/qos/drivers/linuxbridge/.*$
+      - ^neutron/services/qos/drivers/openvswitch/.*$
+      - ^neutron/services/trunk/drivers/linuxbridge/.*$
+      - ^neutron/services/trunk/drivers/openvswitch/.*$
       - ^neutron/scheduler/.*$
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -783,6 +819,7 @@
       - ^neutron/plugins/ml2/drivers/.*$
       - ^neutron/scheduler/.*$
       - ^neutron/services/(?!externaldns).*$
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -844,6 +881,7 @@
       - ^neutron/tests/unit/.*$
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
@@ -903,6 +941,7 @@
       - ^neutron/tests/unit/.*$
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
@@ -968,6 +1007,7 @@
       - ^neutron/tests/unit/.*$
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|sfc|tap_as_a_service|vpnaas).*$
       - ^tools/.*$
       - ^tox.ini$
@@ -1026,6 +1066,7 @@
       - ^neutron/tests/unit/.*$
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
@@ -1129,6 +1170,7 @@
       - ^neutron/tests/unit/.*$
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$

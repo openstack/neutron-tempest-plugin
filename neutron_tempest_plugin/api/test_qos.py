@@ -91,17 +91,19 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('f8d20e92-f06d-4805-b54f-230f77715815')
     def test_list_policy_filter_by_name(self):
-        self.create_qos_policy(name='test', description='test policy',
+        policy1 = 'test' + data_utils.rand_name("policy")
+        policy2 = 'test' + data_utils.rand_name("policy")
+        self.create_qos_policy(name=policy1, description='test policy',
                                shared=False)
-        self.create_qos_policy(name='test2', description='test policy',
+        self.create_qos_policy(name=policy2, description='test policy',
                                shared=False)
 
         policies = (self.admin_client.
-                    list_qos_policies(name='test')['policies'])
+                    list_qos_policies(name=policy1)['policies'])
         self.assertEqual(1, len(policies))
 
         retrieved_policy = policies[0]
-        self.assertEqual('test', retrieved_policy['name'])
+        self.assertEqual(policy1, retrieved_policy['name'])
 
     @decorators.idempotent_id('dde0b449-a400-4a87-b5a5-4d1c413c917b')
     def test_list_policy_sort_by_name(self):

@@ -41,6 +41,10 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         cls.qos_bw_limit_rule_client = \
             cls.os_admin.qos_limit_bandwidth_rules_client
 
+    def setUp(self):
+        super(QosTestJSON, self).setUp()
+        self.policy_name = data_utils.rand_name(name='test', prefix='policy')
+
     @staticmethod
     def _get_driver_details(rule_type_details, driver_name):
         for driver in rule_type_details['drivers']:
@@ -78,7 +82,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('606a48e2-5403-4052-b40f-4d54b855af76')
     @utils.requires_ext(extension="project-id", service="network")
     def test_show_policy_has_project_id(self):
-        policy = self.create_qos_policy(name='test-policy', shared=False)
+        policy = self.create_qos_policy(name=self.policy_name, shared=False)
         body = self.admin_client.show_qos_policy(policy['id'])
         show_policy = body['policy']
         self.assertIn('project_id', show_policy)
@@ -128,7 +132,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('8e88a54b-f0b2-4b7d-b061-a15d93c2c7d6')
     def test_policy_update(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='',
                                         shared=False,
                                         project_id=self.admin_client.tenant_id)
@@ -144,7 +148,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('6e880e0f-bbfc-4e54-87c6-680f90e1b618')
     def test_policy_update_forbidden_for_regular_tenants_own_policy(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='',
                                         shared=False,
                                         project_id=self.client.tenant_id)
@@ -155,7 +159,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('4ecfd7e7-47b6-4702-be38-be9235901a87')
     def test_policy_update_forbidden_for_regular_tenants_foreign_policy(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='',
                                         shared=False,
                                         project_id=self.admin_client.tenant_id)
@@ -166,7 +170,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('ee263db4-009a-4641-83e5-d0e83506ba4c')
     def test_shared_policy_update(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='',
                                         shared=True,
                                         project_id=self.admin_client.tenant_id)
@@ -249,7 +253,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('65b9ef75-1911-406a-bbdb-ca1d68d528b0')
     def test_policy_association_with_admin_network(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         network = self.create_network('test network', shared=True,
@@ -261,7 +265,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('1738de5d-0476-4163-9022-5e1b548c208e')
     def test_policy_association_with_tenant_network(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=True)
         network = self.create_network('test network',
@@ -281,7 +285,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('1aa55a79-324f-47d9-a076-894a8fc2448b')
     def test_policy_association_with_network_non_shared_policy(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self.assertRaises(
@@ -291,7 +295,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('09a9392c-1359-4cbb-989f-fb768e5834a8')
     def test_policy_update_association_with_admin_network(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         network = self.create_network('test network', shared=True)
@@ -306,7 +310,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('98fcd95e-84cf-4746-860e-44692e674f2e')
     def test_policy_association_with_port_shared_policy(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=True)
         network = self.create_network('test network', shared=True)
@@ -327,7 +331,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('f53d961c-9fe5-4422-8b66-7add972c6031')
     def test_policy_association_with_port_non_shared_policy(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         network = self.create_network('test network', shared=True)
@@ -338,7 +342,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('f8163237-fba9-4db5-9526-bad6d2343c76')
     def test_policy_update_association_with_port_shared_policy(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=True)
         network = self.create_network('test network', shared=True)
@@ -353,7 +357,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('18163237-8ba9-4db5-9525-bad6d2343c75')
     def test_delete_not_allowed_if_policy_in_use_by_network(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=True)
         self.create_network('test network', qos_policy_id=policy['id'],
@@ -364,7 +368,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('24153230-84a9-4dd5-9525-bad6d2343c75')
     def test_delete_not_allowed_if_policy_in_use_by_port(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=True)
         network = self.create_network('test network', shared=True)
@@ -375,7 +379,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('a2a5849b-dd06-4b18-9664-0b6828a1fc27')
     def test_qos_policy_delete_with_rules(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self._create_qos_bw_limit_rule(
@@ -404,7 +408,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('18d94f22-b9d5-4390-af12-d30a0cfc4cd3')
     def test_default_policy_creating_network_without_policy(self):
         project_id = self.create_project()['id']
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         project_id=project_id,
                                         is_default=True)
         network = self.create_network('test network', client=self.admin_client,
@@ -431,7 +435,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('06060880-2956-4c16-9a63-f284c3879229')
     def test_user_create_port_with_admin_qos_policy(self):
         qos_policy = self.create_qos_policy(
-            name='test-policy',
+            name=self.policy_name,
             project_id=self.admin_client.tenant_id,
             shared=False)
         network = self.create_network(
@@ -461,6 +465,10 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
     def resource_setup(cls):
         super(QosBandwidthLimitRuleTestJSON, cls).resource_setup()
 
+    def setUp(self):
+        super(QosBandwidthLimitRuleTestJSON, self).setUp()
+        self.policy_name = data_utils.rand_name(name='test', prefix='policy')
+
     def _create_qos_bw_limit_rule(self, policy_id, rule_data):
         rule = self.qos_bw_limit_rule_client.create_limit_bandwidth_rule(
             qos_policy_id=policy_id,
@@ -482,7 +490,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('8a59b00b-3e9c-4787-92f8-93a5cdf5e378')
     def test_rule_create(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self._create_qos_bw_limit_rule(
@@ -517,7 +525,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('8a59b00b-ab01-4787-92f8-93a5cdf5e378')
     def test_rule_create_fail_for_the_same_type(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self._create_qos_bw_limit_rule(
@@ -531,7 +539,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('149a6988-2568-47d2-931e-2dbc858943b3')
     def test_rule_update(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self._create_qos_bw_limit_rule(
@@ -557,7 +565,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('67ee6efd-7b33-4a68-927d-275b4f8ba958')
     def test_rule_delete(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self._create_qos_bw_limit_rule(
@@ -590,7 +598,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('1bfc55d9-6fd8-4293-ab3a-b1d69bf7cd2e')
     def test_rule_update_forbidden_for_regular_tenants_own_policy(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False,
                                         project_id=self.client.tenant_id)
@@ -605,7 +613,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('9a607936-4b6f-4c2f-ad21-bd5b3d4fc91f')
     def test_rule_update_forbidden_for_regular_tenants_foreign_policy(self):
         policy = self.create_qos_policy(
-            name='test-policy',
+            name=self.policy_name,
             description='test policy',
             shared=False,
             project_id=self.admin_client.tenant_id)
@@ -649,7 +657,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
         # As an admin create an non shared QoS policy,add a rule
         # and associate it with a network
         self.network = self.create_network()
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy for attach',
                                         shared=False)
         self._create_qos_bw_limit_rule(
@@ -700,10 +708,14 @@ class QosBandwidthLimitRuleWithDirectionTestJSON(
     def resource_setup(cls):
         super(QosBandwidthLimitRuleWithDirectionTestJSON, cls).resource_setup()
 
+    def setUp(self):
+        super(QosBandwidthLimitRuleWithDirectionTestJSON, self).setUp()
+        self.policy_name = data_utils.rand_name(name='test', prefix='policy')
+
     @decorators.idempotent_id('c8cbe502-0f7e-11ea-8d71-362b9e155667')
     def test_create_policy_with_multiple_rules(self):
         # Create a policy with multiple rules
-        policy = self.create_qos_policy(name='test-policy1',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy1',
                                         shared=False)
 
@@ -1002,9 +1014,13 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
     def resource_setup(cls):
         super(QosDscpMarkingRuleTestJSON, cls).resource_setup()
 
+    def setUp(self):
+        super(QosDscpMarkingRuleTestJSON, self).setUp()
+        self.policy_name = data_utils.rand_name(name='test', prefix='policy')
+
     @decorators.idempotent_id('f5cbaceb-5829-497c-9c60-ad70969e9a08')
     def test_rule_create(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self.admin_client.create_dscp_marking_rule(
@@ -1033,7 +1049,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('08553ffe-030f-4037-b486-7e0b8fb9385a')
     def test_rule_create_fail_for_the_same_type(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self.admin_client.create_dscp_marking_rule(
@@ -1046,7 +1062,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('76f632e5-3175-4408-9a32-3625e599c8a2')
     def test_rule_update(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self.admin_client.create_dscp_marking_rule(
@@ -1062,7 +1078,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('74f81904-c35f-48a3-adae-1f5424cb3c18')
     def test_rule_delete(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self.admin_client.create_dscp_marking_rule(
@@ -1094,7 +1110,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('33646b08-4f05-4493-a48a-bde768a18533')
     def test_invalid_rule_create(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self.assertRaises(
@@ -1161,7 +1177,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
 
         # Create QoS policy
         dscp_policy_id = self.create_qos_policy(
-            name='test-policy',
+            name=self.policy_name,
             description='test-qos-policy',
             shared=True)['id']
 
@@ -1209,9 +1225,13 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
         cls.qos_min_bw_rules_client_primary = \
             cls.os_primary.qos_minimum_bandwidth_rules_client
 
+    def setUp(self):
+        super(QosMinimumBandwidthRuleTestJSON, self).setUp()
+        self.policy_name = data_utils.rand_name(name='test', prefix='policy')
+
     @decorators.idempotent_id('aa59b00b-3e9c-4787-92f8-93a5cdf5e378')
     def test_rule_create(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self.qos_min_bw_rules_client.create_minimum_bandwidth_rule(
@@ -1245,7 +1265,7 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('266d9b87-e51c-48bd-9aa7-8269573621be')
     def test_rule_create_fail_for_missing_min_kbps(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self.assertRaises(
@@ -1256,7 +1276,7 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('aa59b00b-ab01-4787-92f8-93a5cdf5e378')
     def test_rule_create_fail_for_the_same_type(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self.qos_min_bw_rules_client.create_minimum_bandwidth_rule(
@@ -1275,7 +1295,7 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
     @utils.requires_ext(extension="qos-bw-minimum-ingress",
                         service="network")
     def test_rule_create_pass_for_direction_ingress(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self.qos_min_bw_rules_client.create_minimum_bandwidth_rule(
@@ -1292,7 +1312,7 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('a49a6988-2568-47d2-931e-2dbc858943b3')
     def test_rule_update(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self.qos_min_bw_rules_client.create_minimum_bandwidth_rule(
@@ -1313,7 +1333,7 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('a7ee6efd-7b33-4a68-927d-275b4f8ba958')
     def test_rule_delete(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self.qos_min_bw_rules_client.create_minimum_bandwidth_rule(
@@ -1394,6 +1414,10 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
         cls.min_pps_client_primary = \
             cls.os_primary.qos_minimum_packet_rate_rules_client
 
+    def setUp(self):
+        super(QosMinimumPpsRuleTestJSON, self).setUp()
+        self.policy_name = data_utils.rand_name(name='test', prefix='policy')
+
     def _create_qos_min_pps_rule(self, policy_id, rule_data):
         rule = self.min_pps_client.create_minimum_packet_rate_rule(
             policy_id, **rule_data)['minimum_packet_rate_rule']
@@ -1405,7 +1429,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('66a5b9b4-d4f9-4af8-b238-9e1881b78487')
     def test_rule_create(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self._create_qos_min_pps_rule(
@@ -1438,7 +1462,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('6b656b57-d2bf-47f9-89a9-1baad1bd5418')
     def test_rule_create_fail_for_missing_min_kpps(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self.assertRaises(exceptions.BadRequest,
@@ -1448,7 +1472,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('f41213e5-2ab8-4916-b106-38d2cac5e18c')
     def test_rule_create_fail_for_the_same_type(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self._create_qos_min_pps_rule(policy['id'],
@@ -1463,7 +1487,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('ceb8e41e-3d72-11ec-a446-d7faae6daec2')
     def test_rule_create_any_direction_when_egress_direction_exists(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self._create_qos_min_pps_rule(policy['id'],
@@ -1478,7 +1502,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('a147a71e-3d7b-11ec-8097-278b1afd5fa2')
     def test_rule_create_egress_direction_when_any_direction_exists(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         self._create_qos_min_pps_rule(policy['id'],
@@ -1493,7 +1517,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('522ed09a-1d7f-4c1b-9195-61f19caf916f')
     def test_rule_update(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self._create_qos_min_pps_rule(
@@ -1514,7 +1538,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('a020e186-3d60-11ec-88ca-d7f5eec22764')
     def test_rule_update_direction_conflict(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule1 = self._create_qos_min_pps_rule(
@@ -1543,7 +1567,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('c49018b6-d358-49a1-a94b-d53224165045')
     def test_rule_delete(self):
-        policy = self.create_qos_policy(name='test-policy',
+        policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self._create_qos_min_pps_rule(

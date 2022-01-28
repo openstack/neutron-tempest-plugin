@@ -55,8 +55,10 @@ class QosNegativeTestJSON(base.BaseAdminNetworkTest):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('0e85f3e4-7a93-4187-b847-8f4e835aae1b')
     def test_update_policy_with_too_long_name(self):
-        policy = self.create_qos_policy(name='test', description='test policy',
-                                        shared=False)
+        policy = self.create_qos_policy(
+            name=data_utils.rand_name('test', 'policy'),
+            description='test policy',
+            shared=False)
         self.assertRaises(lib_exc.BadRequest,
                           self.client.update_qos_policy, policy['id'],
                           name=LONG_NAME_NG)
@@ -64,8 +66,10 @@ class QosNegativeTestJSON(base.BaseAdminNetworkTest):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('925c7eaf-474b-4a02-a4ba-76a9f82bc45a')
     def test_update_policy_with_too_long_description(self):
-        policy = self.create_qos_policy(name='test', description='test policy',
-                                        shared=False)
+        policy = self.create_qos_policy(
+            name=data_utils.rand_name('test', 'policy'),
+            description='test policy',
+            shared=False)
         self.assertRaises(lib_exc.BadRequest,
                           self.client.update_qos_policy, policy['id'],
                           description=LONG_DESCRIPTION_NG)
@@ -100,9 +104,10 @@ class QosRuleNegativeBaseTestJSON(base.BaseAdminNetworkTest):
     def _test_rule_update_rule_nonexistent_policy(self, create_params,
                                                   update_params):
         non_exist_id = data_utils.rand_name('qos_policy')
-        policy = self.create_qos_policy(name='test-policy',
-                                        description='test policy',
-                                        shared=False)
+        policy = self.create_qos_policy(
+            name=data_utils.rand_name('test', 'policy'),
+            description='test policy',
+            shared=False)
         rule = self.rule_create_m(policy['id'], **create_params)
         if "minimum_bandwidth_rule" in rule.keys():
             rule_id = rule['minimum_bandwidth_rule']['id']

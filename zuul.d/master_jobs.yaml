@@ -463,15 +463,12 @@
       network_api_extensions: *api_extensions
       network_api_extensions_ovn:
         - vlan-transparent
-      # TODO(haleyb): Remove IPv6Test from blacklist when
-      # https://bugs.launchpad.net/neutron/+bug/1881558 is fixed.
       # TODO(slaweq): Remove test_trunk_subport_lifecycle test from the
       # blacklist when bug https://bugs.launchpad.net/neutron/+bug/1885900 will
       # be fixed
       # TODO(jlibosva): Remove the NetworkWritableMtuTest test from the list
       # once east/west fragmentation is supported in core OVN
       tempest_exclude_regex: "\
-          (?:neutron_tempest_plugin.scenario.test_ipv6.IPv6Test)|\
           (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_trunk_subport_lifecycle)|\
           (^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest)"
       devstack_localrc:

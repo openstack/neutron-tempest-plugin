@@ -99,8 +99,7 @@
       - ^tox.ini$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-scenario

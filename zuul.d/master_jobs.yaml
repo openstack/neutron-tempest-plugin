@@ -132,8 +132,7 @@
       - ^neutron_tempest_plugin/scenario/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch
@@ -221,8 +220,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
@@ -320,8 +318,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-distributed-dhcp
@@ -452,8 +449,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-scenario-ovn
@@ -587,8 +583,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
@@ -830,8 +825,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-sfc
@@ -894,8 +888,7 @@
       - ^tox.ini$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe
@@ -954,8 +947,7 @@
       - ^tox.ini$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing
@@ -1019,8 +1011,7 @@
       - ^tox.ini$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-vpnaas
@@ -1079,8 +1070,7 @@
       - ^tox.ini$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service
@@ -1183,5 +1173,4 @@
       - ^tox.ini$
       - ^rally-jobs/.*$
       - ^vagrant/.*$
-      - ^zuul.d/(queens|rocky|stein|train|ussuri)_jobs.yaml$
-      - ^zuul.d/base-nested-switch.yaml$
+      - ^zuul.d/(?!(project)).*\.yaml

@@ -391,6 +391,8 @@ class NetworkClientJSON(service_client.RestClient):
             update_body['ha'] = kwargs['ha']
         if 'routes' in kwargs:
             update_body['routes'] = kwargs['routes']
+        if 'enable_ndp_proxy' in kwargs:
+            update_body['enable_ndp_proxy'] = kwargs['enable_ndp_proxy']
         update_body = dict(router=update_body)
         update_body = jsonutils.dumps(update_body)
         resp, body = self.put(uri, update_body)
@@ -1132,3 +1134,44 @@ class NetworkClientJSON(service_client.RestClient):
         self.expected_success(200, resp.status)
         return service_client.ResponseBody(
             resp, jsonutils.loads(response_body))
+
+    def create_ndp_proxy(self, **kwargs):
+        uri = '%s/ndp_proxies' % self.uri_prefix
+        post_body = jsonutils.dumps({'ndp_proxy': kwargs})
+        resp, response_body = self.post(uri, post_body)
+        self.expected_success(201, resp.status)
+        body = jsonutils.loads(response_body)
+        return service_client.ResponseBody(resp, body)
+
+    def list_ndp_proxies(self, **kwargs):
+        uri = '%s/ndp_proxies' % self.uri_prefix
+        if kwargs:
+            uri += '?' + urlparse.urlencode(kwargs, doseq=1)
+        resp, response_body = self.get(uri)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(response_body)
+        return service_client.ResponseBody(resp, body)
+
+    def get_ndp_proxy(self, ndp_proxy_id):
+        uri = '%s/ndp_proxies/%s' % (self.uri_prefix, ndp_proxy_id)
+        get_resp, response_body = self.get(uri)
+        self.expected_success(200, get_resp.status)
+        body = jsonutils.loads(response_body)
+        return service_client.ResponseBody(get_resp, body)
+
+    def update_ndp_proxy(self, ndp_proxy_id, **kwargs):
+        uri = '%s/ndp_proxies/%s' % (self.uri_prefix, ndp_proxy_id)
+        get_resp, _ = self.get(uri)
+        self.expected_success(200, get_resp.status)
+        put_body = jsonutils.dumps({'ndp_proxy': kwargs})
+        put_resp, response_body = self.put(uri, put_body)
+        self.expected_success(200, put_resp.status)
+        body = jsonutils.loads(response_body)
+        return service_client.ResponseBody(put_resp, body)
+
+    def delete_ndp_proxy(self, ndp_proxy_id):
+        uri = '%s/ndp_proxies/%s' % (
+            self.uri_prefix, ndp_proxy_id)
+        resp, body = self.delete(uri)
+        self.expected_success(204, resp.status)
+        return service_client.ResponseBody(resp, body)

@@ -142,6 +142,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.trunks = []
         cls.network_segment_ranges = []
         cls.conntrack_helpers = []
+        cls.ndp_proxies = []
 
     @classmethod
     def reserve_external_subnet_cidrs(cls):
@@ -160,6 +161,10 @@ class BaseNetworkTest(test.BaseTestCase):
             # Clean up trunks
             for trunk in cls.trunks:
                 cls._try_delete_resource(cls.delete_trunk, trunk)
+
+            # Clean up ndp proxy
+            for ndp_proxy in cls.ndp_proxies:
+                cls._try_delete_resource(cls.delete_ndp_proxy, ndp_proxy)
 
             # Clean up port forwardings
             for pf in cls.port_forwardings:
@@ -1131,6 +1136,47 @@ class BaseNetworkTest(test.BaseTestCase):
 
         client = client or cth.get('client') or cls.client
         client.delete_conntrack_helper(cth['router_id'], cth['id'])
+
+    @classmethod
+    def create_ndp_proxy(cls, router_id, port_id, client=None, **kwargs):
+        """Creates a ndp proxy.
+
+        Create a ndp proxy and schedule it for later deletion.
+        If a client is passed, then it is used for deleting the NDP proxy too.
+
+        :param router_id: router ID where to create the ndp proxy.
+
+        :param port_id: port ID which the ndp proxy associate with
+
+        :param client: network client to be used for creating and cleaning up
+        the ndp proxy.
+
+        :param **kwargs: additional creation parameters to be forwarded to
+        networking server.
+        """
+        client = client or cls.client
+
+        data = {'router_id': router_id, 'port_id': port_id}
+        if kwargs:
+            data.update(kwargs)
+        ndp_proxy = client.create_ndp_proxy(**data)['ndp_proxy']
+
+        # save client to be used later in cls.delete_ndp_proxy
+        # for final cleanup
+        ndp_proxy['client'] = client
+        cls.ndp_proxies.append(ndp_proxy)
+        return ndp_proxy
+
+    @classmethod
+    def delete_ndp_proxy(cls, ndp_proxy, client=None):
+        """Delete ndp proxy
+
+        :param client: Client to be used
+        If client is not given it will use the client used to create
+        the ndp proxy, or cls.client if unknown.
+        """
+        client = client or ndp_proxy.get('client') or cls.client
+        client.delete_ndp_proxy(ndp_proxy['id'])
 
 
 class BaseAdminNetworkTest(BaseNetworkTest):

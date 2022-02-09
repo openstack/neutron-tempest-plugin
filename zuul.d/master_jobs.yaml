@@ -1011,6 +1011,43 @@
       - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
+    name: neutron-tempest-plugin-fwaas
+    parent: neutron-tempest-plugin-base
+    timeout: 10800
+    required-projects:
+      - openstack/devstack-gate
+      - openstack/neutron-fwaas
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - openstack/tempest
+    vars:
+      tempest_test_regex: ^neutron_tempest_plugin\.fwaas
+      devstack_plugins:
+        neutron-fwaas: https://opendev.org/openstack/neutron-fwaas.git
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
+      network_api_extensions_common: *api_extensions
+      network_api_extensions_fwaas:
+        - fwaas_v2
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_fwaas) | join(',') }}"
+        Q_AGENT: openvswitch
+        Q_ML2_TENANT_NETWORK_TYPE: vxlan
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
+      devstack_services:
+        # Disable OVN services
+        br-ex-tcpdump: false
+        br-int-flows: false
+        ovn-controller: false
+        ovn-northd: false
+        q-ovn-metadata-agent: false
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-meta: true
+        q-metering: true
+        q-l3: true
+
+- job:
     name: neutron-tempest-plugin-vpnaas
     parent: neutron-tempest-plugin-base
     timeout: 3900

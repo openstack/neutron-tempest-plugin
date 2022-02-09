@@ -202,6 +202,7 @@
         - neutron-tempest-plugin-dynamic-routing-victoria
         - neutron-tempest-plugin-dynamic-routing-wallaby
         - neutron-tempest-plugin-dynamic-routing-xena
+        - neutron-tempest-plugin-fwaas
         - neutron-tempest-plugin-vpnaas
         - neutron-tempest-plugin-vpnaas-victoria
         - neutron-tempest-plugin-vpnaas-wallaby
@@ -214,3 +215,4 @@
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-dynamic-routing
+        - neutron-tempest-plugin-fwaas

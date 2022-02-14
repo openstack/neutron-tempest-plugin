@@ -29,11 +29,14 @@ import eventlet
 
 from tempest.lib import exceptions
 
+from neutron_tempest_plugin import config
+
 
 SCHEMA_PORT_MAPPING = {
     "http": 80,
     "https": 443,
 }
+CONF = config.CONF
 
 
 class classproperty(object):
@@ -161,13 +164,20 @@ class StatefulConnection:
         return 'attempt_{}'.format(str(self.test_attempt).zfill(3))
 
     def _start_connection(self):
+        if CONF.neutron_plugin_options.default_image_is_advanced:
+            server_exec_method = self.server_ssh.execute_script
+            client_exec_method = self.client_ssh.execute_script
+        else:
+            server_exec_method = self.server_ssh.exec_command
+            client_exec_method = self.client_ssh.exec_command
+
         self.server_ssh.exec_command(
                 'echo "{}" > input.txt'.format(self.test_str))
-        self.server_ssh.exec_command('tail -f input.txt | nc -lp '
+        server_exec_method('tail -f input.txt | nc -lp '
                 '{} &> output.txt &'.format(self.port))
         self.client_ssh.exec_command(
                 'echo "{}" > input.txt'.format(self.test_str))
-        self.client_ssh.exec_command('tail -f input.txt | nc {} {} &>'
+        client_exec_method('tail -f input.txt | nc {} {} &>'
                 'output.txt &'.format(self.ip, self.port))
 
     def _test_connection(self):
@@ -203,9 +213,11 @@ class StatefulConnection:
                 self._test_connection, timeout=timeout, sleep=sleep_timer)
 
     def __exit__(self, type, value, traceback):
-        self.server_ssh.exec_command('sudo killall nc || killall nc')
+        self.server_ssh.exec_command('sudo killall nc || killall nc || '
+                                     'echo "True"')
         self.server_ssh.exec_command(
                 'sudo killall tail || killall tail || echo "True"')
-        self.client_ssh.exec_command('sudo killall nc || killall nc')
+        self.client_ssh.exec_command('sudo killall nc || killall nc || '
+                                     'echo "True"')
         self.client_ssh.exec_command(
                 'sudo killall tail || killall tail || echo "True"')

@@ -33,17 +33,47 @@ CONF = config.CONF
 LOG = log.getLogger(__name__)
 
 
-def turn_nic6_on(ssh, ipv6_port):
+def turn_nic6_on(ssh, ipv6_port, config_nic=True):
     """Turns the IPv6 vNIC on
 
     Required because guest images usually set only the first vNIC on boot.
     Searches for the IPv6 vNIC's MAC and brings it up.
+    # NOTE(slaweq): on RHEL based OS ifcfg file for new interface is
+    # needed to make IPv6 working on it, so if
+    # /etc/sysconfig/network-scripts directory exists ifcfg-%(nic)s file
+    # should be added in it
 
     @param ssh: RemoteClient ssh instance to server
     @param ipv6_port: port from IPv6 network attached to the server
     """
     ip_command = ip.IPCommand(ssh)
     nic = ip_command.get_nic_name_by_mac(ipv6_port['mac_address'])
+
+    if config_nic:
+        try:
+            if sysconfig_network_scripts_dir_exists(ssh):
+                ssh.execute_script(
+                    'echo -e "DEVICE=%(nic)s\\nNAME=%(nic)s\\nIPV6INIT=yes" | '
+                    'tee /etc/sysconfig/network-scripts/ifcfg-%(nic)s; '
+                    % {'nic': nic}, become_root=True)
+            if nmcli_command_exists(ssh):
+                ssh.execute_script('nmcli connection reload %s' % nic,
+                                   become_root=True)
+                ssh.execute_script('nmcli con mod %s ipv6.addr-gen-mode eui64'
+                                   % nic, become_root=True)
+                ssh.execute_script('nmcli connection up %s' % nic,
+                                   become_root=True)
+
+        except lib_exc.SSHExecCommandFailed as e:
+            # NOTE(slaweq): Sometimes it can happen that this SSH command
+            # will fail because of some error from network manager in
+            # guest os.
+            # But even then doing ip link set up below is fine and
+            # IP address should be configured properly.
+            LOG.debug("Error creating NetworkManager profile. "
+                      "Error message: %(error)s",
+                      {'error': e})
+
     ip_command.set_link(nic, "up")
 
 
@@ -74,6 +104,11 @@ def configure_eth_connection_profile_NM(ssh):
             LOG.debug("Error creating NetworkManager profile. "
                       "Error message: %(error)s",
                       {'error': e})
+
+
+def sysconfig_network_scripts_dir_exists(ssh):
+    return "False" not in ssh.execute_script(
+        'test -d /etc/sysconfig/network-scripts/ || echo "False"')
 
 
 def nmcli_command_exists(ssh):
@@ -122,23 +157,44 @@ class IPv6Test(base.BaseTempestTestCase):
                 if expected_address in ip_address:
                     return True
             return False
-
+        # Set NIC with IPv6 to be UP and wait until IPv6 address
+        # will be configured on this NIC
+        turn_nic6_on(ssh_client, ipv6_port, False)
+        # And check if IPv6 address will be properly configured
+        # on this NIC
         try:
-            # Set NIC with IPv6 to be UP and wait until IPv6 address will be
-            # configured on this NIC
-            turn_nic6_on(ssh_client, ipv6_port)
-            # And check if IPv6 address will be properly configured on this NIC
             utils.wait_until_true(
                 lambda: guest_has_address(ipv6_address),
-                timeout=120,
-                exception=RuntimeError(
-                    "Timed out waiting for IP address {!r} to be configured "
-                    "in the VM {!r}.".format(ipv6_address, vm['id'])))
-        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+                timeout=60)
+        except utils.WaitTimeout:
+            LOG.debug('Timeout without NM configuration')
+        except (lib_exc.SSHTimeout,
+                ssh_exc.AuthenticationException) as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output([vm])
             self._log_local_network_status()
             raise
+
+        if not guest_has_address(ipv6_address):
+            try:
+                # Set NIC with IPv6 to be UP and wait until IPv6 address
+                # will be configured on this NIC
+                turn_nic6_on(ssh_client, ipv6_port)
+                # And check if IPv6 address will be properly configured
+                # on this NIC
+                utils.wait_until_true(
+                    lambda: guest_has_address(ipv6_address),
+                    timeout=90,
+                    exception=RuntimeError(
+                        "Timed out waiting for IP address {!r} to be "
+                        "configured in the VM {!r}.".format(ipv6_address,
+                        vm['id'])))
+            except (lib_exc.SSHTimeout,
+                    ssh_exc.AuthenticationException) as ssh_e:
+                LOG.debug(ssh_e)
+                self._log_console_output([vm])
+                self._log_local_network_status()
+                raise
 
     def _test_ipv6_hotplug(self, ra_mode, address_mode):
         ipv6_networks = [self.create_network() for _ in range(2)]

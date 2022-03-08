@@ -62,7 +62,8 @@ class Client(ssh.Client):
             host=host, username=username, password=password, timeout=timeout,
             pkey=pkey, channel_timeout=channel_timeout,
             look_for_keys=look_for_keys, key_filename=key_filename, port=port,
-            proxy_client=proxy_client)
+            proxy_client=proxy_client,
+            ssh_key_type=CONF.validation.ssh_key_type)
 
     @classmethod
     def create_proxy_client(cls, look_for_keys=True, **kwargs):

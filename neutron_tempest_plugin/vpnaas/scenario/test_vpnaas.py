@@ -233,7 +233,8 @@ class Vpnaas(base.BaseTempestTestCase):
         left_server = self._create_server()
         ssh_client = ssh.Client(left_server['fip']['floating_ip_address'],
                                 CONF.validation.image_ssh_user,
-                                pkey=self.keypair['private_key'])
+                                pkey=self.keypair['private_key'],
+                                ssh_key_type=CONF.validation.ssh_key_type)
 
         # check LEFT -> RIGHT connectivity via VPN
         self.check_remote_connectivity(ssh_client, right_ip,

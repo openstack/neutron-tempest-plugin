@@ -46,6 +46,7 @@ class FWaaSScenarioTestBase(object):
             try:
                 client = ssh.Client(ip_address, username, pkey=private_key,
                                     channel_timeout=connect_timeout,
+                                    ssh_key_type=CONF.validation.ssh_key_type,
                                     **kwargs)
                 client.test_connection_auth()
                 self.assertTrue(should_connect, "Unexpectedly reachable")

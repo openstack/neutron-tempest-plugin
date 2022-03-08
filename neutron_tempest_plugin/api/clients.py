@@ -89,7 +89,8 @@ class Manager(clients.ServiceClients):
         self.interfaces_client = interfaces_client.InterfacesClient(
             self.auth_provider, **params)
         self.keypairs_client = keypairs_client.KeyPairsClient(
-            self.auth_provider, **params)
+            self.auth_provider, ssh_key_type=CONF.validation.ssh_key_type,
+            **params)
         self.hv_client = hypervisor_client.HypervisorClient(
             self.auth_provider, **params)
         self.az_client = availability_zone_client.AvailabilityZoneClient(

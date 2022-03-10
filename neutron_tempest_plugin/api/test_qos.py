@@ -1399,8 +1399,6 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
 
 
 class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
-    RULE_NAME = qos_consts.RULE_TYPE_MINIMUM_PACKET_RATE + "_rule"
-    RULES_NAME = RULE_NAME + "s"
     required_extensions = [qos_apidef.ALIAS]
 
     @classmethod
@@ -1419,6 +1417,8 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
     def setUp(self):
         super(QosMinimumPpsRuleTestJSON, self).setUp()
         self.policy_name = data_utils.rand_name(name='test', prefix='policy')
+        self.RULE_NAME = qos_consts.RULE_TYPE_MINIMUM_PACKET_RATE + "_rule"
+        self.RULES_NAME = self.RULE_NAME + "s"
 
     def _create_qos_min_pps_rule(self, policy_id, rule_data):
         rule = self.min_pps_client.create_minimum_packet_rate_rule(

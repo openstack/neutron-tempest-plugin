@@ -147,11 +147,16 @@ class DNSIntegrationAdminTests(BaseDNSIntegrationTests,
                 provider_segmentation_id=12345)
         cls.subnet2 = cls.create_subnet(cls.network2)
 
+    def _verify_dns_assignment(self, port):
+        expected_fqdn = '%s.%s' % (port['dns_name'], self.zone['name'])
+        self.assertEqual(expected_fqdn, port['dns_assignment'][0]['fqdn'])
+
     @decorators.idempotent_id('fa6477ce-a12b-41da-b671-5a3bbdafab07')
     def test_port_on_special_network(self):
         name = data_utils.rand_name('port-test')
         port = self.create_port(self.network2,
                                 dns_name=name)
+        self._verify_dns_assignment(port)
         addr = port['fixed_ips'][0]['ip_address']
         self._verify_dns_records(addr, name)
         self.client.delete_port(port['id'])

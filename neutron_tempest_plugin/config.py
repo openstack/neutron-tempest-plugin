@@ -220,6 +220,25 @@ sfc_group = cfg.OptGroup(name="sfc", title=("Networking-sfc Service Options"))
 CONF.register_group(sfc_group)
 CONF.register_opts(SfcGroup, group="sfc")
 
+
+TaasGroup = [
+    cfg.StrOpt('provider_physical_network',
+               default='',
+               help='Physical network to be used for creating SRIOV network.'),
+    cfg.StrOpt('provider_segmentation_id',
+               default='',
+               help='Segmentation-id to be used for creating SRIOV network.'),
+    cfg.StrOpt('vlan_filter',
+               default='',
+               help='Comma separated list of VLANs to be mirrored '
+                    'for a Tap-Flow.'),
+]
+taas_group = cfg.OptGroup(name='taas',
+                          title='TaaS Tempest Options')
+CONF.register_group(taas_group)
+CONF.register_opts(TaasGroup, group="taas")
+
+
 config_opts_translator = {
     'project_network_cidr': 'tenant_network_cidr',
     'project_network_v6_cidr': 'tenant_network_v6_cidr',

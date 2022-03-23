@@ -1,7 +1,7 @@
 - job:
-    name: neutron-tempest-plugin-api-xena
+    name: neutron-tempest-plugin-api-yoga
     parent: neutron-tempest-plugin-api
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
       # TODO(slaweq): find a way to put this list of extensions in
       # neutron repository and keep it different per branch,
@@ -48,6 +48,7 @@
         - pagination
         - port-device-profile
         - port-resource-request
+        - port-resource-request-groups
         - port-mac-address-regenerate
         - port-security
         - port-security-groups-filtering
@@ -76,6 +77,7 @@
         - standard-attr-segment
         - standard-attr-tag
         - standard-attr-timestamp
+        - stateful-security-group
         - subnet_allocation
         - subnet-dns-publish-fixed-ip
         - subnet-service-types
@@ -90,15 +92,15 @@
         - ipv6_metadata
 
 - job:
-    name: neutron-tempest-plugin-scenario-openvswitch-xena
+    name: neutron-tempest-plugin-scenario-openvswitch-yoga
     parent: neutron-tempest-plugin-scenario-openvswitch
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_openvswitch) | join(',') }}"
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -106,15 +108,15 @@
               available_features: "{{ network_available_features | join(',') }}"
 
 - job:
-    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-xena
+    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-yoga
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_openvswitch) | join(',') }}"
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -122,11 +124,11 @@
               available_features: "{{ network_available_features | join(',') }}"
 
 - job:
-    name: neutron-tempest-plugin-scenario-linuxbridge-xena
+    name: neutron-tempest-plugin-scenario-linuxbridge-yoga
     parent: neutron-tempest-plugin-scenario-linuxbridge
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:
@@ -138,14 +140,16 @@
               available_features: "{{ network_available_features | join(',') }}"
 
 - job:
-    name: neutron-tempest-plugin-scenario-ovn-xena
+    name: neutron-tempest-plugin-scenario-ovn-yoga
     parent: neutron-tempest-plugin-scenario-ovn
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions: *api_extensions
+      network_api_extensions_ovn:
+        - vlan-transparent
       devstack_localrc:
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_ovn) | join(',') }}"
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -153,57 +157,57 @@
               available_features: ""
 
 - job:
-    name: neutron-tempest-plugin-dvr-multinode-scenario-xena
+    name: neutron-tempest-plugin-dvr-multinode-scenario-yoga
     parent: neutron-tempest-plugin-dvr-multinode-scenario
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
       network_api_extensions_common: *api_extensions
-      branch_override: stable/xena
+      branch_override: stable/yoga
 
 - job:
-    name: neutron-tempest-plugin-designate-scenario-xena
+    name: neutron-tempest-plugin-designate-scenario-yoga
     parent: neutron-tempest-plugin-designate-scenario
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions_common: *api_extensions
 
 - job:
-    name: neutron-tempest-plugin-sfc-xena
+    name: neutron-tempest-plugin-sfc-yoga
     parent: neutron-tempest-plugin-sfc
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions_common: *api_extensions
 
 - job:
-    name: neutron-tempest-plugin-bgpvpn-bagpipe-xena
+    name: neutron-tempest-plugin-bgpvpn-bagpipe-yoga
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions: *api_extensions
 
 - job:
-    name: neutron-tempest-plugin-dynamic-routing-xena
+    name: neutron-tempest-plugin-dynamic-routing-yoga
     parent: neutron-tempest-plugin-dynamic-routing
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions_common: *api_extensions
 
 - job:
-    name: neutron-tempest-plugin-vpnaas-xena
+    name: neutron-tempest-plugin-vpnaas-yoga
     parent: neutron-tempest-plugin-vpnaas
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions_common: *api_extensions
 
 - job:
-    name: neutron-tempest-plugin-tap-as-a-service-xena
+    name: neutron-tempest-plugin-tap-as-a-service-yoga
     parent: neutron-tempest-plugin-tap-as-a-service
-    override-checkout: stable/xena
+    override-checkout: stable/yoga
     vars:
-      branch_override: stable/xena
+      branch_override: stable/yoga
       network_api_extensions_common: *api_extensions

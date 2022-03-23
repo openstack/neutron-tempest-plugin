@@ -177,6 +177,24 @@
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario-xena
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-yoga
+    check:
+      jobs:
+        - neutron-tempest-plugin-api-yoga
+        - neutron-tempest-plugin-scenario-linuxbridge-yoga
+        - neutron-tempest-plugin-scenario-openvswitch-yoga
+        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-yoga
+        - neutron-tempest-plugin-scenario-ovn-yoga
+        - neutron-tempest-plugin-designate-scenario-yoga
+    gate:
+      jobs:
+        - neutron-tempest-plugin-api-yoga
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-yoga
 
 - project:
     templates:
@@ -185,6 +203,7 @@
       - neutron-tempest-plugin-jobs-victoria
       - neutron-tempest-plugin-jobs-wallaby
       - neutron-tempest-plugin-jobs-xena
+      - neutron-tempest-plugin-jobs-yoga
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3
@@ -194,21 +213,26 @@
         - neutron-tempest-plugin-sfc-victoria
         - neutron-tempest-plugin-sfc-wallaby
         - neutron-tempest-plugin-sfc-xena
+        - neutron-tempest-plugin-sfc-yoga
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-bgpvpn-bagpipe-victoria
         - neutron-tempest-plugin-bgpvpn-bagpipe-wallaby
         - neutron-tempest-plugin-bgpvpn-bagpipe-xena
+        - neutron-tempest-plugin-bgpvpn-bagpipe-yoga
         - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-dynamic-routing-victoria
         - neutron-tempest-plugin-dynamic-routing-wallaby
         - neutron-tempest-plugin-dynamic-routing-xena
+        - neutron-tempest-plugin-dynamic-routing-yoga
         - neutron-tempest-plugin-fwaas
         - neutron-tempest-plugin-vpnaas
         - neutron-tempest-plugin-vpnaas-victoria
         - neutron-tempest-plugin-vpnaas-wallaby
         - neutron-tempest-plugin-vpnaas-xena
+        - neutron-tempest-plugin-vpnaas-yoga
         - neutron-tempest-plugin-tap-as-a-service
         - neutron-tempest-plugin-tap-as-a-service-xena
+        - neutron-tempest-plugin-tap-as-a-service-yoga
 
     gate:
       jobs:

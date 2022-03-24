@@ -106,9 +106,9 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-wallaby
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
-    override-checkout: stable-wallaby
+    override-checkout: stable/wallaby
     vars:
-      branch_override: stable-wallaby
+      branch_override: stable/wallaby
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:

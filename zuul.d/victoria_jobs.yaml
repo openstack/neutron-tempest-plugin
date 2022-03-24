@@ -142,9 +142,9 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-victoria
     parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
-    override-checkout: stable-victoria
+    override-checkout: stable/victoria
     vars:
-      branch_override: stable-victoria
+      branch_override: stable/victoria
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:

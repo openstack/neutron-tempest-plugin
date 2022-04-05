@@ -65,10 +65,10 @@ class TestSfc(base.SfcScenarioTest):
             port_security_enabled=False)
         self.router2 = self._create_router()
         self.router3 = self._create_router()
-        self.router2_net1 = self._create_port(self.net1['id'])
+        self.router2_net1 = self.create_port(self.net1['id'])
         self._add_router_interface(
             self.router2['id'], self.router2_net1['id'])
-        self.router3_net1 = self._create_port(self.net1['id'])
+        self.router3_net1 = self.create_port(self.net1['id'])
         self._add_router_interface(
             self.router3['id'], self.router3_net1['id'])
         self.router2_net1_fixed_ip = self.router2_net1[
@@ -1063,13 +1063,13 @@ class TestSfc(base.SfcScenarioTest):
         self
     ):
         self.router4 = self._create_router()
-        self.router4_net1 = self._create_port(self.net1['id'])
+        self.router4_net1 = self.create_port(self.net1['id'])
         self._add_router_interface(
             self.router4['id'], self.router4_net1['id'])
         self.router4_net1_fixed_ip = self.router4_net1[
             'fixed_ips'][0]['ip_address']
         self.router5 = self._create_router()
-        self.router5_net1 = self._create_port(self.net1['id'])
+        self.router5_net1 = self.create_port(self.net1['id'])
         self._add_router_interface(
             self.router5['id'], self.router5_net1['id'])
         self.router5_net1_fixed_ip = self.router5_net1[

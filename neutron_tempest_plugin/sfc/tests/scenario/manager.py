@@ -550,6 +550,7 @@ class NetworkScenarioTest(ScenarioTest):
         network has, a tenant router will be created and returned that
         routes traffic to the public network.
         """
+
         if not client:
             client = self.routers_client
         if not tenant_id:
@@ -584,12 +585,6 @@ class NetworkScenarioTest(ScenarioTest):
                         client.delete_router,
                         router['id'])
         return router
-
-    def _update_router_admin_state(self, router, admin_state_up):
-        kwargs = dict(admin_state_up=admin_state_up)
-        router = self.routers_client.update_router(
-            router['id'], **kwargs)['router']
-        self.assertEqual(admin_state_up, router['admin_state_up'])
 
     def create_networks(self, networks_client=None,
                         routers_client=None, subnets_client=None,

@@ -248,13 +248,6 @@ class NetworkScenarioTest(ScenarioTest):
                          % port_map)
         return port_map[0]
 
-    def _get_network_by_name(self, network_name):
-        net = self.os_admin.networks_client.list_networks(
-            name=network_name)['networks']
-        self.assertNotEmpty(net,
-                            "Unable to get network by name: %s" % network_name)
-        return net[0]
-
     def create_floating_ip(self, thing, external_network_id=None,
                            port_id=None, client=None):
         """Create a floating IP and associates to a resource/port on Neutron"""
@@ -277,33 +270,6 @@ class NetworkScenarioTest(ScenarioTest):
                         client.delete_floatingip,
                         floating_ip['id'])
         return floating_ip
-
-    def check_floating_ip_status(self, floating_ip, status):
-        """Verifies floatingip reaches the given status
-
-        :param dict floating_ip: floating IP dict to check status
-        :param status: target status
-        :raises: AssertionError if status doesn't match
-        """
-        floatingip_id = floating_ip['id']
-
-        def refresh():
-            result = (self.floating_ips_client.
-                      show_floatingip(floatingip_id)['floatingip'])
-            return status == result['status']
-
-        if not test_utils.call_until_true(refresh,
-                                          CONF.network.build_timeout,
-                                          CONF.network.build_interval):
-            floating_ip = self.floating_ips_client.show_floatingip(
-                floatingip_id)['floatingip']
-            self.assertEqual(status, floating_ip['status'],
-                             message="FloatingIP: {fp} is at status: {cst}. "
-                                     "failed  to reach status: {st}"
-                             .format(fp=floating_ip, cst=floating_ip['status'],
-                                     st=status))
-        LOG.info("FloatingIP: {fp} is at status: {st}"
-                 .format(fp=floating_ip, st=status))
 
     def _check_tenant_network_connectivity(self, server,
                                            username,
@@ -396,7 +362,7 @@ class NetworkScenarioTest(ScenarioTest):
             if not CONF.compute.fixed_network_name:
                 m = 'fixed_network_name must be specified in config'
                 raise lib_exc.InvalidConfiguration(m)
-            network = self._get_network_by_name(
+            network = self.get_network_by_name(
                 CONF.compute.fixed_network_name)
             router = None
             subnet = None

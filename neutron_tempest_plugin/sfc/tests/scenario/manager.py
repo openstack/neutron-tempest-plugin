@@ -28,14 +28,14 @@ from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import exceptions as lib_exc
-import tempest.test
+from tempest.scenario import manager
 
 CONF = config.CONF
 
 LOG = log.getLogger(__name__)
 
 
-class ScenarioTest(tempest.test.BaseTestCase):
+class ScenarioTest(manager.NetworkScenarioTest):
     """Base class for scenario tests. Uses tempest own clients. """
 
     credentials = ['primary']
@@ -488,22 +488,6 @@ class NetworkScenarioTest(ScenarioTest):
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         client.delete_floatingip,
                         floating_ip['id'])
-        return floating_ip
-
-    def _associate_floating_ip(self, floating_ip, server):
-        port_id, _ = self._get_server_port_id_and_ip4(server)
-        kwargs = dict(port_id=port_id)
-        floating_ip = self.floating_ips_client.update_floatingip(
-            floating_ip['id'], **kwargs)['floatingip']
-        self.assertEqual(port_id, floating_ip['port_id'])
-        return floating_ip
-
-    def _disassociate_floating_ip(self, floating_ip):
-        """:param floating_ip: floating_ips_client.create_floatingip"""
-        kwargs = dict(port_id=None)
-        floating_ip = self.floating_ips_client.update_floatingip(
-            floating_ip['id'], **kwargs)['floatingip']
-        self.assertIsNone(floating_ip['port_id'])
         return floating_ip
 
     def check_floating_ip_status(self, floating_ip, status):

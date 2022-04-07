@@ -23,14 +23,14 @@ from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import exceptions as lib_exc
-import tempest.test
+from tempest.scenario import manager
 
 CONF = config.CONF
 
 LOG = log.getLogger(__name__)
 
 
-class ScenarioTest(tempest.test.BaseTestCase):
+class ScenarioTest(manager.NetworkScenarioTest):
     """Base class for scenario tests. Uses tempest own clients. """
 
     credentials = ['primary']
@@ -55,30 +55,6 @@ class ScenarioTest(tempest.test.BaseTestCase):
     #
     # The create_[resource] functions only return body and discard the
     # resp part which is not used in scenario tests
-
-    def _create_port(self, network_id, client=None, namestart='port-quotatest',
-                     **kwargs):
-        if not client:
-            client = self.ports_client
-        name = data_utils.rand_name(namestart)
-        result = client.create_port(
-            name=name,
-            network_id=network_id,
-            **kwargs)
-        self.assertIsNotNone(result, 'Unable to allocate port')
-        port = result['port']
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        client.delete_port, port['id'])
-        return port
-
-    def create_keypair(self, client=None):
-        if not client:
-            client = self.keypairs_client
-        name = data_utils.rand_name(self.__class__.__name__)
-        # We don't need to create a keypair by pubkey in scenario
-        body = client.create_keypair(name=name)
-        self.addCleanup(client.delete_keypair, name)
-        return body['keypair']
 
     def get_remote_client(self, ip_address, username=None, private_key=None):
         """Get a SSH client to a remote server

@@ -1,8 +1,9 @@
 - job:
     name: neutron-tempest-plugin-api-yoga
-    parent: neutron-tempest-plugin-api
+    parent: neutron-tempest-plugin-base
     override-checkout: stable/yoga
     vars:
+      tempest_test_regex: ^neutron_tempest_plugin\.api
       # TODO(slaweq): find a way to put this list of extensions in
       # neutron repository and keep it different per branch,
       # then it could be removed from here
@@ -93,10 +94,14 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-yoga
-    parent: neutron-tempest-plugin-scenario-openvswitch
+    parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/yoga
     vars:
       branch_override: stable/yoga
+      tempest_test_regex: "\
+          (^neutron_tempest_plugin.scenario)|\
+          (^tempest.api.compute.servers.test_attach_interfaces)|\
+          (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:
@@ -109,10 +114,14 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-yoga
-    parent: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+    parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/yoga
     vars:
       branch_override: stable/yoga
+      tempest_test_regex: "\
+          (^neutron_tempest_plugin.scenario)|\
+          (^tempest.api.compute.servers.test_attach_interfaces)|\
+          (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:
@@ -125,10 +134,14 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-yoga
-    parent: neutron-tempest-plugin-scenario-linuxbridge
+    parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/yoga
     vars:
       branch_override: stable/yoga
+      tempest_test_regex: "\
+          (^neutron_tempest_plugin.scenario)|\
+          (^tempest.api.compute.servers.test_attach_interfaces)|\
+          (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_localrc:
@@ -141,10 +154,14 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-ovn-yoga
-    parent: neutron-tempest-plugin-scenario-ovn
+    parent: neutron-tempest-plugin-ovn
     override-checkout: stable/yoga
     vars:
       branch_override: stable/yoga
+      tempest_test_regex: "\
+          (^neutron_tempest_plugin.scenario)|\
+          (^tempest.api.compute.servers.test_attach_interfaces)|\
+          (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_api_extensions_ovn:
         - vlan-transparent

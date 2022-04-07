@@ -2,26 +2,24 @@
     name: neutron-tempest-plugin-jobs
     check:
       jobs:
-        - neutron-tempest-plugin-api
-        - neutron-tempest-plugin-scenario-linuxbridge
-        - neutron-tempest-plugin-scenario-openvswitch
-        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
-        - neutron-tempest-plugin-scenario-ovn
+        - neutron-tempest-plugin-linuxbridge
+        - neutron-tempest-plugin-openvswitch
+        - neutron-tempest-plugin-openvswitch-iptables_hybrid
+        - neutron-tempest-plugin-ovn
         - neutron-tempest-plugin-designate-scenario
     gate:
       jobs:
-        - neutron-tempest-plugin-api
-        - neutron-tempest-plugin-scenario-linuxbridge
-        - neutron-tempest-plugin-scenario-openvswitch
-        - neutron-tempest-plugin-scenario-ovn
-        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
+        - neutron-tempest-plugin-linuxbridge
+        - neutron-tempest-plugin-openvswitch
+        - neutron-tempest-plugin-ovn
+        - neutron-tempest-plugin-openvswitch-iptables_hybrid
     #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
     #              the experimental queue when it will be more stable
     experimental:
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario
-        - neutron-tempest-plugin-scenario-openvswitch-distributed-dhcp
-        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-distributed-dhcp
+        - neutron-tempest-plugin-openvswitch-distributed-dhcp
+        - neutron-tempest-plugin-openvswitch-iptables_hybrid-distributed-dhcp
 
 
 - project-template:

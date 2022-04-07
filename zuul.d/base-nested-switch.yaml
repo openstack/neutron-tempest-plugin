@@ -10,8 +10,8 @@
 
 # Base nested switch job for non EM releases
 - job:
-    name: neutron-tempest-plugin-scenario-nested-switch
-    parent: neutron-tempest-plugin-scenario
+    name: neutron-tempest-plugin-base-nested-switch
+    parent: neutron-tempest-plugin-base
     abstract: true
     branches: ^(?!stable/(queens|rocky|stein|train|ussuri)).*$
     # Comment nodeset and vars to switch back to non nested nodes
@@ -27,6 +27,6 @@
 # Base nested switch job for EM releases
 - job:
     name: neutron-tempest-plugin-scenario-nested-switch
-    parent: neutron-tempest-plugin-scenario
+    parent: neutron-tempest-plugin-base
     abstract: true
     branches: ^(stable/(queens|rocky|stein|train|ussuri)).*$

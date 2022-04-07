@@ -1,7 +1,7 @@
 - job:
     name: neutron-tempest-plugin-api-queens
     nodeset: openstack-single-node-xenial
-    parent: neutron-tempest-plugin-api
+    parent: neutron-tempest-plugin-base
     override-checkout: stable/queens
     required-projects:
       - openstack/neutron
@@ -25,6 +25,7 @@
         q-meta: true
         q-metering: true
       branch_override: stable/queens
+      tempest_test_regex: ^neutron_tempest_plugin\.api
       # TODO(slaweq): find a way to put this list of extensions in
       # neutron repository and keep it different per branch,
       # then it could be removed from here
@@ -113,7 +114,7 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-queens
-    parent: neutron-tempest-plugin-scenario-openvswitch
+    parent: neutron-tempest-plugin-openvswitch
     nodeset: openstack-single-node-xenial
     override-checkout: stable/queens
     required-projects:
@@ -123,6 +124,10 @@
       - openstack/tempest
     vars:
       branch_override: stable/queens
+      tempest_test_regex: "\
+          (^neutron_tempest_plugin.scenario)|\
+          (^tempest.api.compute.servers.test_attach_interfaces)|\
+          (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       devstack_local_conf:
@@ -155,7 +160,7 @@
 
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-queens
-    parent: neutron-tempest-plugin-scenario
+    parent: neutron-tempest-plugin-base
     nodeset: openstack-single-node-xenial
     timeout: 10000
     roles:
@@ -168,6 +173,10 @@
       - openstack/tempest
     vars:
       branch_override: stable/queens
+      tempest_test_regex: "\
+          (^neutron_tempest_plugin.scenario)|\
+          (^tempest.api.compute.servers.test_attach_interfaces)|\
+          (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
       # NOTE(bcafarel): remove DNS test as queens pinned version does not have

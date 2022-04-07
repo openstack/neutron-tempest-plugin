@@ -248,29 +248,6 @@ class NetworkScenarioTest(ScenarioTest):
                          % port_map)
         return port_map[0]
 
-    def create_floating_ip(self, thing, external_network_id=None,
-                           port_id=None, client=None):
-        """Create a floating IP and associates to a resource/port on Neutron"""
-        if not external_network_id:
-            external_network_id = CONF.network.public_network_id
-        if not client:
-            client = self.floating_ips_client
-        if not port_id:
-            port_id, ip4 = self._get_server_port_id_and_ip4(thing)
-        else:
-            ip4 = None
-        result = client.create_floatingip(
-            floating_network_id=external_network_id,
-            port_id=port_id,
-            tenant_id=thing['tenant_id'],
-            fixed_ip_address=ip4
-        )
-        floating_ip = result['floatingip']
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        client.delete_floatingip,
-                        floating_ip['id'])
-        return floating_ip
-
     def _check_tenant_network_connectivity(self, server,
                                            username,
                                            private_key,
@@ -339,56 +316,3 @@ class NetworkScenarioTest(ScenarioTest):
                         client.delete_router,
                         router['id'])
         return router
-
-    def create_networks(self, networks_client=None,
-                        routers_client=None, subnets_client=None,
-                        tenant_id=None, dns_nameservers=None,
-                        port_security_enabled=True):
-        """Create a network with a subnet connected to a router.
-
-        The baremetal driver is a special case since all nodes are
-        on the same shared network.
-
-        :param tenant_id: id of tenant to create resources in.
-        :param dns_nameservers: list of dns servers to send to subnet.
-        :returns: network, subnet, router
-        """
-        if CONF.network.shared_physical_network:
-            # NOTE(Shrews): This exception is for environments where tenant
-            # credential isolation is available, but network separation is
-            # not (the current baremetal case). Likely can be removed when
-            # test account mgmt is reworked:
-            # https://blueprints.launchpad.net/tempest/+spec/test-accounts
-            if not CONF.compute.fixed_network_name:
-                m = 'fixed_network_name must be specified in config'
-                raise lib_exc.InvalidConfiguration(m)
-            network = self.get_network_by_name(
-                CONF.compute.fixed_network_name)
-            router = None
-            subnet = None
-        else:
-            network = self._create_network(
-                networks_client=networks_client,
-                tenant_id=tenant_id,
-                port_security_enabled=port_security_enabled)
-            router = self._get_router(client=routers_client,
-                                      tenant_id=tenant_id)
-            subnet_kwargs = dict(network=network,
-                                 subnets_client=subnets_client,
-                                 routers_client=routers_client)
-            # use explicit check because empty list is a valid option
-            if dns_nameservers is not None:
-                subnet_kwargs['dns_nameservers'] = dns_nameservers
-            subnet = self._create_subnet(**subnet_kwargs)
-            if not routers_client:
-                routers_client = self.routers_client
-            router_id = router['id']
-            routers_client.add_router_interface(router_id,
-                                                subnet_id=subnet['id'])
-
-            # save a cleanup job to remove this association between
-            # router and subnet
-            self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                            routers_client.remove_router_interface, router_id,
-                            subnet_id=subnet['id'])
-        return network, subnet, router

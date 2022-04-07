@@ -61,8 +61,9 @@ class TestSfc(base.SfcScenarioTest):
 
         self.ssh_user = CONF.validation.image_ssh_user
         self.keypair = self.create_keypair()
-        self.net1, self.subnet1, self.router1 = self.create_networks(
-            port_security_enabled=False)
+        self.net1, self.subnet1, self.router1 = (
+            self.setup_network_subnet_with_router(port_security_enabled=False)
+        )
         self.router2 = self._create_router()
         self.router3 = self._create_router()
         self.router2_net1 = self.create_port(self.net1['id'])

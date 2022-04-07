@@ -131,26 +131,6 @@ class NetworkScenarioTest(ScenarioTest):
         if not CONF.service_available.neutron:
             raise cls.skipException('Neutron not available')
 
-    def _create_network(self, networks_client=None,
-                        tenant_id=None,
-                        namestart='network-smoke-',
-                        port_security_enabled=True):
-        if not networks_client:
-            networks_client = self.networks_client
-        if not tenant_id:
-            tenant_id = networks_client.tenant_id
-        name = data_utils.rand_name(namestart)
-        network_kwargs = dict(name=name, tenant_id=tenant_id)
-        network_kwargs['port_security_enabled'] = port_security_enabled
-        result = networks_client.create_network(**network_kwargs)
-        network = result['network']
-
-        self.assertEqual(network['name'], name)
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        networks_client.delete_network,
-                        network['id'])
-        return network
-
     def _get_server_port_id_and_ip4(self, server, ip_addr=None):
         ports = self.os_admin.ports_client.list_ports(
             device_id=server['id'], fixed_ip=ip_addr)['ports']
@@ -180,34 +160,6 @@ class NetworkScenarioTest(ScenarioTest):
                          "Unable to determine which port to target."
                          % port_map)
         return port_map[0]
-
-    def _get_router(self, client=None, tenant_id=None):
-        """Retrieve a router for the given tenant id.
-
-        If a public router has been configured, it will be returned.
-
-        If a public router has not been configured, but a public
-        network has, a tenant router will be created and returned that
-        routes traffic to the public network.
-        """
-
-        if not client:
-            client = self.routers_client
-        if not tenant_id:
-            tenant_id = client.tenant_id
-        router_id = CONF.network.public_router_id
-        network_id = CONF.network.public_network_id
-        if router_id:
-            body = client.show_router(router_id)
-            return body['router']
-        elif network_id:
-            router = self._create_router(client, tenant_id)
-            kwargs = {'external_gateway_info': dict(network_id=network_id)}
-            router = client.update_router(router['id'], **kwargs)['router']
-            return router
-        else:
-            raise Exception("Neither of 'public_router_id' or "
-                            "'public_network_id' has been defined.")
 
     def _create_router(self, client=None, tenant_id=None,
                        namestart='router-smoke'):

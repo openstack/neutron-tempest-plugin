@@ -14,7 +14,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import netaddr
 from oslo_log import log
 from oslo_utils import netutils
 
@@ -152,72 +151,6 @@ class NetworkScenarioTest(ScenarioTest):
                         network['id'])
         return network
 
-    def _create_subnet(self, network, subnets_client=None,
-                       routers_client=None, namestart='subnet-smoke',
-                       **kwargs):
-        """Create a subnet for the given network
-
-        within the cidr block configured for tenant networks.
-        """
-        if not subnets_client:
-            subnets_client = self.subnets_client
-        if not routers_client:
-            routers_client = self.routers_client
-
-        def cidr_in_use(cidr, tenant_id):
-            """Check cidr existence
-
-            :returns: True if subnet with cidr already exist in tenant
-                  False else
-            """
-            cidr_in_use = self.os_admin.subnets_client.list_subnets(
-                tenant_id=tenant_id, cidr=cidr)['subnets']
-            return len(cidr_in_use) != 0
-
-        ip_version = kwargs.pop('ip_version', 4)
-
-        if ip_version == 6:
-            tenant_cidr = netaddr.IPNetwork(
-                CONF.network.project_network_v6_cidr)
-            num_bits = CONF.network.project_network_v6_mask_bits
-        else:
-            tenant_cidr = netaddr.IPNetwork(CONF.network.project_network_cidr)
-            num_bits = CONF.network.project_network_mask_bits
-
-        result = None
-        str_cidr = None
-        # Repeatedly attempt subnet creation with sequential cidr
-        # blocks until an unallocated block is found.
-        for subnet_cidr in tenant_cidr.subnet(num_bits):
-            str_cidr = str(subnet_cidr)
-            if cidr_in_use(str_cidr, tenant_id=network['tenant_id']):
-                continue
-
-            subnet = dict(
-                name=data_utils.rand_name(namestart),
-                network_id=network['id'],
-                tenant_id=network['tenant_id'],
-                cidr=str_cidr,
-                ip_version=ip_version,
-                **kwargs
-            )
-            try:
-                result = subnets_client.create_subnet(**subnet)
-                break
-            except lib_exc.Conflict as e:
-                is_overlapping_cidr = 'overlaps with another subnet' in str(e)
-                if not is_overlapping_cidr:
-                    raise
-        self.assertIsNotNone(result, 'Unable to allocate tenant network')
-
-        subnet = result['subnet']
-        self.assertEqual(subnet['cidr'], str_cidr)
-
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        subnets_client.delete_subnet, subnet['id'])
-
-        return subnet
-
     def _get_server_port_id_and_ip4(self, server, ip_addr=None):
         ports = self.os_admin.ports_client.list_ports(
             device_id=server['id'], fixed_ip=ip_addr)['ports']
@@ -247,30 +180,6 @@ class NetworkScenarioTest(ScenarioTest):
                          "Unable to determine which port to target."
                          % port_map)
         return port_map[0]
-
-    def _check_tenant_network_connectivity(self, server,
-                                           username,
-                                           private_key,
-                                           should_connect=True,
-                                           servers_for_debug=None):
-        if not CONF.network.project_networks_reachable:
-            msg = 'Tenant networks not configured to be reachable.'
-            LOG.info(msg)
-            return
-        # The target login is assumed to have been configured for
-        # key-based authentication by cloud-init.
-        try:
-            for ip_addresses in server['addresses'].values():
-                for ip_address in ip_addresses:
-                    self.check_vm_connectivity(ip_address['addr'],
-                                               username,
-                                               private_key,
-                                               should_connect=should_connect)
-        except Exception as e:
-            LOG.exception('Tenant network connectivity check failed')
-            self.log_console_output(servers_for_debug)
-            self._log_net_info(e)
-            raise
 
     def _get_router(self, client=None, tenant_id=None):
         """Retrieve a router for the given tenant id.

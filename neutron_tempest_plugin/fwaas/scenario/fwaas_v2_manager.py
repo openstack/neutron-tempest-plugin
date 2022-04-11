@@ -249,11 +249,6 @@ class ScenarioTest(tempest.test.BaseTestCase):
                 LOG.debug("Server %s disappeared(deleted) while looking "
                           "for the console log", server['id'])
 
-    def _log_net_info(self, exc):
-        # network debug is called as part of ssh init
-        if not isinstance(exc, lib_exc.SSHTimeout):
-            LOG.debug('Network information on a devstack host')
-
     def ping_ip_address(self, ip_address, should_succeed=True,
                         ping_timeout=None, mtu=None):
         timeout = ping_timeout or CONF.validation.ping_timeout
@@ -320,27 +315,6 @@ class ScenarioTest(tempest.test.BaseTestCase):
         if should_connect:
             # no need to check ssh for negative connectivity
             self.get_remote_client(ip_address, username, private_key)
-
-    def check_public_network_connectivity(self, ip_address, username,
-                                          private_key, should_connect=True,
-                                          msg=None, servers=None, mtu=None):
-        # The target login is assumed to have been configured for
-        # key-based authentication by cloud-init.
-        LOG.debug('checking network connections to IP %s with user: %s',
-                  ip_address, username)
-        try:
-            self.check_vm_connectivity(ip_address,
-                                       username,
-                                       private_key,
-                                       should_connect=should_connect,
-                                       mtu=mtu)
-        except Exception:
-            ex_msg = 'Public network connectivity check failed'
-            if msg:
-                ex_msg += ": " + msg
-            LOG.exception(ex_msg)
-            self._log_console_output(servers)
-            raise
 
 
 class NetworkScenarioTest(ScenarioTest):
@@ -482,13 +456,6 @@ class NetworkScenarioTest(ScenarioTest):
                          % port_map)
         return port_map[0]
 
-    def _get_network_by_name(self, network_name):
-        net = self.os_admin.networks_client.list_networks(
-            name=network_name)['networks']
-        self.assertNotEqual(len(net), 0,
-                            "Unable to get network by name: %s" % network_name)
-        return net[0]
-
     def create_floating_ip(self, thing, external_network_id=None,
                            port_id=None, client=None):
         """Create a floating IP and associates to a resource/port on Neutron"""
@@ -511,97 +478,6 @@ class NetworkScenarioTest(ScenarioTest):
                         client.delete_floatingip,
                         floating_ip['id'])
         return floating_ip
-
-    def _associate_floating_ip(self, floating_ip, server):
-        port_id, _ = self._get_server_port_id_and_ip4(server)
-        kwargs = dict(port_id=port_id)
-        floating_ip = self.floating_ips_client.update_floatingip(
-            floating_ip['id'], **kwargs)['floatingip']
-        self.assertEqual(port_id, floating_ip['port_id'])
-        return floating_ip
-
-    def _disassociate_floating_ip(self, floating_ip):
-        """:param floating_ip: floating_ips_client.create_floatingip"""
-        kwargs = dict(port_id=None)
-        floating_ip = self.floating_ips_client.update_floatingip(
-            floating_ip['id'], **kwargs)['floatingip']
-        self.assertIsNone(floating_ip['port_id'])
-        return floating_ip
-
-    def check_floating_ip_status(self, floating_ip, status):
-        """Verifies floatingip reaches the given status
-
-        :param dict floating_ip: floating IP dict to check status
-        :param status: target status
-        :raises: AssertionError if status doesn't match
-        """
-        floatingip_id = floating_ip['id']
-
-        def refresh():
-            result = (self.floating_ips_client.
-                      show_floatingip(floatingip_id)['floatingip'])
-            return status == result['status']
-
-        test_utils.call_until_true(refresh,
-                                   CONF.network.build_timeout,
-                                   CONF.network.build_interval)
-        floating_ip = self.floating_ips_client.show_floatingip(
-            floatingip_id)['floatingip']
-        self.assertEqual(status, floating_ip['status'],
-                         message="FloatingIP: {fp} is at status: {cst}. "
-                                 "failed  to reach status: {st}"
-                         .format(fp=floating_ip, cst=floating_ip['status'],
-                                 st=status))
-        LOG.info("FloatingIP: {fp} is at status: {st}"
-                 .format(fp=floating_ip, st=status))
-
-    def _check_tenant_network_connectivity(self, server,
-                                           username,
-                                           private_key,
-                                           should_connect=True,
-                                           servers_for_debug=None):
-        if not CONF.network.project_networks_reachable:
-            msg = 'Tenant networks not configured to be reachable.'
-            LOG.info(msg)
-            return
-        # The target login is assumed to have been configured for
-        # key-based authentication by cloud-init.
-        try:
-            for net_name, ip_addresses in server['addresses'].items():
-                for ip_address in ip_addresses:
-                    self.check_vm_connectivity(ip_address['addr'],
-                                               username,
-                                               private_key,
-                                               should_connect=should_connect)
-        except Exception as e:
-            LOG.exception('Tenant network connectivity check failed')
-            self._log_console_output(servers_for_debug)
-            self._log_net_info(e)
-            raise
-
-    def _check_remote_connectivity(self, source, dest, should_succeed=True,
-                                   nic=None):
-        """check ping server via source ssh connection
-
-        :param source: RemoteClient: an ssh connection from which to ping
-        :param dest: and IP to ping against
-        :param should_succeed: boolean should ping succeed or not
-        :param nic: specific network interface to ping from
-        :returns: boolean -- should_succeed == ping
-        :returns: ping is false if ping failed
-        """
-        def ping_remote():
-            try:
-                source.ping_host(dest, nic=nic)
-            except lib_exc.SSHExecCommandFailed:
-                LOG.warning('Failed to ping IP: %s via a ssh connection '
-                            'from: %s.', dest, source.ssh_client.host)
-                return not should_succeed
-            return should_succeed
-
-        return test_utils.call_until_true(ping_remote,
-                                          CONF.validation.ping_timeout,
-                                          1)
 
     def _create_security_group(self, security_group_rules_client=None,
                                tenant_id=None,
@@ -773,33 +649,6 @@ class NetworkScenarioTest(ScenarioTest):
 
         return rules
 
-    def _get_router(self, client=None, tenant_id=None):
-        """Retrieve a router for the given tenant id.
-
-        If a public router has been configured, it will be returned.
-
-        If a public router has not been configured, but a public
-        network has, a tenant router will be created and returned that
-        routes traffic to the public network.
-        """
-        if not client:
-            client = self.routers_client
-        if not tenant_id:
-            tenant_id = client.tenant_id
-        router_id = CONF.network.public_router_id
-        network_id = CONF.network.public_network_id
-        if router_id:
-            body = client.show_router(router_id)
-            return body['router']
-        elif network_id:
-            router = self._create_router(client, tenant_id)
-            kwargs = {'external_gateway_info': dict(network_id=network_id)}
-            router = client.update_router(router['id'], **kwargs)['router']
-            return router
-        else:
-            raise Exception("Neither of 'public_router_id' or "
-                            "'public_network_id' has been defined.")
-
     def _create_router(self, client=None, tenant_id=None,
                        namestart='router-smoke'):
         if not client:
@@ -816,62 +665,3 @@ class NetworkScenarioTest(ScenarioTest):
                         client.delete_router,
                         router['id'])
         return router
-
-    def _update_router_admin_state(self, router, admin_state_up):
-        kwargs = dict(admin_state_up=admin_state_up)
-        router = self.routers_client.update_router(
-            router['id'], **kwargs)['router']
-        self.assertEqual(admin_state_up, router['admin_state_up'])
-
-    def create_networks(self, networks_client=None,
-                        routers_client=None, subnets_client=None,
-                        tenant_id=None, dns_nameservers=None,
-                        port_security_enabled=True):
-        """Create a network with a subnet connected to a router.
-
-        The baremetal driver is a special case since all nodes are
-        on the same shared network.
-
-        :param tenant_id: id of tenant to create resources in.
-        :param dns_nameservers: list of dns servers to send to subnet.
-        :returns: network, subnet, router
-        """
-        if CONF.network.shared_physical_network:
-            # NOTE(Shrews): This exception is for environments where tenant
-            # credential isolation is available, but network separation is
-            # not (the current baremetal case). Likely can be removed when
-            # test account mgmt is reworked:
-            # https://blueprints.launchpad.net/tempest/+spec/test-accounts
-            if not CONF.compute.fixed_network_name:
-                m = 'fixed_network_name must be specified in config'
-                raise lib_exc.InvalidConfiguration(m)
-            network = self._get_network_by_name(
-                CONF.compute.fixed_network_name)
-            router = None
-            subnet = None
-        else:
-            network = self._create_network(
-                networks_client=networks_client,
-                tenant_id=tenant_id,
-                port_security_enabled=port_security_enabled)
-            router = self._get_router(client=routers_client,
-                                      tenant_id=tenant_id)
-            subnet_kwargs = dict(network=network,
-                                 subnets_client=subnets_client,
-                                 routers_client=routers_client)
-            # use explicit check because empty list is a valid option
-            if dns_nameservers is not None:
-                subnet_kwargs['dns_nameservers'] = dns_nameservers
-            subnet = self._create_subnet(**subnet_kwargs)
-            if not routers_client:
-                routers_client = self.routers_client
-            router_id = router['id']
-            routers_client.add_router_interface(router_id,
-                                                subnet_id=subnet['id'])
-
-            # save a cleanup job to remove this association between
-            # router and subnet
-            self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                            routers_client.remove_router_interface, router_id,
-                            subnet_id=subnet['id'])
-        return network, subnet, router

@@ -16,7 +16,6 @@
 
 import netaddr
 from oslo_log import log
-from oslo_utils import netutils
 
 from tempest.common.utils.linux import remote_client
 from tempest import config
@@ -221,59 +220,6 @@ class NetworkScenarioTest(ScenarioTest):
                         subnets_client.delete_subnet, subnet['id'])
 
         return subnet
-
-    def _get_server_port_id_and_ip4(self, server, ip_addr=None):
-        ports = self.os_admin.ports_client.list_ports(
-            device_id=server['id'], fixed_ip=ip_addr)['ports']
-        # A port can have more than one IP address in some cases.
-        # If the network is dual-stack (IPv4 + IPv6), this port is associated
-        # with 2 subnets
-        p_status = ['ACTIVE']
-        # NOTE(vsaienko) With Ironic, instances live on separate hardware
-        # servers. Neutron does not bind ports for Ironic instances, as a
-        # result the port remains in the DOWN state.
-        # TODO(vsaienko) remove once bug: #1599836 is resolved.
-        if getattr(CONF.service_available, 'ironic', False):
-            p_status.append('DOWN')
-        port_map = [(p["id"], fxip["ip_address"])
-                    for p in ports
-                    for fxip in p["fixed_ips"]
-                    if (netutils.is_valid_ipv4(fxip["ip_address"]) and
-                        p['status'] in p_status)]
-        inactive = [p for p in ports if p['status'] != 'ACTIVE']
-        if inactive:
-            LOG.warning("Instance has ports that are not ACTIVE: %s", inactive)
-
-        self.assertNotEqual(0, len(port_map),
-                            "No IPv4 addresses found in: %s" % ports)
-        self.assertEqual(len(port_map), 1,
-                         "Found multiple IPv4 addresses: %s. "
-                         "Unable to determine which port to target."
-                         % port_map)
-        return port_map[0]
-
-    def create_floating_ip(self, thing, external_network_id=None,
-                           port_id=None, client=None):
-        """Create a floating IP and associates to a resource/port on Neutron"""
-        if not external_network_id:
-            external_network_id = CONF.network.public_network_id
-        if not client:
-            client = self.floating_ips_client
-        if not port_id:
-            port_id, ip4 = self._get_server_port_id_and_ip4(thing)
-        else:
-            ip4 = None
-        result = client.create_floatingip(
-            floating_network_id=external_network_id,
-            port_id=port_id,
-            tenant_id=thing['tenant_id'],
-            fixed_ip_address=ip4
-        )
-        floating_ip = result['floatingip']
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        client.delete_floatingip,
-                        floating_ip['id'])
-        return floating_ip
 
     def _create_router(self, client=None, tenant_id=None,
                        namestart='router-smoke'):

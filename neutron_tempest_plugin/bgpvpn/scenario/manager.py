@@ -90,27 +90,10 @@ class ScenarioTest(manager.NetworkScenarioTest):
             if caller:
                 message = '(%s) %s' % (caller, message)
             LOG.exception(message)
-            self._log_console_output()
+            self.log_console_output()
             raise
 
         return linux_client
-
-    def _log_console_output(self, servers=None):
-        if not CONF.compute_feature_enabled.console_output:
-            LOG.debug('Console output not supported, cannot log')
-            return
-        if not servers:
-            servers = self.servers_client.list_servers()
-            servers = servers['servers']
-        for server in servers:
-            try:
-                console_output = self.servers_client.get_console_output(
-                    server['id'])['output']
-                LOG.debug('Console output for %s\nbody=\n%s',
-                          server['id'], console_output)
-            except lib_exc.NotFound:
-                LOG.debug("Server %s disappeared(deleted) while looking "
-                          "for the console log", server['id'])
 
 
 class NetworkScenarioTest(ScenarioTest):
@@ -135,29 +118,6 @@ class NetworkScenarioTest(ScenarioTest):
         if not utils.is_extension_enabled('bgpvpn', 'network'):
             msg = "Bgpvpn extension not enabled."
             raise cls.skipException(msg)
-
-    def _create_network(self, networks_client=None,
-                        tenant_id=None,
-                        namestart='network-smoke-',
-                        port_security_enabled=True):
-        if not networks_client:
-            networks_client = self.networks_client
-        if not tenant_id:
-            tenant_id = networks_client.tenant_id
-        name = data_utils.rand_name(namestart)
-        network_kwargs = dict(name=name, tenant_id=tenant_id)
-        # Neutron disables port security by default so we have to check the
-        # config before trying to create the network with port_security_enabled
-        if CONF.network_feature_enabled.port_security:
-            network_kwargs['port_security_enabled'] = port_security_enabled
-        result = networks_client.create_network(**network_kwargs)
-        network = result['network']
-
-        self.assertEqual(network['name'], name)
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        networks_client.delete_network,
-                        network['id'])
-        return network
 
     def _get_server_port_id_and_ip4(self, server, ip_addr=None):
         ports = self.os_admin.ports_client.list_ports(

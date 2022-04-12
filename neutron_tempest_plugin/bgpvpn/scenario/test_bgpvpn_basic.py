@@ -1113,8 +1113,9 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         if not subnet_cidrs:
             subnet_cidrs = [[NET_A_S1], [NET_B_S1], [NET_C_S1]]
         for (name, subnet_cidrs) in zip(names, subnet_cidrs):
-            network = self._create_network(
-                namestart=name, port_security_enabled=port_security)
+            network = super(manager.NetworkScenarioTest,
+                            self).create_network(namestart=name,
+                    port_security_enabled=port_security)
             self.networks[name] = network
             self.subnets[name] = []
             for (j, cidr) in enumerate(subnet_cidrs):

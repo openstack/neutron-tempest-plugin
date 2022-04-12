@@ -1103,8 +1103,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._check_l3_bgpvpn(should_succeed=False)
 
     def _create_security_group_for_test(self):
-        self.security_group = self._create_security_group(
-            tenant_id=self.bgpvpn_client.tenant_id)
+        self.security_group = self.create_security_group(
+            project_id=self.bgpvpn_client.project_id)
 
     def _create_networks_and_subnets(self, names=None, subnet_cidrs=None,
                                      port_security=True):

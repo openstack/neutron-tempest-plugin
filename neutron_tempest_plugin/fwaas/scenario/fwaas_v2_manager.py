@@ -20,10 +20,8 @@ import netaddr
 from oslo_log import log
 from oslo_utils import netutils
 
-from tempest.common import compute
 from tempest.common.utils.linux import remote_client
 from tempest.common.utils import net_utils
-from tempest.common import waiters
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
@@ -70,104 +68,6 @@ class ScenarioTest(manager.NetworkScenarioTest):
     #
     # The create_[resource] functions only return body and discard the
     # resp part which is not used in scenario tests
-
-    def create_server(self, name=None, image_id=None, flavor=None,
-                      validatable=False, wait_until='ACTIVE',
-                      clients=None, **kwargs):
-        """Wrapper utility that returns a test server.
-
-        This wrapper utility calls the common create test server and
-        returns a test server. The purpose of this wrapper is to minimize
-        the impact on the code of the tests already using this
-        function.
-        """
-
-        # NOTE(jlanoux): As a first step, ssh checks in the scenario
-        # tests need to be run regardless of the run_validation and
-        # validatable parameters and thus until the ssh validation job
-        # becomes voting in CI. The test resources management and IP
-        # association are taken care of in the scenario tests.
-        # Therefore, the validatable parameter is set to false in all
-        # those tests. In this way create_server just return a standard
-        # server and the scenario tests always perform ssh checks.
-
-        # Needed for the cross_tenant_traffic test:
-        if clients is None:
-            clients = self.os_primary
-
-        if name is None:
-            name = data_utils.rand_name(self.__class__.__name__ + "-server")
-
-        vnic_type = CONF.network.port_vnic_type
-
-        # If vnic_type is configured create port for
-        # every network
-        if vnic_type:
-            ports = []
-
-            create_port_body = {'binding:vnic_type': vnic_type,
-                                'namestart': 'port-smoke'}
-            if kwargs:
-                # Convert security group names to security group ids
-                # to pass to create_port
-                if 'security_groups' in kwargs:
-                    security_groups = \
-                        clients.security_groups_client.list_security_groups(
-                        ).get('security_groups')
-                    sec_dict = dict([(s['name'], s['id'])
-                                    for s in security_groups])
-
-                    sec_groups_names = [s['name'] for s in kwargs.pop(
-                        'security_groups')]
-                    security_groups_ids = [sec_dict[s]
-                                           for s in sec_groups_names]
-
-                    if security_groups_ids:
-                        create_port_body[
-                            'security_groups'] = security_groups_ids
-                networks = kwargs.pop('networks', [])
-            else:
-                networks = []
-
-            # If there are no networks passed to us we look up
-            # for the project's private networks and create a port.
-            # The same behaviour as we would expect when passing
-            # the call to the clients with no networks
-            if not networks:
-                networks = clients.networks_client.list_networks(
-                    **{'router:external': False, 'fields': 'id'})['networks']
-
-            # It's net['uuid'] if networks come from kwargs
-            # and net['id'] if they come from
-            # clients.networks_client.list_networks
-            for net in networks:
-                net_id = net.get('uuid', net.get('id'))
-                if 'port' not in net:
-                    port = self.create_port(network_id=net_id,
-                                            client=clients.ports_client,
-                                            **create_port_body)
-                    ports.append({'port': port['id']})
-                else:
-                    ports.append({'port': net['port']})
-            if ports:
-                kwargs['networks'] = ports
-            self.ports = ports
-
-        tenant_network = self.get_tenant_network()
-
-        body, servers = compute.create_test_server(
-            clients,
-            tenant_network=tenant_network,
-            wait_until=wait_until,
-            name=name, flavor=flavor,
-            image_id=image_id, **kwargs)
-
-        self.addCleanup(waiters.wait_for_server_termination,
-                        clients.servers_client, body['id'])
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        clients.servers_client.delete_server, body['id'])
-        server = clients.servers_client.show_server(body['id'])['server']
-        return server
 
     def get_remote_client(self, ip_address, username=None, private_key=None):
         """Get a SSH client to a remote server
@@ -312,29 +212,6 @@ class NetworkScenarioTest(ScenarioTest):
         super(NetworkScenarioTest, cls).skip_checks()
         if not CONF.service_available.neutron:
             raise cls.skipException('Neutron not available')
-
-    def _create_network(self, networks_client=None,
-                        tenant_id=None,
-                        namestart='network-smoke-',
-                        port_security_enabled=True):
-        if not networks_client:
-            networks_client = self.networks_client
-        if not tenant_id:
-            tenant_id = networks_client.tenant_id
-        name = data_utils.rand_name(namestart)
-        network_kwargs = dict(name=name, tenant_id=tenant_id)
-        # Neutron disables port security by default so we have to check the
-        # config before trying to create the network with port_security_enabled
-        if CONF.network_feature_enabled.port_security:
-            network_kwargs['port_security_enabled'] = port_security_enabled
-        result = networks_client.create_network(**network_kwargs)
-        network = result['network']
-
-        self.assertEqual(network['name'], name)
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        networks_client.delete_network,
-                        network['id'])
-        return network
 
     def _create_subnet(self, network, subnets_client=None,
                        routers_client=None, namestart='subnet-smoke',

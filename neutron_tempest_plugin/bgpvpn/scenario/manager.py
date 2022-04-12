@@ -34,22 +34,6 @@ class ScenarioTest(manager.NetworkScenarioTest):
 
     credentials = ['primary']
 
-    @classmethod
-    def setup_clients(cls):
-        super(ScenarioTest, cls).setup_clients()
-        # Clients (in alphabetical order)
-        cls.keypairs_client = cls.os_primary.keypairs_client
-        cls.servers_client = cls.os_primary.servers_client
-        # Neutron network client
-        cls.networks_client = cls.os_primary.networks_client
-        cls.ports_client = cls.os_primary.ports_client
-        cls.routers_client = cls.os_primary.routers_client
-        cls.subnets_client = cls.os_primary.subnets_client
-        cls.floating_ips_client = cls.os_primary.floating_ips_client
-        cls.security_groups_client = cls.os_primary.security_groups_client
-        cls.security_group_rules_client = (
-            cls.os_primary.security_group_rules_client)
-
     # ## Test functions library
     #
     # The create_[resource] functions only return body and discard the

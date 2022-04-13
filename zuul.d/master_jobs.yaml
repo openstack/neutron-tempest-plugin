@@ -381,9 +381,13 @@
       # test_established_tcp_session_after_re_attachinging_sg from the
       # exclude regex when bug https://bugs.launchpad.net/neutron/+bug/1936911
       # will be fixed
+      # TODO(slaweq) remove test_floatingip_port_details from the exclude
+      # regex when bug https://bugs.launchpad.net/neutron/+bug/1799790 will be
+      # fixed
       tempest_exclude_regex: "\
           (^neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest)|\
-          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)"
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)|\
+          (^neutron_tempest_plugin.scenario.test_floatingip.FloatingIPPortDetailsTest.test_floatingip_port_details)"
       devstack_localrc:
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_linuxbridge) | join(',') }}"

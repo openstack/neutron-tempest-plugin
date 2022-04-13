@@ -132,7 +132,7 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
     def _create_network_subnet(self):
         network = self.create_network()
         subnet_kwargs = dict(network=network)
-        subnet = self._create_subnet(**subnet_kwargs)
+        subnet = self.create_subnet(**subnet_kwargs)
         return network, subnet
 
     def _create_test_server(self, network, security_group):

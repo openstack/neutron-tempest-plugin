@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib import constants
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
@@ -91,7 +92,13 @@ class RoutersNegativePolicyTest(RoutersNegativeTestBase):
         self.create_router_interface(self.router['id'], subnet['id'])
         port_ids = [
             item['id'] for item in self.admin_client.list_ports(
-                device_id=self.router['id'])['ports']]
+                device_id=self.router['id'])['ports']
+            if item['device_owner'] not in [
+                constants.DEVICE_OWNER_ROUTER_HA_INTF,
+                constants.DEVICE_OWNER_HA_REPLICATED_INT]]
+        if not port_ids:
+            self.fail("No ports other than HA ports found for the router %s" %
+                      self.router['id'])
         for port_id in port_ids:
             with testtools.ExpectedException(lib_exc.Conflict):
                 self.admin_client.delete_port(port_id)

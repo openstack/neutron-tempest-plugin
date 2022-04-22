@@ -61,30 +61,6 @@ class ScenarioTest(manager.NetworkScenarioTest):
     # The create_[resource] functions only return body and discard the
     # resp part which is not used in scenario tests
 
-    def _create_port(self, network_id, client=None, namestart='port-quotatest',
-                     **kwargs):
-        if not client:
-            client = self.ports_client
-        name = data_utils.rand_name(namestart)
-        result = client.create_port(
-            name=name,
-            network_id=network_id,
-            **kwargs)
-        self.assertIsNotNone(result, 'Unable to allocate port')
-        port = result['port']
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        client.delete_port, port['id'])
-        return port
-
-    def create_keypair(self, client=None):
-        if not client:
-            client = self.keypairs_client
-        name = data_utils.rand_name(self.__class__.__name__)
-        # We don't need to create a keypair by pubkey in scenario
-        body = client.create_keypair(name=name)
-        self.addCleanup(client.delete_keypair, name)
-        return body['keypair']
-
     def create_server(self, name=None, image_id=None, flavor=None,
                       validatable=False, wait_until='ACTIVE',
                       clients=None, **kwargs):
@@ -157,9 +133,9 @@ class ScenarioTest(manager.NetworkScenarioTest):
             for net in networks:
                 net_id = net.get('uuid', net.get('id'))
                 if 'port' not in net:
-                    port = self._create_port(network_id=net_id,
-                                             client=clients.ports_client,
-                                             **create_port_body)
+                    port = self.create_port(network_id=net_id,
+                                            client=clients.ports_client,
+                                            **create_port_body)
                     ports.append({'port': port['id']})
                 else:
                     ports.append({'port': net['port']})

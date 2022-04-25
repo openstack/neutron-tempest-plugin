@@ -1181,9 +1181,12 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         create_port_body = {'fixed_ips': [{'ip_address': ip_address}],
                             'namestart': 'port-smoke',
                             'security_groups': security_groups}
-        port = self._create_port(network_id=network['id'],
-                                 client=clients.ports_client,
-                                 **create_port_body)
+
+        port = super(manager.NetworkScenarioTest,
+                    self).create_port(network_id=network['id'],
+                                    client=clients.ports_client,
+                                    **create_port_body)
+
         create_server_kwargs = {
             'key_name': keypair['name'],
             'networks': [{'uuid': network['id'], 'port': port['id']}]

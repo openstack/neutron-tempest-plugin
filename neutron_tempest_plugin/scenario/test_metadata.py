@@ -19,11 +19,11 @@ from oslo_log import log as logging
 from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+from tempest.lib import exceptions
 import testtools
 
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
-from neutron_tempest_plugin import exceptions
 from neutron_tempest_plugin.scenario import base
 
 LOG = logging.getLogger(__name__)

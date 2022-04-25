@@ -38,8 +38,11 @@ from neutron_tempest_plugin import exceptions
 from neutron_tempest_plugin.scenario import constants
 
 CONF = config.CONF
-
 LOG = log.getLogger(__name__)
+SSH_EXC_TUPLE = (lib_exc.SSHTimeout,
+                 ssh_exc.AuthenticationException,
+                 ssh_exc.NoValidConnectionsError,
+                 ConnectionResetError)
 
 
 def get_ncat_version(ssh_client=None):
@@ -308,7 +311,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                                     pkey=ssh_key, timeout=ssh_timeout)
         try:
             ssh_client.test_connection_auth()
-        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+        except SSH_EXC_TUPLE as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)
             self._log_local_network_status()
@@ -448,7 +451,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                 timeout=timeout, pattern=pattern,
                 forbid_packet_loss=forbid_packet_loss,
                 check_response_ip=check_response_ip))
-        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+        except SSH_EXC_TUPLE as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)
             self._log_local_network_status()
@@ -565,7 +568,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                     **kwargs)
                 self.assertIn(server['name'],
                               ssh_client.get_hostname())
-        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+        except SSH_EXC_TUPLE as ssh_e:
             LOG.debug(ssh_e)
             if log_errors:
                 self._log_console_output(servers)
@@ -600,7 +603,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             return ssh_client.execute_script(
                 get_ncat_server_cmd(port, protocol, echo_msg),
                 become_root=True, combine_stderr=True)
-        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+        except SSH_EXC_TUPLE as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output(servers)
             self._log_local_network_status()

@@ -14,10 +14,8 @@
 #    under the License.
 
 from oslo_log import log
-from paramiko import ssh_exception as ssh_exc
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
-from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils
@@ -121,7 +119,7 @@ class MacLearningTest(base.BaseTempestTestCase):
     def _check_cmd_installed_on_server(self, ssh_client, server, cmd):
         try:
             ssh_client.execute_script('which %s' % cmd)
-        except (lib_exc.SSHTimeout, ssh_exc.AuthenticationException) as ssh_e:
+        except base.SSH_EXC_TUPLE as ssh_e:
             LOG.debug(ssh_e)
             self._log_console_output([server])
             self._log_local_network_status()

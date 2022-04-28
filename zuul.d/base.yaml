@@ -125,3 +125,7 @@
         CUSTOMIZE_IMAGE: true
         BUILD_TIMEOUT: 784
       tempest_concurrency: 3  # out of 4
+      zuul_copy_output:
+        '/var/log/ovn': 'logs'
+        '/var/log/openvswitch': 'logs'
+        '/var/lib/ovn': 'logs'

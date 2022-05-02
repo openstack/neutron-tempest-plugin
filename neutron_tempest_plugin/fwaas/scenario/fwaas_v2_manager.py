@@ -17,7 +17,6 @@
 import netaddr
 from oslo_log import log
 
-from tempest.common.utils.linux import remote_client
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
@@ -59,80 +58,6 @@ class ScenarioTest(manager.NetworkScenarioTest):
         cls.security_groups_client = cls.os_primary.security_groups_client
         cls.security_group_rules_client = (
             cls.os_primary.security_group_rules_client)
-
-    # Test functions library
-    #
-    # The create_[resource] functions only return body and discard the
-    # resp part which is not used in scenario tests
-
-    def get_remote_client(self, ip_address, username=None, private_key=None):
-        """Get a SSH client to a remote server
-
-        @param ip_address the server floating or fixed IP address to use
-                          for ssh validation
-        @param username name of the Linux account on the remote server
-        @param private_key the SSH private key to use
-        @return a RemoteClient object
-        """
-
-        if username is None:
-            username = CONF.validation.image_ssh_user
-        # Set this with 'keypair' or others to log in with keypair or
-        # username/password.
-        if CONF.validation.auth_method == 'keypair':
-            password = None
-            if private_key is None:
-                private_key = self.keypair['private_key']
-        else:
-            password = CONF.validation.image_ssh_password
-            private_key = None
-        linux_client = remote_client.RemoteClient(ip_address, username,
-                                                  pkey=private_key,
-                                                  password=password)
-        try:
-            linux_client.validate_authentication()
-        except Exception as e:
-            message = ('Initializing SSH connection to %(ip)s failed. '
-                       'Error: %(error)s' % {'ip': ip_address,
-                                             'error': e})
-            caller = test_utils.find_test_caller()
-            if caller:
-                message = '(%s) %s' % (caller, message)
-            LOG.exception(message)
-            self.log_console_output()
-            raise
-
-        return linux_client
-
-    def check_vm_connectivity(self, ip_address,
-                              username=None,
-                              private_key=None,
-                              should_connect=True,
-                              mtu=None):
-        """Check server connectivity
-
-        :param ip_address: server to test against
-        :param username: server's ssh username
-        :param private_key: server's ssh private key to be used
-        :param should_connect: True/False indicates positive/negative test
-            positive - attempt ping and ssh
-            negative - attempt ping and fail if succeed
-        :param mtu: network MTU to use for connectivity validation
-
-        :raises: AssertError if the result of the connectivity check does
-            not match the value of the should_connect param
-        """
-        if should_connect:
-            msg = "Timed out waiting for %s to become reachable" % ip_address
-        else:
-            msg = "ip address %s is reachable" % ip_address
-        self.assertTrue(self.ping_ip_address(ip_address,
-                                             should_succeed=should_connect,
-                                             mtu=mtu),
-                        msg=msg)
-        if should_connect:
-            # no need to check ssh for negative connectivity
-            self.get_remote_client(ip_address, username, private_key)
 
 
 class NetworkScenarioTest(ScenarioTest):

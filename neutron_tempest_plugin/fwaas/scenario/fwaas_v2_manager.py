@@ -14,14 +14,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import subprocess
-
 import netaddr
 from oslo_log import log
 from oslo_utils import netutils
 
 from tempest.common.utils.linux import remote_client
-from tempest.common.utils import net_utils
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
@@ -103,64 +100,10 @@ class ScenarioTest(manager.NetworkScenarioTest):
             if caller:
                 message = '(%s) %s' % (caller, message)
             LOG.exception(message)
-            self._log_console_output()
+            self.log_console_output()
             raise
 
         return linux_client
-
-    def _log_console_output(self, servers=None):
-        if not CONF.compute_feature_enabled.console_output:
-            LOG.debug('Console output not supported, cannot log')
-            return
-        if not servers:
-            servers = self.servers_client.list_servers()
-            servers = servers['servers']
-        for server in servers:
-            try:
-                console_output = self.servers_client.get_console_output(
-                    server['id'])['output']
-                LOG.debug('Console output for %s\nbody=\n%s',
-                          server['id'], console_output)
-            except lib_exc.NotFound:
-                LOG.debug("Server %s disappeared(deleted) while looking "
-                          "for the console log", server['id'])
-
-    def ping_ip_address(self, ip_address, should_succeed=True,
-                        ping_timeout=None, mtu=None):
-        timeout = ping_timeout or CONF.validation.ping_timeout
-        cmd = ['ping', '-c1', '-w1']
-
-        if mtu:
-            cmd += [
-                # don't fragment
-                '-M', 'do',
-                # ping receives just the size of ICMP payload
-                '-s', str(net_utils.get_ping_payload_size(mtu, 4))
-            ]
-        cmd.append(ip_address)
-
-        def ping():
-            proc = subprocess.Popen(cmd,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE)
-            proc.communicate()
-
-            return (proc.returncode == 0) == should_succeed
-
-        caller = test_utils.find_test_caller()
-        LOG.debug('%(caller)s begins to ping %(ip)s in %(timeout)s sec and the'
-                  ' expected result is %(should_succeed)s', {
-                      'caller': caller, 'ip': ip_address, 'timeout': timeout,
-                      'should_succeed':
-                      'reachable' if should_succeed else 'unreachable'
-                  })
-        result = test_utils.call_until_true(ping, timeout, 1)
-        LOG.debug('%(caller)s finishes ping %(ip)s in %(timeout)s sec and the '
-                  'ping result is %(result)s', {
-                      'caller': caller, 'ip': ip_address, 'timeout': timeout,
-                      'result': 'expected' if result else 'unexpected'
-                  })
-        return result
 
     def check_vm_connectivity(self, ip_address,
                               username=None,

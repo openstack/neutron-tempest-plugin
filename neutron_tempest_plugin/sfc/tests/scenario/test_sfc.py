@@ -1183,7 +1183,7 @@ class TestSfc(base.SfcScenarioTest):
         adm_get_server = self.os_admin.servers_client.show_server
         server = adm_get_server(inst['id'])['server']
 
-        self._check_tenant_network_connectivity(
+        self.check_tenant_network_connectivity(
             server, self.ssh_user, self.keypair['private_key'])
 
         # Check server is on different node

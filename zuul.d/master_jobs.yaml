@@ -116,6 +116,7 @@
             ovs:
               tunnel_bridge: br-tun
               bridge_mappings: public:br-ex
+              openflow_processed_per_port: True
         test-config:
           $TEMPEST_CONFIG:
             neutron_plugin_options:

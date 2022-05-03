@@ -82,7 +82,7 @@ class TestSfc(base.SfcScenarioTest):
         floating_ip = self._create_floating_ip(
             server)
         port_id, fixed_ip = (
-            self._get_server_port_id_and_ip4(server))
+            self.get_server_port_id_and_ip4(server))
         return floating_ip, port_id, fixed_ip
 
     def _create_floating_ip(self, server, client=None):

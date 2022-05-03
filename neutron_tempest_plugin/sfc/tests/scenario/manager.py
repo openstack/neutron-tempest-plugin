@@ -15,7 +15,6 @@
 #    under the License.
 
 from oslo_log import log
-from oslo_utils import netutils
 
 from tempest import config
 from tempest.lib.common.utils import data_utils
@@ -59,36 +58,6 @@ class ScenarioTest(manager.NetworkScenarioTest):
         if not isinstance(exc, lib_exc.SSHTimeout):
             LOG.debug('Network information on a devstack host')
 
-    def check_vm_connectivity(self, ip_address,
-                              username=None,
-                              private_key=None,
-                              should_connect=True,
-                              mtu=None):
-        """Check server connectivity
-
-        :param ip_address: server to test against
-        :param username: server's ssh username
-        :param private_key: server's ssh private key to be used
-        :param should_connect: True/False indicates positive/negative test
-            positive - attempt ping and ssh
-            negative - attempt ping and fail if succeed
-        :param mtu: network MTU to use for connectivity validation
-
-        :raises: AssertError if the result of the connectivity check does
-            not match the value of the should_connect param
-        """
-        if should_connect:
-            msg = "Timed out waiting for %s to become reachable" % ip_address
-        else:
-            msg = "ip address %s is reachable" % ip_address
-        self.assertTrue(self.ping_ip_address(ip_address,
-                                             should_succeed=should_connect,
-                                             mtu=mtu),
-                        msg=msg)
-        if should_connect:
-            # no need to check ssh for negative connectivity
-            self.get_remote_client(ip_address, username, private_key)
-
     def check_public_network_connectivity(self, ip_address, username,
                                           private_key, should_connect=True,
                                           msg=None, servers=None, mtu=None):
@@ -130,36 +99,6 @@ class NetworkScenarioTest(ScenarioTest):
         super(NetworkScenarioTest, cls).skip_checks()
         if not CONF.service_available.neutron:
             raise cls.skipException('Neutron not available')
-
-    def _get_server_port_id_and_ip4(self, server, ip_addr=None):
-        ports = self.os_admin.ports_client.list_ports(
-            device_id=server['id'], fixed_ip=ip_addr)['ports']
-        # A port can have more than one IP address in some cases.
-        # If the network is dual-stack (IPv4 + IPv6), this port is associated
-        # with 2 subnets
-        p_status = ['ACTIVE']
-        # NOTE(vsaienko) With Ironic, instances live on separate hardware
-        # servers. Neutron does not bind ports for Ironic instances, as a
-        # result the port remains in the DOWN state.
-        # TODO(vsaienko) remove once bug: #1599836 is resolved.
-        if getattr(CONF.service_available, 'ironic', False):
-            p_status.append('DOWN')
-        port_map = [(p["id"], fxip["ip_address"])
-                    for p in ports
-                    for fxip in p["fixed_ips"]
-                    if netutils.is_valid_ipv4(fxip["ip_address"]) and
-                    p['status'] in p_status]
-        inactive = [p for p in ports if p['status'] != 'ACTIVE']
-        if inactive:
-            LOG.warning("Instance has ports that are not ACTIVE: %s", inactive)
-
-        self.assertNotEmpty(port_map,
-                            "No IPv4 addresses found in: %s" % ports)
-        self.assertEqual(len(port_map), 1,
-                         "Found multiple IPv4 addresses: %s. "
-                         "Unable to determine which port to target."
-                         % port_map)
-        return port_map[0]
 
     def _create_router(self, client=None, tenant_id=None,
                        namestart='router-smoke'):

@@ -17,7 +17,6 @@
 from oslo_log import log
 
 from tempest.common import utils
-from tempest.common.utils.linux import remote_client
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
@@ -33,50 +32,6 @@ class ScenarioTest(manager.NetworkScenarioTest):
     """Base class for scenario tests. Uses tempest own clients. """
 
     credentials = ['primary']
-
-    # ## Test functions library
-    #
-    # The create_[resource] functions only return body and discard the
-    # resp part which is not used in scenario tests
-
-    def get_remote_client(self, ip_address, username=None, private_key=None):
-        """Get a SSH client to a remote server
-
-        @param ip_address the server floating or fixed IP address to use
-                          for ssh validation
-        @param username name of the Linux account on the remote server
-        @param private_key the SSH private key to use
-        @return a RemoteClient object
-        """
-
-        if username is None:
-            username = CONF.validation.image_ssh_user
-        # Set this with 'keypair' or others to log in with keypair or
-        # username/password.
-        if CONF.validation.auth_method == 'keypair':
-            password = None
-            if private_key is None:
-                private_key = self.keypair['private_key']
-        else:
-            password = CONF.validation.image_ssh_password
-            private_key = None
-        linux_client = remote_client.RemoteClient(ip_address, username,
-                                                  pkey=private_key,
-                                                  password=password)
-        try:
-            linux_client.validate_authentication()
-        except Exception as e:
-            message = ('Initializing SSH connection to %(ip)s failed. '
-                       'Error: %(error)s' % {'ip': ip_address,
-                                             'error': e})
-            caller = test_utils.find_test_caller()
-            if caller:
-                message = '(%s) %s' % (caller, message)
-            LOG.exception(message)
-            self.log_console_output()
-            raise
-
-        return linux_client
 
 
 class NetworkScenarioTest(ScenarioTest):

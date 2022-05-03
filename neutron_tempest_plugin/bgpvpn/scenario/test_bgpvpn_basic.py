@@ -1259,7 +1259,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         private_key = self.servers_keypairs[server['id']][
             'private_key']
         ssh_client = self.get_remote_client(server_fip,
-                                            private_key=private_key)
+                                            private_key=private_key,
+                                            server=server)
         return ssh_client
 
     def _setup_http_server(self, server_index):

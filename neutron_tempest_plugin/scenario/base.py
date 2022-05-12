@@ -12,7 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import distutils
+
 import re
 import subprocess
 
@@ -21,6 +21,7 @@ import netaddr
 from neutron_lib.api import validators
 from neutron_lib import constants as neutron_lib_constants
 from oslo_log import log
+from packaging import version as packaging_version
 from paramiko import ssh_exception as ssh_exc
 from tempest.common.utils import net_utils
 from tempest.common import waiters
@@ -55,7 +56,7 @@ def get_ncat_version(ssh_client=None):
         m = re.match(r"Ncat: Version ([\d.]+) *.", version_result)
     # NOTE(slaweq): by default lets assume we have ncat 7.60 which is in Ubuntu
     # 18.04 which is used on u/s gates
-    return distutils.version.StrictVersion(m.group(1) if m else '7.60')
+    return packaging_version.Version(m.group(1) if m else '7.60')
 
 
 def get_ncat_server_cmd(port, protocol, msg=None):
@@ -79,7 +80,7 @@ def get_ncat_client_cmd(ip_address, port, protocol):
         udp = '-u'
     cmd = 'echo "knock knock" | nc '
     ncat_version = get_ncat_version()
-    if ncat_version > distutils.version.StrictVersion('7.60'):
+    if ncat_version > packaging_version.Version('7.60'):
         cmd += '-z '
     cmd += '-w 1 %(udp)s %(host)s %(port)s' % {
         'udp': udp, 'host': ip_address, 'port': port}

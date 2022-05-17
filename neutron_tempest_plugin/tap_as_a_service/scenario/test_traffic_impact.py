@@ -122,17 +122,20 @@ class TestTaaSTrafficScenarios(manager.BaseTaasScenarioTests):
 
         self.monitor_client = remote_client.RemoteClient(
             mon_fip['floating_ip_address'], user,
-            pkey=self.keypair['private_key'])
+            pkey=self.keypair['private_key'],
+            ssh_key_type=CONF.validation.ssh_key_type)
         self.monitor_client.validate_authentication()
         self.left_client = remote_client.RemoteClient(
             self.left_fip['floating_ip_address'],
             CONF.validation.image_ssh_user,
-            pkey=self.keypair['private_key'])
+            pkey=self.keypair['private_key'],
+            ssh_key_type=CONF.validation.ssh_key_type)
         self.left_client.validate_authentication()
         self.right_client = remote_client.RemoteClient(
             self.right_fip['floating_ip_address'],
             CONF.validation.image_ssh_user,
-            pkey=self.keypair['private_key'])
+            pkey=self.keypair['private_key'],
+            ssh_key_type=CONF.validation.ssh_key_type)
         self.right_client.validate_authentication()
         yield
 

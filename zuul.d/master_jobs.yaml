@@ -1047,6 +1047,25 @@
         q-meta: true
         q-metering: true
         q-l3: true
+    irrelevant-files:
+      - ^(test-|)requirements.txt$
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^.*\.conf\.sample$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/api/test_.*$
+      - ^neutron_tempest_plugin/(bgpvpn|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^rally-jobs/.*$
+      - ^vagrant/.*$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-vpnaas

@@ -2,6 +2,11 @@
     name: neutron-tempest-plugin-api-victoria
     parent: neutron-tempest-plugin-base
     override-checkout: stable/victoria
+    required-projects: &required-projects-victoria
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.6.0
+      - openstack/tempest
     vars:
       devstack_services:
         # Disable OVN services
@@ -107,6 +112,12 @@
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         ML2_L3_PLUGIN: router
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         post-config:
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
@@ -126,6 +137,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-victoria
     parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       branch_override: stable/victoria
       tempest_test_regex: "\
@@ -136,6 +148,12 @@
       network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -148,6 +166,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-victoria
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       branch_override: stable/victoria
       tempest_test_regex: "\
@@ -158,6 +177,12 @@
       network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -170,6 +195,7 @@
     name: neutron-tempest-plugin-scenario-linuxbridge-victoria
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       branch_override: stable/victoria
       tempest_test_regex: "\
@@ -180,6 +206,12 @@
       network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -192,6 +224,7 @@
     name: neutron-tempest-plugin-scenario-ovn-victoria
     parent: neutron-tempest-plugin-ovn
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       branch_override: stable/victoria
       tempest_test_regex: "\
@@ -201,6 +234,12 @@
       network_api_extensions: *api_extensions
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -211,6 +250,7 @@
     name: neutron-tempest-plugin-dvr-multinode-scenario-victoria
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       network_api_extensions_common: *api_extensions
       branch_override: stable/victoria
@@ -219,14 +259,29 @@
     name: neutron-tempest-plugin-designate-scenario-victoria
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/victoria
+    required-projects:
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.6.0
+      - openstack/tempest
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.12.0
     vars:
       branch_override: stable/victoria
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
 
 - job:
     name: neutron-tempest-plugin-sfc-victoria
     parent: neutron-tempest-plugin-sfc
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       branch_override: stable/victoria
       network_api_extensions_common: *api_extensions
@@ -235,6 +290,7 @@
     name: neutron-tempest-plugin-bgpvpn-bagpipe-victoria
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       branch_override: stable/victoria
       network_api_extensions: *api_extensions
@@ -243,6 +299,7 @@
     name: neutron-tempest-plugin-dynamic-routing-victoria
     parent: neutron-tempest-plugin-dynamic-routing
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       branch_override: stable/victoria
       network_api_extensions_common: *api_extensions
@@ -251,6 +308,7 @@
     name: neutron-tempest-plugin-vpnaas-victoria
     parent: neutron-tempest-plugin-vpnaas
     override-checkout: stable/victoria
+    required-projects: *required-projects-victoria
     vars:
       branch_override: stable/victoria
       network_api_extensions_common: *api_extensions

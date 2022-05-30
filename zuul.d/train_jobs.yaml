@@ -103,6 +103,12 @@
       network_available_features: &available_features
         -
       devstack_localrc:
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
         NEUTRON_DEPLOY_MOD_WSGI: false
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         Q_AGENT: openvswitch

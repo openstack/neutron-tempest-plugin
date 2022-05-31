@@ -6,7 +6,7 @@
     required-projects: &required-projects-ussuri
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 1.8.0
+        override-checkout: 1.6.0
       - openstack/tempest
     vars:
       devstack_services:
@@ -113,6 +113,12 @@
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         ML2_L3_PLUGIN: router
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         post-config:
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
@@ -276,7 +282,7 @@
     required-projects:
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 1.8.0
+        override-checkout: 1.6.0
       - openstack/tempest
       - openstack/designate-tempest-plugin
     vars:
@@ -313,7 +319,7 @@
       - openstack/neutron-fwaas
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 1.8.0
+        override-checkout: 1.6.0
       - openstack/tempest
     vars:
       branch_override: stable/ussuri

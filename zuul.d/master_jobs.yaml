@@ -208,6 +208,8 @@
       - ^neutron_lib/tests/unit/.*$
       - ^neutron_tempest_plugin/scenario/.*$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -298,6 +300,8 @@
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -396,6 +400,8 @@
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -540,6 +546,8 @@
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -675,6 +683,8 @@
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -924,6 +934,8 @@
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -986,6 +998,8 @@
       - ^tools/.*$
       - ^tox.ini$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1044,6 +1058,8 @@
       - ^tools/.*$
       - ^tox.ini$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1107,6 +1123,8 @@
       - ^tools/.*$
       - ^tox.ini$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1164,6 +1182,8 @@
       - ^tools/.*$
       - ^tox.ini$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1223,6 +1243,8 @@
       - ^tools/.*$
       - ^tox.ini$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1329,5 +1351,7 @@
       - ^tools/.*$
       - ^tox.ini$
       - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml

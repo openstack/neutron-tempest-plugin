@@ -52,7 +52,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2017, Neutron Tempest Plugin Developers'
+copyright = '2017, Neutron Tempest Plugin Developers'
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/neutron-tempest-plugin'
@@ -190,8 +190,8 @@ htmlhelp_basename = 'NeutronTempestPluginReleaseNotesdoc'
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     ('index', 'NeutronTempestPluginReleaseNotes.tex',
-     u'Neutron Tempest Plugin Release Notes Documentation',
-     u'Neutron Tempest Plugin Developers', 'manual'),
+     'Neutron Tempest Plugin Release Notes Documentation',
+     'Neutron Tempest Plugin Developers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -221,8 +221,8 @@ latex_documents = [
 # (source start file, name, description, authors, manual section).
 man_pages = [
     ('index', 'NeutronTempestPluginrereleasenotes',
-     u'Neutron Tempest Plugin Release Notes Documentation',
-     [u'Neutron Tempest Plugin Developers'], 1)
+     'Neutron Tempest Plugin Release Notes Documentation',
+     ['Neutron Tempest Plugin Developers'], 1)
 ]
 
 # If true, show URL addresses after external links.
@@ -236,8 +236,8 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     ('index', 'Neutron Tempest Plugin ReleaseNotes',
-     u'Neutron Tempest Plugin Release Notes Documentation',
-     u'Neutron Tempest Plugin Developers',
+     'Neutron Tempest Plugin Release Notes Documentation',
+     'Neutron Tempest Plugin Developers',
      'NeutronTempestPluginReleaseNotes',
      'One line description of project.',
      'Miscellaneous'),

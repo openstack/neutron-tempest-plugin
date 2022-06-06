@@ -36,7 +36,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-copyright = u'2017, OpenStack Developers'
+copyright = '2017, OpenStack Developers'
 
 # openstackdocstheme options
 openstackdocs_repo_name = 'openstack/neutron-tempest-plugin'
@@ -71,8 +71,8 @@ htmlhelp_basename = 'openstackdoc'
 latex_documents = [
     ('index',
      'openstack.tex',
-     u'openstack Documentation',
-     u'OpenStack Developers', 'manual'),
+     'openstack Documentation',
+     'OpenStack Developers', 'manual'),
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.

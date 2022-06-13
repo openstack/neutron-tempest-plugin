@@ -496,6 +496,8 @@
               l3_ha: true
             AGENT:
               debug_iptables_rules: true
+            EXPERIMENTAL:
+              linuxbridge: true
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
           # devstack-tempest job will be switched to use lib/neutron instead of
           # lib/neutron-legacy

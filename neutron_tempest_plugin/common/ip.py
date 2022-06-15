@@ -57,7 +57,7 @@ class IPCommand(object):
         return shell.execute(command_line, ssh_client=self.ssh_client,
                              timeout=self.timeout).stdout
 
-    def configure_vlan(self, addresses, port, vlan_tag, subport_ips):
+    def configure_vlan(self, addresses, port, vlan_tag, subport_ips, mac=None):
         port_device = get_port_device_name(addresses=addresses, port=port)
         subport_device = '{!s}.{!s}'.format(port_device, vlan_tag)
         LOG.debug('Configuring VLAN subport interface %r on top of interface '
@@ -66,6 +66,8 @@ class IPCommand(object):
 
         self.add_link(link=port_device, name=subport_device, link_type='vlan',
                       segmentation_id=vlan_tag)
+        if mac:
+            self.set_link_address(address=mac, device=subport_device)
         self.set_link(device=subport_device, state='up')
         for subport_ip in subport_ips:
             self.add_address(address=subport_ip, device=subport_device)
@@ -91,7 +93,8 @@ class IPCommand(object):
                 "Unable to get IP address and subnet prefix lengths for "
                 "subport")
 
-        return self.configure_vlan(addresses, port, vlan_tag, subport_ips)
+        return self.configure_vlan(addresses, port, vlan_tag, subport_ips,
+                                   subport['mac_address'])
 
     def configure_vlan_transparent(self, port, vlan_tag, ip_addresses):
         addresses = self.list_addresses()
@@ -131,6 +134,10 @@ class IPCommand(object):
         command += ['name', name, 'type', link_type]
         if id:
             command += ['id', segmentation_id]
+        return self.execute('link', *command)
+
+    def set_link_address(self, address, device):
+        command = ['set', 'address', address, 'dev', device]
         return self.execute('link', *command)
 
     def set_link(self, device, state=None):

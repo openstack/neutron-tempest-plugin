@@ -218,6 +218,7 @@
     parent: neutron-tempest-plugin-base-nested-switch
     timeout: 10000
     vars:
+      configure_swap_size: 2048
       devstack_services:
         # Disable OVN services
         br-ex-tcpdump: false
@@ -310,6 +311,7 @@
     parent: neutron-tempest-plugin-base-nested-switch
     timeout: 10000
     vars:
+      configure_swap_size: 2048
       devstack_services:
         # Disable OVN services
         br-ex-tcpdump: false
@@ -449,6 +451,7 @@
       - zuul: openstack/neutron
     pre-run: playbooks/linuxbridge-scenario-pre-run.yaml
     vars:
+      configure_swap_size: 2048
       devstack_services:
         # Disable OVN services
         br-ex-tcpdump: false

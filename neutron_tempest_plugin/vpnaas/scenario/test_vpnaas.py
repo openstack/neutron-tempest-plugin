@@ -48,6 +48,20 @@ CONF.register_opt(
     'neutron_vpnaas_plugin_options'
 )
 
+# The VPNaaS drivers for OVN don't support IPv6 VMs
+CONF.register_opt(
+    cfg.BoolOpt('skip_6in4_tests',
+                default=False,
+                help='Whether to skip 6in4 test cases.'),
+    'neutron_vpnaas_plugin_options'
+)
+CONF.register_opt(
+    cfg.BoolOpt('skip_6in6_tests',
+                default=False,
+                help='Whether to skip 6in6 test cases.'),
+    'neutron_vpnaas_plugin_options'
+)
+
 
 class Vpnaas(base.BaseTempestTestCase):
     """Test the following topology
@@ -285,6 +299,9 @@ class Vpnaas6in4(Vpnaas):
     @testtools.skipIf(
         CONF.neutron_vpnaas_plugin_options.skip_4in6_6in4_tests,
         'VPNaaS 6in4 test is skipped.')
+    @testtools.skipIf(
+        CONF.neutron_vpnaas_plugin_options.skip_6in4_tests,
+        'VPNaaS 6in4 test is skipped.')
     def test_vpnaas_6in4(self):
         self._test_vpnaas()
 
@@ -296,5 +313,8 @@ class Vpnaas6in6(Vpnaas):
     @decorators.idempotent_id('8b503ffc-aeb0-4938-8dba-73c7323e276d')
     @testtools.skipUnless(CONF.network_feature_enabled.ipv6,
                           'IPv6 tests are disabled.')
+    @testtools.skipIf(
+        CONF.neutron_vpnaas_plugin_options.skip_6in6_tests,
+        'VPNaaS 6in6 test is skipped.')
     def test_vpnaas_6in6(self):
         self._test_vpnaas()

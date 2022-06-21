@@ -1349,6 +1349,66 @@
       - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
+    name: neutron-tempest-plugin-vpnaas-ovn
+    parent: neutron-tempest-plugin-base
+    timeout: 3900
+    required-projects:
+      - openstack/neutron
+      - openstack/neutron-vpnaas
+      - openstack/neutron-tempest-plugin
+      - openstack/tempest
+    vars:
+      tempest_concurrency: 4
+      tempest_test_regex: ^neutron_tempest_plugin\.vpnaas
+      devstack_plugins:
+        neutron-vpnaas: https://opendev.org/openstack/neutron-vpnaas.git
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
+      network_api_extensions_common: *api_extensions
+      network_api_extensions_vpnaas:
+        - vpnaas
+      devstack_localrc:
+        IPSEC_PACKAGE: strongswan
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_vpnaas) | join(',') }}"
+      devstack_services:
+        q-ovn-vpn-agent: true
+      devstack_local_conf:
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_vpnaas_plugin_options:
+              skip_6in4_tests: true
+              skip_6in6_tests: true
+
+    irrelevant-files:
+      - ^\.pylintrc$
+      - ^(test-|)requirements.txt$
+      - lower-constraints.txt
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^.*\.conf\.sample$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
+      - ^neutron_tempest_plugin/api/test_.*$
+      - ^neutron_tempest_plugin/scenario/admin/.*$
+      - ^neutron_tempest_plugin/scenario/test_.*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^plugin.spec$
+      - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
+      - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
+      - ^vagrant/.*$
+      - ^zuul.d/(?!(project)).*\.yaml
+
+- job:
     name: neutron-tempest-plugin-tap-as-a-service
     parent: neutron-tempest-plugin-base
     description: |

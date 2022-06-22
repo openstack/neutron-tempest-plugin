@@ -79,8 +79,10 @@
         - floatingip-pools
         - ip-substring-filtering
         - l3-conntrack-helper
+        - l3-ext-ndp-proxy
         - l3-flavors
         - l3-ha
+        - l3-ndp-proxy
         - l3_agent_scheduler
         - metering
         - multi-provider
@@ -140,6 +142,7 @@
         neutron-port-forwarding: true
         neutron-conntrack-helper: true
         neutron-tag-ports-during-bulk-creation: true
+        neutron-ndp-proxy: true
         br-ex-tcpdump: true
         br-int-flows: true
         # Cinder services

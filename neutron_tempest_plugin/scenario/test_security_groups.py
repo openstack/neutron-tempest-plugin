@@ -663,3 +663,33 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
             for port in range(tcp_port, tcp_port + 3):
                 self._verify_http_connection(client_ssh[1], srv_ssh, srv_ip,
                                              port, [])
+
+    @decorators.idempotent_id('96dcd5ff-9d45-4e0d-bea0-0b438cbd388f')
+    def test_remove_sec_grp_from_active_vm(self):
+        """Tests the following:
+
+        1. Create SG associated with ICMP rule
+        2. Create Port (assoiated to SG #1) and use it to create the VM
+        3. Ping the VM, expected should be PASS
+        4. Remove the security group from VM by Port update
+        5. Ping the VM, expected should be FAIL
+        """
+        sec_grp_name = data_utils.rand_name('test_sg')
+        secgrp = self.os_primary.network_client.create_security_group(
+            name=sec_grp_name)
+        self.security_groups.append(secgrp['security_group'])
+        sec_grp_id = secgrp['security_group']['id']
+        self.create_pingable_secgroup_rule(sec_grp_id)
+
+        ex_port = self.create_port(
+            self.network, fixed_ips=[{'subnet_id': self.subnet['id']}],
+            security_groups=[sec_grp_id])
+        fip = self.create_vm_testing_sec_grp(
+            num_servers=1, security_groups=[{'name': sec_grp_name}],
+            ports=[ex_port])[1][0]
+
+        self.ping_ip_address(fip['floating_ip_address'])
+        self.client.update_port(ex_port['id'],
+                                security_groups=[])
+        self.ping_ip_address(fip['floating_ip_address'],
+                             should_succeed=False)

@@ -155,6 +155,8 @@ class StatefulConnection:
         self.port = target_port
         self.connection_started = False
         self.test_attempt = 0
+        self.test_timeout = 10
+        self.test_sleep = 1
 
     def __enter__(self):
         return self
@@ -173,12 +175,20 @@ class StatefulConnection:
 
         self.server_ssh.exec_command(
                 'echo "{}" > input.txt'.format(self.test_str))
-        server_exec_method('tail -f input.txt | nc -lp '
+        server_exec_method('tail -f input.txt | sudo nc -lp '
                 '{} &> output.txt &'.format(self.port))
         self.client_ssh.exec_command(
                 'echo "{}" > input.txt'.format(self.test_str))
-        client_exec_method('tail -f input.txt | nc {} {} &>'
+        client_exec_method('tail -f input.txt | sudo nc {} {} &>'
                 'output.txt &'.format(self.ip, self.port))
+
+    def _nc_is_running(self):
+        server = process_is_running(self.server_ssh, 'nc')
+        client = process_is_running(self.client_ssh, 'nc')
+        if client and server:
+            return True
+        else:
+            return False
 
     def _test_connection(self):
         if not self.connection_started:
@@ -188,6 +198,9 @@ class StatefulConnection:
                     'echo "{}" >> input.txt'.format(self.test_str))
             self.client_ssh.exec_command(
                     'echo "{}" >> input.txt & sleep 1'.format(self.test_str))
+        wait_until_true(self._nc_is_running,
+                        timeout=self.test_timeout,
+                        sleep=self.test_sleep)
         try:
             self.server_ssh.exec_command(
                     'grep {} output.txt'.format(self.test_str))
@@ -209,8 +222,11 @@ class StatefulConnection:
 
     def test_connection(self, should_pass=True, timeout=10, sleep_timer=1):
         self.should_pass = should_pass
-        wait_until_true(
-                self._test_connection, timeout=timeout, sleep=sleep_timer)
+        self.test_timeout = timeout
+        self.test_sleep = sleep_timer
+        wait_until_true(self._test_connection,
+                        timeout=self.test_timeout,
+                        sleep=self.test_sleep)
 
     def __exit__(self, type, value, traceback):
         self.server_ssh.exec_command('sudo killall nc || killall nc || '

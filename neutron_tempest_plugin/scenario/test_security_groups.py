@@ -520,12 +520,9 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
 
         # verify that conections are not working
         for port in range(80, 84):
-            self._verify_http_connection(
-                ssh_clients[0],
-                ssh_clients[2],
-                test_ip, port,
-                servers,
-                should_pass=False)
+            with utils.StatefulConnection(
+                    ssh_clients[0], ssh_clients[2], test_ip, port) as con:
+                con.test_connection(should_pass=False)
 
         # add two remote-group rules with port-ranges
         rule_list = [{'protocol': constants.PROTO_NUM_TCP,
@@ -543,11 +540,9 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
 
         # verify that conections are working
         for port in range(80, 84):
-            self._verify_http_connection(
-                ssh_clients[0],
-                ssh_clients[2],
-                test_ip, port,
-                servers)
+            with utils.StatefulConnection(
+                    ssh_clients[0], ssh_clients[2], test_ip, port) as con:
+                con.test_connection()
 
         # list the tcp rule id by SG id and port-range
         sg_rule_id = self.os_primary.network_client.list_security_group_rules(
@@ -559,12 +554,9 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
 
         # verify that conections are not working
         for port in range(80, 82):
-            self._verify_http_connection(
-                ssh_clients[0],
-                ssh_clients[2],
-                test_ip, port,
-                servers,
-                should_pass=False)
+            with utils.StatefulConnection(
+                    ssh_clients[0], ssh_clients[2], test_ip, port) as con:
+                con.test_connection(should_pass=False)
 
     @decorators.idempotent_id('f07d0159-8f9e-4faa-87f5-a869ab0ad490')
     def test_intra_sg_isolation(self):
@@ -675,11 +667,13 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
         # status can change the datapath. Let's check the rules in two
         # attempts
         for _ in range(2):
-            self._verify_http_connection(client_ssh[0], srv_ssh, srv_ip,
-                                         tcp_port, [])
+            with utils.StatefulConnection(
+                    client_ssh[0], srv_ssh, srv_ip, tcp_port) as con:
+                con.test_connection()
             for port in range(tcp_port, tcp_port + 3):
-                self._verify_http_connection(client_ssh[1], srv_ssh, srv_ip,
-                                             port, [])
+                with utils.StatefulConnection(
+                        client_ssh[1], srv_ssh, srv_ip, port) as con:
+                    con.test_connection()
 
     @decorators.idempotent_id('96dcd5ff-9d45-4e0d-bea0-0b438cbd388f')
     def test_remove_sec_grp_from_active_vm(self):

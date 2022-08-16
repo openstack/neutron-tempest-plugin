@@ -549,6 +549,23 @@ class NetworkSecGroupTest(base.BaseTempestTestCase):
                 test_ip, port,
                 servers)
 
+        # list the tcp rule id by SG id and port-range
+        sg_rule_id = self.os_primary.network_client.list_security_group_rules(
+            security_group_id=secgroups[1]['id'],
+            port_range_min=80)['security_group_rules'][0]['id']
+
+        # delete the tcp rule from the security group
+        self.client.delete_security_group_rule(sg_rule_id)
+
+        # verify that conections are not working
+        for port in range(80, 82):
+            self._verify_http_connection(
+                ssh_clients[0],
+                ssh_clients[2],
+                test_ip, port,
+                servers,
+                should_pass=False)
+
     @decorators.idempotent_id('f07d0159-8f9e-4faa-87f5-a869ab0ad490')
     def test_intra_sg_isolation(self):
         """Test intra security group isolation

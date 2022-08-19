@@ -112,6 +112,8 @@
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         ML2_L3_PLUGIN: router
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
       devstack_local_conf:
         post-config:
           # NOTE(slaweq): We can get rid of this hardcoded absolute path when
@@ -285,6 +287,8 @@
         q-l3: true
         q-meta: true
         q-metering: true
+        # SG logging isn't supported by linuxbridge backend
+        neutron-log: false
       network_api_extensions: *api_extensions
       network_api_extensions_linuxbridge:
         - vlan-transparent

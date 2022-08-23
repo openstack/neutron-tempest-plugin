@@ -1154,10 +1154,10 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
            2-6, 42, 44, and 50-54 (which should be forbidden)
         """
 
-        def _test_update_dscp_mark_values(self, dscp_policy_id, rule_id):
-            for mark in range(n_constants.VALID_DSCP_MARKS[1],
-                              self.VALID_DSCP_MARK1 + 1):
-                if mark in n_constants.VALID_DSCP_MARKS:
+        def _test_update_dscp_mark_values(self, dscp_policy_id, rule_id,
+                                          valid_dscp_marks):
+            for mark in range(valid_dscp_marks[1], self.VALID_DSCP_MARK1 + 1):
+                if mark in valid_dscp_marks:
                     self.admin_client.update_dscp_marking_rule(
                         dscp_policy_id, rule_id, dscp_mark=mark)
 
@@ -1174,6 +1174,20 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
                                     self.admin_client.create_dscp_marking_rule,
                                     dscp_policy_id,
                                     mark)
+
+        # Retrieve the valid range of DSCP marks from the API.
+        rule_type_details = self.admin_client.show_qos_rule_type(
+            qos_consts.RULE_TYPE_DSCP_MARKING).get('rule_type')
+        # There should be at least one driver supporting the DSCP marking rule.
+        dscp_driver = rule_type_details['drivers'][0]
+        for parameter in dscp_driver['supported_parameters']:
+            if parameter['parameter_name'] == qos_consts.DSCP_MARK:
+                valid_dscp_marks = parameter['parameter_values']
+                break
+        else:
+            self.fail('The DSCP marking rule does not have the %s parameter' %
+                      qos_consts.DSCP_MARK)
+
         # Setup network
         self.network = self.create_network()
 
@@ -1204,7 +1218,8 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
                          retrieved_rule['dscp_mark']))
 
         # Try to set marks in range 8:56 (invalid marks should raise an error)
-        _test_update_dscp_mark_values(self, dscp_policy_id, rule_id)
+        _test_update_dscp_mark_values(self, dscp_policy_id, rule_id,
+                                      valid_dscp_marks)
 
 
 class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):

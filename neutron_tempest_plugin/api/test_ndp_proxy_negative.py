@@ -24,16 +24,28 @@ from neutron_tempest_plugin import config
 CONF = config.CONF
 
 
-class NDPProxyNegativeTestJSON(base.BaseNetworkTest):
+class NDPProxyNegativeTestJSON(base.BaseAdminNetworkTest):
 
     credentials = ['primary', 'admin']
-    required_extensions = ['router', 'l3-ndp-proxy']
+    required_extensions = ['router', 'l3-ndp-proxy', 'address-scope']
 
     @classmethod
     def resource_setup(cls):
         super(NDPProxyNegativeTestJSON, cls).resource_setup()
-        cls.ext_net_id = CONF.network.public_network_id
-
+        address_scope = cls.create_address_scope(
+            "test-as", **{'ip_version': constants.IP_VERSION_6})
+        subnetpool = cls.create_subnetpool(
+            "test-subnetpool",
+            **{'address_scope_id': address_scope['id'],
+               'default_prefixlen': 112,
+               'prefixes': ['2001:abc::0/96']})
+        # Create an external network and it's subnet
+        ext_net = cls.create_network('test-ext-net', client=cls.admin_client,
+                                     external=True)
+        cls.create_subnet(
+            ext_net, client=cls.admin_client,
+            ip_version=constants.IP_VERSION_6,
+            **{'subnetpool_id': subnetpool['id'], "cidr": "2001:abc::1:0/112"})
         # Create network, subnet, router and add interface
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(
@@ -41,7 +53,7 @@ class NDPProxyNegativeTestJSON(base.BaseNetworkTest):
             cidr='2002::abcd:0/112')
         cls.router = cls.create_router(
             data_utils.rand_name('router'),
-            external_network_id=cls.ext_net_id)
+            external_network_id=ext_net['id'])
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('a0897204-bb85-41cc-a5fd-5d0ab8116a07')
@@ -102,3 +114,22 @@ class NDPProxyNegativeTestJSON(base.BaseNetworkTest):
                           self.router['id'],
                           enable_ndp_proxy=True,
                           external_gateway_info={})
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('194b5ee7-4c59-4643-aabf-80a125c3f688')
+    def test_enable_ndp_proxy_without_address_scope(self):
+        extnet = self.create_network("extnet", client=self.admin_client,
+                                     external=True)
+        self.create_subnet(extnet, client=self.admin_client,
+                           ip_version=constants.IP_VERSION_6,
+                           cidr='2001:abc1::0/112')
+        self.assertRaises(exceptions.Conflict,
+                          self.client.create_router,
+                          name=data_utils.rand_name('router'),
+                          enable_ndp_proxy=True,
+                          external_gateway_info={'network_id': extnet['id']})
+        router = self.create_router(data_utils.rand_name('router'))
+        self.assertRaises(exceptions.Conflict,
+                          self.client.update_router,
+                          router['id'], enable_ndp_proxy=True,
+                          external_gateway_info={'network_id': extnet['id']})

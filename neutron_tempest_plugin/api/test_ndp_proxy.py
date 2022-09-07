@@ -24,23 +24,35 @@ from neutron_tempest_plugin import config
 CONF = config.CONF
 
 
-class NDPProxyTestJSON(base.BaseNetworkTest):
+class NDPProxyTestJSON(base.BaseAdminNetworkTest):
 
     credentials = ['primary', 'admin']
-    required_extensions = ['router', 'l3-ndp-proxy']
+    required_extensions = ['router', 'l3-ndp-proxy', 'address-scope']
 
     @classmethod
     def resource_setup(cls):
         super(NDPProxyTestJSON, cls).resource_setup()
-        cls.ext_net_id = CONF.network.public_network_id
-
+        address_scope = cls.create_address_scope(
+            "test-as", **{'ip_version': constants.IP_VERSION_6})
+        subnetpool = cls.create_subnetpool(
+            "test-subnetpool",
+            **{'address_scope_id': address_scope['id'],
+               'default_prefixlen': 112,
+               'prefixes': ['2001:abc::0/96']})
+        # Create an external network and it's subnet
+        ext_net = cls.create_network('test-ext-net', client=cls.admin_client,
+                                     external=True)
+        cls.create_subnet(
+            ext_net, client=cls.admin_client,
+            ip_version=constants.IP_VERSION_6,
+            **{'subnetpool_id': subnetpool['id'], "cidr": "2001:abc::1:0/112"})
         # Create network, subnet, router and add interface
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(
             cls.network, ip_version=constants.IP_VERSION_6,
-            cidr='2002::abcd:0/112')
+            **{'subnetpool_id': subnetpool['id'], "cidr": "2001:abc::2:0/112"})
         cls.router = cls.create_router(data_utils.rand_name('router'),
-                                       external_network_id=cls.ext_net_id,
+                                       external_network_id=ext_net['id'],
                                        enable_ndp_proxy=True)
         cls.create_router_interface(cls.router['id'], cls.subnet['id'])
 

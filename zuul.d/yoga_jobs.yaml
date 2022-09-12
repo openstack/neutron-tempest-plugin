@@ -97,6 +97,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-yoga
     parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/yoga
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/yoga
       tempest_test_regex: "\
@@ -117,6 +118,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-yoga
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/yoga
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/yoga
       tempest_test_regex: "\
@@ -137,6 +139,7 @@
     name: neutron-tempest-plugin-scenario-linuxbridge-yoga
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/yoga
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/yoga
       tempest_test_regex: "\
@@ -157,6 +160,7 @@
     name: neutron-tempest-plugin-scenario-ovn-yoga
     parent: neutron-tempest-plugin-ovn
     override-checkout: stable/yoga
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/yoga
       tempest_test_regex: "\
@@ -186,6 +190,7 @@
     name: neutron-tempest-plugin-designate-scenario-yoga
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/yoga
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/yoga
       network_api_extensions_common: *api_extensions

@@ -300,7 +300,6 @@
       - ^neutron/services/trunk/drivers/ovn/.*$
       - ^neutron/cmd/ovn/.*$
       - ^neutron/common/ovn/.*$
-      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -401,7 +400,6 @@
       - ^neutron/services/trunk/drivers/ovn/.*$
       - ^neutron/cmd/ovn/.*$
       - ^neutron/common/ovn/.*$
-      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -550,7 +548,6 @@
       - ^neutron/services/trunk/drivers/ovn/.*$
       - ^neutron/cmd/ovn/.*$
       - ^neutron/common/ovn/.*$
-      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -687,7 +684,6 @@
       - ^neutron/services/trunk/drivers/linuxbridge/.*$
       - ^neutron/services/trunk/drivers/openvswitch/.*$
       - ^neutron/scheduler/.*$
-      - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -1033,6 +1029,7 @@
         q-l3: true
         q-meta: true
         q-metering: true
+      tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.bgpvpn
       network_api_extensions_bgpvpn:
         - bgpvpn
@@ -1205,6 +1202,7 @@
       - openstack/neutron-tempest-plugin
       - openstack/tempest
     vars:
+      tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.vpnaas
       devstack_plugins:
         neutron-vpnaas: https://opendev.org/openstack/neutron-vpnaas.git
@@ -1270,6 +1268,7 @@
       - openstack/tap-as-a-service
       - openstack/tempest
     vars:
+      tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.tap_as_a_service
       tox_envlist: all
       network_api_extensions_tempest:

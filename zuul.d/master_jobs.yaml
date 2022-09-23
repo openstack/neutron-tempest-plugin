@@ -60,7 +60,6 @@
         - availability_zone
         - binding
         - default-subnetpools
-        - dhcp_agent_scheduler
         - dns-domain-ports
         - dns-integration
         - dns-integration-domain-keywords
@@ -240,6 +239,7 @@
         q-meta: true
         q-metering: true
       network_api_extensions_openvswitch:
+        - dhcp_agent_scheduler
         - local_ip
         - qos-bw-minimum-ingress
       network_available_features: &available_features
@@ -332,6 +332,7 @@
         q-meta: true
         q-metering: true
       network_api_extensions_openvswitch:
+        - dhcp_agent_scheduler
         - local_ip
         - logging
       network_available_features: *available_features
@@ -422,6 +423,9 @@
     parent: neutron-tempest-plugin-openvswitch
     timeout: 10000
     vars:
+      network_api_extensions_openvswitch:
+        - local_ip
+        - qos-bw-minimum-ingress
       # NOTE: DHCP extra options and dns services aren't supported with
       # distributed DHCP L2 agent extension
       tempest_exclude_regex: "\
@@ -436,6 +440,9 @@
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     timeout: 10000
     vars:
+      network_api_extensions_openvswitch:
+        - local_ip
+        - logging
       # NOTE: DHCP extra options and dns services aren't supported with
       # distributed DHCP L2 agent extension
       tempest_exclude_regex: "\
@@ -472,6 +479,7 @@
         # SG logging isn't supported by linuxbridge backend
         neutron-log: false
       network_api_extensions_linuxbridge:
+        - dhcp_agent_scheduler
         - vlan-transparent
       network_available_features: *available_features
       # TODO(eolivare): remove VLAN Transparency tests from blacklist
@@ -723,6 +731,7 @@
       tempest_test_timeout: 2400
       network_api_extensions_common: *api_extensions
       network_api_extensions_dvr:
+        - dhcp_agent_scheduler
         - dvr
       devstack_localrc:
         USE_PYTHON3: true

@@ -193,6 +193,7 @@
               available_type_drivers: flat,geneve,vlan,gre,local,vxlan
               provider_net_base_segm_id: 1
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -273,6 +274,7 @@
               available_type_drivers: flat,vlan,local,vxlan
               firewall_driver: openvswitch
     irrelevant-files: &openvswitch-scenario-irrelevant-files
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -373,6 +375,7 @@
               available_type_drivers: flat,vlan,local,vxlan
               firewall_driver: iptables_hybrid
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -527,6 +530,7 @@
               q_agent: linuxbridge
               firewall_driver: iptables
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -660,6 +664,7 @@
         '/var/log/openvswitch': 'logs'
         '/var/lib/ovn': 'logs'
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -925,6 +930,7 @@
         - neutron-tempest-plugin
       tempest_test_regex: ^neutron_tempest_plugin\.scenario\.test_dns_integration
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -995,6 +1001,7 @@
       # https://bugs.launchpad.net/networking-sfc/+bug/1660366
       tempest_concurrency: 1
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -1056,6 +1063,7 @@
         networking-bgpvpn: https://git.openstack.org/openstack/networking-bgpvpn
         networking-bagpipe: https://git.openstack.org/openstack/networking-bagpipe
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -1122,6 +1130,7 @@
       tempest_concurrency: 1
       tempest_test_regex: ^neutron_tempest_plugin\.neutron_dynamic_routing
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -1181,6 +1190,7 @@
         q-l3: true
         neutron-log: false
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
@@ -1242,6 +1252,7 @@
         q-metering: true
         q-l3: true
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$
@@ -1351,6 +1362,7 @@
         tempest: true
         dstat: true
     irrelevant-files:
+      - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
       - ^releasenotes/.*$

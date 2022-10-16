@@ -1,6 +1,7 @@
 - job:
     name: neutron-tempest-plugin-api-wallaby
     parent: neutron-tempest-plugin-base
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       tempest_concurrency: 4
@@ -92,6 +93,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-wallaby
     parent: neutron-tempest-plugin-openvswitch
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby
@@ -112,6 +114,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-wallaby
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby
@@ -132,6 +135,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-wallaby
     parent: neutron-tempest-plugin-linuxbridge
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby
@@ -152,6 +156,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-ovn-wallaby
     parent: neutron-tempest-plugin-ovn
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby
@@ -171,6 +176,7 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-wallaby
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-focal
     override-checkout: stable/wallaby
     vars:
       network_api_extensions_common: *api_extensions
@@ -179,6 +185,7 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-wallaby
     parent: neutron-tempest-plugin-designate-scenario
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby
@@ -187,6 +194,7 @@
 - job:
     name: neutron-tempest-plugin-sfc-wallaby
     parent: neutron-tempest-plugin-sfc
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby
@@ -195,6 +203,7 @@
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-wallaby
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby
@@ -203,6 +212,7 @@
 - job:
     name: neutron-tempest-plugin-dynamic-routing-wallaby
     parent: neutron-tempest-plugin-dynamic-routing
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby
@@ -211,6 +221,7 @@
 - job:
     name: neutron-tempest-plugin-vpnaas-wallaby
     parent: neutron-tempest-plugin-vpnaas
+    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     vars:
       branch_override: stable/wallaby

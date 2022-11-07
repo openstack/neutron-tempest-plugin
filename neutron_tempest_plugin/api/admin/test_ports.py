@@ -230,6 +230,9 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('7261391f-64cc-45a6-a1e3-435694c54bf5')
     def test_port_resource_request_no_provider_net_conflict(self):
+        self.skipTest('This test is skipped until LP#1991965 is implemented. '
+                      'Once implemented, it will be removed and new tests '
+                      'added. For now it is temporarily kept as a reminder')
         conflict = self.assertRaises(
             tlib_exceptions.Conflict,
             self._create_qos_policy_and_port,

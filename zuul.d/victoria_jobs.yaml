@@ -23,7 +23,6 @@
         q-l3: true
         q-meta: true
         q-metering: true
-      branch_override: stable/victoria
       tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.api
       # TODO(slaweq): find a way to put this list of extensions in
@@ -140,7 +139,6 @@
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
-      branch_override: stable/victoria
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -169,7 +167,6 @@
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
-      branch_override: stable/victoria
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -198,7 +195,6 @@
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
-      branch_override: stable/victoria
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -227,7 +223,6 @@
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
-      branch_override: stable/victoria
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -254,7 +249,6 @@
     required-projects: *required-projects-victoria
     vars:
       network_api_extensions_common: *api_extensions
-      branch_override: stable/victoria
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-victoria
@@ -268,7 +262,6 @@
       - name: openstack/designate-tempest-plugin
         override-checkout: 0.12.0
     vars:
-      branch_override: stable/victoria
       network_api_extensions_common: *api_extensions
       devstack_localrc:
         # NOTE(bcafarel) guestmount binary not available on host OS
@@ -284,7 +277,6 @@
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
-      branch_override: stable/victoria
       network_api_extensions_common: *api_extensions
 
 - job:
@@ -293,7 +285,6 @@
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
-      branch_override: stable/victoria
       network_api_extensions: *api_extensions
 
 - job:
@@ -302,7 +293,6 @@
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
-      branch_override: stable/victoria
       network_api_extensions_common: *api_extensions
 
 - job:
@@ -311,5 +301,4 @@
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
-      branch_override: stable/victoria
       network_api_extensions_common: *api_extensions

@@ -26,7 +26,6 @@
         q-l3: true
         q-meta: true
         q-metering: true
-      branch_override: stable/rocky
       tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.api
       # TODO(slaweq): find a way to put this list of extensions in
@@ -162,7 +161,6 @@
         q-l3: true
         q-meta: true
         q-metering: true
-      branch_override: stable/rocky
       network_api_extensions: *api_extensions
       network_available_features: &available_features
         -
@@ -377,7 +375,6 @@
     override-checkout: stable/rocky
     required-projects: *required-projects-rocky
     vars: &linuxbridge_vars_rocky
-      branch_override: stable/rocky
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -561,7 +558,6 @@
               available_type_drivers: flat,geneve,vlan,gre,local,vxlan
               l3_agent_mode: dvr_snat
               firewall_driver: openvswitch
-      branch_override: stable/rocky
       tempest_black_regex: *rocky_tempest_exclude
     branches:
       - stable/rocky
@@ -644,7 +640,6 @@
         override-checkout: 0.7.0
       - openstack/tempest
     vars: &designate_scenario_vars_rocky
-      branch_override: stable/rocky
       network_api_extensions_common: *api_extensions
       devstack_localrc:
         USE_PYTHON3: false

@@ -94,7 +94,6 @@
     parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -114,7 +113,6 @@
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -134,7 +132,6 @@
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -154,7 +151,6 @@
     parent: neutron-tempest-plugin-ovn
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -174,14 +170,12 @@
     override-checkout: stable/wallaby
     vars:
       network_api_extensions_common: *api_extensions
-      branch_override: stable/wallaby
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-wallaby
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       network_api_extensions_common: *api_extensions
 
 - job:
@@ -189,7 +183,6 @@
     parent: neutron-tempest-plugin-sfc
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       network_api_extensions_common: *api_extensions
 
 - job:
@@ -197,7 +190,6 @@
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       network_api_extensions: *api_extensions
 
 - job:
@@ -205,7 +197,6 @@
     parent: neutron-tempest-plugin-dynamic-routing
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       network_api_extensions_common: *api_extensions
 
 - job:
@@ -213,5 +204,4 @@
     parent: neutron-tempest-plugin-vpnaas
     override-checkout: stable/wallaby
     vars:
-      branch_override: stable/wallaby
       network_api_extensions_common: *api_extensions

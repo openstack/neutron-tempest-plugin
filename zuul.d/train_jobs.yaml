@@ -24,7 +24,6 @@
         q-l3: true
         q-meta: true
         q-metering: true
-      branch_override: stable/train
       tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.api
       # TODO(slaweq): find a way to put this list of extensions in
@@ -138,7 +137,6 @@
     override-checkout: stable/train
     required-projects: *required-projects-train
     vars:
-      branch_override: stable/train
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -173,7 +171,6 @@
     override-checkout: stable/train
     required-projects: *required-projects-train
     vars:
-      branch_override: stable/train
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -208,7 +205,6 @@
     override-checkout: stable/train
     required-projects: *required-projects-train
     vars:
-      branch_override: stable/train
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -244,7 +240,6 @@
     required-projects: *required-projects-train
     vars:
       network_api_extensions_common: *api_extensions
-      branch_override: stable/train
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-train
@@ -259,7 +254,6 @@
       - name: openstack/designate-tempest-plugin
         override-checkout: 0.7.0
     vars:
-      branch_override: stable/train
       network_api_extensions_common: *api_extensions
       devstack_localrc:
         # NOTE(bcafarel) guestmount binary not available on host OS
@@ -276,7 +270,6 @@
     override-checkout: stable/train
     required-projects: *required-projects-train
     vars:
-      branch_override: stable/train
       network_api_extensions_common: *api_extensions
 
 - job:
@@ -286,7 +279,6 @@
     override-checkout: stable/train
     required-projects: *required-projects-train
     vars:
-      branch_override: stable/train
       network_api_extensions: *api_extensions
 
 - job:
@@ -296,5 +288,4 @@
     override-checkout: stable/train
     required-projects: *required-projects-train
     vars:
-      branch_override: stable/train
       network_api_extensions_common: *api_extensions

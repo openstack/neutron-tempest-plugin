@@ -24,7 +24,6 @@
         q-l3: true
         q-meta: true
         q-metering: true
-      branch_override: stable/stein
       tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.api
       # TODO(slaweq): find a way to put this list of extensions in
@@ -137,7 +136,6 @@
     override-checkout: stable/stein
     required-projects: *required-projects-stein
     vars:
-      branch_override: stable/stein
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -174,7 +172,6 @@
     override-checkout: stable/stein
     required-projects: *required-projects-stein
     vars:
-      branch_override: stable/stein
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -268,7 +265,6 @@
     override-checkout: stable/stein
     required-projects: *required-projects-stein
     vars:
-      branch_override: stable/stein
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
@@ -363,7 +359,6 @@
     required-projects: *required-projects-stein
     vars:
       network_api_extensions_common: *api_extensions
-      branch_override: stable/stein
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-stein
@@ -378,7 +373,6 @@
         override-checkout: 0.7.0
       - openstack/tempest
     vars:
-      branch_override: stable/stein
       network_api_extensions_common: *api_extensions
       devstack_localrc:
         # NOTE(bcafarel) guestmount binary not available on host OS

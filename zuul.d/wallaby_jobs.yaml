@@ -93,6 +93,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-wallaby
     parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/wallaby
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -112,6 +113,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-wallaby
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/wallaby
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -131,6 +133,7 @@
     name: neutron-tempest-plugin-scenario-linuxbridge-wallaby
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/wallaby
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -150,6 +153,7 @@
     name: neutron-tempest-plugin-scenario-ovn-wallaby
     parent: neutron-tempest-plugin-ovn
     override-checkout: stable/wallaby
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -175,6 +179,7 @@
     name: neutron-tempest-plugin-designate-scenario-wallaby
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/wallaby
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       network_api_extensions_common: *api_extensions
 

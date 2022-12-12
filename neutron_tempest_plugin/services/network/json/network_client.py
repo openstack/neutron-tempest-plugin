@@ -273,9 +273,13 @@ class NetworkClientJSON(service_client.RestClient):
         self.expected_success(201, resp.status)
         return service_client.ResponseBody(resp, body)
 
-    def create_bulk_security_groups(self, security_group_list):
+    def create_bulk_security_groups(self, security_group_list,
+                                    stateless=False):
         group_list = [{'security_group': {'name': name}}
                       for name in security_group_list]
+        if stateless:
+            for group in group_list:
+                group['security_group']['stateful'] = False
         post_data = {'security_groups': group_list}
         body = self.serialize_list(post_data, 'security_groups',
                                    'security_group')

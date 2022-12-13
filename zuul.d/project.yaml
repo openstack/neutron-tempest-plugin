@@ -5,6 +5,7 @@
         - neutron-tempest-plugin-linuxbridge
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-openvswitch-iptables_hybrid
+        - neutron-tempest-plugin-openvswitch-enforce-scope-new-defaults
         - neutron-tempest-plugin-ovn
         - neutron-tempest-plugin-designate-scenario
     gate:
@@ -13,6 +14,7 @@
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-ovn
         - neutron-tempest-plugin-openvswitch-iptables_hybrid
+        - neutron-tempest-plugin-openvswitch-enforce-scope-new-defaults
     #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
     #              the experimental queue when it will be more stable
     experimental:

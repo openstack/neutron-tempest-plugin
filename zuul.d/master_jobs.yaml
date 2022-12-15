@@ -344,7 +344,8 @@
       # bug https://bugzilla.redhat.com/show_bug.cgi?id=1965036 will be fixed
       tempest_exclude_regex: "\
           (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)|\
-          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)"
+          (^neutron_tempest_plugin.scenario.test_security_groups.StatefulNetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)"
       devstack_localrc:
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
@@ -496,7 +497,8 @@
       # fixed
       tempest_exclude_regex: "\
           (^neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest)|\
-          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.StatefulNetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)|\
           (^neutron_tempest_plugin.scenario.test_floatingip.FloatingIPPortDetailsTest.test_floatingip_port_details)"
       devstack_localrc:
         Q_AGENT: linuxbridge

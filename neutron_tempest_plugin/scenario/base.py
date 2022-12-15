@@ -190,6 +190,27 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             port_range_max=22)
 
     @classmethod
+    def create_ingress_metadata_secgroup_rule(cls, secgroup_id=None):
+        """This rule is intended to permit inbound metadata traffic
+
+        Allowing ingress traffic from metadata server, required only for
+        stateless security groups.
+        """
+        if getattr(cls, 'stateless_sg'):
+            # NOTE(slaweq): in case of stateless security groups, there is no
+            # "related" or "established" traffic matching at all so even if
+            # egress traffic to 169.254.169.254 is allowed by default SG, we
+            # need to explicitly allow ingress traffic from the metadata server
+            # to be able to receive responses in the guest vm
+            cls.create_security_group_rule(
+                security_group_id=secgroup_id,
+                direction=neutron_lib_constants.INGRESS_DIRECTION,
+                protocol=neutron_lib_constants.PROTO_NAME_TCP,
+                remote_ip_prefix='169.254.169.254/32',
+                description='metadata out'
+            )
+
+    @classmethod
     def create_pingable_secgroup_rule(cls, secgroup_id=None,
                                       client=None):
         """This rule is intended to permit inbound ping

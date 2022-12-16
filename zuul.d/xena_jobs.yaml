@@ -95,7 +95,6 @@
     name: neutron-tempest-plugin-scenario-openvswitch-xena
     parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/xena
-    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/xena
       tempest_test_regex: "\
@@ -116,7 +115,6 @@
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-xena
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/xena
-    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/xena
       tempest_test_regex: "\
@@ -137,7 +135,6 @@
     name: neutron-tempest-plugin-scenario-linuxbridge-xena
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/xena
-    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/xena
       tempest_test_regex: "\
@@ -158,7 +155,6 @@
     name: neutron-tempest-plugin-scenario-ovn-xena
     parent: neutron-tempest-plugin-ovn
     override-checkout: stable/xena
-    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/xena
       tempest_test_regex: "\
@@ -186,7 +182,6 @@
     name: neutron-tempest-plugin-designate-scenario-xena
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/xena
-    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       branch_override: stable/xena
       network_api_extensions_common: *api_extensions

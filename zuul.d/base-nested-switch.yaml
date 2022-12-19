@@ -8,38 +8,12 @@
         nodes:
           - controller
 
-- nodeset:
-    name: neutron-nested-virt-ubuntu-jammy
-    nodes:
-      - name: controller
-        label: nested-virt-ubuntu-jammy
-    groups:
-      - name: tempest
-        nodes:
-          - controller
-
-# Base nested switch job for 2023.1 and later
+# Base nested switch job for non EM releases
 - job:
     name: neutron-tempest-plugin-base-nested-switch
     parent: neutron-tempest-plugin-base
     abstract: true
-    branches: ^(?!stable/(queens|rocky|stein|train|ussuri|victoria|wallaby|xena|yoga|zed)).*$
-    # Comment nodeset and vars to switch back to non nested nodes
-    nodeset: neutron-nested-virt-ubuntu-jammy
-    vars:
-      devstack_localrc:
-        LIBVIRT_TYPE: kvm
-        LIBVIRT_CPU_MODE: host-passthrough
-        CIRROS_VERSION: 0.5.2
-        DEFAULT_IMAGE_NAME: cirros-0.5.2-x86_64-disk
-        DEFAULT_IMAGE_FILE_NAME: cirros-0.5.2-x86_64-disk.img
-
-# Base nested switch job for victoria through zed
-- job:
-    name: neutron-tempest-plugin-base-nested-switch
-    parent: neutron-tempest-plugin-base
-    abstract: true
-    branches: ^stable/(victoria|wallaby|xena|yoga|zed)$
+    branches: ^(?!stable/(queens|rocky|stein|train|ussuri)).*$
     # Comment nodeset and vars to switch back to non nested nodes
     nodeset: neutron-nested-virt-ubuntu-focal
     vars:
@@ -55,4 +29,4 @@
     name: neutron-tempest-plugin-scenario-nested-switch
     parent: neutron-tempest-plugin-base
     abstract: true
-    branches: ^stable/(queens|rocky|stein|train|ussuri)$
+    branches: ^(stable/(queens|rocky|stein|train|ussuri)).*$

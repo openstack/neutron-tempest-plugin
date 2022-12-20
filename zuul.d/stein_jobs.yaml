@@ -116,9 +116,6 @@
         ADVANCED_INSTANCE_USER: ubuntu
       devstack_local_conf:
         post-config:
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           /$NEUTRON_CORE_PLUGIN_CONF:
             AGENT:
               tunnel_types: gre,vxlan
@@ -211,9 +208,6 @@
             DEFAULT:
               enable_dvr: false
               l3_ha: true
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           /$NEUTRON_CORE_PLUGIN_CONF:
             agent:
               tunnel_types: vxlan,gre
@@ -311,9 +305,6 @@
               l3_ha: true
             AGENT:
               debug_iptables_rules: true
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           /$NEUTRON_CORE_PLUGIN_CONF:
             ml2:
               type_drivers: flat,vlan,local,vxlan

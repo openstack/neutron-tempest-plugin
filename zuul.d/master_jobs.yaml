@@ -164,9 +164,6 @@
               quota_floatingip: 500
               quota_security_group: 150
               quota_security_group_rule: 1000
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           /$NEUTRON_CORE_PLUGIN_CONF:
             ml2:
               type_drivers: flat,geneve,vlan,gre,local,vxlan
@@ -256,9 +253,6 @@
             DEFAULT:
               enable_dvr: false
               l3_ha: true
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           /$NEUTRON_CORE_PLUGIN_CONF:
             agent:
               tunnel_types: vxlan,gre
@@ -356,9 +350,6 @@
             DEFAULT:
               enable_dvr: false
               l3_ha: true
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           /$NEUTRON_CORE_PLUGIN_CONF:
             agent:
               tunnel_types: vxlan,gre
@@ -514,9 +505,6 @@
               debug_iptables_rules: true
             EXPERIMENTAL:
               linuxbridge: true
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           /$NEUTRON_CORE_PLUGIN_CONF:
             ml2:
               type_drivers: flat,vlan,local,vxlan
@@ -803,9 +791,6 @@
               quota_security_group_rule: 1000
             DEFAULT:
               router_distributed: True
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           "/$NEUTRON_CORE_PLUGIN_CONF":
             ml2:
               type_drivers: flat,geneve,vlan,gre,local,vxlan
@@ -885,9 +870,6 @@
             $NEUTRON_CONF:
               DEFAULT:
                 router_distributed: True
-            # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-            # devstack-tempest job will be switched to use lib/neutron instead of
-            # lib/neutron-legacy
             "/$NEUTRON_CORE_PLUGIN_CONF":
               agent:
                 enable_distributed_routing: True

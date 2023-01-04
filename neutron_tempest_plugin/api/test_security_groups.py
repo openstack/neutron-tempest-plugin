@@ -29,13 +29,15 @@ from oslo_log import log
 LOG = log.getLogger(__name__)
 
 
-class SecGroupTest(base.BaseAdminNetworkTest):
+class BaseSecGroupTest(base.BaseAdminNetworkTest):
 
     required_extensions = ['security-group']
 
-    @decorators.idempotent_id('bfd128e5-3c92-44b6-9d66-7fe29d22c802')
-    def test_create_list_update_show_delete_security_group(self):
-        security_group = self.create_security_group()
+    def _test_create_list_update_show_delete_security_group(self):
+        sg_kwargs = {}
+        if self.stateless_sg:
+            sg_kwargs['stateful'] = False
+        security_group = self.create_security_group(**sg_kwargs)
 
         # List security groups and verify if created group is there in response
         security_groups = self.client.list_security_groups()['security_groups']
@@ -61,9 +63,11 @@ class SecGroupTest(base.BaseAdminNetworkTest):
         self.assertEqual(observed_security_group['description'],
                          new_description)
 
-    @decorators.idempotent_id('1fff0d57-bb6c-4528-9c1d-2326dce1c087')
-    def test_show_security_group_contains_all_rules(self):
-        security_group = self.create_security_group()
+    def _test_show_security_group_contains_all_rules(self):
+        sg_kwargs = {}
+        if self.stateless_sg:
+            sg_kwargs['stateful'] = False
+        security_group = self.create_security_group(**sg_kwargs)
         protocol = random.choice(list(base_security_groups.V4_PROTOCOL_NAMES))
         security_group_rule = self.create_security_group_rule(
             security_group=security_group,
@@ -80,14 +84,16 @@ class SecGroupTest(base.BaseAdminNetworkTest):
         self.assertIn(
             security_group_rule['id'], observerd_security_group_rules_ids)
 
-    @decorators.idempotent_id('b5923b1a-4d33-44e1-af25-088dcb55b02b')
-    def test_list_security_group_rules_contains_all_rules(self):
+    def _test_list_security_group_rules_contains_all_rules(self):
         """Test list security group rules.
 
         This test checks if all SG rules which belongs to the tenant OR
         which belongs to the tenant's security group are listed.
         """
-        security_group = self.create_security_group()
+        sg_kwargs = {}
+        if self.stateless_sg:
+            sg_kwargs['stateful'] = False
+        security_group = self.create_security_group(**sg_kwargs)
         protocol = random.choice(list(base_security_groups.V4_PROTOCOL_NAMES))
         security_group_rule = self.create_security_group_rule(
             security_group=security_group,
@@ -98,9 +104,13 @@ class SecGroupTest(base.BaseAdminNetworkTest):
 
         # Create also other SG with some custom rule to check that regular user
         # can't see this rule
-        admin_security_group = self.create_security_group(
-            project={'id': self.admin_client.tenant_id},
-            client=self.admin_client)
+        sg_kwargs = {
+            'project': {'id': self.admin_client.tenant_id},
+            'client': self.admin_client
+        }
+        if self.stateless_sg:
+            sg_kwargs['stateful'] = False
+        admin_security_group = self.create_security_group(**sg_kwargs)
         admin_security_group_rule = self.create_security_group_rule(
             security_group=admin_security_group,
             project={'id': self.admin_client.tenant_id},
@@ -113,12 +123,12 @@ class SecGroupTest(base.BaseAdminNetworkTest):
         self.assertIn(security_group_rule['id'], rules_ids)
         self.assertNotIn(admin_security_group_rule['id'], rules_ids)
 
-    @decorators.idempotent_id('7c0ecb10-b2db-11e6-9b14-000c29248b0d')
-    def test_create_bulk_sec_groups(self):
+    def _test_create_bulk_sec_groups(self):
         # Creates 2 sec-groups in one request
         sec_nm = [data_utils.rand_name('secgroup'),
                   data_utils.rand_name('secgroup')]
-        body = self.client.create_bulk_security_groups(sec_nm)
+        body = self.client.create_bulk_security_groups(
+            sec_nm, stateless=self.stateless_sg)
         created_sec_grps = body['security_groups']
         self.assertEqual(2, len(created_sec_grps))
         for secgrp in created_sec_grps:
@@ -127,13 +137,16 @@ class SecGroupTest(base.BaseAdminNetworkTest):
             self.assertIn(secgrp['name'], sec_nm)
             self.assertIsNotNone(secgrp['id'])
 
-    @decorators.idempotent_id('e93f33d8-57ea-11eb-b69b-74e5f9e2a801')
-    def test_create_sec_groups_with_the_same_name(self):
+    def _test_create_sec_groups_with_the_same_name(self):
         same_name_sg_number = 5
         sg_name = 'sg_zahlabut'
         sg_names = [sg_name] * same_name_sg_number
+        sg_kwargs = {}
+        if self.stateless_sg:
+            sg_kwargs['stateful'] = False
         for name in sg_names:
-            self.create_security_group(name=name)
+            sg_kwargs['name'] = name
+            self.create_security_group(**sg_kwargs)
         sec_groups = [item['id'] for item in
                       self.client.list_security_groups(
                           name=sg_name)['security_groups']]
@@ -143,9 +156,55 @@ class SecGroupTest(base.BaseAdminNetworkTest):
             ' is: {}'.format(same_name_sg_number))
 
 
-class StatelessSecGroupTest(base.BaseAdminNetworkTest):
+class StatefulSecGroupTest(BaseSecGroupTest):
+
+    stateless_sg = False
+
+    @decorators.idempotent_id('bfd128e5-3c92-44b6-9d66-7fe29d22c802')
+    def test_create_list_update_show_delete_security_group(self):
+        self._test_create_list_update_show_delete_security_group()
+
+    @decorators.idempotent_id('1fff0d57-bb6c-4528-9c1d-2326dce1c087')
+    def test_show_security_group_contains_all_rules(self):
+        self._test_show_security_group_contains_all_rules()
+
+    @decorators.idempotent_id('b5923b1a-4d33-44e1-af25-088dcb55b02b')
+    def test_list_security_group_rules_contains_all_rules(self):
+        self._test_list_security_group_rules_contains_all_rules()
+
+    @decorators.idempotent_id('7c0ecb10-b2db-11e6-9b14-000c29248b0d')
+    def test_create_bulk_sec_groups(self):
+        self._test_create_bulk_sec_groups()
+
+    @decorators.idempotent_id('e93f33d8-57ea-11eb-b69b-74e5f9e2a801')
+    def test_create_sec_groups_with_the_same_name(self):
+        self._test_create_sec_groups_with_the_same_name()
+
+
+class StatelessSecGroupTest(BaseSecGroupTest):
 
     required_extensions = ['security-group', 'stateful-security-group']
+    stateless_sg = True
+
+    @decorators.idempotent_id('0214d58a-2177-47e1-af83-dcd45c024829')
+    def test_create_list_update_show_delete_security_group(self):
+        self._test_create_list_update_show_delete_security_group()
+
+    @decorators.idempotent_id('ddbc0e4c-840f-44ab-8718-0b95b7c7b575')
+    def test_show_security_group_contains_all_rules(self):
+        self._test_show_security_group_contains_all_rules()
+
+    @decorators.idempotent_id('cdf3a63a-08fe-4091-bab4-62180847990f')
+    def test_list_security_group_rules_contains_all_rules(self):
+        self._test_list_security_group_rules_contains_all_rules()
+
+    @decorators.idempotent_id('b33e612e-65f0-467b-9bf2-b5b2ce67f72f')
+    def test_create_bulk_sec_groups(self):
+        self._test_create_bulk_sec_groups()
+
+    @decorators.idempotent_id('a6896935-db18-413d-95f5-4f465e0e2209')
+    def test_create_sec_groups_with_the_same_name(self):
+        self._test_create_sec_groups_with_the_same_name()
 
     @decorators.idempotent_id('0a6c1476-3d1a-11ec-b0ec-0800277ac3d9')
     def test_stateless_security_group_update(self):
@@ -380,21 +439,16 @@ class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
         self.assertEqual(self._get_sg_rules_quota(), new_quota)
 
 
-class SecGroupProtocolTest(base.BaseNetworkTest):
+class BaseSecGroupProtocolTest(base.BaseNetworkTest):
 
     protocol_names = base_security_groups.V4_PROTOCOL_NAMES
     protocol_ints = base_security_groups.V4_PROTOCOL_INTS
 
-    @decorators.idempotent_id('282e3681-aa6e-42a7-b05c-c341aa1e3cdf')
-    def test_security_group_rule_protocol_names(self):
-        self._test_security_group_rule_protocols(protocols=self.protocol_names)
-
-    @decorators.idempotent_id('66e47f1f-20b6-4417-8839-3cc671c7afa3')
-    def test_security_group_rule_protocol_ints(self):
-        self._test_security_group_rule_protocols(protocols=self.protocol_ints)
-
     def _test_security_group_rule_protocols(self, protocols):
-        security_group = self.create_security_group()
+        sg_kwargs = {}
+        if self.stateless_sg:
+            sg_kwargs['stateful'] = False
+        security_group = self.create_security_group(**sg_kwargs)
         for protocol in protocols:
             self._test_security_group_rule(
                 security_group=security_group,
@@ -414,14 +468,38 @@ class SecGroupProtocolTest(base.BaseNetworkTest):
                              "{!r} does not match.".format(key))
 
 
-class SecGroupProtocolIPv6Test(SecGroupProtocolTest):
+class StatefulSecGroupProtocolTest(BaseSecGroupProtocolTest):
+    stateless_sg = False
+
+    @decorators.idempotent_id('282e3681-aa6e-42a7-b05c-c341aa1e3cdf')
+    def test_security_group_rule_protocol_names(self):
+        self._test_security_group_rule_protocols(protocols=self.protocol_names)
+
+    @decorators.idempotent_id('66e47f1f-20b6-4417-8839-3cc671c7afa3')
+    def test_security_group_rule_protocol_ints(self):
+        self._test_security_group_rule_protocols(protocols=self.protocol_ints)
+
+
+class StatelessSecGroupProtocolTest(BaseSecGroupProtocolTest):
+    required_extensions = ['security-group', 'stateful-security-group']
+    stateless_sg = True
+
+    @decorators.idempotent_id('3a065cdd-99bd-409f-a08e-385c6674bec2')
+    def test_security_group_rule_protocol_names(self):
+        self._test_security_group_rule_protocols(protocols=self.protocol_names)
+
+    @decorators.idempotent_id('b0332b5d-6fac-49d5-a79d-ae4fe62600f7')
+    def test_security_group_rule_protocol_ints(self):
+        self._test_security_group_rule_protocols(protocols=self.protocol_ints)
+
+
+class BaseSecGroupProtocolIPv6Test(BaseSecGroupProtocolTest):
 
     _ip_version = constants.IP_VERSION_6
     protocol_names = base_security_groups.V6_PROTOCOL_NAMES
     protocol_ints = base_security_groups.V6_PROTOCOL_INTS
 
-    @decorators.idempotent_id('c7d17b41-3b4e-4add-bb3b-6af59baaaffa')
-    def test_security_group_rule_protocol_legacy_icmpv6(self):
+    def _test_security_group_rule_protocol_legacy_icmpv6(self):
         # These legacy protocols can be used to create security groups,
         # but they could be shown either with their passed protocol name,
         # or a canonical-ized version, depending on the neutron version.
@@ -439,7 +517,10 @@ class SecGroupProtocolIPv6Test(SecGroupProtocolTest):
                 ethertype=self.ethertype)
 
     def _test_security_group_rule_legacy(self, protocol_list, **kwargs):
-        security_group = self.create_security_group()
+        sg_kwargs = {}
+        if self.stateless_sg:
+            sg_kwargs['stateful'] = False
+        security_group = self.create_security_group(**sg_kwargs)
         security_group_rule = self.create_security_group_rule(
             security_group=security_group, **kwargs)
         observed_security_group_rule = self.client.show_security_group_rule(
@@ -455,6 +536,23 @@ class SecGroupProtocolIPv6Test(SecGroupProtocolTest):
                                  "{!r} does not match.".format(key))
                 self.assertEqual(value, observed_security_group_rule[key],
                                  "{!r} does not match.".format(key))
+
+
+class StatefulSecGroupProtocolIPv6Test(BaseSecGroupProtocolIPv6Test):
+    stateless_sg = False
+
+    @decorators.idempotent_id('c7d17b41-3b4e-4add-bb3b-6af59baaaffa')
+    def test_security_group_rule_protocol_legacy_icmpv6(self):
+        self._test_security_group_rule_protocol_legacy_icmpv6()
+
+
+class StatelessSecGroupProtocolIPv6Test(BaseSecGroupProtocolIPv6Test):
+    required_extensions = ['security-group', 'stateful-security-group']
+    stateless_sg = True
+
+    @decorators.idempotent_id('a034814e-0fa5-4437-8e6f-0d2eebd668b3')
+    def test_security_group_rule_protocol_legacy_icmpv6(self):
+        self._test_security_group_rule_protocol_legacy_icmpv6()
 
 
 class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):

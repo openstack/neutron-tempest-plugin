@@ -594,14 +594,6 @@
         Q_ML2_PLUGIN_TYPE_DRIVERS: local,flat,vlan,geneve
         Q_ML2_TENANT_NETWORK_TYPE: geneve
         Q_USE_PROVIDERNET_FOR_PUBLIC: true
-        # NOTE(slaweq): In the job with OVN backend we can't use Ubuntu minimal
-        # image because kernel in that image don't supports MULTICAST traffic
-        # thus multicast scenario test with IGMP snooping enabled would fail
-        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
-        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
-        ADVANCED_INSTANCE_TYPE: ntp_image_384M
-        ADVANCED_INSTANCE_USER: ubuntu
-        CUSTOMIZE_IMAGE: false
         ENABLE_CHASSIS_AS_GW: true
         OVN_L3_CREATE_PUBLIC_NETWORK: true
         OVN_DBS_LOG_LEVEL: dbg

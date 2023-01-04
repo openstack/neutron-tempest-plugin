@@ -254,6 +254,12 @@
         OVN_BRANCH: "v20.03.0"
         # NOTE(slaweq): IGMP Snooping requires OVN 20.12
         OVN_IGMP_SNOOPING_ENABLE: False
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:

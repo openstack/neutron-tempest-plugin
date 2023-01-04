@@ -19,10 +19,11 @@
     vars:
       devstack_localrc:
         LIBVIRT_TYPE: kvm
-        LIBVIRT_CPU_MODE: host-passthrough
-        CIRROS_VERSION: 0.5.1
-        DEFAULT_IMAGE_NAME: cirros-0.5.1-x86_64-disk
-        DEFAULT_IMAGE_FILE_NAME: cirros-0.5.1-x86_64-disk.img
+        # cirros 0.6.1 not booting when host-passthrough is used
+        # LIBVIRT_CPU_MODE: host-passthrough
+        CIRROS_VERSION: 0.6.1
+        DEFAULT_IMAGE_NAME: cirros-0.6.1-x86_64-disk
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.6.1-x86_64-disk.img
 
 # Base nested switch job for EM releases
 - job:

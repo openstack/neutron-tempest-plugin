@@ -117,9 +117,6 @@
         ML2_L3_PLUGIN: router
       devstack_local_conf:
         post-config:
-          # NOTE(slaweq): We can get rid of this hardcoded absolute path when
-          # devstack-tempest job will be switched to use lib/neutron instead of
-          # lib/neutron-legacy
           /$NEUTRON_CORE_PLUGIN_CONF:
             AGENT:
               tunnel_types: gre,vxlan

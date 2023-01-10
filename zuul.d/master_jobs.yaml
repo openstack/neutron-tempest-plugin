@@ -1271,11 +1271,6 @@
         - taas-vlan-filter
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
-        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
-        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
-        ADVANCED_INSTANCE_TYPE: ntp_image_384M
-        ADVANCED_INSTANCE_USER: ubuntu
-        CUSTOMIZE_IMAGE: false
         BUILD_TIMEOUT: 784
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan,vlan

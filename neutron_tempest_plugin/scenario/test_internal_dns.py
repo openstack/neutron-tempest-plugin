@@ -129,12 +129,13 @@ class InternalDNSTest(InternalDNSBase):
             servers=[self.server, leia])
 
         resolv_conf = ssh_client.exec_command('cat /etc/resolv.conf')
-        self.assertIn('openstackgate.local', resolv_conf)
+        dns_domain = CONF.neutron_plugin_options.dns_domain
+        self.assertIn(dns_domain, resolv_conf)
         self.assertNotIn('starwars', resolv_conf)
 
         self.check_remote_connectivity(ssh_client, 'leia',
                                        servers=[self.server, leia])
-        self.check_remote_connectivity(ssh_client, 'leia.openstackgate.local',
+        self.check_remote_connectivity(ssh_client, 'leia.' + dns_domain,
                                        servers=[self.server, leia])
 
     @utils.requires_ext(extension="dns-integration", service="network")

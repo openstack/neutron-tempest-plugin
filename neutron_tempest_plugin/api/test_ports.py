@@ -80,7 +80,7 @@ class PortsTestJSON(base.BaseNetworkTest):
                        service="network")
     def test_create_update_port_with_dns_name(self):
         # NOTE(manjeets) dns_domain is set to openstackgate.local
-        # so dns_name for port can be set
+        # (or any other configured value) so dns_name for port can be set
         self.create_subnet(self.network)
         body = self.create_port(self.network, dns_name='d1')
         self.assertEqual('d1', body['dns_name'])

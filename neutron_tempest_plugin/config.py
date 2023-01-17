@@ -73,6 +73,10 @@ NeutronPluginOptions = [
                choices=['None', 'openvswitch', 'ovn',
                         'iptables_hybrid', 'iptables'],
                help='Driver for security groups firewall in the L2 agent'),
+    cfg.StrOpt('dns_domain',
+               default='openstackgate.local',
+               help='dns_domain value configured at neutron.conf, which will '
+                    'be used for the DNS configuration of the instances'),
 
     # Multicast tests settings
     cfg.StrOpt('multicast_group_range',

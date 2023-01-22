@@ -140,8 +140,9 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
             **sg_kwargs)
         self.create_loginable_secgroup_rule(
             secgroup_id=ssh_secgrp['security_group']['id'])
-        self.create_ingress_metadata_secgroup_rule(
-            secgroup_id=ssh_secgrp['security_group']['id'])
+        if self.stateless_sg:
+            self.create_ingress_metadata_secgroup_rule(
+                secgroup_id=ssh_secgrp['security_group']['id'])
         icmp_secgrp = self.os_primary.network_client.create_security_group(
             name=icmp_secgrp_name,
             **sg_kwargs)
@@ -235,8 +236,9 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
             **sg_kwargs)
         self.create_pingable_secgroup_rule(
             secgroup_id=icmp_secgrp['security_group']['id'])
-        self.create_ingress_metadata_secgroup_rule(
-            secgroup_id=ssh_secgrp['security_group']['id'])
+        if self.stateless_sg:
+            self.create_ingress_metadata_secgroup_rule(
+                secgroup_id=ssh_secgrp['security_group']['id'])
         for sec_grp in (ssh_secgrp, icmp_secgrp):
             self.security_groups.append(sec_grp['security_group'])
         security_groups_list = [{'name': ssh_secgrp_name},
@@ -294,8 +296,9 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         # configure sec group to support SSH connectivity
         self.create_loginable_secgroup_rule(
             secgroup_id=ssh_secgrp['security_group']['id'])
-        self.create_ingress_metadata_secgroup_rule(
-            secgroup_id=ssh_secgrp['security_group']['id'])
+        if self.stateless_sg:
+            self.create_ingress_metadata_secgroup_rule(
+                secgroup_id=ssh_secgrp['security_group']['id'])
         # spawn two instances with the sec group created
         server_ssh_clients, fips, servers = self.create_vm_testing_sec_grp(
             security_groups=[{'name': ssh_secgrp_name}])
@@ -426,8 +429,9 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
             secgroup_id=secgrp['security_group']['id'])
         self.create_pingable_secgroup_rule(
             secgroup_id=secgrp['security_group']['id'])
-        self.create_ingress_metadata_secgroup_rule(
-            secgroup_id=secgrp['security_group']['id'])
+        if self.stateless_sg:
+            self.create_ingress_metadata_secgroup_rule(
+                secgroup_id=secgrp['security_group']['id'])
         # add security group to cleanup
         self.security_groups.append(secgrp['security_group'])
         # create two ports with fixed IPs and the security group created

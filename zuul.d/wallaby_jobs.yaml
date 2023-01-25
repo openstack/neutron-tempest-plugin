@@ -2,6 +2,11 @@
     name: neutron-tempest-plugin-api-wallaby
     parent: neutron-tempest-plugin-base
     override-checkout: stable/wallaby
+    required-projects: &required-projects-wallaby
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.8.0
+      - openstack/tempest
     vars:
       tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.api
@@ -93,6 +98,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-wallaby
     parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -112,6 +118,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-wallaby
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -131,6 +138,7 @@
     name: neutron-tempest-plugin-scenario-linuxbridge-wallaby
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -150,6 +158,7 @@
     name: neutron-tempest-plugin-scenario-ovn-wallaby
     parent: neutron-tempest-plugin-ovn
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -168,6 +177,7 @@
     name: neutron-tempest-plugin-dvr-multinode-scenario-wallaby
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -175,6 +185,13 @@
     name: neutron-tempest-plugin-designate-scenario-wallaby
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/wallaby
+    required-projects:
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 1.8.0
+      - openstack/tempest
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.16.0
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -182,6 +199,7 @@
     name: neutron-tempest-plugin-sfc-wallaby
     parent: neutron-tempest-plugin-sfc
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -189,6 +207,7 @@
     name: neutron-tempest-plugin-bgpvpn-bagpipe-wallaby
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       network_api_extensions: *api_extensions
 
@@ -196,6 +215,7 @@
     name: neutron-tempest-plugin-dynamic-routing-wallaby
     parent: neutron-tempest-plugin-dynamic-routing
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -203,5 +223,6 @@
     name: neutron-tempest-plugin-vpnaas-wallaby
     parent: neutron-tempest-plugin-vpnaas
     override-checkout: stable/wallaby
+    required-projects: *required-projects-wallaby
     vars:
       network_api_extensions_common: *api_extensions

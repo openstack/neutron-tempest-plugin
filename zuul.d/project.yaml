@@ -216,7 +216,6 @@
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
-      - neutron-tempest-plugin-jobs-wallaby
       - neutron-tempest-plugin-jobs-xena
       - neutron-tempest-plugin-jobs-yoga
       - neutron-tempest-plugin-jobs-zed
@@ -226,24 +225,20 @@
     check:
       jobs:
         - neutron-tempest-plugin-sfc
-        - neutron-tempest-plugin-sfc-wallaby
         - neutron-tempest-plugin-sfc-xena
         - neutron-tempest-plugin-sfc-yoga
         - neutron-tempest-plugin-sfc-zed
         - neutron-tempest-plugin-bgpvpn-bagpipe
-        - neutron-tempest-plugin-bgpvpn-bagpipe-wallaby
         - neutron-tempest-plugin-bgpvpn-bagpipe-xena
         - neutron-tempest-plugin-bgpvpn-bagpipe-yoga
         - neutron-tempest-plugin-bgpvpn-bagpipe-zed
         - neutron-tempest-plugin-dynamic-routing
-        - neutron-tempest-plugin-dynamic-routing-wallaby
         - neutron-tempest-plugin-dynamic-routing-xena
         - neutron-tempest-plugin-dynamic-routing-yoga
         - neutron-tempest-plugin-dynamic-routing-zed
         - neutron-tempest-plugin-fwaas
         - neutron-tempest-plugin-fwaas-zed
         - neutron-tempest-plugin-vpnaas
-        - neutron-tempest-plugin-vpnaas-wallaby
         - neutron-tempest-plugin-vpnaas-xena
         - neutron-tempest-plugin-vpnaas-yoga
         - neutron-tempest-plugin-vpnaas-zed

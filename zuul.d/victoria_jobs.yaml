@@ -1,6 +1,7 @@
 - job:
     name: neutron-tempest-plugin-api-victoria
     parent: neutron-tempest-plugin-base
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: &required-projects-victoria
       - openstack/neutron
@@ -133,6 +134,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-victoria
     parent: neutron-tempest-plugin-openvswitch
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -161,6 +163,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-victoria
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -189,6 +192,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-victoria
     parent: neutron-tempest-plugin-linuxbridge
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -217,6 +221,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-ovn-victoria
     parent: neutron-tempest-plugin-ovn
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -242,6 +247,7 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-victoria
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -250,6 +256,7 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-victoria
     parent: neutron-tempest-plugin-designate-scenario
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects:
       - openstack/neutron
@@ -271,6 +278,7 @@
 - job:
     name: neutron-tempest-plugin-sfc-victoria
     parent: neutron-tempest-plugin-sfc
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -279,6 +287,7 @@
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-victoria
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -287,6 +296,7 @@
 - job:
     name: neutron-tempest-plugin-dynamic-routing-victoria
     parent: neutron-tempest-plugin-dynamic-routing
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -295,6 +305,7 @@
 - job:
     name: neutron-tempest-plugin-vpnaas-victoria
     parent: neutron-tempest-plugin-vpnaas
+    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:

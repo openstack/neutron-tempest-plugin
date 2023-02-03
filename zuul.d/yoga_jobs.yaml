@@ -1,6 +1,7 @@
 - job:
     name: neutron-tempest-plugin-api-yoga
     parent: neutron-tempest-plugin-base
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_concurrency: 4
@@ -96,6 +97,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-yoga
     parent: neutron-tempest-plugin-openvswitch
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_test_regex: "\
@@ -115,6 +117,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-yoga
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_test_regex: "\
@@ -134,6 +137,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-yoga
     parent: neutron-tempest-plugin-linuxbridge
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_test_regex: "\
@@ -153,6 +157,7 @@
 - job:
     name: neutron-tempest-plugin-scenario-ovn-yoga
     parent: neutron-tempest-plugin-ovn
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_test_regex: "\
@@ -173,6 +178,7 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-yoga
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-focal
     override-checkout: stable/yoga
     vars:
       network_api_extensions_common: *api_extensions
@@ -180,6 +186,7 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-yoga
     parent: neutron-tempest-plugin-designate-scenario
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       network_api_extensions_common: *api_extensions
@@ -187,6 +194,7 @@
 - job:
     name: neutron-tempest-plugin-sfc-yoga
     parent: neutron-tempest-plugin-sfc
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       network_api_extensions_common: *api_extensions
@@ -194,6 +202,7 @@
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-yoga
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       network_api_extensions: *api_extensions
@@ -201,6 +210,7 @@
 - job:
     name: neutron-tempest-plugin-dynamic-routing-yoga
     parent: neutron-tempest-plugin-dynamic-routing
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       network_api_extensions_common: *api_extensions
@@ -208,6 +218,7 @@
 - job:
     name: neutron-tempest-plugin-vpnaas-yoga
     parent: neutron-tempest-plugin-vpnaas
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       network_api_extensions_common: *api_extensions
@@ -215,6 +226,7 @@
 - job:
     name: neutron-tempest-plugin-tap-as-a-service-yoga
     parent: neutron-tempest-plugin-tap-as-a-service
+    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       network_api_extensions_common: *api_extensions

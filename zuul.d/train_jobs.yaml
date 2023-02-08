@@ -239,28 +239,6 @@
       network_api_extensions_common: *api_extensions
 
 - job:
-    name: neutron-tempest-plugin-designate-scenario-train
-    parent: neutron-tempest-plugin-designate-scenario
-    nodeset: openstack-single-node-bionic
-    override-checkout: stable/train
-    required-projects:
-      - openstack/neutron
-      - name: openstack/neutron-tempest-plugin
-        override-checkout: 1.5.0
-      - openstack/tempest
-      - name: openstack/designate-tempest-plugin
-        override-checkout: 0.7.0
-    vars:
-      network_api_extensions_common: *api_extensions
-      devstack_localrc:
-        # NOTE(bcafarel) guestmount binary not available on host OS
-        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
-        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
-        ADVANCED_INSTANCE_TYPE: ds512M
-        ADVANCED_INSTANCE_USER: ubuntu
-        CUSTOMIZE_IMAGE: false
-
-- job:
     name: neutron-tempest-plugin-sfc-train
     parent: neutron-tempest-plugin-sfc
     nodeset: openstack-single-node-bionic

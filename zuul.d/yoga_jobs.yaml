@@ -97,7 +97,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-yoga
     parent: neutron-tempest-plugin-openvswitch
-    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_test_regex: "\
@@ -117,7 +116,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-yoga
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
-    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_test_regex: "\
@@ -137,7 +135,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-yoga
     parent: neutron-tempest-plugin-linuxbridge
-    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_test_regex: "\
@@ -157,7 +154,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-ovn-yoga
     parent: neutron-tempest-plugin-ovn
-    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       tempest_test_regex: "\
@@ -186,7 +182,6 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-yoga
     parent: neutron-tempest-plugin-designate-scenario
-    nodeset: openstack-single-node-focal
     override-checkout: stable/yoga
     vars:
       network_api_extensions_common: *api_extensions

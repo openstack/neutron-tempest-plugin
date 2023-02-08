@@ -134,7 +134,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-victoria
     parent: neutron-tempest-plugin-openvswitch
-    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -163,7 +162,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-victoria
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
-    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -192,7 +190,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-victoria
     parent: neutron-tempest-plugin-linuxbridge
-    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -221,7 +218,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-ovn-victoria
     parent: neutron-tempest-plugin-ovn
-    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects: *required-projects-victoria
     vars:
@@ -256,7 +252,6 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-victoria
     parent: neutron-tempest-plugin-designate-scenario
-    nodeset: openstack-single-node-focal
     override-checkout: stable/victoria
     required-projects:
       - openstack/neutron

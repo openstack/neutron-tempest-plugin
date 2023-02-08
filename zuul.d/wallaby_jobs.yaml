@@ -98,7 +98,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-wallaby
     parent: neutron-tempest-plugin-openvswitch
-    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     required-projects: *required-projects-wallaby
     vars:
@@ -119,7 +118,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-wallaby
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
-    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     required-projects: *required-projects-wallaby
     vars:
@@ -140,7 +138,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-wallaby
     parent: neutron-tempest-plugin-linuxbridge
-    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     required-projects: *required-projects-wallaby
     vars:
@@ -161,7 +158,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-ovn-wallaby
     parent: neutron-tempest-plugin-ovn
-    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     required-projects: *required-projects-wallaby
     vars:
@@ -190,7 +186,6 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-wallaby
     parent: neutron-tempest-plugin-designate-scenario
-    nodeset: openstack-single-node-focal
     override-checkout: stable/wallaby
     required-projects:
       - openstack/neutron

@@ -95,7 +95,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-xena
     parent: neutron-tempest-plugin-openvswitch
-    nodeset: openstack-single-node-focal
     override-checkout: stable/xena
     vars:
       tempest_test_regex: "\
@@ -115,7 +114,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-xena
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
-    nodeset: openstack-single-node-focal
     override-checkout: stable/xena
     vars:
       tempest_test_regex: "\
@@ -135,7 +133,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-linuxbridge-xena
     parent: neutron-tempest-plugin-linuxbridge
-    nodeset: openstack-single-node-focal
     override-checkout: stable/xena
     vars:
       tempest_test_regex: "\
@@ -155,7 +152,6 @@
 - job:
     name: neutron-tempest-plugin-scenario-ovn-xena
     parent: neutron-tempest-plugin-ovn
-    nodeset: openstack-single-node-focal
     override-checkout: stable/xena
     vars:
       tempest_test_regex: "\
@@ -182,7 +178,6 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-xena
     parent: neutron-tempest-plugin-designate-scenario
-    nodeset: openstack-single-node-focal
     override-checkout: stable/xena
     vars:
       network_api_extensions_common: *api_extensions

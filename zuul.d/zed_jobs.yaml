@@ -1,7 +1,6 @@
 - job:
     name: neutron-tempest-plugin-openvswitch-zed
     parent: neutron-tempest-plugin-openvswitch
-    nodeset: openstack-single-node-focal
     override-checkout: stable/zed
     vars:
       network_api_extensions_openvswitch:
@@ -107,7 +106,6 @@
 - job:
     name: neutron-tempest-plugin-openvswitch-iptables_hybrid-zed
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
-    nodeset: openstack-single-node-focal
     override-checkout: stable/zed
     vars:
       network_api_extensions_openvswitch:
@@ -138,7 +136,6 @@
 - job:
     name: neutron-tempest-plugin-linuxbridge-zed
     parent: neutron-tempest-plugin-linuxbridge
-    nodeset: openstack-single-node-focal
     override-checkout: stable/zed
     vars:
       network_api_extensions_linuxbridge:
@@ -165,7 +162,6 @@
 - job:
     name: neutron-tempest-plugin-ovn-zed
     parent: neutron-tempest-plugin-ovn
-    nodeset: openstack-single-node-focal
     override-checkout: stable/zed
     vars:
       tempest_test_regex: "\
@@ -197,7 +193,6 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-zed
     parent: neutron-tempest-plugin-designate-scenario
-    nodeset: openstack-single-node-focal
     override-checkout: stable/zed
     vars:
       network_api_extensions_common: *api_extensions

@@ -85,7 +85,6 @@
         - neutron-tempest-plugin-scenario-linuxbridge-train
         - neutron-tempest-plugin-scenario-openvswitch-train
         - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-train
-        - neutron-tempest-plugin-designate-scenario-train
     gate:
       jobs:
         - neutron-tempest-plugin-api-train

@@ -189,3 +189,66 @@ class NegativeSecGroupRulesQuotaTest(
     def test_sg_creation_with_insufficient_sg_rules_quota(self):
         self._set_sg_rules_quota(0)
         self.assertRaises(lib_exc.Conflict, self.create_security_group)
+
+
+class NegativeStatelessSecGroupTest(base.BaseNetworkTest):
+
+    required_extensions = ['security-group', 'stateful-security-group']
+
+    @classmethod
+    def resource_setup(cls):
+        super().resource_setup()
+        cls.network = cls.create_network()
+        cls.stateless_sg = cls.create_security_group(stateful=False)
+        cls.stateful_sg = cls.create_security_group(stateful=True)
+
+    @decorators.idempotent_id('9e85ce0d-37b2-4044-88a8-09ae965069ba')
+    def test_create_port_with_stateful_and_stateless_sg(self):
+        self.assertRaises(
+            lib_exc.Conflict,
+            self.create_port,
+            network=self.network,
+            security_groups=[self.stateful_sg['id'], self.stateless_sg['id']])
+
+    def _test_adding_sg_to_port_with_different_type_of_sg(
+            self, initial_sg, updated_sg):
+        port = self.create_port(
+            network=self.network,
+            security_groups=[initial_sg['id']]
+        )
+        self.assertRaises(
+            lib_exc.Conflict,
+            self.update_port,
+            port,
+            security_groups=[initial_sg['id'], updated_sg['id']]
+        )
+
+    @decorators.idempotent_id('63374580-3154-410b-ab31-e98a136094f8')
+    def test_adding_stateful_sg_to_port_with_stateless_sg(self):
+        self._test_adding_sg_to_port_with_different_type_of_sg(
+            self.stateless_sg, self.stateful_sg)
+
+    @decorators.idempotent_id('3854a4c6-4ace-4133-be83-4a2820ede06f')
+    def test_adding_stateless_sg_to_port_with_stateful_sg(self):
+        self._test_adding_sg_to_port_with_different_type_of_sg(
+            self.stateful_sg, self.stateless_sg)
+
+    def _test_update_used_sg(self, security_group):
+        self.create_port(
+            network=self.network,
+            security_groups=[security_group['id']]
+        )
+        self.assertRaises(
+            lib_exc.Conflict,
+            self.client.update_security_group,
+            security_group['id'],
+            stateful=not security_group['stateful']
+        )
+
+    @decorators.idempotent_id('5e1e3053-16dc-4f0b-a327-ff953f527248')
+    def test_update_used_stateless_sg_to_stateful(self):
+        self._test_update_used_sg(self.stateless_sg)
+
+    @decorators.idempotent_id('afe4d777-7a98-44ed-a1dc-588861f6daba')
+    def test_update_used_stateful_sg_to_stateless(self):
+        self._test_update_used_sg(self.stateful_sg)

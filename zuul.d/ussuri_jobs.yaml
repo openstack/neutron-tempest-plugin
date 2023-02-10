@@ -145,8 +145,14 @@
           (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
-      devstack_localrc:
+      devstack_localrc: &localrc_scenarios_common
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        # NOTE(bcafarel) guestmount binary not available on host OS
+        IMAGE_URLS: https://cloud-images.ubuntu.com/releases/bionic/release/ubuntu-18.04-server-cloudimg-amd64.img
+        ADVANCED_IMAGE_NAME: ubuntu-18.04-server-cloudimg-amd64
+        ADVANCED_INSTANCE_TYPE: ds512M
+        ADVANCED_INSTANCE_USER: ubuntu
+        CUSTOMIZE_IMAGE: false
       devstack_local_conf:
         post-config:
           $NEUTRON_L3_CONF:
@@ -174,8 +180,7 @@
           (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
-      devstack_localrc:
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+      devstack_localrc: *localrc_scenarios_common
       devstack_local_conf:
         post-config:
           $NEUTRON_L3_CONF:
@@ -202,8 +207,7 @@
           (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
-      devstack_localrc:
-        NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+      devstack_localrc: *localrc_scenarios_common
       devstack_local_conf:
         post-config:
           $NEUTRON_L3_CONF:

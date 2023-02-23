@@ -630,13 +630,14 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             self._log_local_network_status()
             raise
 
-    def nc_client(self, ip_address, port, protocol):
+    def nc_client(self, ip_address, port, protocol, ssh_client=None):
         """Check connectivity to TCP/UDP port at host via nc.
 
-        Client is always executed locally on host where tests are executed.
+        If ssh_client is not given, it is executed locally on host where tests
+        are executed. Otherwise ssh_client object is used to execute it.
         """
         cmd = get_ncat_client_cmd(ip_address, port, protocol)
-        result = shell.execute_local_command(cmd)
+        result = shell.execute(cmd, ssh_client=ssh_client)
         self.assertEqual(0, result.exit_status)
         return result.stdout
 

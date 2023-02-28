@@ -180,6 +180,10 @@
           (^tempest.api.compute.servers.test_multiple_create)"
       network_api_extensions: *api_extensions
       network_available_features: *available_features
+      # TODO(akatz): remove established tcp session verification test when the
+      # bug https://bugzilla.redhat.com/show_bug.cgi?id=1965036 will be fixed
+      tempest_exclude_regex: "\
+          (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)"
       devstack_localrc: *localrc_scenarios_common
       devstack_local_conf:
         post-config:
@@ -286,9 +290,11 @@
       - name: openstack/neutron-tempest-plugin
         override-checkout: 1.6.0
       - openstack/tempest
-      - openstack/designate-tempest-plugin
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 0.7.0
     vars:
-      network_api_extensions_common: *api_extensions
+      network_api_extensions: *api_extensions
+      devstack_localrc: *localrc_scenarios_common
 
 - job:
     name: neutron-tempest-plugin-sfc-ussuri

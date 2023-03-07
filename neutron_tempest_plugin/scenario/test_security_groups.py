@@ -128,6 +128,13 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
                 pkey=self.keypair['private_key']))
         return server_ssh_clients, fips, servers
 
+    def _get_default_security_group(self):
+        sgs = self.os_primary.network_client.list_security_groups(
+            project_id=self.project_id)['security_groups']
+        for sg in sgs:
+            if sg['name'] == 'default':
+                return sg
+
     def _test_ip_prefix(self, rule_list, should_succeed):
         # Add specific remote prefix to VMs and check connectivity
         ssh_secgrp_name = data_utils.rand_name('ssh_secgrp')
@@ -167,8 +174,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
 
     def _test_default_sec_grp_scenarios(self):
         # Ensure that SG used in tests is stateful or stateless as required
-        default_sg_id = self.os_primary.network_client.list_security_groups()[
-            'security_groups'][0]['id']
+        default_sg_id = self._get_default_security_group()['id']
         self.os_primary.network_client.update_security_group(
             default_sg_id, stateful=not self.stateless_sg)
         if self.stateless_sg:

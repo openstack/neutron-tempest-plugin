@@ -23,6 +23,7 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 
+from neutron_tempest_plugin.common import ip
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
@@ -33,6 +34,16 @@ from neutron_tempest_plugin.scenario import constants as const
 CONF = config.CONF
 
 EPHEMERAL_PORT_RANGE = {'min': 32768, 'max': 65535}
+
+
+def get_capture_script(interface, tcp_port, packet_types, result_file):
+    return """#!/bin/bash
+tcpdump -i %(interface)s -vvneA -s0 -l -c1 \
+"dst port %(port)s and tcp[tcpflags] == %(packet_types)s" &> %(result)s &
+    """ % {'interface': interface,
+           'port': tcp_port,
+           'packet_types': packet_types,
+           'result': result_file}
 
 
 class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
@@ -98,20 +109,32 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         self.network_client.update_quotas(self.project_id, security_group=-1)
 
     def create_vm_testing_sec_grp(self, num_servers=2, security_groups=None,
-                                  ports=None, network_id=None):
+                                  ports=None, network_id=None,
+                                  use_advanced_image=False):
         """Create instance for security group testing
 
         :param num_servers (int): number of servers to spawn
         :param security_groups (list): list of security groups
         :param ports* (list): list of ports
+        :param: use_advanced_image (bool): use Cirros (False) or
+                advanced guest image
         *Needs to be the same length as num_servers
         """
+        if (not use_advanced_image or
+                CONF.neutron_plugin_options.default_image_is_advanced):
+            flavor_ref = CONF.compute.flavor_ref
+            image_ref = CONF.compute.image_ref
+            username = CONF.validation.image_ssh_user
+        else:
+            flavor_ref = CONF.neutron_plugin_options.advanced_image_flavor_ref
+            image_ref = CONF.neutron_plugin_options.advanced_image_ref
+            username = CONF.neutron_plugin_options.advanced_image_ssh_user
         network_id = network_id or self.network['id']
         servers, fips, server_ssh_clients = ([], [], [])
         for i in range(num_servers):
             server_args = {
-                'flavor_ref': CONF.compute.flavor_ref,
-                'image_ref': CONF.compute.image_ref,
+                'flavor_ref': flavor_ref,
+                'image_ref': image_ref,
                 'key_name': self.keypair['name'],
                 'networks': [{'uuid': network_id}],
                 'security_groups': security_groups
@@ -128,7 +151,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
                     'id'])['ports'][0]
             fips.append(self.create_floatingip(port=port))
             server_ssh_clients.append(ssh.Client(
-                fips[i]['floating_ip_address'], CONF.validation.image_ssh_user,
+                fips[i]['floating_ip_address'], username,
                 pkey=self.keypair['private_key']))
         return server_ssh_clients, fips, servers
 
@@ -145,8 +168,8 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         return super(BaseNetworkSecGroupTest, self).create_security_group(
             name=data_utils.rand_name(name_prefix), **kwargs)
 
-    def _test_connectivity_between_vms_using_different_sec_groups(self):
-        TEST_TCP_PORT = 1022
+    def _create_client_and_server_vms(
+            self, allowed_tcp_port, use_advanced_image=False):
         networks = {
             'server': self.network,
             'client': self.create_network()}
@@ -162,13 +185,12 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
                 security_group_id=sg['id'],
                 protocol=constants.PROTO_NAME_TCP,
                 direction=constants.INGRESS_DIRECTION,
-                port_range_min=TEST_TCP_PORT,
-                port_range_max=TEST_TCP_PORT)
+                port_range_min=allowed_tcp_port,
+                port_range_max=allowed_tcp_port)
             if self.stateless_sg:
                 self.create_ingress_metadata_secgroup_rule(
                     secgroup_id=sg['id'])
             security_groups[sg_name] = sg
-
         # NOTE(slaweq): we need to iterate over create_vm_testing_sec_grp as
         # this method plugs all SGs to all VMs and we need each vm to use other
         # SGs
@@ -179,17 +201,23 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
             _ssh_clients, _fips, _servers = self.create_vm_testing_sec_grp(
                 num_servers=1,
                 security_groups=[{'name': sg['name']}],
-                network_id=networks[server_name]['id'])
+                network_id=networks[server_name]['id'],
+                use_advanced_image=use_advanced_image)
             ssh_clients[server_name] = _ssh_clients[0]
             fips[server_name] = _fips[0]
             servers[server_name] = _servers[0]
+        return ssh_clients, fips, servers, security_groups
+
+    def _test_connectivity_between_vms_using_different_sec_groups(self):
+        TEST_TCP_PORT = 1022
+        ssh_clients, fips, servers, security_groups = (
+            self._create_client_and_server_vms(TEST_TCP_PORT))
 
         # make sure tcp connectivity between vms works fine
         for fip in fips.values():
             self.check_connectivity(fip['floating_ip_address'],
                                     CONF.validation.image_ssh_user,
                                     self.keypair['private_key'])
-
         # Check connectivity between servers
         def _message_received(server_ssh_client, client_ssh_client,
                               dest_fip, servers):
@@ -994,3 +1022,71 @@ class StatelessNetworkSecGroupTest(BaseNetworkSecGroupTest):
     @decorators.idempotent_id('7ede9ab5-a615-46c5-9dea-cf2aa1ea43cb')
     def test_connectivity_between_vms_using_different_sec_groups(self):
         self._test_connectivity_between_vms_using_different_sec_groups()
+
+    @testtools.skipUnless(
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
+    @decorators.idempotent_id('c3bb8073-97a2-4bea-a6fb-0a9d2e4df13f')
+    def test_packets_of_any_connection_state_can_reach_dest(self):
+        TEST_TCP_PORT = 1022
+        PKT_TYPES = [
+            {'nping': 'syn', 'tcpdump': 'tcp-syn'},
+            {'nping': 'ack', 'tcpdump': 'tcp-ack'},
+            {'nping': 'syn,ack', 'tcpdump': 'tcp-syn|tcp-ack'},
+            {'nping': 'rst', 'tcpdump': 'tcp-rst'},
+            {'nping': 'fin', 'tcpdump': 'tcp-fin'},
+            {'nping': 'psh', 'tcpdump': 'tcp-push'}]
+        ssh_clients, fips, servers, _ = self._create_client_and_server_vms(
+            TEST_TCP_PORT, use_advanced_image=True)
+
+        self._check_cmd_installed_on_server(
+            ssh_clients['server'], servers['server']['server'], 'nping')
+        self._check_cmd_installed_on_server(
+            ssh_clients['client'], servers['client']['server'], 'tcpdump')
+        server_port = self.network_client.show_port(
+            fips['server']['port_id'])['port']
+        server_ip_command = ip.IPCommand(ssh_client=ssh_clients['server'])
+        addresses = server_ip_command.list_addresses(port=server_port)
+        port_iface = ip.get_port_device_name(addresses, server_port)
+
+        def _get_file_suffix(pkt_type):
+            return pkt_type['tcpdump'].replace(
+                'tcp-', '').replace('|', '')
+
+        for pkt_type in PKT_TYPES:
+            file_suffix = _get_file_suffix(pkt_type)
+            capture_script_path = "/tmp/capture_%s.sh" % file_suffix
+            capture_out = "/tmp/capture_%s.out" % file_suffix
+            capture_script = get_capture_script(
+                port_iface, TEST_TCP_PORT, pkt_type['tcpdump'], capture_out)
+            ssh_clients['server'].execute_script(
+                'echo \'%s\' > %s' % (capture_script, capture_script_path))
+            ssh_clients['server'].execute_script(
+                "bash %s" % capture_script_path, become_root=True)
+
+        for pkt_type in PKT_TYPES:
+            ssh_clients['client'].execute_script(
+                "nping --tcp -p %(tcp_port)s --flags %(tcp_flag)s --ttl 10 "
+                "%(ip_address)s -c 3" % {
+                    'tcp_port': TEST_TCP_PORT,
+                    'tcp_flag': pkt_type['nping'],
+                    'ip_address': fips['server']['fixed_ip_address']},
+                become_root=True)
+
+        def _packtet_received(pkt_type):
+            file_suffix = _get_file_suffix(pkt_type)
+            expected_msg = "1 packet captured"
+            result = ssh_clients['server'].execute_script(
+                "cat {path} || echo '{path} not exists yet'".format(
+                    path="/tmp/capture_%s.out" % file_suffix))
+            return expected_msg in result
+
+        for pkt_type in PKT_TYPES:
+            utils.wait_until_true(
+                lambda: _packtet_received(pkt_type),
+                timeout=10,
+                exception=RuntimeError(
+                    'No TCP packet of type %s received by server %s' % (
+                        pkt_type['nping'],
+                        fips['server']['fixed_ip_address'])))

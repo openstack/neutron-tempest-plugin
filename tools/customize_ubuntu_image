@@ -19,6 +19,7 @@ INSTALL_GUEST_PACKAGES=(
    iperf3
    iputils-ping
    ncat
+   nmap
    psmisc  # provides killall command
    python3
    tcpdump

@@ -213,18 +213,6 @@ class BaseMulticastTest(object):
                                             server, PYTHON3_BIN)
         return server
 
-    def _check_cmd_installed_on_server(self, ssh_client, server, cmd):
-        try:
-            ssh_client.execute_script('which %s' % cmd)
-        except base.SSH_EXC_TUPLE as ssh_e:
-            LOG.debug(ssh_e)
-            self._log_console_output([server])
-            self._log_local_network_status()
-            raise
-        except exceptions.SSHScriptFailed:
-            raise self.skipException(
-                "%s is not available on server %s" % (cmd, server['id']))
-
     def _prepare_sender(self, server, mcast_address):
         check_script = get_sender_script(
             group=mcast_address, port=self.multicast_port,

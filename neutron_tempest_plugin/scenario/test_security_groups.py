@@ -169,7 +169,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
             name=data_utils.rand_name(name_prefix), **kwargs)
 
     def _create_client_and_server_vms(
-            self, allowed_tcp_port, use_advanced_image=False):
+            self, allowed_tcp_port=None, use_advanced_image=False):
         networks = {
             'server': self.network,
             'client': self.create_network()}
@@ -181,12 +181,15 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
             sg = self._create_security_group('vm_%s_secgrp' % sg_name)
             self.create_loginable_secgroup_rule(
                 secgroup_id=sg['id'])
-            self.create_security_group_rule(
-                security_group_id=sg['id'],
-                protocol=constants.PROTO_NAME_TCP,
-                direction=constants.INGRESS_DIRECTION,
-                port_range_min=allowed_tcp_port,
-                port_range_max=allowed_tcp_port)
+            if allowed_tcp_port:
+                self.create_security_group_rule(
+                    security_group_id=sg['id'],
+                    protocol=constants.PROTO_NAME_TCP,
+                    direction=constants.INGRESS_DIRECTION,
+                    port_range_min=allowed_tcp_port,
+                    port_range_max=allowed_tcp_port)
+            else:
+                self.create_pingable_secgroup_rule(sg['id'])
             if self.stateless_sg:
                 self.create_ingress_metadata_secgroup_rule(
                     secgroup_id=sg['id'])
@@ -1090,3 +1093,31 @@ class StatelessNetworkSecGroupTest(BaseNetworkSecGroupTest):
                     'No TCP packet of type %s received by server %s' % (
                         pkt_type['nping'],
                         fips['server']['fixed_ip_address'])))
+
+    @testtools.skipUnless(
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
+    @decorators.idempotent_id('14c4af2c-8077-4756-a6e3-6bebd642ed92')
+    def test_fragmented_traffic_is_accepted(self):
+        ssh_clients, fips, servers, security_groups = (
+            self._create_client_and_server_vms(use_advanced_image=True))
+
+        # make sure tcp connectivity to vms works fine
+        for fip in fips.values():
+            self.check_connectivity(
+                fip['floating_ip_address'],
+                CONF.neutron_plugin_options.advanced_image_ssh_user,
+                self.keypair['private_key'])
+
+        # Check that ICMP packets bigger than MTU aren't working without
+        # fragmentation allowed
+        self.check_remote_connectivity(
+            ssh_clients['client'], fips['server']['fixed_ip_address'],
+            mtu=self.network['mtu'] + 1, fragmentation=False,
+            should_succeed=False)
+        # and are working fine with fragmentation enabled:
+        self.check_remote_connectivity(
+            ssh_clients['client'], fips['server']['fixed_ip_address'],
+            mtu=self.network['mtu'] + 1, fragmentation=True,
+            should_succeed=True)

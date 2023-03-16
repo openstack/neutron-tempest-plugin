@@ -158,6 +158,24 @@
       jobs:
         - neutron-tempest-plugin-dvr-multinode-scenario-zed
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-2023-1
+    check:
+      jobs:
+        - neutron-tempest-plugin-linuxbridge-2023-1
+        - neutron-tempest-plugin-openvswitch-2023-1
+        - neutron-tempest-plugin-openvswitch-iptables_hybrid-2023-1
+        - neutron-tempest-plugin-ovn-2023-1
+        - neutron-tempest-plugin-designate-scenario-2023-1
+    gate:
+      jobs:
+        - neutron-tempest-plugin-ovn-2023-1
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-dvr-multinode-scenario-2023-1
+
 - project:
     templates:
       - build-openstack-docs-pti
@@ -165,6 +183,7 @@
       - neutron-tempest-plugin-jobs-xena
       - neutron-tempest-plugin-jobs-yoga
       - neutron-tempest-plugin-jobs-zed
+      - neutron-tempest-plugin-jobs-2023-1
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3
@@ -174,24 +193,30 @@
         - neutron-tempest-plugin-sfc-xena
         - neutron-tempest-plugin-sfc-yoga
         - neutron-tempest-plugin-sfc-zed
+        - neutron-tempest-plugin-sfc-2023-1
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-bgpvpn-bagpipe-xena
         - neutron-tempest-plugin-bgpvpn-bagpipe-yoga
         - neutron-tempest-plugin-bgpvpn-bagpipe-zed
+        - neutron-tempest-plugin-bgpvpn-bagpipe-2023-1
         - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-dynamic-routing-xena
         - neutron-tempest-plugin-dynamic-routing-yoga
         - neutron-tempest-plugin-dynamic-routing-zed
+        - neutron-tempest-plugin-dynamic-routing-2023-1
         - neutron-tempest-plugin-fwaas
         - neutron-tempest-plugin-fwaas-zed
+        - neutron-tempest-plugin-fwaas-2023-1
         - neutron-tempest-plugin-vpnaas
         - neutron-tempest-plugin-vpnaas-xena
         - neutron-tempest-plugin-vpnaas-yoga
         - neutron-tempest-plugin-vpnaas-zed
+        - neutron-tempest-plugin-vpnaas-2023-1
         - neutron-tempest-plugin-tap-as-a-service
         - neutron-tempest-plugin-tap-as-a-service-xena
         - neutron-tempest-plugin-tap-as-a-service-yoga
         - neutron-tempest-plugin-tap-as-a-service-zed
+        - neutron-tempest-plugin-tap-as-a-service-2023-1
 
     gate:
       jobs:

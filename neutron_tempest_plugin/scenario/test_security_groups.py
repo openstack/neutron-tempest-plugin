@@ -926,3 +926,41 @@ class StatelessNetworkSecGroupTest(BaseNetworkSecGroupTest):
     @decorators.idempotent_id('e4340e47-39cd-49ed-967c-fc2c40b47c5a')
     def test_remove_sec_grp_from_active_vm(self):
         self._test_remove_sec_grp_from_active_vm()
+
+    @decorators.idempotent_id('8d4753cc-cd7a-48a0-8ece-e11efce2af10')
+    def test_reattach_sg_with_changed_mode(self):
+        sg_kwargs = {'stateful': True}
+        secgrp = self.os_primary.network_client.create_security_group(
+            name=data_utils.rand_name('secgrp'), **sg_kwargs)['security_group']
+        # add cleanup
+        self.security_groups.append(secgrp)
+
+        # now configure sec group to support required connectivity
+        self.create_pingable_secgroup_rule(secgroup_id=secgrp['id'])
+        # and create server
+        ssh_clients, fips, servers = self.create_vm_testing_sec_grp(
+            num_servers=1, security_groups=[{'name': secgrp['name']}])
+        server_ports = self.network_client.list_ports(
+            device_id=servers[0]['server']['id'])['ports']
+
+        # make sure connectivity works
+        self.ping_ip_address(fips[0]['floating_ip_address'],
+                             should_succeed=True)
+        # remove SG from ports
+        for port in server_ports:
+            self.network_client.update_port(port['id'], security_groups=[])
+        # make sure there is now no connectivity as there's no SG attached
+        # to the port
+        self.ping_ip_address(fips[0]['floating_ip_address'],
+                             should_succeed=False)
+
+        # Update SG to be stateless
+        self.os_primary.network_client.update_security_group(
+            secgrp['id'], stateful=False)
+        # Add SG back to the ports
+        for port in server_ports:
+            self.network_client.update_port(
+                port['id'], security_groups=[secgrp['id']])
+        # Make sure connectivity works fine again
+        self.ping_ip_address(fips[0]['floating_ip_address'],
+                             should_succeed=True)

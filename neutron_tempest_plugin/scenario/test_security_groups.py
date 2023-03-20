@@ -863,6 +863,10 @@ class StatefulNetworkSecGroupTest(BaseNetworkSecGroupTest):
             con.test_connection()
 
 
+@testtools.skipIf(
+    CONF.neutron_plugin_options.firewall_driver in ['openvswitch', 'None'],
+    "Firewall driver other than 'openvswitch' is required to use "
+    "stateless security groups.")
 class StatelessNetworkSecGroupTest(BaseNetworkSecGroupTest):
     required_extensions = ['security-group', 'stateful-security-group']
     stateless_sg = True

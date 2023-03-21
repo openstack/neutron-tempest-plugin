@@ -211,7 +211,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             network, cidr=str(subnet_cidr), gateway=str(gw_ip))
 
         non_dvr_router = self.create_router_by_client(
-            tenant_id=self.client.tenant_id,
+            tenant_id=self.client.project_id,
             is_admin=True,
             router_name=data_utils.rand_name("nondvr-2-routers-same-network"),
             admin_state_up=True,
@@ -219,7 +219,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         self.create_router_interface(non_dvr_router['id'], subnet['id'])
 
         dvr_router = self.create_router_by_client(
-            tenant_id=self.client.tenant_id,
+            tenant_id=self.client.project_id,
             is_admin=True,
             router_name=data_utils.rand_name("dvr-2-rotuers-same-network"),
             admin_state_up=True,

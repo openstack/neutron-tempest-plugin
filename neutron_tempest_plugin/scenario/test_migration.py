@@ -125,7 +125,7 @@ class NetworkMigrationTestBase(base.BaseTempestTestCase,
     def _test_migration(self, before_dvr, before_ha, after_dvr, after_ha):
         router = self.create_router_by_client(
             distributed=before_dvr, ha=before_ha,
-            tenant_id=self.client.tenant_id, is_admin=True)
+            tenant_id=self.client.project_id, is_admin=True)
 
         self.setup_network_and_server(router=router)
         self._wait_until_router_ports_ready(

@@ -101,7 +101,7 @@ class NetworkMtuTest(NetworkMtuBaseTest):
 
     def _create_setup(self):
         self.admin_client = self.os_admin.network_client
-        net_kwargs = {'tenant_id': self.client.tenant_id}
+        net_kwargs = {'tenant_id': self.client.project_id}
         for net_type in ['vxlan', 'gre']:
             net_kwargs['name'] = '-'.join([net_type, 'net'])
             net_kwargs['provider:network_type'] = net_type
@@ -186,7 +186,7 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
     def _create_setup(self):
         self.admin_client = self.os_admin.network_client
         for test_net in self._get_network_params():
-            test_net['tenant_id'] = self.client.tenant_id
+            test_net['tenant_id'] = self.client.project_id
             test_net['name'] = data_utils.rand_name('net')
             cidr = None if 'cidr' not in test_net else test_net.pop('cidr')
             network = self.admin_client.create_network(**test_net)[

@@ -82,7 +82,7 @@ class TestTaaS(manager.BaseTaasScenarioTests):
         if not networks_client:
             networks_client = self.networks_client
         if not tenant_id:
-            tenant_id = networks_client.tenant_id
+            tenant_id = networks_client.project_id
         name = data_utils.rand_name(namestart)
         network_kwargs = dict(name=name, tenant_id=tenant_id)
         # Neutron disables port security by default so we have to check the

@@ -67,7 +67,7 @@ class NetworkScenarioTest(ScenarioTest):
         if not client:
             client = self.routers_client
         if not tenant_id:
-            tenant_id = client.tenant_id
+            tenant_id = client.project_id
         name = data_utils.rand_name(namestart)
         result = client.create_router(name=name,
                                       admin_state_up=True,

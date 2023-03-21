@@ -289,5 +289,5 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
             lib_exc.BadRequest,
             self.admin_client.update_subnetpool,
             subnetpool['id'],
-            tenant_id=self.admin_client.tenant_id,
+            tenant_id=self.admin_client.project_id,
         )

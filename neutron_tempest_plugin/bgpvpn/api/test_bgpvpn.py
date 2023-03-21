@@ -54,21 +54,21 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('709b23b0-9719-47df-9f53-b0812a5d5a48')
     def test_delete_bgpvpn(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         self.delete_bgpvpn(self.bgpvpn_admin_client, bgpvpn)
 
     @decorators.attr(type=['negative'])
     @decorators.idempotent_id('596abfc2-fd89-491d-863d-25459db1df4b')
     def test_delete_bgpvpn_as_non_admin_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         self.assertRaises(exceptions.Forbidden,
                           self.bgpvpn_client.delete_bgpvpn, bgpvpn['id'])
 
     @decorators.idempotent_id('9fa29db8-35d0-4beb-a986-23c369499ab1')
     def test_show_bgpvpn(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         bgpvpn_details = self.bgpvpn_client.show_bgpvpn(bgpvpn['id'])['bgpvpn']
         self.assertEqual(bgpvpn['id'], bgpvpn_details['id'])
 
@@ -76,14 +76,14 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('b20110bb-393b-4342-8b30-6486cd2b4fc6')
     def test_show_bgpvpn_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         self.assertRaises(exceptions.NotFound,
                           self.bgpvpn_alt_client.show_bgpvpn, bgpvpn['id'])
 
     @decorators.idempotent_id('7a7feca2-1c24-4f5d-ad4b-b0e5a712adb1')
     def test_list_bgpvpn(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         bgpvpns = self.bgpvpn_client.list_bgpvpns()['bgpvpns']
         self.assertIn(bgpvpn['id'],
                       [bgpvpn_alt['id'] for bgpvpn_alt in bgpvpns])
@@ -92,7 +92,7 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('4875e65d-0b65-40c0-9efd-309420686ab4')
     def test_list_bgpvpn_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         bgpvpns_alt = self.bgpvpn_alt_client.list_bgpvpns()['bgpvpns']
         self.assertNotIn(bgpvpn['id'],
                          [bgpvpn_alt['id'] for bgpvpn_alt in bgpvpns_alt])
@@ -100,7 +100,7 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('096281da-356d-4c04-bd55-784a26bb1b0c')
     def test_list_show_network_association(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         network = self.networks_client.create_network()['network']
 
         association = self.bgpvpn_client.create_network_association(
@@ -118,7 +118,7 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('57b0da93-8e37-459f-9aaf-f903acc36025')
     def test_show_netassoc_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         network = self.networks_client.create_network()['network']
 
         net_assoc = self.bgpvpn_client.create_network_association(
@@ -132,7 +132,7 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('2cbb10af-bf9c-4b32-b6a6-4066de783758')
     def test_list_netassoc_as_non_owner_fail(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         network = self.networks_client.create_network()['network']
 
         self.bgpvpn_client.create_network_association(bgpvpn['id'],
@@ -144,7 +144,7 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('51e1b079-aefa-4c37-8b1a-0567b3ef7954')
     def test_associate_disassociate_network(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         network = self.networks_client.create_network()
         network_id = network['network']['id']
 
@@ -187,7 +187,7 @@ class BgpvpnTest(base):
     def test_update_route_target_non_admin_fail(self):
         bgpvpn = self.create_bgpvpn(
             self.bgpvpn_admin_client,
-            tenant_id=self.bgpvpn_client.tenant_id,
+            tenant_id=self.bgpvpn_client.project_id,
             route_targets=['64512:1'])
         with ExpectedException(exceptions.Forbidden):
             self.bgpvpn_client.update_bgpvpn(
@@ -206,21 +206,21 @@ class BgpvpnTest(base):
         """
         postdata = {
             "name": "testbgpvpn",
-            "tenant_id": self.bgpvpn_client.tenant_id,
+            "tenant_id": self.bgpvpn_client.project_id,
             "route_targets": ["0"]
         }
         self.assertRaises(exceptions.BadRequest,
                           self.bgpvpn_admin_client.create_bgpvpn, **postdata)
         postdata = {
             "name": "testbgpvpn",
-            "tenant_id": self.bgpvpn_client.tenant_id,
+            "tenant_id": self.bgpvpn_client.project_id,
             "import_targets": ["test", " "]
         }
         self.assertRaises(exceptions.BadRequest,
                           self.bgpvpn_admin_client.create_bgpvpn, **postdata)
         postdata = {
             "name": "testbgpvpn",
-            "tenant_id": self.bgpvpn_client.tenant_id,
+            "tenant_id": self.bgpvpn_client.project_id,
             "export_targets": ["64512:1000000000000", "xyz"]
         }
         self.assertRaises(exceptions.BadRequest,
@@ -236,7 +236,7 @@ class BgpvpnTest(base):
         """
         postdata = {
             "name": "testbgpvpn",
-            "tenant_id": self.bgpvpn_client.tenant_id,
+            "tenant_id": self.bgpvpn_client.project_id,
         }
         bgpvpn = self.bgpvpn_admin_client.create_bgpvpn(**postdata)
         updatedata = {
@@ -268,7 +268,7 @@ class BgpvpnTest(base):
         """
         postdata = {
             "name": "testbgpvpn",
-            "tenant_id": self.bgpvpn_client.tenant_id,
+            "tenant_id": self.bgpvpn_client.project_id,
         }
         bgpvpn = self.bgpvpn_admin_client.create_bgpvpn(**postdata)
         network = self.networks_client.create_network()
@@ -290,7 +290,7 @@ class BgpvpnTest(base):
         """
         postdata = {
             "name": "testbgpvpn",
-            "tenant_id": self.bgpvpn_client.tenant_id,
+            "tenant_id": self.bgpvpn_client.project_id,
         }
         bgpvpn = self.bgpvpn_admin_client.create_bgpvpn(**postdata)
         network = self.networks_client.create_network()
@@ -310,7 +310,7 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('de8d94b0-0239-4a48-9574-c3a4a4f7cacb')
     def test_associate_disassociate_router(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         router = self.routers_client.create_router()
         router_id = router['router']['id']
 
@@ -334,7 +334,7 @@ class BgpvpnTest(base):
     @decorators.idempotent_id('3ae91755-b1b6-4c62-a699-a44eeb4ee522')
     def test_list_show_router_association(self):
         bgpvpn = self.create_bgpvpn(self.bgpvpn_admin_client,
-                                    tenant_id=self.bgpvpn_client.tenant_id)
+                                    tenant_id=self.bgpvpn_client.project_id)
         router = self.routers_client.create_router()
         router_id = router['router']['id']
 
@@ -355,7 +355,7 @@ class BgpvpnTest(base):
         # Create a first bgpvpn and associate a network with a subnet to it
         bgpvpn_net = self.create_bgpvpn(
             self.bgpvpn_admin_client,
-            tenant_id=self.bgpvpn_client.tenant_id)
+            tenant_id=self.bgpvpn_client.project_id)
         network = self.create_network()
         subnet = self.create_subnet(network)
         self.bgpvpn_client.create_network_association(
@@ -364,7 +364,7 @@ class BgpvpnTest(base):
         # Create a second bgpvpn and associate a router to it
         bgpvpn_router = self.create_bgpvpn(
             self.bgpvpn_admin_client,
-            tenant_id=self.bgpvpn_client.tenant_id)
+            tenant_id=self.bgpvpn_client.project_id)
 
         router = self.create_router(
             router_name=data_utils.rand_name('test-bgpvpn-'))

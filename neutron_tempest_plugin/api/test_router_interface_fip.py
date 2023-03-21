@@ -61,7 +61,7 @@ class RouterInterfaceFip(base.BaseAdminNetworkTest):
         subnet1 = self.create_subnet(net1, cidr=cidr1)
         self.create_router_interface(router1['id'], subnet1['id'])
         net2 = self.admin_client.create_network(
-            project_id=self.client.tenant_id,
+            project_id=self.client.project_id,
             **{'router:external': True})['network']
         self.networks.append(net2)
         subnet2 = self.create_subnet(net2, cidr=cidr2)

@@ -182,7 +182,7 @@ class NegativeSecGroupRulesQuotaTest(
     def setUp(self):
         super(NegativeSecGroupRulesQuotaTest, self).setUp()
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        self.admin_client.reset_quotas, self.client.tenant_id)
+                        self.admin_client.reset_quotas, self.client.project_id)
         self._set_sg_rules_quota(10)
 
     @decorators.idempotent_id('8336e6ea-2e0a-4a1a-8673-a6f81b577d57')

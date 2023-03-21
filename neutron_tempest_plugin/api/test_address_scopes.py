@@ -86,8 +86,8 @@ class AddressScopeTest(AddressScopeTestBase):
         show_addr_scope = body['address_scope']
         self.assertIn('project_id', show_addr_scope)
         self.assertIn('tenant_id', show_addr_scope)
-        self.assertEqual(self.client.tenant_id, show_addr_scope['project_id'])
-        self.assertEqual(self.client.tenant_id, show_addr_scope['tenant_id'])
+        self.assertEqual(self.client.project_id, show_addr_scope['project_id'])
+        self.assertEqual(self.client.project_id, show_addr_scope['tenant_id'])
 
     @decorators.idempotent_id('85a259b2-ace6-4e32-9657-a9a392b452aa')
     def test_tenant_update_address_scope(self):
@@ -142,11 +142,11 @@ class RbacAddressScopeTest(AddressScopeTestBase):
     @decorators.idempotent_id('038e999b-cd4b-4021-a9ff-ebb734f6e056')
     def test_policy_target_update(self):
         res = self._make_admin_as_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         # change to client2
         update_res = self.admin_client.update_rbac_policy(
-                res['rbac_policy']['id'], target_tenant=self.client2.tenant_id)
-        self.assertEqual(self.client2.tenant_id,
+            res['rbac_policy']['id'], target_tenant=self.client2.project_id)
+        self.assertEqual(self.client2.project_id,
                          update_res['rbac_policy']['target_tenant'])
         # make sure everything else stayed the same
         res['rbac_policy'].pop('target_tenant')
@@ -156,7 +156,7 @@ class RbacAddressScopeTest(AddressScopeTestBase):
     @decorators.idempotent_id('798ac6c6-96cc-49ce-ba5c-c6eced7a09d3')
     def test_subnet_pool_presence_prevents_rbac_policy_deletion(self):
         res = self._make_admin_as_shared_to_project_id(
-            self.client2.tenant_id)
+            self.client2.project_id)
         snp = self.create_subnetpool(
             data_utils.rand_name("rbac-address-scope"),
             default_prefixlen=24, prefixes=['10.0.0.0/8'],
@@ -183,7 +183,7 @@ class RbacAddressScopeTest(AddressScopeTestBase):
         rbac_policy = self.admin_client.create_rbac_policy(
             object_type='address_scope', object_id=a_s['id'],
             action='access_as_shared',
-            target_tenant=self.client.tenant_id)['rbac_policy']
+            target_tenant=self.client.project_id)['rbac_policy']
         self.client.show_address_scope(a_s['id'])
 
         self.assertIn(rbac_policy,
@@ -198,7 +198,7 @@ class RbacAddressScopeTest(AddressScopeTestBase):
         a_s = self._create_address_scope(ip_version=4)
         self.admin_client.create_rbac_policy(
             object_type='address_scope', object_id=a_s['id'],
-            action='access_as_shared', target_tenant=self.client2.tenant_id)
+            action='access_as_shared', target_tenant=self.client2.project_id)
         field_args = (('id',), ('id', 'action'), ('object_type', 'object_id'),
                       ('project_id', 'target_tenant'))
         for fields in field_args:
@@ -208,7 +208,7 @@ class RbacAddressScopeTest(AddressScopeTestBase):
     @decorators.idempotent_id('19cbd62e-c6c3-4495-98b9-b9c6c6c9c127')
     def test_rbac_policy_show(self):
         res = self._make_admin_as_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         p1 = res['rbac_policy']
         p2 = self.admin_client.create_rbac_policy(
             object_type='address_scope',
@@ -227,11 +227,11 @@ class RbacAddressScopeTest(AddressScopeTestBase):
         rbac_pol1 = self.admin_client.create_rbac_policy(
             object_type='address_scope', object_id=a_s['id'],
             action='access_as_shared',
-            target_tenant=self.client2.tenant_id)['rbac_policy']
+            target_tenant=self.client2.project_id)['rbac_policy']
         rbac_pol2 = self.admin_client.create_rbac_policy(
             object_type='address_scope', object_id=a_s['id'],
             action='access_as_shared',
-            target_tenant=self.admin_client.tenant_id)['rbac_policy']
+            target_tenant=self.admin_client.project_id)['rbac_policy']
         res1 = self.admin_client.list_rbac_policies(id=rbac_pol1['id'])[
             'rbac_policies']
         res2 = self.admin_client.list_rbac_policies(id=rbac_pol2['id'])[
@@ -244,12 +244,12 @@ class RbacAddressScopeTest(AddressScopeTestBase):
     @decorators.idempotent_id('222a638d-819e-41a7-a3fe-550265c06e79')
     def test_regular_client_blocked_from_sharing_anothers_policy(self):
         a_s = self._make_admin_as_shared_to_project_id(
-            self.client.tenant_id)['address_scope']
+            self.client.project_id)['address_scope']
         with testtools.ExpectedException(lib_exc.BadRequest):
             self.client.create_rbac_policy(
                 object_type='address_scope', object_id=a_s['id'],
                 action='access_as_shared',
-                target_tenant=self.client2.tenant_id)
+                target_tenant=self.client2.project_id)
 
         # make sure the rbac-policy is invisible to the tenant for which it's
         # being shared

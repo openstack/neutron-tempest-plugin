@@ -86,7 +86,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         body = self.admin_client.show_qos_policy(policy['id'])
         show_policy = body['policy']
         self.assertIn('project_id', show_policy)
-        self.assertEqual(self.admin_client.tenant_id,
+        self.assertEqual(self.admin_client.project_id,
                          show_policy['project_id'])
 
     @decorators.idempotent_id('f8d20e92-f06d-4805-b54f-230f77715815')
@@ -134,10 +134,11 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('8e88a54b-f0b2-4b7d-b061-a15d93c2c7d6')
     def test_policy_update(self):
-        policy = self.create_qos_policy(name=self.policy_name,
-                                        description='',
-                                        shared=False,
-                                        project_id=self.admin_client.tenant_id)
+        policy = self.create_qos_policy(
+            name=self.policy_name,
+            description='',
+            shared=False,
+            project_id=self.admin_client.project_id)
         self.admin_client.update_qos_policy(policy['id'],
                                             description='test policy desc2',
                                             shared=True)
@@ -153,7 +154,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name=self.policy_name,
                                         description='',
                                         shared=False,
-                                        project_id=self.client.tenant_id)
+                                        project_id=self.client.project_id)
         self.assertRaises(
             exceptions.Forbidden,
             self.client.update_qos_policy,
@@ -161,10 +162,11 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('4ecfd7e7-47b6-4702-be38-be9235901a87')
     def test_policy_update_forbidden_for_regular_tenants_foreign_policy(self):
-        policy = self.create_qos_policy(name=self.policy_name,
-                                        description='',
-                                        shared=False,
-                                        project_id=self.admin_client.tenant_id)
+        policy = self.create_qos_policy(
+            name=self.policy_name,
+            description='',
+            shared=False,
+            project_id=self.admin_client.project_id)
         self.assertRaises(
             exceptions.NotFound,
             self.client.update_qos_policy,
@@ -172,10 +174,11 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('ee263db4-009a-4641-83e5-d0e83506ba4c')
     def test_shared_policy_update(self):
-        policy = self.create_qos_policy(name=self.policy_name,
-                                        description='',
-                                        shared=True,
-                                        project_id=self.admin_client.tenant_id)
+        policy = self.create_qos_policy(
+            name=self.policy_name,
+            description='',
+            shared=True,
+            project_id=self.admin_client.project_id)
 
         self.admin_client.update_qos_policy(policy['id'],
                                             description='test policy desc2')
@@ -396,7 +399,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
             name='test-policy-shared',
             description='shared policy',
             shared=True,
-            project_id=self.admin_client.tenant_id)
+            project_id=self.admin_client.project_id)
         obtained_policy = self.client.show_qos_policy(policy['id'])['policy']
         self.assertEqual(obtained_policy, policy)
 
@@ -438,11 +441,11 @@ class QosTestJSON(base.BaseAdminNetworkTest):
     def test_user_create_port_with_admin_qos_policy(self):
         qos_policy = self.create_qos_policy(
             name=self.policy_name,
-            project_id=self.admin_client.tenant_id,
+            project_id=self.admin_client.project_id,
             shared=False)
         network = self.create_network(
             'test network', client=self.admin_client,
-            project_id=self.client.tenant_id,
+            project_id=self.client.project_id,
             qos_policy_id=qos_policy['id'])
         port = self.create_port(network)
         self.assertEqual(network['id'], port['network_id'])
@@ -603,7 +606,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
         policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False,
-                                        project_id=self.client.tenant_id)
+                                        project_id=self.client.project_id)
         rule = self._create_qos_bw_limit_rule(
             policy['id'],
             {'max_kbps': 1, 'max_burst_kbps': 1})
@@ -618,7 +621,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
             name=self.policy_name,
             description='test policy',
             shared=False,
-            project_id=self.admin_client.tenant_id)
+            project_id=self.admin_client.project_id)
         rule = self._create_qos_bw_limit_rule(
             policy['id'], {'max_kbps': 1, 'max_burst_kbps': 1})
         self.assertRaises(
@@ -797,7 +800,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
         qos_pol = self.create_qos_policy(
             name=data_utils.rand_name('test-policy'),
             description='test-shared-policy', shared=False,
-            project_id=self.admin_client.tenant_id)
+            project_id=self.admin_client.project_id)
         self.assertNotIn(qos_pol, self.client2.list_qos_policies()['policies'])
 
         # test update shared False -> True
@@ -805,8 +808,8 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
         qos_pol['shared'] = True
         self.client2.show_qos_policy(qos_pol['id'])
         rbac_pol = {'target_tenant': '*',
-                    'tenant_id': self.admin_client.tenant_id,
-                    'project_id': self.admin_client.tenant_id,
+                    'tenant_id': self.admin_client.project_id,
+                    'project_id': self.admin_client.project_id,
                     'object_type': 'qos_policy',
                     'object_id': qos_pol['id'],
                     'action': 'access_as_shared'}
@@ -829,7 +832,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
 
     def _create_net_bound_qos_rbacs(self):
         res = self._make_admin_policy_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         qos_policy, rbac_for_client_tenant = res['policy'], res['rbac_policy']
 
         # add a wildcard rbac rule - now the policy globally shared
@@ -862,7 +865,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('2ace9adc-da6e-11e5-aafe-54ee756c66df')
     def test_policy_sharing_with_wildcard_and_project_id(self):
         res = self._make_admin_policy_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         qos_policy, rbac = res['policy'], res['rbac_policy']
         qos_pol = self.client.show_qos_policy(qos_policy['id'])['policy']
         self.assertTrue(qos_pol['shared'])
@@ -885,11 +888,11 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('9f85c76a-a350-11e5-8ae5-54ee756c66df')
     def test_policy_target_update(self):
         res = self._make_admin_policy_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         # change to client2
         update_res = self.admin_client.update_rbac_policy(
-                res['rbac_policy']['id'], target_tenant=self.client2.tenant_id)
-        self.assertEqual(self.client2.tenant_id,
+            res['rbac_policy']['id'], target_tenant=self.client2.project_id)
+        self.assertEqual(self.client2.project_id,
                          update_res['rbac_policy']['target_tenant'])
         # make sure everything else stayed the same
         res['rbac_policy'].pop('target_tenant')
@@ -899,7 +902,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('a9b39f46-a350-11e5-97c7-54ee756c66df')
     def test_network_presence_prevents_policy_rbac_policy_deletion(self):
         res = self._make_admin_policy_shared_to_project_id(
-            self.client2.tenant_id)
+            self.client2.project_id)
         qos_policy_id = res['policy']['id']
         self._create_network(qos_policy_id, self.client2)
         # a network with shared qos-policy should prevent the deletion of an
@@ -922,7 +925,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
         # we can't update the policy to a different tenant
         with testtools.ExpectedException(exceptions.Conflict):
             self.admin_client.update_rbac_policy(
-                wild['id'], target_tenant=self.client2.tenant_id)
+                wild['id'], target_tenant=self.client2.project_id)
 
     @decorators.idempotent_id('b0fe87e8-a350-11e5-9f08-54ee756c66df')
     def test_regular_client_shares_to_another_regular_client(self):
@@ -933,7 +936,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
         rbac_policy = self.admin_client.create_rbac_policy(
             object_type='qos_policy', object_id=policy['id'],
             action='access_as_shared',
-            target_tenant=self.client.tenant_id)['rbac_policy']
+            target_tenant=self.client.project_id)['rbac_policy']
         self.client.show_qos_policy(policy['id'])
 
         self.assertIn(rbac_policy,
@@ -948,7 +951,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
         policy = self._create_qos_policy()
         self.admin_client.create_rbac_policy(
             object_type='qos_policy', object_id=policy['id'],
-            action='access_as_shared', target_tenant=self.client2.tenant_id)
+            action='access_as_shared', target_tenant=self.client2.project_id)
         field_args = (('id',), ('id', 'action'), ('object_type', 'object_id'),
                       ('project_id', 'target_tenant'))
         for fields in field_args:
@@ -958,7 +961,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('c10d993a-a350-11e5-9c7a-54ee756c66df')
     def test_rbac_policy_show(self):
         res = self._make_admin_policy_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         p1 = res['rbac_policy']
         p2 = self.admin_client.create_rbac_policy(
             object_type='qos_policy', object_id=res['policy']['id'],
@@ -976,11 +979,11 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
         rbac_pol1 = self.admin_client.create_rbac_policy(
             object_type='qos_policy', object_id=policy['id'],
             action='access_as_shared',
-            target_tenant=self.client2.tenant_id)['rbac_policy']
+            target_tenant=self.client2.project_id)['rbac_policy']
         rbac_pol2 = self.admin_client.create_rbac_policy(
             object_type='qos_policy', object_id=policy['id'],
             action='access_as_shared',
-            target_tenant=self.admin_client.tenant_id)['rbac_policy']
+            target_tenant=self.admin_client.project_id)['rbac_policy']
         res1 = self.admin_client.list_rbac_policies(id=rbac_pol1['id'])[
             'rbac_policies']
         res2 = self.admin_client.list_rbac_policies(id=rbac_pol2['id'])[
@@ -993,12 +996,12 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('cd7d755a-a350-11e5-a344-54ee756c66df')
     def test_regular_client_blocked_from_sharing_anothers_policy(self):
         qos_policy = self._make_admin_policy_shared_to_project_id(
-            self.client.tenant_id)['policy']
+            self.client.project_id)['policy']
         with testtools.ExpectedException(exceptions.BadRequest):
             self.client.create_rbac_policy(
                 object_type='qos_policy', object_id=qos_policy['id'],
                 action='access_as_shared',
-                target_tenant=self.client2.tenant_id)
+                target_tenant=self.client2.project_id)
 
         # make sure the rbac-policy is invisible to the tenant for which it's
         # being shared

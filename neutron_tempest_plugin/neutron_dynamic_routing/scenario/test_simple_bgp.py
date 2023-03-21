@@ -127,7 +127,7 @@ class Bgp(BgpClientMixin, base.BaseTempestTestCase):
             admin_state_up=True,
             external_network_id=CONF.network.public_network_id,
             enable_snat=False,
-            project_id=cls.os_primary.network_client.tenant_id)
+            project_id=cls.os_primary.network_client.project_id)
         network = cls.create_network(network_name='right-network')
         subnet = cls.create_subnet(
             network,

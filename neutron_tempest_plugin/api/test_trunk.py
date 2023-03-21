@@ -48,7 +48,7 @@ class TrunkTestJSONBase(base.BaseAdminNetworkTest):
         if parent_network_type:
             client = cls.admin_client
             network_kwargs = {"provider:network_type": parent_network_type,
-                              "tenant_id": cls.client.tenant_id}
+                              "tenant_id": cls.client.project_id}
         network = cls.create_network(client=client, **network_kwargs)
         parent_port = cls.create_port(network)
         return cls.create_trunk(parent_port, subports, **kwargs)
@@ -98,7 +98,7 @@ class TrunkTestJSON(TrunkTestJSONBase):
         observed_trunk = self._show_trunk(trunk)
         for key in ['project_id', 'tenant_id']:
             self.assertIn(key, observed_trunk)
-            self.assertEqual(self.client.tenant_id, observed_trunk[key])
+            self.assertEqual(self.client.project_id, observed_trunk[key])
 
     @decorators.idempotent_id('4ce46c22-a2b6-4659-bc5a-0ef2463cab32')
     def test_create_update_trunk(self):

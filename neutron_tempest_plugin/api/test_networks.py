@@ -49,7 +49,7 @@ class NetworksTestJSON(base.BaseNetworkTest):
             fields.append('mtu')
         for key in fields:
             self.assertEqual(network[key], self.network[key])
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
         self.assertEqual(project_id, network['tenant_id'])
         if utils.is_extension_enabled('project-id', 'network'):
             self.assertEqual(project_id, network['project_id'])
@@ -76,7 +76,7 @@ class NetworksTestJSON(base.BaseNetworkTest):
     @decorators.idempotent_id('0cc0552f-afaf-4231-b7a7-c2a1774616da')
     @utils.requires_ext(extension="project-id", service="network")
     def test_create_network_with_project(self):
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
 
         name = 'created-with-project_id'
         network = self.create_network(name, project_id=project_id)

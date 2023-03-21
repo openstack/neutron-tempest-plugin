@@ -344,7 +344,7 @@ class TestRevisions(base.BaseAdminNetworkTest):
     def test_update_router_extra_attributes_bumps_revision(self):
         # updates from CVR to CVR-HA are supported on every release,
         # but only the admin can forcibly create a non-HA router
-        router_args = {'tenant_id': self.client.tenant_id,
+        router_args = {'tenant_id': self.client.project_id,
                        'ha': False}
         router = self.admin_client.create_router('r1', True,
             **router_args)['router']

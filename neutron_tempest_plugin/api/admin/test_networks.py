@@ -25,7 +25,7 @@ class NetworksTestAdmin(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('d3c76044-d067-4cb0-ae47-8cdd875c7f67')
     @utils.requires_ext(extension="project-id", service="network")
     def test_create_network_with_project(self):
-        project_id = self.client.tenant_id  # non-admin
+        project_id = self.client.project_id  # non-admin
 
         name = 'admin-created-with-project_id'
         network = self.create_network(name, project_id=project_id,
@@ -43,7 +43,7 @@ class NetworksTestAdmin(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('8d21aaca-4364-4eb9-8b79-44b4fff6373b')
     @utils.requires_ext(extension="project-id", service="network")
     def test_create_network_with_project_and_tenant(self):
-        project_id = self.client.tenant_id  # non-admin
+        project_id = self.client.project_id  # non-admin
 
         name = 'created-with-project-and-tenant'
         network = self.create_network(name, project_id=project_id,
@@ -62,7 +62,7 @@ class NetworksTestAdmin(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('08b92179-669d-45ee-8233-ef6611190809')
     @utils.requires_ext(extension="project-id", service="network")
     def test_create_network_with_project_and_other_tenant(self):
-        project_id = self.client.tenant_id  # non-admin
+        project_id = self.client.project_id  # non-admin
         other_tenant = uuidutils.generate_uuid()
 
         name = 'created-with-project-and-other-tenant'

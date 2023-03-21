@@ -53,7 +53,7 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
         self.client.create_rbac_policy(
             object_type='network', object_id=net['id'],
             action='access_as_external',
-            target_tenant=self.client2.tenant_id)
+            target_tenant=self.client2.project_id)
         body = self.client2.list_networks()
         networks_list = [n['id'] for n in body['networks']]
         self.assertIn(net['id'], networks_list)
@@ -107,7 +107,7 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
         # changing wildcard to specific tenant should be okay since its the
         # only one using the network
         self.admin_client.update_rbac_policy(
-            rbac_pol['id'], target_tenant=self.client2.tenant_id)
+            rbac_pol['id'], target_tenant=self.client2.project_id)
 
     @decorators.idempotent_id('a5539002-5bdb-48b5-b124-e9eedd5975e6')
     def test_external_conversion_on_policy_create(self):
@@ -115,7 +115,7 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
         self.admin_client.create_rbac_policy(
             object_type='network', object_id=net_id,
             action='access_as_external',
-            target_tenant=self.client2.tenant_id)
+            target_tenant=self.client2.project_id)
         body = self.admin_client.show_network(net_id)['network']
         self.assertTrue(body['router:external'])
 
@@ -138,13 +138,13 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
         self.admin_client.create_rbac_policy(
             object_type='network', object_id=net_id,
             action='access_as_external',
-            target_tenant=self.admin_client.tenant_id)
+            target_tenant=self.admin_client.project_id)
         body = self.admin_client.show_network(net_id)['network']
         self.assertTrue(body['router:external'])
         policy2 = self.admin_client.create_rbac_policy(
             object_type='network', object_id=net_id,
             action='access_as_external',
-            target_tenant=self.client2.tenant_id)
+            target_tenant=self.client2.project_id)
         self.admin_client.delete_rbac_policy(policy2['rbac_policy']['id'])
         body = self.admin_client.show_network(net_id)['network']
         self.assertTrue(body['router:external'])
@@ -168,14 +168,14 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
         self.admin_client.create_rbac_policy(
             object_type='network', object_id=net['id'],
             action='access_as_external',
-            target_tenant=self.admin_client.tenant_id)
+            target_tenant=self.admin_client.project_id)
         self.create_subnet(net, client=self.admin_client, enable_dhcp=False)
         with testtools.ExpectedException(lib_exc.NotFound):
             self.create_floatingip(net['id'], client=self.client2)
         self.admin_client.create_rbac_policy(
             object_type='network', object_id=net['id'],
             action='access_as_external',
-            target_tenant=self.client2.tenant_id)
+            target_tenant=self.client2.project_id)
         self.create_floatingip(net['id'], client=self.client2)
 
     @decorators.idempotent_id('476be1e0-f72e-47dc-9a14-4435926bbe82')
@@ -185,7 +185,7 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
         self.admin_client.create_rbac_policy(
             object_type='network', object_id=net['id'],
             action='access_as_external',
-            target_tenant=self.client2.tenant_id)
+            target_tenant=self.client2.project_id)
         r = self.client2.create_router(
             data_utils.rand_name('router'),
             external_gateway_info={'network_id': net['id']})['router']
@@ -209,7 +209,7 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
         tenant = self.admin_client.create_rbac_policy(
             object_type='network', object_id=net['id'],
             action='access_as_external',
-            target_tenant=self.client2.tenant_id)['rbac_policy']
+            target_tenant=self.client2.project_id)['rbac_policy']
         # now we can delete the policy because the tenant has its own policy
         # to allow it access
         self.admin_client.delete_rbac_policy(wildcard['id'])

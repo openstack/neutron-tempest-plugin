@@ -171,11 +171,11 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('95f59a88-c47e-4dd9-a231-85f1782753a7')
     def test_policy_target_update(self):
         res = self._make_admin_ag_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         # change to client2
         update_res = self.admin_client.update_rbac_policy(
-                res['rbac_policy']['id'], target_tenant=self.client2.tenant_id)
-        self.assertEqual(self.client2.tenant_id,
+            res['rbac_policy']['id'], target_tenant=self.client2.project_id)
+        self.assertEqual(self.client2.project_id,
                          update_res['rbac_policy']['target_tenant'])
         # make sure everything else stayed the same
         res['rbac_policy'].pop('target_tenant')
@@ -185,7 +185,7 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('35a214c9-5c99-468f-9242-34d0529cabfa')
     def test_secgrprule_presence_prevents_policy_rbac_policy_deletion(self):
         res = self._make_admin_ag_shared_to_project_id(
-            self.client2.tenant_id)
+            self.client2.project_id)
         ag_id = res['address_group']['id']
         security_group = self.create_security_group(client=self.client2)
         protocol = random.choice(list(base_security_groups.V4_PROTOCOL_NAMES))
@@ -213,7 +213,7 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
         rbac_policy = self.admin_client.create_rbac_policy(
             object_type='address_group', object_id=ag['id'],
             action='access_as_shared',
-            target_tenant=self.client.tenant_id)['rbac_policy']
+            target_tenant=self.client.project_id)['rbac_policy']
         self.client.show_address_group(ag['id'])
 
         self.assertIn(rbac_policy,
@@ -228,7 +228,7 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
         ag = self._create_address_group()
         self.admin_client.create_rbac_policy(
             object_type='address_group', object_id=ag['id'],
-            action='access_as_shared', target_tenant=self.client2.tenant_id)
+            action='access_as_shared', target_tenant=self.client2.project_id)
         field_args = (('id',), ('id', 'action'), ('object_type', 'object_id'),
                       ('project_id', 'target_tenant'))
         for fields in field_args:
@@ -238,7 +238,7 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('20b2706b-1cea-4724-ab72-d7452ecb1fc4')
     def test_rbac_policy_show(self):
         res = self._make_admin_ag_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         p1 = res['rbac_policy']
         p2 = self.admin_client.create_rbac_policy(
             object_type='address_group',
@@ -257,11 +257,11 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
         rbac_pol1 = self.admin_client.create_rbac_policy(
             object_type='address_group', object_id=ag['id'],
             action='access_as_shared',
-            target_tenant=self.client2.tenant_id)['rbac_policy']
+            target_tenant=self.client2.project_id)['rbac_policy']
         rbac_pol2 = self.admin_client.create_rbac_policy(
             object_type='address_group', object_id=ag['id'],
             action='access_as_shared',
-            target_tenant=self.admin_client.tenant_id)['rbac_policy']
+            target_tenant=self.admin_client.project_id)['rbac_policy']
         res1 = self.admin_client.list_rbac_policies(id=rbac_pol1['id'])[
             'rbac_policies']
         res2 = self.admin_client.list_rbac_policies(id=rbac_pol2['id'])[
@@ -274,12 +274,12 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('a0f3a01a-e2c7-47d6-9385-0cd7a7f0c996')
     def test_regular_client_blocked_from_sharing_anothers_policy(self):
         ag = self._make_admin_ag_shared_to_project_id(
-            self.client.tenant_id)['address_group']
+            self.client.project_id)['address_group']
         with testtools.ExpectedException(exceptions.BadRequest):
             self.client.create_rbac_policy(
                 object_type='address_group', object_id=ag['id'],
                 action='access_as_shared',
-                target_tenant=self.client2.tenant_id)
+                target_tenant=self.client2.project_id)
 
         # make sure the rbac-policy is invisible to the tenant for which it's
         # being shared
@@ -292,7 +292,7 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
         self.admin_client.create_rbac_policy(
             object_type='address_group', object_id=ag['id'],
             action='access_as_shared',
-            target_tenant=self.client.tenant_id)['rbac_policy']
+            target_tenant=self.client.project_id)['rbac_policy']
         self.client.show_address_group(ag['id'])
         with testtools.ExpectedException(exceptions.NotFound):
             self.client.update_address_group(ag['id'], name='new_name')

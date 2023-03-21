@@ -137,7 +137,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
 
     def _get_tenant_id(self):
         """Returns the tenant_id of the client current user"""
-        return self.client.tenant_id
+        return self.client.project_id
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('74dcf2d3-a40e-4a6c-a25a-747d764bee81')

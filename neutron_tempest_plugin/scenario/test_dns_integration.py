@@ -218,7 +218,7 @@ class DNSIntegrationDomainPerProjectTests(BaseDNSIntegrationTests):
 
         name = data_utils.rand_name('test-domain')
         zone_name = "%s.%s.%s.zone." % (cls.client.user_id,
-                                        cls.client.tenant_id,
+                                        cls.client.project_id,
                                         name)
         dns_domain_template = "<user_id>.<project_id>.%s.zone." % name
 

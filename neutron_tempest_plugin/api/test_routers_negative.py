@@ -124,7 +124,7 @@ class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
     @decorators.idempotent_id('5379fe06-e45e-4a4f-8b4a-9e28a924b451')
     def test_router_update_distributed_returns_exception(self):
         # create a centralized router
-        router_args = {'tenant_id': self.client.tenant_id,
+        router_args = {'tenant_id': self.client.project_id,
                        'distributed': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
@@ -141,7 +141,7 @@ class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
     @decorators.idempotent_id('c277e945-3b39-442d-b149-e2e8cc6a2b40')
     def test_router_update_centralized_returns_exception(self):
         # create a centralized router
-        router_args = {'tenant_id': self.client.tenant_id,
+        router_args = {'tenant_id': self.client.project_id,
                        'distributed': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,

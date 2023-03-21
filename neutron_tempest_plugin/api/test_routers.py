@@ -316,7 +316,7 @@ class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
     @decorators.idempotent_id('644d7a4a-01a1-4b68-bb8d-0c0042cb1729')
     def test_convert_distributed_router_back_to_centralized(self):
         # Convert a centralized router to distributed firstly
-        router_args = {'tenant_id': self.client.tenant_id,
+        router_args = {'tenant_id': self.client.project_id,
                        'distributed': False, 'ha': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=False,
@@ -348,7 +348,7 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('0ffb9973-0c1a-4b76-a1f2-060178057661')
     def test_convert_centralized_router_to_distributed_extended(self):
-        router_args = {'tenant_id': self.client.tenant_id,
+        router_args = {'tenant_id': self.client.project_id,
                        'distributed': False, 'ha': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
@@ -371,7 +371,7 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('e9a8f55b-c535-44b7-8b0a-20af6a7c2921')
     def test_convert_distributed_router_to_centralized_extended(self):
-        router_args = {'tenant_id': self.client.tenant_id,
+        router_args = {'tenant_id': self.client.project_id,
                        'distributed': True, 'ha': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,

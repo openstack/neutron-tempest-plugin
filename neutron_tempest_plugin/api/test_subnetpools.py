@@ -145,8 +145,8 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
         show_subnetpool = body['subnetpool']
         self.assertIn('project_id', show_subnetpool)
         self.assertIn('tenant_id', show_subnetpool)
-        self.assertEqual(self.client.tenant_id, show_subnetpool['project_id'])
-        self.assertEqual(self.client.tenant_id, show_subnetpool['tenant_id'])
+        self.assertEqual(self.client.project_id, show_subnetpool['project_id'])
+        self.assertEqual(self.client.project_id, show_subnetpool['tenant_id'])
 
     @decorators.idempotent_id('764f1b93-1c4a-4513-9e7b-6c2fc5e9270c')
     def test_tenant_update_subnetpool(self):
@@ -446,11 +446,11 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
     @decorators.idempotent_id('71b35ad0-51cd-40da-985d-89a51c95ec6a')
     def test_policy_target_update(self):
         res = self._make_admin_snp_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         # change to client2
         update_res = self.admin_client.update_rbac_policy(
-                res['rbac_policy']['id'], target_tenant=self.client2.tenant_id)
-        self.assertEqual(self.client2.tenant_id,
+            res['rbac_policy']['id'], target_tenant=self.client2.project_id)
+        self.assertEqual(self.client2.project_id,
                          update_res['rbac_policy']['target_tenant'])
         # make sure everything else stayed the same
         res['rbac_policy'].pop('target_tenant')
@@ -460,7 +460,7 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
     @decorators.idempotent_id('451d9d38-65a0-4916-a805-1460d6a938d1')
     def test_subnet_presence_prevents_rbac_policy_deletion(self):
         res = self._make_admin_snp_shared_to_project_id(
-            self.client2.tenant_id)
+            self.client2.project_id)
         network = self.create_network(client=self.client2)
         subnet = self.client2.create_subnet(
             network_id=network['id'],
@@ -491,7 +491,7 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
         rbac_policy = self.admin_client.create_rbac_policy(
             object_type='address_scope', object_id=a_s['id'],
             action='access_as_shared',
-            target_tenant=self.client.tenant_id)['rbac_policy']
+            target_tenant=self.client.project_id)['rbac_policy']
 
         # Create subnet pool owned by client with shared AS
         snp = self._create_subnetpool(address_scope_id=a_s["id"])
@@ -500,7 +500,7 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
             self.client.create_rbac_policy(
                 object_type='subnetpool', object_id=snp['id'],
                 action='access_as_shared',
-                target_tenant=self.client2.tenant_id
+                target_tenant=self.client2.project_id
             )
 
         # cleanup
@@ -517,7 +517,7 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
         rbac_policy = self.admin_client.create_rbac_policy(
             object_type='subnetpool', object_id=snp['id'],
             action='access_as_shared',
-            target_tenant=self.client.tenant_id)['rbac_policy']
+            target_tenant=self.client.project_id)['rbac_policy']
         self.client.show_subnetpool(snp['id'])
 
         self.assertIn(rbac_policy,
@@ -532,7 +532,7 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
         snp = self._create_subnetpool()
         self.admin_client.create_rbac_policy(
             object_type='subnetpool', object_id=snp['id'],
-            action='access_as_shared', target_tenant=self.client2.tenant_id)
+            action='access_as_shared', target_tenant=self.client2.project_id)
         field_args = (('id',), ('id', 'action'), ('object_type', 'object_id'),
                       ('project_id', 'target_tenant'))
         for fields in field_args:
@@ -542,7 +542,7 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
     @decorators.idempotent_id('e59e4502-4e6a-4e49-b446-a5d5642bbd69')
     def test_rbac_policy_show(self):
         res = self._make_admin_snp_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         p1 = res['rbac_policy']
         p2 = self.admin_client.create_rbac_policy(
             object_type='subnetpool',
@@ -561,11 +561,11 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
         rbac_pol1 = self.admin_client.create_rbac_policy(
             object_type='subnetpool', object_id=snp['id'],
             action='access_as_shared',
-            target_tenant=self.client2.tenant_id)['rbac_policy']
+            target_tenant=self.client2.project_id)['rbac_policy']
         rbac_pol2 = self.admin_client.create_rbac_policy(
             object_type='subnetpool', object_id=snp['id'],
             action='access_as_shared',
-            target_tenant=self.admin_client.tenant_id)['rbac_policy']
+            target_tenant=self.admin_client.project_id)['rbac_policy']
         res1 = self.admin_client.list_rbac_policies(id=rbac_pol1['id'])[
             'rbac_policies']
         res2 = self.admin_client.list_rbac_policies(id=rbac_pol2['id'])[
@@ -578,12 +578,12 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
     @decorators.idempotent_id('63d9acbe-403c-4e77-9ffd-80e636a4621e')
     def test_regular_client_blocked_from_sharing_anothers_policy(self):
         snp = self._make_admin_snp_shared_to_project_id(
-            self.client.tenant_id)['subnetpool']
+            self.client.project_id)['subnetpool']
         with testtools.ExpectedException(lib_exc.BadRequest):
             self.client.create_rbac_policy(
                 object_type='subnetpool', object_id=snp['id'],
                 action='access_as_shared',
-                target_tenant=self.client2.tenant_id)
+                target_tenant=self.client2.project_id)
 
         # make sure the rbac-policy is invisible to the tenant for which it's
         # being shared

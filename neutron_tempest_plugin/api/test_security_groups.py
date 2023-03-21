@@ -71,7 +71,7 @@ class BaseSecGroupTest(base.BaseAdminNetworkTest):
         protocol = random.choice(list(base_security_groups.V4_PROTOCOL_NAMES))
         security_group_rule = self.create_security_group_rule(
             security_group=security_group,
-            project={'id': self.admin_client.tenant_id},
+            project={'id': self.admin_client.project_id},
             client=self.admin_client,
             protocol=protocol,
             direction=constants.INGRESS_DIRECTION)
@@ -97,7 +97,7 @@ class BaseSecGroupTest(base.BaseAdminNetworkTest):
         protocol = random.choice(list(base_security_groups.V4_PROTOCOL_NAMES))
         security_group_rule = self.create_security_group_rule(
             security_group=security_group,
-            project={'id': self.admin_client.tenant_id},
+            project={'id': self.admin_client.project_id},
             client=self.admin_client,
             protocol=protocol,
             direction=constants.INGRESS_DIRECTION)
@@ -105,7 +105,7 @@ class BaseSecGroupTest(base.BaseAdminNetworkTest):
         # Create also other SG with some custom rule to check that regular user
         # can't see this rule
         sg_kwargs = {
-            'project': {'id': self.admin_client.tenant_id},
+            'project': {'id': self.admin_client.project_id},
             'client': self.admin_client
         }
         if self.stateless_sg:
@@ -113,7 +113,7 @@ class BaseSecGroupTest(base.BaseAdminNetworkTest):
         admin_security_group = self.create_security_group(**sg_kwargs)
         admin_security_group_rule = self.create_security_group_rule(
             security_group=admin_security_group,
-            project={'id': self.admin_client.tenant_id},
+            project={'id': self.admin_client.project_id},
             client=self.admin_client,
             protocol=protocol,
             direction=constants.INGRESS_DIRECTION)
@@ -272,18 +272,18 @@ class BaseSecGroupQuota(base.BaseAdminNetworkTest):
 
     def _set_sg_quota(self, val):
         sg_quota = self._get_sg_quota()
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
         self.admin_client.update_quotas(project_id, **{'security_group': val})
         self.addCleanup(self.admin_client.update_quotas,
                         project_id, **{'security_group': sg_quota})
 
     def _get_sg_quota(self):
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
         quotas = self.admin_client.show_quotas(project_id)
         return quotas['quota']['security_group']
 
     def _get_sg_amount(self):
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
         filter_query = {'project_id': project_id}
         security_groups = self.client.list_security_groups(**filter_query)
         return len(security_groups['security_groups'])
@@ -341,7 +341,7 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
     def _create_security_group_rules(self, amount, port_index=1):
         for i in range(amount):
             ingress_rule = self.create_security_group_rule(**{
-                'project_id': self.client.tenant_id,
+                'project_id': self.client.project_id,
                 'direction': 'ingress',
                 'port_range_max': port_index + i,
                 'port_range_min': port_index + i,
@@ -364,18 +364,18 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
         return new_sg_rules_quota
 
     def _set_sg_rules_quota(self, val):
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
         self.admin_client.update_quotas(project_id,
                                         **{'security_group_rule': val})
         LOG.info('Trying to update security group rule quota {} '.format(val))
 
     def _get_sg_rules_quota(self):
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
         quotas = self.admin_client.show_quotas(project_id)
         return quotas['quota']['security_group_rule']
 
     def _get_sg_rules_amount(self):
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
         filter_query = {'project_id': project_id}
         security_group_rules = self.client.list_security_group_rules(
                 **filter_query)
@@ -390,7 +390,7 @@ class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
     def setUp(self):
         super(SecGroupRulesQuotaTest, self).setUp()
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        self.admin_client.reset_quotas, self.client.tenant_id)
+                        self.admin_client.reset_quotas, self.client.project_id)
         self._set_sg_rules_quota(10)
 
     @decorators.idempotent_id('77ec038c-5638-11ea-8e2d-0242ac130003')
@@ -416,7 +416,7 @@ class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
         values, different values.
         """
         sg_rules_quota = self._get_sg_rules_quota()
-        project_id = self.client.tenant_id
+        project_id = self.client.project_id
         self.addCleanup(self.admin_client.update_quotas,
                         project_id, **{'security_group_rule': sg_rules_quota})
         values = [-1, 0, 10, 2147483647]
@@ -569,7 +569,7 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
     def _create_security_group(self):
         return self.create_security_group(
             name=data_utils.rand_name('test-sg'),
-            project={'id': self.admin_client.tenant_id})
+            project={'id': self.admin_client.project_id})
 
     def _make_admin_sg_shared_to_project_id(self, project_id):
         sg = self._create_security_group()
@@ -584,11 +584,11 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('2a41eb8f-2a35-11e9-bae9-acde48001122')
     def test_policy_target_update(self):
         res = self._make_admin_sg_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         # change to client2
         update_res = self.admin_client.update_rbac_policy(
-                res['rbac_policy']['id'], target_tenant=self.client2.tenant_id)
-        self.assertEqual(self.client2.tenant_id,
+            res['rbac_policy']['id'], target_tenant=self.client2.project_id)
+        self.assertEqual(self.client2.project_id,
                          update_res['rbac_policy']['target_tenant'])
         # make sure everything else stayed the same
         res['rbac_policy'].pop('target_tenant')
@@ -598,7 +598,7 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('2a619a8a-2a35-11e9-90d9-acde48001122')
     def test_port_presence_prevents_policy_rbac_policy_deletion(self):
         res = self._make_admin_sg_shared_to_project_id(
-            self.client2.tenant_id)
+            self.client2.project_id)
         sg_id = res['security_group']['id']
         net = self.create_network(client=self.client2)
         port = self.client2.create_port(
@@ -623,7 +623,7 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
         rbac_policy = self.admin_client.create_rbac_policy(
             object_type='security_group', object_id=sg['id'],
             action='access_as_shared',
-            target_tenant=self.client.tenant_id)['rbac_policy']
+            target_tenant=self.client.project_id)['rbac_policy']
         self.client.show_security_group(sg['id'])
 
         self.assertIn(rbac_policy,
@@ -638,7 +638,7 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
         sg = self._create_security_group()
         self.admin_client.create_rbac_policy(
             object_type='security_group', object_id=sg['id'],
-            action='access_as_shared', target_tenant=self.client2.tenant_id)
+            action='access_as_shared', target_tenant=self.client2.project_id)
         field_args = (('id',), ('id', 'action'), ('object_type', 'object_id'),
                       ('project_id', 'target_tenant'))
         for fields in field_args:
@@ -648,7 +648,7 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('2abf8f9e-2a35-11e9-85f7-acde48001122')
     def test_rbac_policy_show(self):
         res = self._make_admin_sg_shared_to_project_id(
-            self.client.tenant_id)
+            self.client.project_id)
         p1 = res['rbac_policy']
         p2 = self.admin_client.create_rbac_policy(
             object_type='security_group',
@@ -667,11 +667,11 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
         rbac_pol1 = self.admin_client.create_rbac_policy(
             object_type='security_group', object_id=sg['id'],
             action='access_as_shared',
-            target_tenant=self.client2.tenant_id)['rbac_policy']
+            target_tenant=self.client2.project_id)['rbac_policy']
         rbac_pol2 = self.admin_client.create_rbac_policy(
             object_type='security_group', object_id=sg['id'],
             action='access_as_shared',
-            target_tenant=self.admin_client.tenant_id)['rbac_policy']
+            target_tenant=self.admin_client.project_id)['rbac_policy']
         res1 = self.admin_client.list_rbac_policies(id=rbac_pol1['id'])[
             'rbac_policies']
         res2 = self.admin_client.list_rbac_policies(id=rbac_pol2['id'])[
@@ -684,12 +684,12 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('2aff3900-2a35-11e9-96b3-acde48001122')
     def test_regular_client_blocked_from_sharing_anothers_policy(self):
         sg = self._make_admin_sg_shared_to_project_id(
-            self.client.tenant_id)['security_group']
+            self.client.project_id)['security_group']
         with testtools.ExpectedException(exceptions.BadRequest):
             self.client.create_rbac_policy(
                 object_type='security_group', object_id=sg['id'],
                 action='access_as_shared',
-                target_tenant=self.client2.tenant_id)
+                target_tenant=self.client2.project_id)
 
         # make sure the rbac-policy is invisible to the tenant for which it's
         # being shared

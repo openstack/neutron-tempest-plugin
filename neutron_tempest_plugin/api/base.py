@@ -386,7 +386,7 @@ class BaseNetworkTest(test.BaseTestCase):
                     # Keep this network visible from current project
                     project_id = (kwargs.get('project_id') or
                                   kwargs.get('tenant_id') or
-                                  cls.client.tenant_id)
+                                  cls.client.project_id)
                     kwargs.update(project_id=project_id, tenant_id=project_id)
             else:
                 # Use default client

@@ -651,7 +651,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         if not client:
             client = self.client
         if not tenant_id:
-            tenant_id = client.tenant_id
+            tenant_id = client.project_id
         router_id = CONF.network.public_router_id
         network_id = CONF.network.public_network_id
         if router_id:

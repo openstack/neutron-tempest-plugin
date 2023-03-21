@@ -1253,7 +1253,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         export_rts = export_rts or []
         self.bgpvpn = self.create_bgpvpn(
             self.bgpvpn_admin_client,
-            tenant_id=self.bgpvpn_admin_client.tenant_id,
+            tenant_id=self.bgpvpn_admin_client.project_id,
             name=name, route_targets=rts, export_targets=export_rts,
             import_targets=import_rts)
         return self.bgpvpn

@@ -204,6 +204,7 @@
       - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^neutron/agent/.*$
       - ^neutron/privileged/.*$
       - ^neutron_lib/tests/unit/.*$
@@ -282,6 +283,7 @@
       - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^neutron/agent/ovn/.*$
       - ^neutron/agent/windows/.*$
       - ^neutron/plugins/ml2/drivers/linuxbridge/.*$
@@ -381,6 +383,7 @@
       - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^neutron/agent/linux/openvswitch_firewall/.*$
       - ^neutron/agent/ovn/.*$
       - ^neutron/agent/windows/.*$
@@ -551,6 +554,7 @@
       - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^neutron/agent/linux/openvswitch_firewall/.*$
       - ^neutron/agent/ovn/.*$
       - ^neutron/agent/windows/.*$
@@ -677,6 +681,7 @@
       - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^neutron/agent/dhcp/.*$
       - ^neutron/agent/l2/.*$
       - ^neutron/agent/l3/.*$
@@ -937,6 +942,7 @@
       - ^neutron/tests/functional/.*
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^neutron/agent/.*$
       - ^neutron/cmd/.*$
       - ^neutron/privileged/.*$
@@ -1016,6 +1022,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
       - ^playbooks/.*functional.*$
@@ -1078,6 +1085,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
       - ^playbooks/.*functional.*$
@@ -1144,6 +1152,7 @@
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|sfc|tap_as_a_service|vpnaas).*$
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
       - ^playbooks/.*functional.*$
@@ -1204,6 +1213,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
       - ^playbooks/.*functional.*$
@@ -1267,6 +1277,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
       - ^playbooks/.*functional.*$
@@ -1372,6 +1383,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
+      - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
       - ^playbooks/.*functional.*$

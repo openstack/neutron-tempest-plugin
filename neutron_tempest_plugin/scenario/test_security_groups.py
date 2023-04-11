@@ -107,6 +107,8 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         self.network_client.reset_quotas, self.project_id)
         self.network_client.update_quotas(self.project_id, security_group=-1)
+        self.network_client.update_quotas(self.project_id,
+                                          security_group_rule=-1)
 
     def create_vm_testing_sec_grp(self, num_servers=2, security_groups=None,
                                   ports=None, network_id=None,

@@ -1018,6 +1018,8 @@
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
       - ^neutron_tempest_plugin/api/test_.*$
+      - ^neutron_tempest_plugin/scenario/admin/.*$
+      - ^neutron_tempest_plugin/scenario/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
@@ -1081,6 +1083,8 @@
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
       - ^neutron_tempest_plugin/api/test_.*$
+      - ^neutron_tempest_plugin/scenario/admin/.*$
+      - ^neutron_tempest_plugin/scenario/test_.*$
       - ^neutron_tempest_plugin/(fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
@@ -1149,6 +1153,8 @@
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
       - ^neutron_tempest_plugin/api/test_.*$
+      - ^neutron_tempest_plugin/scenario/admin/.*$
+      - ^neutron_tempest_plugin/scenario/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|sfc|tap_as_a_service|vpnaas).*$
       - ^tools/.*$
       - ^tox.ini$
@@ -1209,6 +1215,8 @@
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
       - ^neutron_tempest_plugin/api/test_.*$
+      - ^neutron_tempest_plugin/scenario/admin/.*$
+      - ^neutron_tempest_plugin/scenario/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
@@ -1273,6 +1281,8 @@
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
       - ^neutron_tempest_plugin/api/test_.*$
+      - ^neutron_tempest_plugin/scenario/admin/.*$
+      - ^neutron_tempest_plugin/scenario/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
@@ -1379,6 +1389,8 @@
       - ^neutron/tests/fullstack/.*
       - ^neutron/tests/functional/.*
       - ^neutron_tempest_plugin/api/test_.*$
+      - ^neutron_tempest_plugin/scenario/admin/.*$
+      - ^neutron_tempest_plugin/scenario/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$

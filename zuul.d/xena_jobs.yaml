@@ -3,6 +3,11 @@
     parent: neutron-tempest-plugin-base
     nodeset: openstack-single-node-focal
     override-checkout: stable/xena
+    required-projects: &required-projects-xena
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 2.3.0
+      - openstack/tempest
     vars:
       tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.api
@@ -96,6 +101,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-xena
     parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -115,6 +121,7 @@
     name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-xena
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -134,6 +141,7 @@
     name: neutron-tempest-plugin-scenario-linuxbridge-xena
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -153,6 +161,7 @@
     name: neutron-tempest-plugin-scenario-ovn-xena
     parent: neutron-tempest-plugin-ovn
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.scenario)|\
@@ -172,6 +181,7 @@
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     nodeset: openstack-two-node-focal
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -179,6 +189,7 @@
     name: neutron-tempest-plugin-designate-scenario-xena
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -187,6 +198,7 @@
     parent: neutron-tempest-plugin-sfc
     nodeset: openstack-single-node-focal
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -195,6 +207,7 @@
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
     nodeset: openstack-single-node-focal
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       network_api_extensions: *api_extensions
 
@@ -203,6 +216,7 @@
     parent: neutron-tempest-plugin-dynamic-routing
     nodeset: openstack-single-node-focal
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -211,6 +225,7 @@
     parent: neutron-tempest-plugin-vpnaas
     nodeset: openstack-single-node-focal
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -219,5 +234,6 @@
     parent: neutron-tempest-plugin-tap-as-a-service
     nodeset: openstack-single-node-focal
     override-checkout: stable/xena
+    required-projects: *required-projects-xena
     vars:
       network_api_extensions_common: *api_extensions

@@ -74,12 +74,12 @@ def get_ncat_server_cmd(port, protocol, msg=None):
     return cmd
 
 
-def get_ncat_client_cmd(ip_address, port, protocol):
+def get_ncat_client_cmd(ip_address, port, protocol, ssh_client=None):
     udp = ''
     if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
         udp = '-u'
     cmd = 'echo "knock knock" | nc '
-    ncat_version = get_ncat_version()
+    ncat_version = get_ncat_version(ssh_client=ssh_client)
     if ncat_version > packaging_version.Version('7.60'):
         cmd += '-z '
     cmd += '-w 1 %(udp)s %(host)s %(port)s' % {
@@ -636,7 +636,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         If ssh_client is not given, it is executed locally on host where tests
         are executed. Otherwise ssh_client object is used to execute it.
         """
-        cmd = get_ncat_client_cmd(ip_address, port, protocol)
+        cmd = get_ncat_client_cmd(ip_address, port, protocol,
+                                  ssh_client=ssh_client)
         result = shell.execute(cmd, ssh_client=ssh_client)
         self.assertEqual(0, result.exit_status)
         return result.stdout

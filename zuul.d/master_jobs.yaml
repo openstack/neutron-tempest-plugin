@@ -409,20 +409,15 @@
       - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
-    name: neutron-tempest-plugin-openvswitch-enforce-scope-new-defaults
+    name: neutron-tempest-plugin-openvswitch-enforce-scope-old-defaults
     parent: neutron-tempest-plugin-openvswitch
     vars:
       devstack_localrc:
-        # Enabeling the scope and new defaults for services.
-        # NOTE: (gmann) We need to keep keystone scope check disable as
-        # services (except ironic) does not support the system scope and
-        # they need keystone to continue working with project scope. Until
-        # Keystone policies are changed to work for both system as well as
-        # for project scoped, we need to keep scope check disable for
-        # keystone.
-        NOVA_ENFORCE_SCOPE: true
-        GLANCE_ENFORCE_SCOPE: true
-        NEUTRON_ENFORCE_SCOPE: true
+        # Disabling the scope and new defaults for services to use old,
+        # deprecated policies
+        NOVA_ENFORCE_SCOPE: false
+        GLANCE_ENFORCE_SCOPE: false
+        NEUTRON_ENFORCE_SCOPE: false
 
 
 # TODO(slaweq): remove that job's definition as soon as new job

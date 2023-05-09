@@ -2,6 +2,7 @@
     name: neutron-tempest-plugin-openvswitch-zed
     parent: neutron-tempest-plugin-openvswitch
     override-checkout: stable/zed
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       network_api_extensions_openvswitch:
         - local_ip
@@ -107,6 +108,7 @@
     name: neutron-tempest-plugin-openvswitch-iptables_hybrid-zed
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/zed
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       network_api_extensions_openvswitch:
         - local_ip
@@ -137,6 +139,7 @@
     name: neutron-tempest-plugin-linuxbridge-zed
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/zed
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       network_api_extensions_linuxbridge:
         - vlan-transparent
@@ -163,6 +166,7 @@
     name: neutron-tempest-plugin-ovn-zed
     parent: neutron-tempest-plugin-ovn
     override-checkout: stable/zed
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
@@ -194,6 +198,7 @@
     name: neutron-tempest-plugin-designate-scenario-zed
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: stable/zed
+    nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       network_api_extensions_common: *api_extensions
 

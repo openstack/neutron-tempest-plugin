@@ -391,9 +391,9 @@ def arp_table(namespace=None):
 
 
 def list_iptables(version=constants.IP_VERSION_4, namespace=None):
-    cmd = ''
+    cmd = 'sudo '
     if namespace:
-        cmd = 'sudo ip netns exec %s ' % namespace
+        cmd += 'ip netns exec %s ' % namespace
     cmd += ('iptables-save' if version == constants.IP_VERSION_4 else
             'ip6tables-save')
     return shell.execute(cmd).stdout

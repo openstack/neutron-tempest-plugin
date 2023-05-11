@@ -1195,6 +1195,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
         dscp_policy_id = self.create_qos_policy(
             name=self.policy_name,
             description='test-qos-policy',
+            project_id=self.client.project_id,
             shared=True)['id']
 
         # Associate QoS to the network

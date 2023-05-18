@@ -114,6 +114,7 @@
         - router
         - router_availability_zone
         - security-group
+        - security-groups-default-rules
         - security-groups-remote-address-group
         - segment
         - service-type

@@ -846,6 +846,38 @@ class NetworkClientJSON(service_client.RestClient):
         self.expected_success(204, resp.status)
         return service_client.ResponseBody(resp, body)
 
+    def list_default_security_group_rules(self, **kwargs):
+        uri = '%s/default-security-group-rules' % self.uri_prefix
+        if kwargs:
+            uri += '?' + urlparse.urlencode(kwargs, doseq=1)
+        resp, body = self.get(uri)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
+    def get_default_security_group_rule(self, rule_id):
+        uri = '%s/default-security-group-rules/%s' % (self.uri_prefix,
+                                                      rule_id)
+        get_resp, get_resp_body = self.get(uri)
+        self.expected_success(200, get_resp.status)
+        body = jsonutils.loads(get_resp_body)
+        return service_client.ResponseBody(get_resp, body)
+
+    def create_default_security_group_rule(self, **kwargs):
+        post_body = {'default_security_group_rule': kwargs}
+        body = jsonutils.dumps(post_body)
+        uri = '%s/default-security-group-rules' % self.uri_prefix
+        resp, body = self.post(uri, body)
+        self.expected_success(201, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
+    def delete_default_security_group_rule(self, rule_id):
+        uri = '%s/default-security-group-rules/%s' % (self.uri_prefix, rule_id)
+        resp, body = self.delete(uri)
+        self.expected_success(204, resp.status)
+        return service_client.ResponseBody(resp, body)
+
     def list_ports(self, **kwargs):
         uri = '%s/ports' % self.uri_prefix
         if kwargs:

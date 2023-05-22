@@ -147,7 +147,7 @@ class NetworkScenarioTest(ScenarioTest):
     def _create_router(self, client=None, tenant_id=None,
                        namestart='router-smoke'):
         if not client:
-            client = self.routers_client
+            client = self.admin_routers_client
         if not tenant_id:
             tenant_id = client.tenant_id
         name = data_utils.rand_name(namestart)

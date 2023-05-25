@@ -336,7 +336,10 @@ class FWaaSv2ExtensionTestJSON(v2_base.BaseFWaaSTest):
             ports=[intf_2['port_id']])
         updated_fwg = body["firewall_group"]
         self.assertEqual([intf_2['port_id']], updated_fwg['ports'])
-
+        # Wait for the firewall resource to become ready
+        self._wait_until_ready(fwg_id)
+        # Disassociate all ports with this firewall group
+        self.firewall_groups_client.update_firewall_group(fwg_id, ports=[])
         # Delete firewall_group
         self.firewall_groups_client.delete_firewall_group(fwg_id)
 

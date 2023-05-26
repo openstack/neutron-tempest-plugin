@@ -6,6 +6,8 @@
     vars:
       network_api_extensions_openvswitch:
         - local_ip
+        - port-resource-request
+        - port-resource-request-groups
         - qos-bw-minimum-ingress
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
@@ -46,7 +48,6 @@
         - l3-ha
         - l3-ndp-proxy
         - l3_agent_scheduler
-        - logging
         - metering
         - multi-provider
         - net-mtu
@@ -56,8 +57,6 @@
         - network-segment-range
         - pagination
         - port-device-profile
-        - port-resource-request
-        - port-resource-request-groups
         - port-mac-address-regenerate
         - port-security
         - port-security-groups-filtering
@@ -110,9 +109,12 @@
     override-checkout: stable/zed
     nodeset: neutron-nested-virt-ubuntu-focal
     vars:
+      network_api_extensions_common: *api_extensions
       network_api_extensions_openvswitch:
         - local_ip
         - logging
+        - port-resource-request
+        - port-resource-request-groups
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
           (^neutron_tempest_plugin.scenario)|\
@@ -141,6 +143,7 @@
     override-checkout: stable/zed
     nodeset: neutron-nested-virt-ubuntu-focal
     vars:
+      network_api_extensions_common: *api_extensions
       network_api_extensions_linuxbridge:
         - vlan-transparent
       tempest_test_regex: "\

@@ -7,6 +7,8 @@
         - dhcp_agent_scheduler
         - local_ip
         - qos-bw-minimum-ingress
+        - port-resource-request
+        - port-resource-request-groups
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
           (^neutron_tempest_plugin.scenario)|\
@@ -56,8 +58,6 @@
         - network-segment-range
         - pagination
         - port-device-profile
-        - port-resource-request
-        - port-resource-request-groups
         - port-mac-address-regenerate
         - port-security
         - port-security-groups-filtering
@@ -106,10 +106,13 @@
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     override-checkout: stable/2023.1
     vars:
+      network_api_extensions_common: *api_extensions
       network_api_extensions_openvswitch:
         - dhcp_agent_scheduler
         - local_ip
         - logging
+        - port-resource-request
+        - port-resource-request-groups
       network_available_features: *available_features
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
@@ -157,6 +160,7 @@
     parent: neutron-tempest-plugin-linuxbridge
     override-checkout: stable/2023.1
     vars:
+      network_api_extensions_common: *api_extensions
       network_api_extensions_linuxbridge:
         - dhcp_agent_scheduler
         - vlan-transparent

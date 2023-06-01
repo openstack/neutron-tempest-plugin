@@ -108,6 +108,20 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self.RT3 = self.new_rt()
         self.RT4 = self.new_rt()
 
+    @classmethod
+    def setup_clients(cls):
+        """This setup the service clients for the tests"""
+        super(TestBGPVPNBasic, cls).setup_clients()
+        cls.admin_security_group_client = cls.os_admin.security_groups_client
+        cls.admin_security_group_rule_client = (
+            cls.os_admin.security_group_rules_client)
+        cls.admin_routers_client = cls.os_admin.routers_client
+        cls.admin_ports_client = cls.os_admin.ports_client
+        cls.admin_networks_client = cls.os_admin.networks_client
+        cls.admin_subnets_client = cls.os_admin.subnets_client
+        cls.admin_fips_client = cls.os_admin.floating_ips_client
+        cls.admin_keys_client = cls.os_admin.keypairs_client
+
     @decorators.idempotent_id('afdd6cad-871a-4343-b97b-6319c76c815d')
     @utils.services('compute', 'network')
     def test_bgpvpn_basic(self):
@@ -164,6 +178,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_networks_and_subnets()
         self._create_servers()
         self.router_b = self._create_fip_router(
+            client=self.admin_routers_client,
             subnet_id=self.subnets[NET_B][0]['id'])
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
@@ -187,10 +202,13 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_networks_and_subnets()
         self._create_servers()
         self.router_b = self._create_fip_router(
+            client=self.admin_routers_client,
             subnet_id=self.subnets[NET_B][0]['id'])
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
-        self.delete_router(self.router_b)
+        self._delete_router(self.router_b,
+                            routers_client=self.admin_routers_client,
+                            ports_client=self.admin_ports_client)
         self._associate_fip_and_check_l3_bgpvpn()
 
     @decorators.idempotent_id('973ab26d-c7d8-4a32-9aa9-2d7e6f406135')
@@ -212,6 +230,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
         self.router_b = self._create_fip_router(
+            client=self.admin_routers_client,
             subnet_id=self.subnets[NET_B][0]['id'])
         self._associate_fip_and_check_l3_bgpvpn()
 
@@ -231,6 +250,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self.router_b = self._create_fip_router(
+            client=self.admin_routers_client,
             subnet_id=self.subnets[NET_B][0]['id'])
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
@@ -255,6 +275,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._create_l3_bgpvpn()
         self._associate_all_nets_to_bgpvpn()
         self.router_b = self._create_fip_router(
+            client=self.admin_routers_client,
             subnet_id=self.subnets[NET_B][0]['id'])
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
@@ -344,10 +365,10 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             0, self.subnets[NET_A][0])
         self._create_l3_bgpvpn(rts=[], export_rts=[self.RT1],
                                import_rts=[self.RT2])
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         self._check_l3_bgpvpn(should_succeed=False)
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_B]['id'])
         self._check_l3_bgpvpn(should_succeed=False)
         self._update_l3_bgpvpn(rts=[self.RT1], import_rts=[], export_rts=[])
@@ -388,13 +409,13 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                              [self.networks[NET_B], IP_B_S1_1],
                              [self.networks[NET_A], IP_A_S1_2],
                              [self.networks[NET_B], IP_B_S1_2]])
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         self.router_a = self._create_router_and_associate_fip(
             0, self.subnets[NET_A][0])
         self._check_l3_bgpvpn(should_succeed=False)
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_B]['id'])
         self.router_b = self._create_router_and_associate_fip(
             1, self.subnets[NET_B][0])
@@ -444,11 +465,11 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             0, self.subnets[NET_A][0])
         router_b = self._create_router_and_associate_fip(
             3, self.subnets[NET_B][0])
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         self._check_l3_bgpvpn(should_succeed=False)
         self._check_l3_bgpvpn(self.servers[0], self.servers[2])
-        self.bgpvpn_client.create_router_association(self.bgpvpn['id'],
+        self.bgpvpn_admin_client.create_router_association(self.bgpvpn['id'],
                                                      router_b['id'])
         self._check_l3_bgpvpn(should_succeed=False)
         self._check_l3_bgpvpn(self.servers[3], self.servers[1])
@@ -513,16 +534,16 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                   'local_pref': 100,
                                   'prefix': NET_C_S1}]
 
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
 
         port_id_1 = self.ports[self.servers[1]['id']]['id']
-        body = self.bgpvpn_client.create_port_association(
+        body = self.bgpvpn_admin_client.create_port_association(
             self.bgpvpn['id'], port_id=port_id_1, routes=primary_port_routes)
         port_association_1 = body['port_association']
 
         port_id_2 = self.ports[self.servers[2]['id']]['id']
-        body = self.bgpvpn_client.create_port_association(
+        body = self.bgpvpn_admin_client.create_port_association(
             self.bgpvpn['id'], port_id=port_id_2, routes=alternate_port_routes)
         port_association_2 = body['port_association']
 
@@ -535,10 +556,10 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             to_server_ip=IP_C_S1_1,
             validate_server=destination_srv_1)
 
-        self.bgpvpn_client.update_port_association(
+        self.bgpvpn_admin_client.update_port_association(
             self.bgpvpn['id'], port_association_1['id'],
             routes=alternate_port_routes)
-        self.bgpvpn_client.update_port_association(
+        self.bgpvpn_admin_client.update_port_association(
             self.bgpvpn['id'], port_association_2['id'],
             routes=primary_port_routes)
 
@@ -581,9 +602,9 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                           rts=[self.RT1])
         bgpvpn_a_bis = self._create_l3_bgpvpn(name='test-l3-bgpvpn-a-bis',
                                               rts=[self.RT2])
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             bgpvpn_a['id'], self.networks[NET_A]['id'])
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             bgpvpn_a_bis['id'], self.networks[NET_A_BIS]['id'])
         self._create_servers([[self.networks[NET_A], IP_A_S1_1],
                              [self.networks[NET_A_BIS], IP_A_BIS_S1_2],
@@ -652,18 +673,17 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
         self._setup_ip_forwarding(1)
         self._setup_ip_address(1, IP_C_S1_1)
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         port_id = self.ports[self.servers[1]['id']]['id']
         port_routes = [{'type': 'prefix',
                         'prefix': NET_C_S1}]
-        body = self.bgpvpn_client.create_port_association(self.bgpvpn['id'],
-                                                          port_id=port_id,
-                                                          routes=port_routes)
+        body = self.bgpvpn_admin_client.create_port_association(
+            self.bgpvpn['id'], port_id=port_id, routes=port_routes)
         port_association = body['port_association']
         self._check_l3_bgpvpn_by_specific_ip(
             to_server_ip=IP_C_S1_1)
-        self.bgpvpn_client.update_port_association(
+        self.bgpvpn_admin_client.update_port_association(
             self.bgpvpn['id'], port_association['id'], routes=[])
         self._check_l3_bgpvpn_by_specific_ip(
             should_succeed=False, to_server_ip=IP_C_S1_1)
@@ -717,16 +737,15 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
         self._setup_range_ip_address(1, LOOPBACKS)
 
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         port_id = self.ports[self.servers[1]['id']]['id']
         port_routes = [{'type': 'prefix',
                         'prefix': ip + "/32"}
                        for ip in LOOPBACKS]
 
-        body = self.bgpvpn_client.create_port_association(self.bgpvpn['id'],
-                                                          port_id=port_id,
-                                                          routes=port_routes)
+        body = self.bgpvpn_admin_client.create_port_association(
+            self.bgpvpn['id'], port_id=port_id, routes=port_routes)
         port_association = body['port_association']
 
         for ip in random.sample(LOOPBACKS, SAMPLE_SIZE):
@@ -735,7 +754,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             self._check_l3_bgpvpn_by_specific_ip(
                 to_server_ip=ip)
 
-        self.bgpvpn_client.update_port_association(
+        self.bgpvpn_admin_client.update_port_association(
             self.bgpvpn['id'], port_association['id'], routes=[])
 
         for ip in SUB_LOOPBACKS:
@@ -782,18 +801,17 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
         self._setup_ip_forwarding(1)
         self._setup_ip_address(1, IP_C_S1_1)
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         port_id = self.ports[self.servers[1]['id']]['id']
         port_routes = [{'type': 'prefix',
                         'prefix': NET_C_S1}]
-        body = self.bgpvpn_client.create_port_association(self.bgpvpn['id'],
-                                                          port_id=port_id,
-                                                          routes=port_routes)
+        body = self.bgpvpn_admin_client.create_port_association(
+            self.bgpvpn['id'], port_id=port_id, routes=port_routes)
         port_association = body['port_association']
         self._check_l3_bgpvpn_by_specific_ip(
             to_server_ip=IP_C_S1_1)
-        self.bgpvpn_client.delete_port_association(
+        self.bgpvpn_admin_client.delete_port_association(
             self.bgpvpn['id'], port_association['id'])
         self._check_l3_bgpvpn_by_specific_ip(
             should_succeed=False, to_server_ip=IP_C_S1_1)
@@ -866,21 +884,21 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         self._setup_ip_forwarding(0)
 
         # connect network A to its BGPVPN
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             bgpvpn_a['id'], self.networks[NET_A]['id'])
 
         # connect network B to its BGPVPN
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             bgpvpn_b['id'], self.networks[NET_B]['id'])
 
         # connect network C to its BGPVPN
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             bgpvpn_c['id'], self.networks[NET_C]['id'])
 
         # create port associations for A->C traffic
         # (leak routes imported by BGPVPN B -- which happen to include the
         # routes net C -- into net A)
-        self.bgpvpn_client.create_port_association(
+        self.bgpvpn_admin_client.create_port_association(
             bgpvpn_to_a['id'],
             port_id=self.ports[vm2['id']]['id'],
             routes=[{'type': 'bgpvpn',
@@ -890,7 +908,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         # create port associations for C->A traffic
         # (leak routes imported by BGPVPN B -- which happen to include the
         # routes from net A -- into net C)
-        body = self.bgpvpn_client.create_port_association(
+        body = self.bgpvpn_admin_client.create_port_association(
             bgpvpn_to_c['id'],
             port_id=self.ports[vm2['id']]['id'],
             routes=[{'type': 'bgpvpn',
@@ -914,7 +932,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                              should_succeed=True)
 
         # remove port association 1
-        self.bgpvpn_client.delete_port_association(self.bgpvpn['id'],
+        self.bgpvpn_admin_client.delete_port_association(self.bgpvpn['id'],
                                                    port_association['id'])
 
         # check that connectivity is actually interrupted
@@ -938,7 +956,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self._create_l3_bgpvpn()
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn(should_succeed=False)
@@ -1007,10 +1025,10 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         """
         self._create_networks_and_subnets()
         self._create_l3_bgpvpn()
-        body = self.bgpvpn_client.create_network_association(
+        body = self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
         assoc_b = body['network_association']
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_B]['id'])
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
@@ -1040,10 +1058,10 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         router_b = self._create_fip_router(
             subnet_id=self.subnets[NET_B][0]['id'])
         self._create_l3_bgpvpn()
-        self.bgpvpn_client.create_network_association(
+        self.bgpvpn_admin_client.create_network_association(
             self.bgpvpn['id'], self.networks[NET_A]['id'])
-        body = self.bgpvpn_client.create_router_association(self.bgpvpn['id'],
-                                                            router_b['id'])
+        body = self.bgpvpn_admin_client.create_router_association(
+            self.bgpvpn['id'], router_b['id'])
         assoc_b = body['router_association']
         self._create_servers()
         self._associate_fip_and_check_l3_bgpvpn()
@@ -1104,7 +1122,9 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     def _create_security_group_for_test(self):
         self.security_group = self.create_security_group(
-            project_id=self.bgpvpn_client.project_id)
+            project_id=self.bgpvpn_admin_client.project_id,
+            security_groups_client=self.admin_security_group_client,
+            security_group_rules_client=self.admin_security_group_rule_client)
 
     def _create_networks_and_subnets(self, names=None, subnet_cidrs=None,
                                      port_security=True):
@@ -1115,15 +1135,15 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         for (name, subnet_cidrs) in zip(names, subnet_cidrs):
             network = super(manager.NetworkScenarioTest,
                             self).create_network(namestart=name,
-                    port_security_enabled=port_security)
+                    port_security_enabled=port_security,
+                    networks_client=self.admin_networks_client)
             self.networks[name] = network
             self.subnets[name] = []
             for (j, cidr) in enumerate(subnet_cidrs):
                 sub_name = "subnet-%s-%d" % (name, j + 1)
-                subnet = self._create_subnet_with_cidr(network,
-                                                       namestart=sub_name,
-                                                       cidr=cidr,
-                                                       ip_version=4)
+                subnet = self._create_subnet_with_cidr(
+                    network, namestart=sub_name, cidr=cidr, ip_version=4,
+                    subnets_client=self.admin_subnets_client)
                 self.subnets[name].append(subnet)
 
     def _create_subnet_with_cidr(self, network, subnets_client=None,
@@ -1146,6 +1166,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
     def _create_fip_router(self, client=None, public_network_id=None,
                            subnet_id=None):
+        if not client:
+            client = self.admin_routers_client
         router = self._create_router(client, namestart='router-')
         router_id = router['id']
         if public_network_id is None:
@@ -1165,12 +1187,14 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         server = self.servers[server_index]
         fip = self.create_floating_ip(
             server, external_network_id=CONF.network.public_network_id,
-            port_id=self.ports[server['id']]['id'])
+            port_id=self.ports[server['id']]['id'],
+            client=self.admin_fips_client)
         self.server_fips[server['id']] = fip
         return fip
 
     def _create_router_and_associate_fip(self, server_index, subnet):
-        router = self._create_fip_router(subnet_id=subnet['id'])
+        router = self._create_fip_router(client=self.admin_routers_client,
+                                         subnet_id=subnet['id'])
         self._associate_fip(server_index)
         return router
 
@@ -1185,7 +1209,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
 
         port = super(manager.NetworkScenarioTest,
                     self).create_port(network_id=network['id'],
-                                    client=clients.ports_client,
+                                    client=self.admin_ports_client,
                                     **create_port_body)
 
         create_server_kwargs = {
@@ -1205,7 +1229,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         return server
 
     def _create_servers(self, ports_config=None, port_security=True):
-        keypair = self.create_keypair()
+        keypair = self.create_keypair(client=self.admin_keys_client)
         security_group_ids = [self.security_group['id']]
         if ports_config is None:
             ports_config = [[self.networks[NET_A], IP_A_S1_1],
@@ -1214,7 +1238,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
             network = port_config[0]
             server = self._create_server(
                 'server-' + str(i + 1), keypair, network, port_config[1],
-                security_group_ids, self.os_primary, port_security)
+                security_group_ids, self.os_admin, port_security)
             self.servers.append(server)
             self.servers_keypairs[server['id']] = keypair
             self.server_fixed_ips[server['id']] = (
@@ -1228,7 +1252,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         import_rts = import_rts or []
         export_rts = export_rts or []
         self.bgpvpn = self.create_bgpvpn(
-            self.bgpvpn_admin_client, tenant_id=self.bgpvpn_client.tenant_id,
+            self.bgpvpn_admin_client,
+            tenant_id=self.bgpvpn_admin_client.tenant_id,
             name=name, route_targets=rts, export_targets=export_rts,
             import_targets=import_rts)
         return self.bgpvpn
@@ -1249,7 +1274,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     def _associate_all_nets_to_bgpvpn(self, bgpvpn=None):
         bgpvpn = bgpvpn or self.bgpvpn
         for network in self.networks.values():
-            self.bgpvpn_client.create_network_association(
+            self.bgpvpn_admin_client.create_network_association(
                 bgpvpn['id'], network['id'])
         LOG.debug('BGPVPN network associations completed')
 
@@ -1360,3 +1385,16 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         subnet = self.subnets[NET_A][0]
         self.router = self._create_router_and_associate_fip(0, subnet)
         self._check_l3_bgpvpn(should_succeed=should_succeed)
+
+    def _delete_router(self, router, routers_client=None, ports_client=None):
+        if not routers_client:
+            routers_client = self.routers_client
+        if not ports_client:
+            ports_client = self.ports_client
+        ports_rsp = ports_client.list_ports(device_id=router['id'])
+        interfaces = ports_rsp['ports']
+        for i in interfaces:
+            test_utils.call_and_ignore_notfound_exc(
+                routers_client.remove_router_interface, router['id'],
+                subnet_id=i['fixed_ips'][0]['subnet_id'])
+        routers_client.delete_router(router['id'])

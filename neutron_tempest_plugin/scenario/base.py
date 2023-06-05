@@ -75,15 +75,13 @@ def get_ncat_server_cmd(port, protocol, msg=None):
 
 
 def get_ncat_client_cmd(ip_address, port, protocol, ssh_client=None):
-    udp = ''
-    if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
-        udp = '-u'
     cmd = 'echo "knock knock" | nc '
-    ncat_version = get_ncat_version(ssh_client=ssh_client)
-    if ncat_version > packaging_version.Version('7.60'):
-        cmd += '-z '
-    cmd += '-w 1 %(udp)s %(host)s %(port)s' % {
-        'udp': udp, 'host': ip_address, 'port': port}
+    if protocol.lower() == neutron_lib_constants.PROTO_NAME_UDP:
+        cmd += '-u '
+        ncat_version = get_ncat_version(ssh_client=ssh_client)
+        if ncat_version > packaging_version.Version('7.60'):
+            cmd += '-z '
+    cmd += '-w 1 %(host)s %(port)s' % {'host': ip_address, 'port': port}
     return cmd
 
 

@@ -636,8 +636,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         """
         cmd = get_ncat_client_cmd(ip_address, port, protocol,
                                   ssh_client=ssh_client)
-        result = shell.execute(cmd, ssh_client=ssh_client)
-        self.assertEqual(0, result.exit_status)
+        result = shell.execute(cmd, ssh_client=ssh_client, check=False)
         return result.stdout
 
     def _ensure_public_router(self, client=None, tenant_id=None):

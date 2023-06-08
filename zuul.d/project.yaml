@@ -192,9 +192,7 @@
         - neutron-tempest-plugin-sfc-yoga
         - neutron-tempest-plugin-sfc-zed
         - neutron-tempest-plugin-sfc-2023-1
-        # Unstable, https://bugs.launchpad.net/neutron/+bug/2020698
-        - neutron-tempest-plugin-bgpvpn-bagpipe:
-            voting: false
+        - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-bgpvpn-bagpipe-yoga
         - neutron-tempest-plugin-bgpvpn-bagpipe-zed
         - neutron-tempest-plugin-bgpvpn-bagpipe-2023-1
@@ -217,7 +215,6 @@
     gate:
       jobs:
         - neutron-tempest-plugin-sfc
-        # Unstable, https://bugs.launchpad.net/neutron/+bug/2020698
-        # - neutron-tempest-plugin-bgpvpn-bagpipe
+        - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-fwaas

@@ -61,3 +61,27 @@ class TapFlowsClient(base.BaseNetworkClient):
     def list_tap_flows(self, **filters):
         uri = '/taas/tap_flows'
         return self.list_resources(uri, **filters)
+
+
+class TapMirrorsClient(base.BaseNetworkClient):
+    def create_tap_mirror(self, **kwargs):
+        uri = '/taas/tap_mirrors'
+        post_data = {'tap_mirror': kwargs}
+        return self.create_resource(uri, post_data)
+
+    def update_tap_mirror(self, tap_mirror_id, **kwargs):
+        uri = '/taas/tap_mirrors/%s' % tap_mirror_id
+        post_data = {'tap_mirror': kwargs}
+        return self.update_resource(uri, post_data)
+
+    def show_tap_mirror(self, tap_mirror_id, **fields):
+        uri = '/taas/tap_mirrors/%s' % tap_mirror_id
+        return self.show_resource(uri, **fields)
+
+    def delete_tap_mirror(self, tap_mirror_id):
+        uri = '/taas/tap_mirrors/%s' % tap_mirror_id
+        return self.delete_resource(uri)
+
+    def list_tap_mirrors(self, **filters):
+        uri = '/taas/tap_mirrors'
+        return self.list_resources(uri, **filters)

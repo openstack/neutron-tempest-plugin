@@ -42,6 +42,14 @@ class BaseTaasTest(test.BaseAdminNetworkTest):
             build_interval=CONF.network.build_interval,
             build_timeout=CONF.network.build_timeout,
             **os_primary.default_params)
+        cls.tap_mirrors_client = taas_client.TapMirrorsClient(
+            os_primary.auth_provider,
+            CONF.network.catalog_type,
+            CONF.network.region or CONF.identity.region,
+            endpoint_type=CONF.network.endpoint_type,
+            build_interval=CONF.network.build_interval,
+            build_timeout=CONF.network.build_timeout,
+            **os_primary.default_params)
 
     def create_tap_service(self, **kwargs):
         body = self.tap_services_client.create_tap_service(
@@ -80,3 +88,22 @@ class BaseTaasTest(test.BaseAdminNetworkTest):
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         self.tap_flows_client.delete_tap_flow,
                         tap_flow['id'])
+
+    def create_tap_mirror(self, **kwargs):
+        body = self.tap_mirrors_client.create_tap_mirror(
+            name=data_utils.rand_name("tap_mirror"),
+            **kwargs)
+        tap_mirror = body['tap_mirror']
+        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
+                        self.tap_mirrors_client.delete_tap_mirror,
+                        tap_mirror['id'])
+        return tap_mirror
+
+    def update_tap_mirror(self, tap_mirror_id, **kwargs):
+        body = self.tap_mirrors_client.update_tap_mirror(
+            tap_mirror_id,
+            **kwargs)
+        tap_mirror = body['tap_mirror']
+        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
+                        self.tap_mirrors_client.delete_tap_mirror,
+                        tap_mirror['id'])

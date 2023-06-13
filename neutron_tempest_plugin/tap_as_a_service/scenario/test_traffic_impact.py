@@ -138,40 +138,6 @@ class TestTaaSTrafficScenarios(manager.BaseTaasScenarioTests):
         self.right_client.validate_authentication()
         yield
 
-    def _check_icmp_traffic(self):
-        log_location = "/tmp/tcpdumplog"
-
-        right_ip = self.right_port['fixed_ips'][0]['ip_address']
-        left_ip = self.left_port['fixed_ips'][0]['ip_address']
-
-        # Run tcpdump in background
-        self._run_in_background(self.monitor_client,
-                                "sudo tcpdump -n -nn > %s" % log_location)
-
-        # Ensure tcpdump is up and running
-        psax = self.monitor_client.exec_command("ps -ax")
-        self.assertIn("tcpdump", psax)
-
-        # Run traffic from left_vm to right_vm
-        LOG.debug('Check ICMP traffic: ping %s ', right_ip)
-        # self.left_client.exec_command(
-        #     "ping -c 50 %s" % self.right_fip['floating_ip_address'])
-        self.check_remote_connectivity(self.left_client, right_ip,
-                                       ping_count=50)
-
-        # Collect tcpdump results
-        output = self.monitor_client.exec_command("cat %s" % log_location)
-        self.assertLess(0, len(output))
-
-        looking_for = ["IP %s > %s: ICMP echo request" % (left_ip, right_ip),
-                       "IP %s > %s: ICMP echo reply" % (right_ip, left_ip)]
-
-        results = []
-        for tcpdump_line in looking_for:
-            results.append(tcpdump_line in output)
-
-        return all(results)
-
     def _test_taas_connectivity(self, use_provider_net=False):
         """Ensure TAAS doesn't break connectivity
 
@@ -222,7 +188,9 @@ class TestTaaSTrafficScenarios(manager.BaseTaasScenarioTests):
 
         with self._setup_topology(use_taas_cloud_image=True):
             # Check that traffic was forwarded to TAAS service
-            self.assertTrue(self._check_icmp_traffic())
+            self.assertTrue(self._check_icmp_traffic(
+                self.monitor_client, self.left_client,
+                self.left_port, self.right_port)[0])
 
     @decorators.idempotent_id('6c54d9c5-075a-4a1f-bbe6-12c3c9abf1e2')
     @testtools.skipUnless(CONF.neutron_plugin_options.advanced_image_ref,
@@ -234,7 +202,9 @@ class TestTaaSTrafficScenarios(manager.BaseTaasScenarioTests):
 
         with self._setup_topology(taas=False, use_taas_cloud_image=True):
             # Check that traffic was NOT forwarded to TAAS service
-            self.assertFalse(self._check_icmp_traffic())
+            self.assertFalse(self._check_icmp_traffic(
+                self.monitor_client, self.left_client,
+                self.left_port, self.right_port)[0])
 
     @decorators.idempotent_id('fcb15ca3-ef61-11e9-9792-f45c89c47e12')
     @testtools.skipUnless(CONF.neutron_plugin_options.advanced_image_ref,
@@ -247,7 +217,9 @@ class TestTaaSTrafficScenarios(manager.BaseTaasScenarioTests):
         with self._setup_topology(use_taas_cloud_image=True,
                                   provider_net=True):
             # Check that traffic was forwarded to TAAS service
-            self.assertTrue(self._check_icmp_traffic())
+            self.assertTrue(self._check_icmp_traffic(
+                self.monitor_client, self.left_client,
+                self.left_port, self.right_port)[0])
 
     @decorators.idempotent_id('6c54d9c5-075a-4a1f-bbe6-12c3c9abf1e3')
     @testtools.skipUnless(CONF.neutron_plugin_options.advanced_image_ref,
@@ -260,4 +232,6 @@ class TestTaaSTrafficScenarios(manager.BaseTaasScenarioTests):
         with self._setup_topology(taas=False, use_taas_cloud_image=True,
                                   provider_net=True):
             # Check that traffic was NOT forwarded to TAAS service
-            self.assertFalse(self._check_icmp_traffic())
+            self.assertFalse(self._check_icmp_traffic(
+                self.monitor_client, self.left_client,
+                self.left_port, self.right_port)[0])

@@ -59,6 +59,14 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
             build_interval=CONF.network.build_interval,
             build_timeout=CONF.network.build_timeout,
             **cls.os_primary.default_params)
+        cls.tap_mirrors_client = taas_client.TapMirrorsClient(
+            cls.os_primary.auth_provider,
+            CONF.network.catalog_type,
+            CONF.network.region or CONF.identity.region,
+            endpoint_type=CONF.network.endpoint_type,
+            build_interval=CONF.network.build_interval,
+            build_timeout=CONF.network.build_timeout,
+            **cls.os_primary.default_params)
 
     def _create_subnet(self, network, subnets_client=None,
                        namestart='subnet-smoke', **kwargs):
@@ -214,8 +222,10 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
         return network, subnet, router
 
     def _create_server_with_floatingip(self, use_taas_cloud_image=False,
-                                       provider_net=False, **kwargs):
-        network = self.network
+                                       provider_net=False, network=None,
+                                       **kwargs):
+        if not network:
+            network = self.network
         if use_taas_cloud_image:
             image = CONF.neutron_plugin_options.advanced_image_ref
             flavor = CONF.neutron_plugin_options.advanced_image_flavor_ref
@@ -226,17 +236,26 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
         if provider_net:
             network = self.provider_network
 
-        port = self.create_port(
-            network=network, security_groups=[self.secgroup['id']], **kwargs)
+        server_params = {
+            'flavor_ref': flavor,
+            'image_ref': image,
+            'key_name': self.keypair['name'],
+        }
+        if 'security_group' in kwargs:
+            server_params['security_groups'] = [
+                {'name': kwargs.pop('security_group')}]
+
+        if kwargs.get('port_security_enabled', None) is False:
+            port = self.create_port(network=network, **kwargs)
+        else:
+            port = self.create_port(
+                network=network, security_groups=[self.secgroup['id']],
+                **kwargs)
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         self.client.delete_port, port['id'])
 
-        params = {
-            'flavor_ref': flavor,
-            'image_ref': image,
-            'key_name': self.keypair['name']
-        }
-        vm = self.create_server(networks=[{'port': port['id']}], **params)
+        vm = self.create_server(networks=[{'port': port['id']}],
+                                **server_params)
         self.wait_for_server_active(vm['server'])
         self.wait_for_guest_os_ready(vm['server'])
 
@@ -291,3 +310,40 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
             test_utils.call_and_ignore_notfound_exc,
             self.admin_network_client.remove_router_interface_with_subnet_id,
             self.router['id'], subnet_id=result['subnet']['id'])
+
+    def _check_icmp_traffic(self, monitor_client, left_client,
+                            left_port, right_port,
+                            tcpdump_cmd=None):
+        log_location = "/tmp/tcpdumplog"
+
+        right_ip = right_port['fixed_ips'][0]['ip_address']
+        left_ip = left_port['fixed_ips'][0]['ip_address']
+
+        # Run tcpdump in background
+        if tcpdump_cmd:
+            self._run_in_background(monitor_client, tcpdump_cmd % log_location)
+        else:
+            self._run_in_background(monitor_client,
+                                    "sudo tcpdump -n -nn > %s" % log_location)
+
+        # Ensure tcpdump is up and running
+        psax = monitor_client.exec_command("ps -ax")
+        self.assertIn("tcpdump", psax)
+
+        # Run traffic from left_vm to right_vm
+        LOG.debug('Check ICMP traffic: ping %s ', right_ip)
+        self.check_remote_connectivity(left_client, right_ip,
+                                       ping_count=50)
+
+        # Collect tcpdump results
+        output = self.monitor_client.exec_command("cat %s" % log_location)
+        self.assertLess(0, len(output))
+
+        looking_for = ["%s > %s: ICMP echo request" % (left_ip, right_ip),
+                       "%s > %s: ICMP echo reply" % (right_ip, left_ip)]
+
+        results = []
+        for tcpdump_line in looking_for:
+            results.append(tcpdump_line in output)
+
+        return all(results), output

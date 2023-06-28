@@ -2,7 +2,6 @@
     name: neutron-tempest-plugin-jobs
     check:
       jobs:
-        - neutron-tempest-plugin-linuxbridge
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-openvswitch-iptables_hybrid
         - neutron-tempest-plugin-openvswitch-enforce-scope-new-defaults
@@ -10,7 +9,6 @@
         - neutron-tempest-plugin-designate-scenario
     gate:
       jobs:
-        - neutron-tempest-plugin-linuxbridge
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-ovn
         - neutron-tempest-plugin-openvswitch-iptables_hybrid
@@ -19,6 +17,7 @@
     #              the experimental queue when it will be more stable
     experimental:
       jobs:
+        - neutron-tempest-plugin-linuxbridge
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-openvswitch-distributed-dhcp
         - neutron-tempest-plugin-openvswitch-iptables_hybrid-distributed-dhcp

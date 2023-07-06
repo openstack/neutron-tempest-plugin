@@ -175,11 +175,8 @@
       network_api_extensions: *api_extensions
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
-        # TODO(lucasagomes): Remove the OVN_BRANCH and OVS_BRANCH config
-        # once https://review.opendev.org/c/openstack/devstack/+/887184
-        # is merged
-        OVN_BRANCH: "branch-22.03"
-        OVS_BRANCH: "branch-3.0"
+        OVN_BRANCH: "v21.06.0"
+        OVS_BRANCH: "a4b04276ab5934d087669ff2d191a23931335c87"
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:

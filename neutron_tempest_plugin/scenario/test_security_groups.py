@@ -1137,6 +1137,10 @@ class StatelessNetworkSecGroupIPv4Test(BaseNetworkSecGroupTest):
             should_succeed=True)
 
 
+@testtools.skipIf(
+    CONF.neutron_plugin_options.firewall_driver in ['openvswitch', 'None'],
+    "Firewall driver other than 'openvswitch' is required to use "
+    "stateless security groups.")
 class StatelessSecGroupDualStackSlaacTest(BaseNetworkSecGroupTest):
     required_extensions = ['security-group', 'stateful-security-group']
     stateless_sg = True
@@ -1180,6 +1184,10 @@ class StatelessSecGroupDualStackSlaacTest(BaseNetworkSecGroupTest):
         self._test_default_sec_grp_scenarios()
 
 
+@testtools.skipIf(
+    CONF.neutron_plugin_options.firewall_driver in ['openvswitch', 'None'],
+    "Firewall driver other than 'openvswitch' is required to use "
+    "stateless security groups.")
 class StatelessSecGroupDualStackDHCPv6StatelessTest(
         StatelessSecGroupDualStackSlaacTest):
     required_extensions = ['security-group', 'stateful-security-group']

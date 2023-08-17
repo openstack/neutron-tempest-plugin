@@ -29,11 +29,10 @@
     vars: &nested_virt_vars
       devstack_localrc:
         LIBVIRT_TYPE: kvm
-        # cirros 0.6.1 not booting when host-passthrough is used
-        # LIBVIRT_CPU_MODE: host-passthrough
-        CIRROS_VERSION: 0.6.1
-        DEFAULT_IMAGE_NAME: cirros-0.6.1-x86_64-disk
-        DEFAULT_IMAGE_FILE_NAME: cirros-0.6.1-x86_64-disk.img
+        LIBVIRT_CPU_MODE: host-passthrough
+        CIRROS_VERSION: 0.6.2
+        DEFAULT_IMAGE_NAME: cirros-0.6.2-x86_64-disk
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.6.2-x86_64-disk.img
 
 # Base nested switch job for yoga and zed
 - job:

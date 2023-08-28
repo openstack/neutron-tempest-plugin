@@ -45,8 +45,6 @@
         # OVN_BRANCH: "v22.03.3"
         OVN_BRANCH: "36e3ab9b47e93af0599a818e9d6b2930e49473f0"
         OVS_BRANCH: "2410b95597fcec5f733caf77febdb46f4ffacd27"
-        # https://bugs.launchpad.net/neutron/+bug/2031415
-        GLOBAL_VENV: false
       devstack_plugins:
         neutron: https://opendev.org/openstack/neutron.git
         neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git

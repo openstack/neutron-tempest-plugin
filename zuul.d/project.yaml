@@ -195,14 +195,10 @@
         - neutron-tempest-plugin-bgpvpn-bagpipe-yoga
         - neutron-tempest-plugin-bgpvpn-bagpipe-zed
         - neutron-tempest-plugin-bgpvpn-bagpipe-2023-1
-        - neutron-tempest-plugin-dynamic-routing:
-            voting: false
-        - neutron-tempest-plugin-dynamic-routing-yoga:
-            voting: false
-        - neutron-tempest-plugin-dynamic-routing-zed:
-            voting: false
-        - neutron-tempest-plugin-dynamic-routing-2023-1:
-            voting: false
+        - neutron-tempest-plugin-dynamic-routing
+        - neutron-tempest-plugin-dynamic-routing-yoga
+        - neutron-tempest-plugin-dynamic-routing-zed
+        - neutron-tempest-plugin-dynamic-routing-2023-1
         - neutron-tempest-plugin-fwaas
         - neutron-tempest-plugin-fwaas-zed
         - neutron-tempest-plugin-fwaas-2023-1
@@ -219,6 +215,5 @@
       jobs:
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
-        - neutron-tempest-plugin-dynamic-routing:
-            voting: false
+        - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-fwaas

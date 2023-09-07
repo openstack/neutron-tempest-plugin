@@ -645,6 +645,7 @@
         s-container: false
         s-object: false
         s-proxy: false
+      network_available_features: *available_features
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -657,7 +658,7 @@
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
-              available_features: ""
+              available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: local,flat,vlan,geneve
               is_igmp_snooping_enabled: True

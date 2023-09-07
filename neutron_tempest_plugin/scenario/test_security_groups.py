@@ -1116,12 +1116,16 @@ class StatelessNetworkSecGroupIPv4Test(BaseNetworkSecGroupTest):
     def test_fragmented_traffic_is_accepted(self):
         ssh_clients, fips, servers, security_groups = (
             self._create_client_and_server_vms(use_advanced_image=True))
+        if CONF.neutron_plugin_options.default_image_is_advanced:
+            username = CONF.validation.image_ssh_user
+        else:
+            username = CONF.neutron_plugin_options.advanced_image_ssh_user
 
         # make sure tcp connectivity to vms works fine
         for fip in fips.values():
             self.check_connectivity(
                 fip['floating_ip_address'],
-                CONF.neutron_plugin_options.advanced_image_ssh_user,
+                username,
                 self.keypair['private_key'])
 
         # Check that ICMP packets bigger than MTU aren't working without

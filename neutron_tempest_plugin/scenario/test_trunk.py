@@ -277,6 +277,7 @@ class TrunkTest(base.BaseTempestTestCase):
             self._wait_for_trunk(vm.trunk)
             self._assert_has_ssh_connectivity(vm1.ssh_client)
 
+    @test.unstable_test("bug 2033887 / bug 2024160")
     @testtools.skipUnless(
         (CONF.neutron_plugin_options.advanced_image_ref or
          CONF.neutron_plugin_options.default_image_is_advanced),

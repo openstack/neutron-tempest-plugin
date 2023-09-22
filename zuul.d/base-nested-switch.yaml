@@ -23,7 +23,9 @@
     name: neutron-tempest-plugin-base-nested-switch
     parent: neutron-tempest-plugin-base
     abstract: true
-    branches: ^(?!stable/(train|ussuri|victoria|wallaby|xena|yoga|zed)).*$
+    branches:
+      regex: ^(stable/(train|ussuri|victoria|wallaby|xena|yoga|zed)).*$
+      negate: true
     # Comment nodeset and vars to switch back to non nested nodes
     nodeset: neutron-nested-virt-ubuntu-jammy
     vars: &nested_virt_vars

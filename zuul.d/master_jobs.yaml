@@ -255,7 +255,8 @@
           $NEUTRON_CONF:
             DEFAULT:
               enable_dvr: false
-              l3_ha: true
+              # TODO(ykarel) Turn on once https://bugs.launchpad.net/neutron/+bug/2037239 fixed
+              l3_ha: false
           /$NEUTRON_CORE_PLUGIN_CONF:
             agent:
               tunnel_types: vxlan,gre
@@ -354,7 +355,8 @@
           $NEUTRON_CONF:
             DEFAULT:
               enable_dvr: false
-              l3_ha: true
+              # TODO(ykarel) Turn on once https://bugs.launchpad.net/neutron/+bug/2037239 fixed
+              l3_ha: false
           /$NEUTRON_CORE_PLUGIN_CONF:
             agent:
               tunnel_types: vxlan,gre
@@ -524,7 +526,8 @@
             DEFAULT:
               enable_dvr: false
               vlan_transparent: true
-              l3_ha: true
+              # TODO(ykarel) Turn on once https://bugs.launchpad.net/neutron/+bug/2037239 fixed
+              l3_ha: false
             AGENT:
               debug_iptables_rules: true
             EXPERIMENTAL:

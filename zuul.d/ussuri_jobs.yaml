@@ -159,6 +159,9 @@
             DEFAULT:
               # NOTE(slaweq): on Bionic keepalived don't knows this option yet
               keepalived_use_no_track: False
+          $NEUTRON_CONF:
+            DEFAULT:
+              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
@@ -191,6 +194,9 @@
             DEFAULT:
               # NOTE(slaweq): on Bionic keepalived don't knows this option yet
               keepalived_use_no_track: False
+          $NEUTRON_CONF:
+            DEFAULT:
+              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
@@ -218,6 +224,9 @@
             DEFAULT:
               # NOTE(slaweq): on Bionic keepalived don't knows this option yet
               keepalived_use_no_track: False
+          $NEUTRON_CONF:
+            DEFAULT:
+              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:

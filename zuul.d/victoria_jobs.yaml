@@ -152,6 +152,10 @@
         ADVANCED_INSTANCE_USER: ubuntu
         CUSTOMIZE_IMAGE: false
       devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
@@ -184,6 +188,10 @@
         ADVANCED_INSTANCE_USER: ubuntu
         CUSTOMIZE_IMAGE: false
       devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
@@ -212,6 +220,10 @@
         ADVANCED_INSTANCE_USER: ubuntu
         CUSTOMIZE_IMAGE: false
       devstack_local_conf:
+        post-config:
+          $NEUTRON_CONF:
+            DEFAULT:
+              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:

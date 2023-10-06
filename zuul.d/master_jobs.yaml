@@ -271,7 +271,7 @@
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               firewall_driver: openvswitch
-    irrelevant-files: &openvswitch-scenario-irrelevant-files
+    irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - lower-constraints.txt
@@ -306,7 +306,10 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -408,7 +411,10 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -581,6 +587,8 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
@@ -713,7 +721,10 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -906,7 +917,46 @@
                 agent_mode: dvr_snat
               agent:
                 availability_zone: nova
-    irrelevant-files: *openvswitch-scenario-irrelevant-files
+    irrelevant-files:
+      - ^\.pylintrc$
+      - ^(test-|)requirements.txt$
+      - lower-constraints.txt
+      - ^releasenotes/.*$
+      - ^doc/.*$
+      - ^setup.cfg$
+      - ^.*\.rst$
+      - ^.*\.conf\.sample$
+      - ^neutron/locale/.*$
+      - ^neutron/tests/unit/.*$
+      - ^neutron/tests/fullstack/.*
+      - ^neutron/tests/functional/.*
+      - ^tools/.*$
+      - ^tox.ini$
+      - ^plugin.spec$
+      - ^neutron/agent/ovn/.*$
+      - ^neutron/agent/windows/.*$
+      - ^neutron/plugins/ml2/drivers/linuxbridge/.*$
+      - ^neutron/plugins/ml2/drivers/macvtap/.*$
+      - ^neutron/plugins/ml2/drivers/mech_sriov/.*$
+      - ^neutron/plugins/ml2/drivers/ovn/.*$
+      - ^neutron/services/ovn_l3/.*$
+      - ^neutron/services/logapi/drivers/ovn/.*$
+      - ^neutron/services/portforwarding/drivers/ovn/.*$
+      - ^neutron/services/qos/drivers/linuxbridge/.*$
+      - ^neutron/services/qos/drivers/ovn/.*$
+      - ^neutron/services/trunk/drivers/linuxbridge/.*$
+      - ^neutron/services/trunk/drivers/ovn/.*$
+      - ^neutron/cmd/ovn/.*$
+      - ^neutron/common/ovn/.*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/services/bgp/.*$
+      - ^rally-jobs/.*$
+      - ^roles/.*functional.*$
+      - ^playbooks/.*dynamic-routing.*$
+      - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
+      - ^vagrant/.*$
+      - ^zuul.d/(?!(project)).*\.yaml
 
 - job:
     name: neutron-tempest-plugin-designate-scenario
@@ -961,7 +1011,10 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1034,7 +1087,10 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1099,7 +1155,10 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1151,7 +1210,9 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1214,7 +1275,10 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1280,7 +1344,10 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml
 
@@ -1388,6 +1455,9 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^playbooks/.*dvr-multinode.*$
+      - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
+      - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       - ^zuul.d/(?!(project)).*\.yaml

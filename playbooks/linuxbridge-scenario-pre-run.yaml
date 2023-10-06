@@ -4,4 +4,4 @@
     # destination IP addresses in arp tables:
     - include_role:
         name: legacy_ebtables
-      when: ansible_distribution_release | lower == 'focal'
+      when: ansible_distribution_release | lower in ['focal', 'jammy']

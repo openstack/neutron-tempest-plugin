@@ -397,6 +397,9 @@ class NetworkClientJSON(service_client.RestClient):
             update_body['routes'] = kwargs['routes']
         if 'enable_ndp_proxy' in kwargs:
             update_body['enable_ndp_proxy'] = kwargs['enable_ndp_proxy']
+        for attr in ('enable_default_route_bfd', 'enable_default_route_ecmp'):
+            if attr in kwargs:
+                update_body[attr] = kwargs[attr]
         update_body = dict(router=update_body)
         update_body = jsonutils.dumps(update_body)
         resp, body = self.put(uri, update_body)
@@ -470,6 +473,42 @@ class NetworkClientJSON(service_client.RestClient):
 
     def remove_router_extra_routes(self, router_id):
         self.update_router(router_id, routes=None)
+
+    def router_add_external_gateways(self, router_id, external_gateways):
+        uri = '%s/routers/%s/add_external_gateways' % (self.uri_prefix,
+                                                       router_id)
+        update_body = {
+                'router': {'external_gateways': external_gateways},
+        }
+        update_body = jsonutils.dumps(update_body)
+        resp, body = self.put(uri, update_body)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
+    def router_remove_external_gateways(self, router_id, external_gateways):
+        uri = '%s/routers/%s/remove_external_gateways' % (self.uri_prefix,
+                                                          router_id)
+        update_body = {
+                'router': {'external_gateways': external_gateways},
+        }
+        update_body = jsonutils.dumps(update_body)
+        resp, body = self.put(uri, update_body)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
+    def router_update_external_gateways(self, router_id, external_gateways):
+        uri = '%s/routers/%s/update_external_gateways' % (self.uri_prefix,
+                                                          router_id)
+        update_body = {
+                'router': {'external_gateways': external_gateways},
+        }
+        update_body = jsonutils.dumps(update_body)
+        resp, body = self.put(uri, update_body)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
 
     def update_agent(self, agent_id, agent_info):
         """Update an agent
@@ -1110,6 +1149,14 @@ class NetworkClientJSON(service_client.RestClient):
         resp, body = self.get(uri)
         body = {'extensions': self.deserialize_list(body)}
         self.expected_success(200, resp.status)
+        return service_client.ResponseBody(resp, body)
+
+    def get_extension(self, alias):
+        uri = '%s/%s' % (
+            self.get_uri('extensions'), alias)
+        resp, body = self.get(uri)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
 
     def get_tags(self, resource_type, resource_id):

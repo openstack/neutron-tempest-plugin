@@ -326,6 +326,201 @@ class RoutersTest(base_routers.BaseRouterTest):
                           subnet['id'], gateway_ip=None)
 
 
+class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
+
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        ext_alias = 'external-gateway-multihoming'
+        try:
+            cls.client.get_extension(ext_alias)
+        except lib_exc.NotFound:
+            raise cls.skipException(f'{ext_alias} extension not available.')
+
+    @decorators.idempotent_id('33e9a156-a83f-435f-90ee-1a49dc9c350d')
+    def test_create_router_enable_default_route_ecmp(self):
+        router1 = self._create_admin_router(data_utils.rand_name('router1'),
+                                            enable_default_route_ecmp=True)
+        router2 = self._create_admin_router(data_utils.rand_name('router2'),
+                                            enable_default_route_ecmp=False)
+        self.assertEqual(router1['enable_default_route_ecmp'], True)
+        self.assertEqual(router2['enable_default_route_ecmp'], False)
+
+    @decorators.idempotent_id('bfbad985-2df2-4cd9-9c32-819b5508c40e')
+    def test_update_router_enable_default_route_ecmp(self):
+        router = self._create_router(data_utils.rand_name('router'))
+        updated_router = self.admin_client.update_router(
+            router['id'],
+            enable_default_route_ecmp=not router['enable_default_route_ecmp'])
+        self.assertNotEqual(
+            router['enable_default_route_ecmp'],
+            updated_router['router']['enable_default_route_ecmp'])
+
+    @decorators.idempotent_id('a22016a6-f118-4eb5-abab-7e241ae01848')
+    def test_update_router_enable_default_route_bfd(self):
+        router = self._create_router(data_utils.rand_name('router'))
+        updated_router = self.admin_client.update_router(
+            router['id'],
+            enable_default_route_bfd=not router['enable_default_route_bfd'])
+        self.assertNotEqual(
+            router['enable_default_route_bfd'],
+            updated_router['router']['enable_default_route_bfd'])
+
+    @decorators.idempotent_id('842f6edb-e072-4805-bf11-04c25420776d')
+    def test_create_router_enable_default_route_bfd(self):
+        router1 = self._create_admin_router(data_utils.rand_name('router1'),
+                                            enable_default_route_bfd=True)
+        router2 = self._create_admin_router(data_utils.rand_name('router2'),
+                                            enable_default_route_bfd=False)
+        self.assertEqual(router1['enable_default_route_bfd'], True)
+        self.assertEqual(router2['enable_default_route_bfd'], False)
+
+    @decorators.idempotent_id('089fa304-3726-4120-9759-668e8ff1114c')
+    def test_create_router_add_external_gateways_one(self):
+        router = self._create_router(data_utils.rand_name('router'))
+        self.assertEqual(len(router['external_gateways']), 0)
+
+        res = self.client.router_add_external_gateways(
+            router['id'],
+            [{'network_id': CONF.network.public_network_id,
+              'enable_snat': False}])
+        self.assertEqual(len(res['router']['external_gateways']), 1)
+        self.assertEqual(
+            res['router']['external_gateways'][0]['network_id'],
+            CONF.network.public_network_id)
+
+    @decorators.idempotent_id('60a1e7db-04ef-4a3a-9ff1-01a990d365fd')
+    def test_create_router_add_external_gateways(self):
+        router = self._create_router(data_utils.rand_name('router'))
+        self.assertEqual(len(router['external_gateways']), 0)
+
+        res = self.client.router_add_external_gateways(
+            router['id'],
+            [
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+            ])
+        self.assertEqual(len(res['router']['external_gateways']), 3)
+        self.assertEqual(
+            res['router']['external_gateway_info']['network_id'],
+            res['router']['external_gateways'][0]['network_id'])
+        self.assertEqual(
+            res['router']['external_gateway_info']['external_fixed_ips'],
+            res['router']['external_gateways'][0]['external_fixed_ips'])
+        for n in range(0, 3):
+            self.assertEqual(
+                res['router']['external_gateways'][n]['network_id'],
+                CONF.network.public_network_id)
+            if n:
+                self.assertNotEqual(
+                    res['router']['external_gateways'][
+                        n]['external_fixed_ips'],
+                    res['router']['external_gateways'][
+                        n - 1]['external_fixed_ips'])
+
+    @decorators.idempotent_id('e49efc57-7b25-43a3-8e55-2d87a3759c57')
+    def test_create_router_add_external_gateways_compat(self):
+        router = self._create_router(
+            data_utils.rand_name('router'),
+            external_network_id=CONF.network.public_network_id,
+            enable_snat=False)
+        self.assertEqual(len(router['external_gateways']), 1)
+        res = self.client.router_add_external_gateways(
+            router['id'],
+            [{'network_id': CONF.network.public_network_id,
+              'enable_snat': False}])
+        self.assertEqual(len(res['router']['external_gateways']), 2)
+
+    @decorators.idempotent_id('2a238eec-d9d5-435a-9013-d6e195ecd5d1')
+    def test_create_router_remove_external_gateways_compat(self):
+        router = self._create_router(
+            data_utils.rand_name('router'),
+            external_network_id=CONF.network.public_network_id,
+            enable_snat=False)
+        self.assertEqual(len(router['external_gateways']), 1)
+        res = self.client.router_remove_external_gateways(
+            router['id'],
+            [{'network_id': CONF.network.public_network_id}])
+        self.assertEqual(len(res['router']['external_gateways']), 0)
+
+    @decorators.idempotent_id('03ab196a-dac0-4363-93e4-ea799246870b')
+    def test_create_router_add_remove_external_gateways(self):
+        router = self._create_router(data_utils.rand_name('router'))
+        self.assertEqual(len(router['external_gateways']), 0)
+
+        res = self.client.router_add_external_gateways(
+            router['id'],
+            [
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+            ])
+        self.assertEqual(len(res['router']['external_gateways']), 3)
+        remove_gateways = [res['router']['external_gateways'][2]]
+        res = self.client.router_remove_external_gateways(router['id'],
+                                                          remove_gateways)
+        self.assertEqual(len(res['router']['external_gateways']), 2)
+        for n in range(0, 2):
+            self.assertNotEqual(
+                    res['router']['external_gateways'][
+                        n]['external_fixed_ips'],
+                    remove_gateways[0])
+
+    @decorators.idempotent_id('17e94c9f-c59f-4e50-abd5-d1256460e311')
+    def test_create_router_update_external_gateways(self):
+        """Add three GW ports, delete last one, re-use IPs in update on second.
+
+        NOTE(fnordahl): Main reason for IP re-use is to ensure we don't tread
+        on allocations done by other tests.
+        """
+        router = self._create_router(data_utils.rand_name('router'))
+        self.assertEqual(len(router['external_gateways']), 0)
+
+        res = self.client.router_add_external_gateways(
+            router['id'],
+            [
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+                {'network_id': CONF.network.public_network_id,
+                 'enable_snat': False},
+            ])
+        self.assertEqual(len(res['router']['external_gateways']), 3)
+        external_gateways = res['router']['external_gateways']
+        remove_gateways = [external_gateways.pop(2)]
+        res_remove_gws = self.client.router_remove_external_gateways(
+            router['id'],
+            remove_gateways)
+        for n in range(0, 2):
+            self.assertNotEqual(
+                    res_remove_gws['router']['external_gateways'][
+                        n]['external_fixed_ips'],
+                    remove_gateways[0])
+
+        external_gateways[1] = remove_gateways[0]
+        res_update_gws = self.client.router_update_external_gateways(
+            router['id'],
+            external_gateways)
+
+        self.assertEqual(len(res_update_gws['router']['external_gateways']), 2)
+        for n in range(0, 2):
+            if res_update_gws['router']['external_gateways'][
+                        n] == remove_gateways[0]:
+                break
+        else:
+            self.fail('%s not in %s' % (
+                remove_gateways[0],
+                res_update_gws['router']['external_gateways']))
+
+
 class RoutersIpV6Test(RoutersTest):
     _ip_version = 6
 

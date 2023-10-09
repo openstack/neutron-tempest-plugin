@@ -31,10 +31,10 @@ class BaseRouterTest(base.BaseAdminNetworkTest):
             pass
 
     def _create_router(self, name, admin_state_up=False,
-                       external_network_id=None, enable_snat=None):
+                       external_network_id=None, enable_snat=None, **kwargs):
         # associate a cleanup with created routers to avoid quota limits
         router = self.create_router(name, admin_state_up,
-                                    external_network_id, enable_snat)
+                                    external_network_id, enable_snat, **kwargs)
         self.addCleanup(self._cleanup_router, router)
         return router
 

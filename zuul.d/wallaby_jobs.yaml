@@ -110,10 +110,6 @@
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
       devstack_local_conf:
-        post-config:
-          $NEUTRON_CONF:
-            DEFAULT:
-              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
@@ -141,10 +137,6 @@
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
       devstack_local_conf:
-        post-config:
-          $NEUTRON_CONF:
-            DEFAULT:
-              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
@@ -165,10 +157,6 @@
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
       devstack_local_conf:
-        post-config:
-          $NEUTRON_CONF:
-            DEFAULT:
-              l3_ha: true
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:

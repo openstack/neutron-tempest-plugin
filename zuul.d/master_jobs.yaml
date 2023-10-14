@@ -1050,9 +1050,9 @@
       devstack_localrc:
         # TODO(slaweq): check why traceroute output is different in Cirros >
         # 0.6.1 which is causing failures of the networking-sfc jobs
-        CIRROS_VERSION: 0.5.1
-        DEFAULT_IMAGE_NAME: cirros-0.5.1-x86_64-uec
-        DEFAULT_IMAGE_FILE_NAME: cirros-0.5.1-x86_64-uec.tar.gz
+        CIRROS_VERSION: 0.5.2
+        DEFAULT_IMAGE_NAME: cirros-0.5.2-x86_64-uec
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.5.2-x86_64-uec.tar.gz
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch

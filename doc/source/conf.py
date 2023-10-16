@@ -16,7 +16,10 @@ import os
 import sys
 
 def autodoc_skip_member_handler(app, what, name, obj, skip, options):
-    return skip or (what == "class" and not name.startswith("test"))
+    return skip or (
+        (what == "class" and not name.startswith("test")) or
+        # NOTE(fnordahl): Sphinx does not like the ASCII art in the docstring.
+        (what == 'module' and name == 'NetworkMultipleGWTest'))
 
 def setup(app):
     app.connect('autodoc-skip-member', autodoc_skip_member_handler)

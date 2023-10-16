@@ -597,9 +597,11 @@
     name: neutron-tempest-plugin-ovn
     parent: neutron-tempest-plugin-base-nested-switch
     timeout: 10800
+    pre-run: playbooks/plugin-ovn-scenario-pre-run.yaml
     vars:
       network_api_extensions_ovn:
         - vlan-transparent
+        - external-gateway-multihoming
       # TODO(jlibosva): Remove the NetworkWritableMtuTest test from the list
       # once east/west fragmentation is supported in core OVN
       tempest_exclude_regex: "\
@@ -661,6 +663,8 @@
           /$NEUTRON_CORE_PLUGIN_CONF:
             ml2:
               type_drivers: local,flat,vlan,geneve
+            ml2_type_vlan:
+              network_vlan_ranges: foo:1:10,public
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:

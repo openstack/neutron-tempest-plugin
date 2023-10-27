@@ -421,10 +421,6 @@
     parent: neutron-tempest-plugin-openvswitch
     vars:
       devstack_localrc:
-        # Disabling the scope and new defaults for services to use old,
-        # deprecated policies
-        NOVA_ENFORCE_SCOPE: false
-        GLANCE_ENFORCE_SCOPE: false
         NEUTRON_ENFORCE_SCOPE: false
 
 

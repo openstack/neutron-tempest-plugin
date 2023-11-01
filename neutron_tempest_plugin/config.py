@@ -242,6 +242,17 @@ taas_group = cfg.OptGroup(name='taas',
 CONF.register_group(taas_group)
 CONF.register_opts(TaasGroup, group="taas")
 
+# DNS Integration with an External Service
+DnsFeatureGroup = [
+    cfg.IntOpt(
+        'segmentation_id', default=12345,
+        help="For network types VLAN, GRE, VXLAN or GENEVE, the segmentation"
+             " ID must be outside the ranges assigned to project networks."),
+]
+dns_feature_group = cfg.OptGroup(
+    name='designate_feature_enabled', title='Enabled Designate Features')
+CONF.register_group(dns_feature_group)
+CONF.register_opts(DnsFeatureGroup, group="designate_feature_enabled")
 
 config_opts_translator = {
     'project_network_cidr': 'tenant_network_cidr',

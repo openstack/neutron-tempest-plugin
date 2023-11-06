@@ -34,9 +34,10 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
 
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
-        List, Show, Create, Delete, and Update VPN Service
-        List, Show, Create, Delete, and Update IKE policy
-        List, Show, Create, Delete, and Update IPSec policy
+
+        * List, Show, Create, Delete, and Update VPN Service
+        * List, Show, Create, Delete, and Update IKE policy
+        * List, Show, Create, Delete, and Update IPSec policy
     """
 
     @classmethod

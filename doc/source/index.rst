@@ -15,6 +15,7 @@ Contents:
    readme
    installation
    contributing
+   test_descriptions
 
 Indices and tables
 ==================

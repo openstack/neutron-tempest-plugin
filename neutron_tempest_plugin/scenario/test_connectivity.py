@@ -173,18 +173,21 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         ensures that connectivity from VM to both routers is working.
 
         Test scenario: (NOTE: 10.1.0.0/24 private CIDR is used as an example)
-        +----------------+                  +------------+
-        | Non-dvr router |                  | DVR router |
-        |                |                  |            |
-        |    10.1.0.1    |                  |  10.1.0.x  |
-        +-------+--------+                  +-----+------+
-                |                                 |
-                |         10.1.0.0/24             |
-                +----------------+----------------+
-                                 |
-                               +-+-+
-                               |VM |
-                               +---+
+
+        .. code-block:: HTML
+
+            +----------------+                  +------------+
+            | Non-dvr router |                  | DVR router |
+            |                |                  |            |
+            |    10.1.0.1    |                  |  10.1.0.x  |
+            +-------+--------+                  +-----+------+
+                    |                                 |
+                    |         10.1.0.0/24             |
+                    +----------------+----------------+
+                                     |
+                                   +-+-+
+                                   |VM |
+                                   +---+
 
         where:
         10.1.0.1 - is subnet's gateway IP address,

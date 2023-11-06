@@ -47,18 +47,18 @@ def execute(command, ssh_client=None, timeout=None, check=True):
     :param timeout: command execution timeout in seconds
 
     :param check: when False it doesn't raises ShellCommandFailed when
-    exit status is not zero. True by default
+       exit status is not zero. True by default
 
     :returns: STDOUT text when command execution terminates with zero exit
-    status.
+       status.
 
     :raises ShellTimeoutExpired: when timeout expires before command execution
-    terminates. In such case it kills the process, then it eventually would
-    try to read STDOUT and STDERR buffers (not fully implemented) before
-    raising the exception.
+       terminates. In such case it kills the process, then it eventually would
+       try to read STDOUT and STDERR buffers (not fully implemented) before
+       raising the exception.
 
     :raises ShellCommandFailed: when command execution terminates with non-zero
-    exit status.
+       exit status.
     """
     ssh_client = ssh_client or SSH_PROXY_CLIENT
     if timeout:

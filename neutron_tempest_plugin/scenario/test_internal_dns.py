@@ -89,8 +89,8 @@ class InternalDNSTest(InternalDNSBase):
 
         1) Create two VMs on the same network, giving each a name
         2) SSH in to the first VM:
-          2.1) ping the other VM's internal IP
-          2.2) ping the other VM's hostname
+            - ping the other VM's internal IP
+            - ping the other VM's hostname
         """
         network = self.create_network(dns_domain='starwars.')
         self.setup_network_and_server(network=network, server_name='luke')

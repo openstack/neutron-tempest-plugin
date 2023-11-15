@@ -15,7 +15,14 @@
 import os
 import sys
 
-sys.path.insert(0, os.path.abspath('../..'))
+def autodoc_skip_member_handler(app, what, name, obj, skip, options):
+    return skip or (what == "class" and not name.startswith("test"))
+
+def setup(app):
+    app.connect('autodoc-skip-member', autodoc_skip_member_handler)
+
+sys.path.insert(0, os.path.abspath('../../neutron_tempest_plugin'))
+
 # -- General configuration ----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be

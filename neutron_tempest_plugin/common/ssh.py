@@ -133,7 +133,7 @@ class Client(ssh.Client):
         :returns: paramiko.Client connected to remote server.
 
         :raises tempest.lib.exceptions.SSHTimeout: in case it fails to connect
-        to remote server.
+           to remote server.
         """
         return super(Client, self)._get_ssh_connection(*args, **kwargs)
 

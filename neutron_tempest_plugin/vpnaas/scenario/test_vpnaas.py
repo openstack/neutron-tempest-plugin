@@ -52,24 +52,26 @@ CONF.register_opt(
 class Vpnaas(base.BaseTempestTestCase):
     """Test the following topology
 
-          +-------------------+
-          | public            |
-          | network           |
-          |                   |
-          +-+---------------+-+
-            |               |
-            |               |
-    +-------+-+           +-+-------+
-    | LEFT    |           | RIGHT   |
-    | router  | <--VPN--> | router  |
-    |         |           |         |
-    +----+----+           +----+----+
-         |                     |
-    +----+----+           +----+----+
-    | LEFT    |           | RIGHT   |
-    | network |           | network |
-    |         |           |         |
-    +---------+           +---------+
+    .. code-block:: HTML
+
+              +-------------------+
+              | public            |
+              | network           |
+              |                   |
+              +-+---------------+-+
+                |               |
+                |               |
+        +-------+-+           +-+-------+
+        | LEFT    |           | RIGHT   |
+        | router  | <--VPN--> | router  |
+        |         |           |         |
+        +----+----+           +----+----+
+             |                     |
+        +----+----+           +----+----+
+        | LEFT    |           | RIGHT   |
+        | network |           | network |
+        |         |           |         |
+        +---------+           +---------+
     """
 
     credentials = ['primary', 'admin']

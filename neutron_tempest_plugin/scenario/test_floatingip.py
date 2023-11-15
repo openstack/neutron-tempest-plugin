@@ -607,7 +607,7 @@ class FloatingIpMultipleRoutersTest(base.BaseTempestTestCase):
                deleted just before the creation of the new IP to "reserve" the
                IP address associated (see LP#1880976).
             10. Create a FIP for the VM3 in the external network with
-               the same IP address that was used for VM2.
+                the same IP address that was used for VM2.
             11. Make sure that now VM1 is able to reach VM3 using the FIP.
 
         Note, the scenario passes only in case corresponding

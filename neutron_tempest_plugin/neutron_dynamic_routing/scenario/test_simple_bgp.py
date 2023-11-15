@@ -68,24 +68,26 @@ class BgpClientMixin(object):
 class Bgp(BgpClientMixin, base.BaseTempestTestCase):
     """Test the following topology
 
-          +-------------------+
-          | public            |
-          | network           |
-          |                   |
-          +-+---------------+-+
-            |               |
-            |               |
-    +-------+-+           +-+-------+
-    | LEFT    |           | RIGHT   |
-    | router  | <--BGP--> | router  |
-    |         |           |         |
-    +----+----+           +----+----+
-         |                     |
-    +----+----+           +----+----+
-    | LEFT    |           | RIGHT   |
-    | network |           | network |
-    |         |           |         |
-    +---------+           +---------+
+    .. code-block:: HTML
+
+              +-------------------+
+              | public            |
+              | network           |
+              |                   |
+              +-+---------------+-+
+                |               |
+                |               |
+        +-------+-+           +-+-------+
+        | LEFT    |           | RIGHT   |
+        | router  | <--BGP--> | router  |
+        |         |           |         |
+        +----+----+           +----+----+
+             |                     |
+        +----+----+           +----+----+
+        | LEFT    |           | RIGHT   |
+        | network |           | network |
+        |         |           |         |
+        +---------+           +---------+
     """
 
     credentials = ['primary', 'admin']

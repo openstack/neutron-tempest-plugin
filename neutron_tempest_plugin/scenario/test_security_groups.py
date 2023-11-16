@@ -1141,14 +1141,9 @@ class StatelessNetworkSecGroupIPv4Test(BaseNetworkSecGroupTest):
             should_succeed=True)
 
 
-@testtools.skipIf(
-    CONF.neutron_plugin_options.firewall_driver in ['openvswitch', 'None'],
-    "Firewall driver other than 'openvswitch' is required to use "
-    "stateless security groups.")
-class StatelessSecGroupDualStackSlaacTest(BaseNetworkSecGroupTest):
+class StatelessSecGroupDualStackBase(BaseNetworkSecGroupTest):
     required_extensions = ['security-group', 'stateful-security-group']
     stateless_sg = True
-    ipv6_mode = 'slaac'
 
     def _get_port_cidrs(self, port):
         ips = []
@@ -1183,6 +1178,14 @@ class StatelessSecGroupDualStackSlaacTest(BaseNetworkSecGroupTest):
                 for port_cidr in self._get_port_cidrs(port):
                     self.assertIn(port_cidr, configured_cidrs)
 
+
+@testtools.skipIf(
+    CONF.neutron_plugin_options.firewall_driver in ['openvswitch', 'None'],
+    "Firewall driver other than 'openvswitch' is required to use "
+    "stateless security groups.")
+class StatelessSecGroupDualStackSlaacTest(StatelessSecGroupDualStackBase):
+    ipv6_mode = 'slaac'
+
     @decorators.idempotent_id('e7d64384-ea6a-40aa-b454-854f0990153c')
     def test_default_sec_grp_scenarios(self):
         self._test_default_sec_grp_scenarios()
@@ -1193,9 +1196,7 @@ class StatelessSecGroupDualStackSlaacTest(BaseNetworkSecGroupTest):
     "Firewall driver other than 'openvswitch' is required to use "
     "stateless security groups.")
 class StatelessSecGroupDualStackDHCPv6StatelessTest(
-        StatelessSecGroupDualStackSlaacTest):
-    required_extensions = ['security-group', 'stateful-security-group']
-    stateless_sg = True
+        StatelessSecGroupDualStackBase):
     ipv6_mode = 'dhcpv6-stateless'
 
     @decorators.idempotent_id('c61c127c-e08f-4ddf-87a3-58b3c86e5476')

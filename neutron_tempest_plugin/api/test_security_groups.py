@@ -245,6 +245,14 @@ class StatelessSecGroupTest(BaseSecGroupTest):
 
 class BaseSecGroupQuota(base.BaseAdminNetworkTest):
 
+    def setUp(self):
+        super().setUp()
+        # NOTE(slaweq): we don't know exactly how many rule templates may be
+        # created in the neutron db and used for every SG so, as in this test
+        # class we are checking quotas of SG, not SG rules, lets set quota for
+        # SG rules to -1
+        self._set_sg_rules_quota(-1)
+
     def _create_max_allowed_sg_amount(self):
         sg_amount = self._get_sg_amount()
         sg_quota = self._get_sg_quota()
@@ -270,23 +278,32 @@ class BaseSecGroupQuota(base.BaseAdminNetworkTest):
         self.assertEqual(self._get_sg_quota(), new_sg_quota,
                          "Security group quota wasn't changed correctly")
 
-    def _set_sg_quota(self, val):
-        sg_quota = self._get_sg_quota()
+    def _set_quota(self, val, resource):
+        res_quota = self._get_quota(resource)
         project_id = self.client.project_id
-        self.admin_client.update_quotas(project_id, **{'security_group': val})
+        self.admin_client.update_quotas(project_id, **{resource: val})
         self.addCleanup(self.admin_client.update_quotas,
-                        project_id, **{'security_group': sg_quota})
+                        project_id, **{resource: res_quota})
 
-    def _get_sg_quota(self):
+    def _get_quota(self, resource):
         project_id = self.client.project_id
         quotas = self.admin_client.show_quotas(project_id)
-        return quotas['quota']['security_group']
+        return quotas['quota'][resource]
+
+    def _set_sg_quota(self, val):
+        return self._set_quota(val, 'security_group')
+
+    def _get_sg_quota(self):
+        return self._get_quota('security_group')
 
     def _get_sg_amount(self):
         project_id = self.client.project_id
         filter_query = {'project_id': project_id}
         security_groups = self.client.list_security_groups(**filter_query)
         return len(security_groups['security_groups'])
+
+    def _set_sg_rules_quota(self, val):
+        return self._set_quota(val, 'security_group_rule')
 
 
 class SecGroupQuotaTest(BaseSecGroupQuota):

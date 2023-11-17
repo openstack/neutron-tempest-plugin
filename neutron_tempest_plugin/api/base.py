@@ -135,6 +135,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.admin_subnetpools = []
         cls.security_groups = []
         cls.admin_security_groups = []
+        cls.sg_rule_templates = []
         cls.projects = []
         cls.log_objects = []
         cls.reserved_subnet_cidrs = set()
@@ -242,6 +243,12 @@ class BaseNetworkTest(test.BaseTestCase):
                 cls._try_delete_resource(cls.delete_security_group,
                                          security_group,
                                          client=cls.admin_client)
+
+            # Clean up security group rule templates
+            for sg_rule_template in cls.sg_rule_templates:
+                cls._try_delete_resource(
+                    cls.admin_client.delete_default_security_group_rule,
+                    sg_rule_template['id'])
 
             for subnetpool in cls.subnetpools:
                 cls._try_delete_resource(cls.client.delete_subnetpool,
@@ -971,6 +978,15 @@ class BaseNetworkTest(test.BaseTestCase):
         client.delete_security_group(security_group['id'])
 
     @classmethod
+    def get_security_group(cls, name='default', client=None):
+        client = client or cls.client
+        security_groups = client.list_security_groups()['security_groups']
+        for security_group in security_groups:
+            if security_group['name'] == name:
+                return security_group
+        raise ValueError("No such security group named {!r}".format(name))
+
+    @classmethod
     def create_security_group_rule(cls, security_group=None, project=None,
                                    client=None, ip_version=None, **kwargs):
         if project:
@@ -1006,13 +1022,11 @@ class BaseNetworkTest(test.BaseTestCase):
             'security_group_rule']
 
     @classmethod
-    def get_security_group(cls, name='default', client=None):
-        client = client or cls.client
-        security_groups = client.list_security_groups()['security_groups']
-        for security_group in security_groups:
-            if security_group['name'] == name:
-                return security_group
-        raise ValueError("No such security group named {!r}".format(name))
+    def create_default_security_group_rule(cls, **kwargs):
+        body = cls.admin_client.create_default_security_group_rule(**kwargs)
+        default_sg_rule = body['default_security_group_rule']
+        cls.sg_rule_templates.append(default_sg_rule)
+        return default_sg_rule
 
     @classmethod
     def create_keypair(cls, client=None, name=None, **kwargs):

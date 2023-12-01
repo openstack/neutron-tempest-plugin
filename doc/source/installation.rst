@@ -2,11 +2,7 @@
 Installation
 ============
 
-At the command line::
+For installation and usage of neutron-tempest-plugin, please refer
+to the documentation in the Neutron tree:
 
-    $ pip install openstack
-
-Or, if you have virtualenvwrapper installed::
-
-    $ mkvirtualenv openstack
-    $ pip install openstack
+    https://docs.openstack.org/neutron/latest/contributor/testing/tempest.html

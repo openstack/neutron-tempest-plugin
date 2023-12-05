@@ -20,9 +20,10 @@ from tempest.common import utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base
+from neutron_tempest_plugin.common import utils as plugin_utils
 
 
-class PortsTestJSON(base.BaseNetworkTest):
+class PortsTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
@@ -150,6 +151,45 @@ class PortsTestJSON(base.BaseNetworkTest):
         subnets = [ip['subnet_id'] for ip in updated['port']['fixed_ips']]
         expected = [s['id'], s['id']]
         self.assertEqual(expected, subnets)
+
+    @decorators.idempotent_id('12a3f5f1-4d9c-4fe1-9e7b-08c75fe77790')
+    def test_port_shut_down(self):
+        # NOTE(slaweq): In some cases (like default ML2/OVN deployment)
+        # extension is enabled but there may not be any DHCP agent available.
+        # In such case those tests should be also skipped.
+        dhcp_agents = self.admin_client.list_agents(
+            agent_type="DHCP Agent")['agents']
+        if not dhcp_agents:
+            msg = ("At least one DHCP agent is required to be running in "
+                   "the environment for this test.")
+            raise self.skipException(msg)
+
+        self.create_subnet(self.network)
+
+        def dhcp_port_created():
+            return self.client.list_ports(
+                network_id=self.network['id'],
+                device_owner=lib_constants.DEVICE_OWNER_DHCP)['ports']
+
+        plugin_utils.wait_until_true(dhcp_port_created)
+
+        dhcp_port = self.client.list_ports(
+            network_id=self.network['id'],
+            device_owner=lib_constants.DEVICE_OWNER_DHCP)['ports'][0]
+
+        def port_active():
+            port = self.client.show_port(dhcp_port['id'])['port']
+            return port['status'] == lib_constants.PORT_STATUS_ACTIVE
+
+        plugin_utils.wait_until_true(port_active)
+
+        self.client.update_port(dhcp_port['id'], admin_state_up=False)
+
+        def port_down():
+            port = self.client.show_port(dhcp_port['id'])['port']
+            return port['status'] == lib_constants.PORT_STATUS_DOWN
+
+        plugin_utils.wait_until_true(port_down)
 
 
 class PortsIpv6TestJSON(base.BaseNetworkTest):

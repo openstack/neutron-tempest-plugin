@@ -740,3 +740,25 @@ class SecGroupSearchCriteriaTest(base.BaseSearchCriteriaTest):
     @decorators.idempotent_id('5c78bd57-e6e9-4e71-a05c-9c4082a3f139')
     def test_list_no_pagination_limit_0(self):
         self._test_list_no_pagination_limit_0()
+
+
+class SecGroupNormalizedCidrTest(base.BaseNetworkTest):
+
+    required_extensions = ['security-group', 'security-groups-normalized-cidr']
+
+    @decorators.idempotent_id('f87bb108-205c-4f06-a378-81a26f71b829')
+    def test_normalized_cidr_in_rule(self):
+        security_group = self.create_security_group()
+        rule = self.create_security_group_rule(
+            security_group=security_group,
+            direction=constants.INGRESS_DIRECTION,
+            remote_ip_prefix='10.0.0.34/24')
+        self.assertEqual('10.0.0.0/24', rule['normalized_cidr'])
+        self.assertEqual('10.0.0.34/24', rule['remote_ip_prefix'])
+
+        rule = self.create_security_group_rule(
+            security_group=security_group,
+            remote_group_id=security_group['id'],
+            direction=constants.INGRESS_DIRECTION)
+        self.assertIsNone(rule['normalized_cidr'])
+        self.assertIsNone(rule['remote_ip_prefix'])

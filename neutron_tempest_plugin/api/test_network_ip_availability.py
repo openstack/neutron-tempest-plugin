@@ -176,11 +176,6 @@ class NetworksIpAvailabilityIPv6Test(NetworksIpAvailabilityIPv4Test):
 
     _ip_version = lib_constants.IP_VERSION_6
 
-    def setUp(self):
-        super(NetworksIpAvailabilityIPv6Test, self).setUp()
-        net_name = data_utils.rand_name('network')
-        self.network = self.create_network(network_name=net_name)
-
     @decorators.idempotent_id('0d5a03f2-fdb7-4ec3-b746-734c51d74b69')
     def test_list_ipv6_ip_availability_after_subnet_and_ports(self):
         subnet = self.create_subnet(self.network, ip_version=self._ip_version,

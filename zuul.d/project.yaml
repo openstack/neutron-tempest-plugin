@@ -226,6 +226,7 @@
         - neutron-tempest-plugin-fwaas-2023-1
         - neutron-tempest-plugin-fwaas-2023-2
         - neutron-tempest-plugin-vpnaas
+        - neutron-tempest-plugin-vpnaas-ovn
         - neutron-tempest-plugin-vpnaas-yoga
         - neutron-tempest-plugin-vpnaas-zed
         - neutron-tempest-plugin-vpnaas-2023-1
@@ -242,3 +243,4 @@
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-fwaas
+        - neutron-tempest-plugin-vpnaas-ovn

@@ -416,7 +416,7 @@ class BaseNetworkTest(test.BaseTestCase):
     @classmethod
     def create_subnet(cls, network, gateway='', cidr=None, mask_bits=None,
                       ip_version=None, client=None, reserve_cidr=True,
-                      **kwargs):
+                      allocation_pool_size=None, **kwargs):
         """Wrapper utility that returns a test subnet.
 
         Convenient wrapper for client.create_subnet method. It reserves and
@@ -454,10 +454,19 @@ class BaseNetworkTest(test.BaseTestCase):
         using the same CIDR for further subnets in the scope of the same
         test case class
 
+        :param allocation_pool_size: if the CIDR is not defined, this method
+        will assign one in ``get_subnet_cidrs``. Once done, the allocation pool
+        will be defined reserving the number of IP addresses requested,
+        starting from the end of the assigned CIDR.
+
         :param **kwargs: optional parameters to be forwarded to wrapped method
 
         [1] http://netaddr.readthedocs.io/en/latest/tutorial_01.html#supernets-and-subnets  # noqa
         """
+        def allocation_pool(cidr, pool_size):
+            start = str(netaddr.IPAddress(cidr.last) - pool_size)
+            end = str(netaddr.IPAddress(cidr.last) - 1)
+            return {'start': start, 'end': end}
 
         # allow tests to use admin client
         if not client:
@@ -480,6 +489,9 @@ class BaseNetworkTest(test.BaseTestCase):
                 kwargs['gateway_ip'] = str(gateway or (subnet_cidr.ip + 1))
             else:
                 kwargs['gateway_ip'] = None
+            if allocation_pool_size:
+                kwargs['allocation_pools'] = [
+                    allocation_pool(subnet_cidr, allocation_pool_size)]
             try:
                 body = client.create_subnet(
                     network_id=network['id'],

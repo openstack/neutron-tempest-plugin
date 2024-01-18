@@ -216,6 +216,11 @@
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
           (^tempest.api.compute.servers.test_multiple_create)"
+      # NOTE(liushy): This branch of Neutron does not support
+      # the address_group feature for the OVN driver.
+      tempest_exclude_regex: "\
+          (^neutron_tempest_plugin.scenario.test_security_groups.StatefulNetworkSecGroupTest.test_remote_group_and_remote_address_group)|\
+          (^neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupIPv4Test.test_remote_group_and_remote_address_group)"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_ovn) | join(',') }}"
         NEUTRON_DEPLOY_MOD_WSGI: false

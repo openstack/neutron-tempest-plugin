@@ -176,7 +176,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
                                        client=None):
         """This rule is intended to permit inbound ssh
 
-        Allowing ssh traffic traffic from all sources, so no group_id is
+        Allowing ssh traffic from all sources, so no group_id is
         provided.
         Setting a group_id would only permit traffic from ports
         belonging to the same security group.

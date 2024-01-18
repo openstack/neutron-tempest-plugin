@@ -437,6 +437,9 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         # configure sec group to support SSH connectivity
         self.create_loginable_secgroup_rule(
             secgroup_id=ssh_secgrp['id'])
+        if self.stateless_sg:
+            self.create_ingress_metadata_secgroup_rule(
+                secgroup_id=ssh_secgrp['id'])
         # spawn two instances with the sec group created
         server_ssh_clients, fips, servers = self.create_vm_testing_sec_grp(
             security_groups=[{'name': ssh_secgrp['name']}])
@@ -464,9 +467,13 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
                              should_succeed=False)
 
         # add ICMP rule with remote address group
+        address_set = [str(netaddr.IPNetwork(fips[0]['fixed_ip_address']))]
+        if self.stateless_sg:
+            address_set.append(
+                str(netaddr.IPNetwork(fips[1]['fixed_ip_address'])))
         test_ag = self.create_address_group(
             name=data_utils.rand_name('test_ag'),
-            addresses=[str(netaddr.IPNetwork(fips[0]['fixed_ip_address']))])
+            addresses=address_set)
         rule_list = [{'protocol': constants.PROTO_NUM_ICMP,
                       'direction': constants.INGRESS_DIRECTION,
                       'remote_address_group_id': test_ag['id']}]
@@ -762,8 +769,8 @@ class StatefulNetworkSecGroupTest(BaseNetworkSecGroupTest):
         self._test_remote_group()
 
     @testtools.skipUnless(
-        CONF.neutron_plugin_options.firewall_driver == 'openvswitch',
-        "Openvswitch agent is required to run this test")
+        CONF.neutron_plugin_options.firewall_driver in ['openvswitch', 'ovn'],
+        "Openvswitch agent or Ml2/OVN is required to run this test")
     @decorators.idempotent_id('678dd4c0-2953-4626-b89c-8e7e4110ec4b')
     @tempest_utils.requires_ext(extension="address-group", service="network")
     @tempest_utils.requires_ext(
@@ -949,8 +956,8 @@ class StatelessNetworkSecGroupIPv4Test(BaseNetworkSecGroupTest):
         self._test_remote_group()
 
     @testtools.skipUnless(
-        CONF.neutron_plugin_options.firewall_driver == 'openvswitch',
-        "Openvswitch agent is required to run this test")
+        CONF.neutron_plugin_options.firewall_driver in ['openvswitch', 'ovn'],
+        "Openvswitch agent or Ml2/OVN is required to run this test")
     @decorators.idempotent_id('9fae530d-2711-4c61-a4a5-8efe6e58ab14')
     @tempest_utils.requires_ext(extension="address-group", service="network")
     @tempest_utils.requires_ext(

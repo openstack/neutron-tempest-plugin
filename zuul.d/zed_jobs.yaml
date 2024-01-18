@@ -189,13 +189,17 @@
           (^tempest.api.compute.servers.test_multiple_create)"
       # NOTE(ralonsoh): tests disabled because of https://bugs.launchpad.net/neutron/+bug/2082070
       # NOTE(ralonsoh): ``NetworkWritableMtuTest`` excluded because of https://bugs.launchpad.net/neutron/+bug/2082344
+      # NOTE(liushy): This branch of Neutron does not support
+      # the address_group feature for the OVN driver.
       tempest_exclude_regex: "\
           (neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupIPv4Test.test_connectivity_between_vms_using_different_sec_groups)|\
           (neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupIPv4Test.test_packets_of_any_connection_state_can_reach_dest)|\
           (neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest.test_vlan_transparent_allowed_address_pairs)|\
           (neutron_tempest_plugin.scenario.test_vlan_transparency.VlanTransparencyTest.test_vlan_transparent_port_sec_disabled)|\
           (neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest.*)|\
-          (^neutron_tempest_plugin.scenario.test_multicast.MulticastTestIPv4.test_multicast_between_vms_on_same_network)"
+          (^neutron_tempest_plugin.scenario.test_multicast.MulticastTestIPv4.test_multicast_between_vms_on_same_network)|\
+          (neutron_tempest_plugin.scenario.test_security_groups.StatefulNetworkSecGroupTest.test_remote_group_and_remote_address_group)|\
+          (neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupIPv4Test.test_remote_group_and_remote_address_group)"
       network_api_extensions: *api_extensions
       network_api_extensions_ovn:
         - vlan-transparent

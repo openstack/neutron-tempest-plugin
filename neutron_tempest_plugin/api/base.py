@@ -1437,7 +1437,9 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
         self.assertNotEmpty(
             resources, "%s list returned is empty" % self.resource)
         retrieved_names = [res[self.field] for res in resources]
-        expected = sorted(retrieved_names)
+        # sort without taking into account whether the network is named with
+        # a capital letter or not
+        expected = sorted(retrieved_names, key=lambda v: v.upper())
         if direction == constants.SORT_DIRECTION_DESC:
             expected = list(reversed(expected))
         self.assertEqual(expected, retrieved_names)

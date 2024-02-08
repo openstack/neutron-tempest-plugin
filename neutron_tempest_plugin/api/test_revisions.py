@@ -342,6 +342,9 @@ class TestRevisions(base.BaseAdminNetworkTest):
     @utils.requires_ext(extension="router", service="network")
     @utils.requires_ext(extension="l3-ha", service="network")
     def test_update_router_extra_attributes_bumps_revision(self):
+        # OVN driver doesn't accept ha=False (all OVN routers support HA)
+        if self.is_driver_ovn:
+            raise self.skipException("Test not meant for OVN driver")
         # updates from CVR to CVR-HA are supported on every release,
         # but only the admin can forcibly create a non-HA router
         router_args = {'tenant_id': self.client.project_id,

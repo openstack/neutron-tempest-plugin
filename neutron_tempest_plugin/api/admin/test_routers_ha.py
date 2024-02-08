@@ -64,6 +64,9 @@ class RoutersTestHA(base.BaseRouterTest):
         set to False, thus making it a "Single Failure Router"
         as opposed to a "High Availability Router"
         """
+        # OVN driver doesn't accept ha=False (all OVN routers support HA)
+        if self.is_driver_ovn:
+            raise self.skipException("Test not meant for OVN driver")
         name = data_utils.rand_name('router')
         router = self._create_admin_router(name, ha=False)
         self.assertFalse(router['ha'])
@@ -81,6 +84,9 @@ class RoutersTestHA(base.BaseRouterTest):
         set to False. Once the router is updated, the ha
         attribute will be set to True
         """
+        # OVN driver doesn't accept ha=False (all OVN routers support HA)
+        if self.is_driver_ovn:
+            raise self.skipException("Test not meant for OVN driver")
         name = data_utils.rand_name('router')
         # router needs to be in admin state down in order to be upgraded to HA
         router = self._create_admin_router(name, ha=False,
@@ -101,6 +107,10 @@ class RoutersTestHA(base.BaseRouterTest):
         deleted, those segmentation data are kept in HA network. This tests
         regression of https://bugs.launchpad.net/neutron/+bug/1732543.
         """
+        # Test not meant for OVN implementation of HA
+        if self.is_driver_ovn:
+            raise self.skipException(
+                "Test not meant for OVN implementation of HA")
         for i in range(2):
             router = self._create_admin_router(
                 data_utils.rand_name('router%d' % i),

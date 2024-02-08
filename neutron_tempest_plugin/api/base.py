@@ -68,6 +68,21 @@ class BaseNetworkTest(test.BaseTestCase):
 
     external_network_id = CONF.network.public_network_id
 
+    __is_driver_ovn = None
+
+    @classmethod
+    def _is_driver_ovn(cls):
+        ovn_agents = cls.os_admin.network_client.list_agents(
+            binary='ovn-controller')['agents']
+        return len(ovn_agents) > 0
+
+    @property
+    def is_driver_ovn(self):
+        if self.__is_driver_ovn is None:
+            if hasattr(self, 'os_admin'):
+                self.__is_driver_ovn = self._is_driver_ovn()
+        return self.__is_driver_ovn
+
     @classmethod
     def get_client_manager(cls, credential_type=None, roles=None,
                            force_new=None):

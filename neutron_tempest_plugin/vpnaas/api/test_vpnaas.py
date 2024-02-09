@@ -14,10 +14,10 @@
 #    under the License.
 
 from neutron_lib.db import constants as db_const
+from tempest.common import utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
-from tempest import test
 
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.vpnaas.api import base_vpnaas as base
@@ -42,7 +42,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        if not test.is_extension_enabled('vpnaas', 'network'):
+        if not utils.is_extension_enabled('vpnaas', 'network'):
             msg = "vpnaas extension not enabled."
             raise cls.skipException(msg)
         super(VPNaaSTestJSON, cls).resource_setup()

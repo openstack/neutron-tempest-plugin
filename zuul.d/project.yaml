@@ -24,44 +24,6 @@
 
 
 - project-template:
-    name: neutron-tempest-plugin-jobs-train
-    check:
-      jobs:
-        - neutron-tempest-plugin-api-train
-        - neutron-tempest-plugin-scenario-linuxbridge-train
-        - neutron-tempest-plugin-scenario-openvswitch-train
-        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-train
-    gate:
-      jobs:
-        - neutron-tempest-plugin-api-train
-    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
-    #              the experimental queue when it will be more stable
-    experimental:
-      jobs:
-        - neutron-tempest-plugin-dvr-multinode-scenario-train
-
-
-- project-template:
-    name: neutron-tempest-plugin-jobs-ussuri
-    check:
-      jobs:
-        - neutron-tempest-plugin-api-ussuri
-        - neutron-tempest-plugin-scenario-linuxbridge-ussuri
-        - neutron-tempest-plugin-scenario-openvswitch-ussuri
-        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-ussuri
-        - neutron-tempest-plugin-scenario-ovn-ussuri
-        - neutron-tempest-plugin-designate-scenario-ussuri
-    gate:
-      jobs:
-        - neutron-tempest-plugin-api-ussuri
-    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
-    #              the experimental queue when it will be more stable
-    experimental:
-      jobs:
-        - neutron-tempest-plugin-dvr-multinode-scenario-ussuri
-
-
-- project-template:
     name: neutron-tempest-plugin-jobs-victoria
     check:
       jobs:

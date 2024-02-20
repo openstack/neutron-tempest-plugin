@@ -293,6 +293,38 @@ class RoutersTest(base_routers.BaseRouterTest):
         self.assertEqual(port_show1['device_id'], router1['id'])
         self.assertEqual(port_show2['device_id'], router2['id'])
 
+    @decorators.idempotent_id('4f8a2a1e-7fe9-4d99-9bff-5dc0e78b7e06')
+    def test_router_interface_update_and_remove_gateway_ip(self):
+        network = self.create_network()
+        subnet = self.create_subnet(network, allocation_pool_size=5)
+
+        # Update the subnet gateway IP, using the next one. Because the
+        # allocation pool is on the upper part of the CIDR, the lower IP
+        # addresses are free. This operation must be allowed because the subnet
+        # does not have yet a router port.
+        gateway_ip = netaddr.IPAddress(subnet['gateway_ip'])
+        self.client.update_subnet(subnet['id'], gateway_ip=str(gateway_ip + 1))
+
+        router = self._create_router(data_utils.rand_name('router'), True)
+        intf = self.create_router_interface(router['id'], subnet['id'])
+
+        def _status_active():
+            return self.client.show_port(
+                intf['port_id'])['port']['status'] == 'ACTIVE'
+
+        utils.wait_until_true(_status_active, exception=AssertionError)
+
+        # The gateway update must raise a ``GatewayIpInUse`` exception because
+        # there is an allocated router port.
+        gateway_ip = netaddr.IPAddress(subnet['gateway_ip'])
+        self.assertRaises(lib_exc.Conflict, self.client.update_subnet,
+                          subnet['id'], gateway_ip=str(gateway_ip + 2))
+
+        # The gateway deletion returns the same exception.
+        gateway_ip = netaddr.IPAddress(subnet['gateway_ip'])
+        self.assertRaises(lib_exc.Conflict, self.client.update_subnet,
+                          subnet['id'], gateway_ip=None)
+
 
 class RoutersIpV6Test(RoutersTest):
     _ip_version = 6

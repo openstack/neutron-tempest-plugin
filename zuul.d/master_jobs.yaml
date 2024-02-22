@@ -603,6 +603,7 @@
           (^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest)"
       devstack_localrc:
         Q_AGENT: ovn
+        OVN_AGENT_EXTENSIONS: 'metadata'
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_ovn) | join(',') }}"
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: ovn,logger
         Q_ML2_PLUGIN_TYPE_DRIVERS: local,flat,vlan,geneve
@@ -624,7 +625,8 @@
       devstack_services:
         br-ex-tcpdump: true
         br-int-flows: true
-        q-ovn-metadata-agent: true
+        q-ovn-metadata-agent: false
+        q-ovn-agent: true
         ovn-controller: true
         ovn-northd: true
         ovs-vswitchd: true

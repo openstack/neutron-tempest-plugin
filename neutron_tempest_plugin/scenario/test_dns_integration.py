@@ -212,11 +212,10 @@ class DNSIntegrationAdminTests(BaseDNSIntegrationTests,
     @classmethod
     def resource_setup(cls):
         super(DNSIntegrationAdminTests, cls).resource_setup()
-        # TODO(jh): We should add the segmentation_id as tempest option
-        # so that it can be changed to match the deployment if needed
-        cls.network2 = cls.create_network(dns_domain=cls.zone['name'],
-                provider_network_type='vxlan',
-                provider_segmentation_id=12345)
+        segmentation_id = CONF.designate_feature_enabled.segmentation_id
+        cls.network2 = cls.create_network(
+            dns_domain=cls.zone['name'], provider_network_type='vxlan',
+            provider_segmentation_id=segmentation_id)
         cls.subnet2 = cls.create_subnet(cls.network2)
 
     def _verify_dns_assignment(self, port):

@@ -236,7 +236,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     @classmethod
     def _wait_for_router_ha_active(cls, router_id):
         router = cls.os_admin.network_client.show_router(router_id)['router']
-        if not router.get('ha'):
+        if not router.get('ha') or cls.is_driver_ovn:
             return
 
         def _router_active_on_l3_agent():

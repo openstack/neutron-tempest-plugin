@@ -15,6 +15,7 @@
 
 import time
 
+import ddt
 from neutron_lib import constants as lib_constants
 from neutron_lib.services.qos import constants as qos_consts
 from neutron_lib.utils import test
@@ -24,8 +25,6 @@ from tempest.common import waiters
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions
-import testscenarios
-from testscenarios.scenarios import multiply_scenarios
 import testtools
 
 from neutron_tempest_plugin.api import base as base_api
@@ -39,9 +38,6 @@ from neutron_tempest_plugin.scenario import test_qos
 
 CONF = config.CONF
 LOG = log.getLogger(__name__)
-
-
-load_tests = testscenarios.load_tests_apply_scenarios
 
 
 class FloatingIpTestCasesMixin(object):
@@ -104,10 +100,10 @@ class FloatingIpTestCasesMixin(object):
                                        constants.SERVER_STATUS_ACTIVE)
         return {'port': port, 'fip': fip, 'server': server}
 
-    def _test_east_west(self):
+    def _test_east_west(self, src_has_fip, dest_has_fip):
         # The proxy VM is used to control the source VM when it doesn't
         # have a floating-ip.
-        if self.src_has_fip:
+        if src_has_fip:
             proxy = None
             proxy_client = None
         else:
@@ -117,7 +113,7 @@ class FloatingIpTestCasesMixin(object):
                                       pkey=self.keypair['private_key'])
 
         # Source VM
-        if self.src_has_fip:
+        if src_has_fip:
             src_server = self._create_server()
             src_server_ip = src_server['fip']['floating_ip_address']
         else:
@@ -129,7 +125,7 @@ class FloatingIpTestCasesMixin(object):
                                 proxy_client=proxy_client)
 
         # Destination VM
-        if self.dest_has_fip:
+        if dest_has_fip:
             dest_server = self._create_server(network=self._dest_network)
         else:
             dest_server = self._create_server(create_floating_ip=False,
@@ -139,46 +135,46 @@ class FloatingIpTestCasesMixin(object):
         self.check_remote_connectivity(ssh_client,
             dest_server['port']['fixed_ips'][0]['ip_address'],
             servers=[src_server, dest_server])
-        if self.dest_has_fip:
+        if dest_has_fip:
             self.check_remote_connectivity(ssh_client,
                 dest_server['fip']['floating_ip_address'],
                 servers=[src_server, dest_server])
 
 
+@ddt.ddt
 class FloatingIpSameNetwork(FloatingIpTestCasesMixin,
                             base.BaseTempestTestCase):
-    scenarios = multiply_scenarios([
-        ('SRC with FIP', dict(src_has_fip=True)),
-        ('SRC without FIP', dict(src_has_fip=False)),
-    ], [
-        ('DEST with FIP', dict(dest_has_fip=True)),
-        ('DEST without FIP', dict(dest_has_fip=False)),
-    ])
 
     same_network = True
 
     @test.unstable_test("bug 1717302")
     @decorators.idempotent_id('05c4e3b3-7319-4052-90ad-e8916436c23b')
-    def test_east_west(self):
-        self._test_east_west()
+    @ddt.unpack
+    @ddt.data({'src_has_fip': True, 'dest_has_fip': True},
+              {'src_has_fip': True, 'dest_has_fip': False},
+              {'src_has_fip': False, 'dest_has_fip': True},
+              {'src_has_fip': True, 'dest_has_fip': False})
+    def test_east_west(self, src_has_fip, dest_has_fip):
+        self._test_east_west(src_has_fip=src_has_fip,
+                             dest_has_fip=dest_has_fip)
 
 
+@ddt.ddt
 class FloatingIpSeparateNetwork(FloatingIpTestCasesMixin,
                                 base.BaseTempestTestCase):
-    scenarios = multiply_scenarios([
-        ('SRC with FIP', dict(src_has_fip=True)),
-        ('SRC without FIP', dict(src_has_fip=False)),
-    ], [
-        ('DEST with FIP', dict(dest_has_fip=True)),
-        ('DEST without FIP', dict(dest_has_fip=False)),
-    ])
 
     same_network = False
 
     @test.unstable_test("bug 1717302")
     @decorators.idempotent_id('f18f0090-3289-4783-b956-a0f8ac511e8b')
-    def test_east_west(self):
-        self._test_east_west()
+    @ddt.unpack
+    @ddt.data({'src_has_fip': True, 'dest_has_fip': True},
+              {'src_has_fip': True, 'dest_has_fip': False},
+              {'src_has_fip': False, 'dest_has_fip': True},
+              {'src_has_fip': True, 'dest_has_fip': False})
+    def test_east_west(self, src_has_fip, dest_has_fip):
+        self._test_east_west(src_has_fip=src_has_fip,
+                             dest_has_fip=dest_has_fip)
 
 
 class DefaultSnatToExternal(FloatingIpTestCasesMixin,

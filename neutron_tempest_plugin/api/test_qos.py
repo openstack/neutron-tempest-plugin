@@ -12,6 +12,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+
+import ddt
 from neutron_lib.api.definitions import qos as qos_apidef
 from neutron_lib import constants as n_constants
 from neutron_lib.services.qos import constants as qos_consts
@@ -20,14 +22,11 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions
-
-import testscenarios
 import testtools
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin import config
 
-load_tests = testscenarios.load_tests_apply_scenarios
 CONF = config.CONF
 
 
@@ -484,15 +483,6 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
             policy_id, rule['id'])
         return rule
 
-    @property
-    def opposite_direction(self):
-        if self.direction == "ingress":
-            return "egress"
-        elif self.direction == "egress":
-            return "ingress"
-        else:
-            return None
-
     @decorators.idempotent_id('8a59b00b-3e9c-4787-92f8-93a5cdf5e378')
     def test_rule_create(self):
         policy = self.create_qos_policy(name=self.policy_name,
@@ -544,17 +534,20 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('149a6988-2568-47d2-931e-2dbc858943b3')
     def test_rule_update(self):
+        self._test_rule_update(opposite_direction=None)
+
+    def _test_rule_update(self, opposite_direction=None):
         policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False)
         rule = self._create_qos_bw_limit_rule(
             policy['id'], {'max_kbps': 1, 'max_burst_kbps': 1})
 
-        if self.opposite_direction:
+        if opposite_direction:
             self.qos_bw_limit_rule_client.update_limit_bandwidth_rule(
                 policy['id'], rule['id'],
                 **{'max_kbps': 200, 'max_burst_kbps': 1337,
-                   'direction': self.opposite_direction})
+                   'direction': opposite_direction})
         else:
             self.qos_bw_limit_rule_client.update_limit_bandwidth_rule(
                 policy['id'], rule['id'],
@@ -564,8 +557,8 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
         retrieved_policy = retrieved_policy['bandwidth_limit_rule']
         self.assertEqual(200, retrieved_policy['max_kbps'])
         self.assertEqual(1337, retrieved_policy['max_burst_kbps'])
-        if self.opposite_direction:
-            self.assertEqual(self.opposite_direction,
+        if opposite_direction:
+            self.assertEqual(opposite_direction,
                              retrieved_policy['direction'])
 
     @decorators.idempotent_id('67ee6efd-7b33-4a68-927d-275b4f8ba958')
@@ -697,16 +690,13 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
             policy['id'])
 
 
+@ddt.ddt
 class QosBandwidthLimitRuleWithDirectionTestJSON(
         QosBandwidthLimitRuleTestJSON):
     required_extensions = (
         QosBandwidthLimitRuleTestJSON.required_extensions +
         ['qos-bw-limit-direction']
     )
-    scenarios = [
-        ('ingress', {'direction': 'ingress'}),
-        ('egress', {'direction': 'egress'}),
-    ]
 
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
@@ -752,6 +742,13 @@ class QosBandwidthLimitRuleWithDirectionTestJSON(
             policy['id'],
             {'max_kbps': 1025, 'max_burst_kbps': 1025,
              'direction': n_constants.INGRESS_DIRECTION})
+
+    @decorators.idempotent_id('7ca7c83b-0555-4a0f-a422-4338f77f79e5')
+    @ddt.unpack
+    @ddt.data({'opposite_direction': 'ingress'},
+              {'opposite_direction': 'egress'})
+    def test_rule_update(self, opposite_direction):
+        self._test_rule_update(opposite_direction=opposite_direction)
 
 
 class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):

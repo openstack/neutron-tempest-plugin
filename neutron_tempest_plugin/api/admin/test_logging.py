@@ -15,11 +15,8 @@
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions
-import testscenarios
 
 from neutron_tempest_plugin.api import base
-
-load_tests = testscenarios.load_tests_apply_scenarios
 
 
 class LoggingTestJSON(base.BaseAdminNetworkTest):

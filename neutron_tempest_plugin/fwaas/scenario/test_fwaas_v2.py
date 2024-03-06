@@ -14,8 +14,6 @@
 #    under the License.
 
 
-import testscenarios
-
 from oslo_log import log as logging
 from tempest.common import utils
 from tempest import config
@@ -28,7 +26,6 @@ from neutron_tempest_plugin.fwaas.scenario import fwaas_v2_base as base
 
 CONF = config.CONF
 LOG = logging.getLogger(__name__)
-load_tests = testscenarios.load_tests_apply_scenarios
 
 
 class TestFWaaS_v2(base.FWaaSScenarioTest_V2):

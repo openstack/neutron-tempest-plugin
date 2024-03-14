@@ -285,7 +285,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         client.delete_interface(server_id, port_id=port_id)
 
     def setup_network_and_server(self, router=None, server_name=None,
-                                 network=None, **kwargs):
+                                 network=None, use_stateless_sg=False,
+                                 **kwargs):
         """Create network resources and a server.
 
         Creating a network, subnet, router, keypair, security group
@@ -296,8 +297,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         self.subnet = self.create_subnet(self.network)
         LOG.debug("Created subnet %s", self.subnet['id'])
 
+        sg_args = {
+            'name': data_utils.rand_name('secgroup')
+        }
+        if use_stateless_sg:
+            sg_args['stateful'] = False
         secgroup = self.os_primary.network_client.create_security_group(
-            name=data_utils.rand_name('secgroup'))
+            **sg_args)
         LOG.debug("Created security group %s",
                   secgroup['security_group']['name'])
         self.security_groups.append(secgroup['security_group'])
@@ -307,6 +313,9 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         self.keypair = self.create_keypair()
         self.create_loginable_secgroup_rule(
             secgroup_id=secgroup['security_group']['id'])
+        if use_stateless_sg:
+            self.create_ingress_metadata_secgroup_rule(
+                secgroup_id=secgroup['security_group']['id'])
 
         server_kwargs = {
             'flavor_ref': CONF.compute.flavor_ref,

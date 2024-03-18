@@ -240,6 +240,9 @@
         CUSTOMIZE_IMAGE: false
         OVN_BRANCH: "v21.06.0"
         OVS_BRANCH: "a4b04276ab5934d087669ff2d191a23931335c87"
+      devstack_services:
+        q-ovn-metadata-agent: true
+        q-ovn-agent: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:

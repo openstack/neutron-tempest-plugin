@@ -170,6 +170,9 @@
       network_api_extensions: *api_extensions
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+      devstack_services:
+        q-ovn-metadata-agent: true
+        q-ovn-agent: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:

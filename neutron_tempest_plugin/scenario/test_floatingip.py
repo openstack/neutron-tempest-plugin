@@ -239,9 +239,13 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
                 self.os_primary.interfaces_client, server['server']['id'],
                 port['id'], lib_constants.PORT_STATUS_ACTIVE)
             fip = self.client.show_floatingip(fip['id'])['floatingip']
+            server_data = self.os_admin.servers_client.show_server(
+                server['server']['id'])['server']
+            zone = 'compute:' + server_data['OS-EXT-AZ:availability_zone']
             self._check_port_details(
                 fip, port, status=lib_constants.PORT_STATUS_ACTIVE,
-                device_id=server['server']['id'], device_owner='compute:nova')
+                device_id=server['server']['id'],
+                device_owner=zone)
             LOG.debug('Port check for server %s and FIP %s finished, '
                       'lets detach port %s from server!',
                       server['server']['id'], fip['id'], port['id'])

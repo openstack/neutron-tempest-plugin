@@ -147,6 +147,7 @@
         neutron-conntrack-helper: true
         neutron-tag-ports-during-bulk-creation: true
         neutron-ndp-proxy: true
+        neutron-subnet-external-network: true
         br-ex-tcpdump: true
         br-int-flows: true
         # Cinder services
@@ -236,6 +237,7 @@
         q-ovn-metadata-agent: false
         # Neutron services
         neutron-local-ip-static: true
+        neutron-subnet-external-network: true
         q-agt: true
         q-dhcp: true
         q-l3: true
@@ -331,6 +333,7 @@
         q-ovn-metadata-agent: false
         # Neutron services
         neutron-local-ip: true
+        neutron-subnet-external-network: true
         q-agt: true
         q-dhcp: true
         q-l3: true

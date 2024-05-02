@@ -531,7 +531,7 @@ class BaseNetworkTest(test.BaseTestCase):
 
     @classmethod
     def reserve_subnet_cidr(cls, addr, **ipnetwork_kwargs):
-        """Reserve given subnet CIDR making sure it is not used by create_subnet
+        """Reserve given subnet CIDR making sure it's not used by create_subnet
 
         :param addr: the CIDR address to be reserved
         It can be a str or netaddr.IPNetwork instance

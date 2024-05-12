@@ -39,6 +39,23 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
                           self.admin_client.create_network, **net_args)
 
     @decorators.attr(type='negative')
+    @decorators.idempotent_id('9f676a6e-d729-428b-adcd-4de2867c50e6')
+    def test_set_network_quota_lower_than_networks_amount(self):
+        tenant_id = self.create_project()['id']
+        high_quota = 3
+        low_quota = 1
+        new_quotas = {'network': high_quota}
+        self._setup_quotas(tenant_id, **new_quotas)
+        for _ in range(high_quota - 1):
+            self._create_network(tenant_id)
+        # TODO(mblue): remove check_limit=True when it is default
+        new_quotas.update({'network': low_quota, 'check_limit': True})
+
+        self.assertRaises(lib_exc.BadRequest,
+                          self.admin_client.update_quotas,
+                          tenant_id, **new_quotas)
+
+    @decorators.attr(type='negative')
     @decorators.idempotent_id('0b7f99e3-9f77-45ce-9a89-b39a184de618')
     def test_create_subnet_when_quotas_is_full(self):
         tenant_id = self.create_project()['id']

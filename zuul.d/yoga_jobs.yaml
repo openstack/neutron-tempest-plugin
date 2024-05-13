@@ -6,9 +6,7 @@
     required-projects: &required-projects-yoga
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        # Move to 2.6.0 once released
-        # https://review.opendev.org/c/openstack/releases/+/908369
-        override-checkout: 2.5.0
+        override-checkout: 2.6.0
       - openstack/tempest
     vars:
       tempest_concurrency: 4

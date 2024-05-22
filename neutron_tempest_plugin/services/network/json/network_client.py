@@ -804,6 +804,14 @@ class NetworkClientJSON(service_client.RestClient):
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
 
+    def validate_auto_allocated_topology_requirements(self, tenant_id=None):
+        uri = '%s/auto-allocated-topology/%s?fields=dry-run' % (
+            self.uri_prefix, tenant_id)
+        resp, body = self.get(uri)
+        self.expected_success(200, resp.status)
+        body = jsonutils.loads(body)
+        return service_client.ResponseBody(resp, body)
+
     def get_auto_allocated_topology(self, tenant_id=None):
         uri = '%s/auto-allocated-topology/%s' % (self.uri_prefix, tenant_id)
         resp, body = self.get(uri)

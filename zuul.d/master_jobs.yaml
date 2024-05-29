@@ -1217,7 +1217,6 @@
     parent: neutron-tempest-plugin-base
     timeout: 10800
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron-fwaas
       - openstack/neutron
       - openstack/neutron-tempest-plugin
@@ -1415,7 +1414,6 @@
     roles:
       - zuul: openstack/devstack
     required-projects:
-      - openstack/devstack-gate
       - openstack/neutron
       - openstack/neutron-tempest-plugin
       - openstack/tap-as-a-service

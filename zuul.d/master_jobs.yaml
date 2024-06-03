@@ -218,7 +218,8 @@
       - ^roles/.*functional.*$
       - ^playbooks/.*functional.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-openvswitch
@@ -314,7 +315,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-openvswitch-iptables_hybrid
@@ -419,7 +421,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-openvswitch-enforce-scope-old-defaults
@@ -584,7 +587,8 @@
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 # TODO(slaweq): remove that job's definition as soon as new job
 # "neutron-tempest-plugin-linuxbridge" will be used in the neutron repo as
@@ -722,7 +726,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 # TODO(slaweq): remove that job's definition as soon as new job
 # "neutron-tempest-plugin-ovn" will be used in the neutron-lib repo as
@@ -952,7 +957,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-designate-scenario
@@ -1001,7 +1007,8 @@
       - ^neutron/privileged/.*$
       - ^neutron/plugins/ml2/drivers/.*$
       - ^neutron/scheduler/.*$
-      - ^neutron/services/(?!externaldns).*$
+      - regex: ^neutron/services/externaldns.*$
+        negate: true
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
@@ -1012,7 +1019,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-sfc
@@ -1088,7 +1096,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe
@@ -1156,7 +1165,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing
@@ -1210,7 +1220,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-fwaas
@@ -1275,7 +1286,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-vpnaas
@@ -1344,7 +1356,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-vpnaas-ovn
@@ -1404,7 +1417,8 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service
@@ -1513,4 +1527,5 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
-      - ^zuul.d/(?!(project)).*\.yaml
+      - regex: ^zuul.d/project.*\.yaml
+        negate: true

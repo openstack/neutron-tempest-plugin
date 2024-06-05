@@ -1040,9 +1040,6 @@
         - designate-tempest-plugin
         - neutron-tempest-plugin
       tempest_test_regex: ^neutron_tempest_plugin\.scenario\.test_dns_integration
-    files:
-      # This should override the ignore below for all of neutron/services
-      - neutron/services/externaldns/.*
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
@@ -1075,6 +1072,29 @@
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
+      # Ignore everything except for neutron/services/externaldns/
+      - ^neutron/services/auto_allocate/.*$
+      - ^neutron/services/conntrack_helper/.*$
+      - ^neutron/services/firewall/.*$
+      - ^neutron/services/flavors/.*$
+      - ^neutron/services/l3_router/.*$
+      - ^neutron/services/local_ip/.*$
+      - ^neutron/services/logapi/.*$
+      - ^neutron/services/loki/.*$
+      - ^neutron/services/metering/.*$
+      - ^neutron/services/ndp_proxy/.*$
+      - ^neutron/services/network_ip_availability/.*$
+      - ^neutron/services/network_segment_range/.*$
+      - ^neutron/services/ovn_l3/.*$
+      - ^neutron/services/placement_report/.*$
+      - ^neutron/services/portforwarding/.*$
+      - ^neutron/services/qos/.*$
+      - ^neutron/services/rbac/.*$
+      - ^neutron/services/revisions/.*$
+      - ^neutron/services/segments/.*$
+      - ^neutron/services/tag/.*$
+      - ^neutron/services/timestamp/.*$
+      - ^neutron/services/trunk/.*$
       # Ignore everything except for zuul.d/project.yaml
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml

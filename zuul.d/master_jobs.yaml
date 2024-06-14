@@ -782,6 +782,22 @@
     parent: neutron-tempest-plugin-ovn
 
 - job:
+    name: neutron-tempest-plugin-api-ovs-wsgi
+    parent: neutron-tempest-plugin-openvswitch
+    voting: false
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: true
+
+- job:
+    name: neutron-tempest-plugin-api-ovn-wsgi
+    parent: neutron-tempest-plugin-ovn
+    voting: false
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: true
+
+- job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
     parent: tempest-multinode-full
     description: |

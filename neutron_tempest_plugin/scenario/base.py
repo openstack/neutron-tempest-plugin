@@ -286,6 +286,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
 
     def setup_network_and_server(self, router=None, server_name=None,
                                  network=None, use_stateless_sg=False,
+                                 create_fip=True, router_client=None,
                                  **kwargs):
         """Create network resources and a server.
 
@@ -309,7 +310,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         self.security_groups.append(secgroup['security_group'])
         if not router:
             router = self.create_router_by_client(**kwargs)
-        self.create_router_interface(router['id'], self.subnet['id'])
+        self.create_router_interface(router['id'], self.subnet['id'],
+                                     client=router_client)
         self.keypair = self.create_keypair()
         self.create_loginable_secgroup_rule(
             secgroup_id=secgroup['security_group']['id'])
@@ -331,7 +333,9 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         self.port = self.client.list_ports(network_id=self.network['id'],
                                            device_id=self.server[
                                                'server']['id'])['ports'][0]
-        self.fip = self.create_floatingip(port=self.port)
+
+        if create_fip:
+            self.fip = self.create_floatingip(port=self.port)
 
     def check_connectivity(self, host, ssh_user=None, ssh_key=None,
                            servers=None, ssh_timeout=None, ssh_client=None):
@@ -696,3 +700,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         except exceptions.SSHScriptFailed:
             raise self.skipException(
                 "%s is not available on server %s" % (cmd, server['id']))
+
+
+class BaseAdminTempestTestCase(base_api.BaseAdminNetworkTest,
+                               BaseTempestTestCase):
+    pass

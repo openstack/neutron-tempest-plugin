@@ -875,9 +875,10 @@ class BaseNetworkTest(test.BaseTestCase):
                                            association['fixed_port_id'])
 
     @classmethod
-    def create_router_interface(cls, router_id, subnet_id):
+    def create_router_interface(cls, router_id, subnet_id, client=None):
         """Wrapper utility that returns a router interface."""
-        interface = cls.client.add_router_interface_with_subnet_id(
+        client = client or cls.client
+        interface = client.add_router_interface_with_subnet_id(
             router_id, subnet_id)
         return interface
 
@@ -1350,13 +1351,14 @@ class BaseAdminNetworkTest(BaseNetworkTest):
 
     @classmethod
     def create_provider_network(cls, physnet_name, start_segmentation_id,
-                                max_attempts=30):
+                                max_attempts=30, external=False):
         segmentation_id = start_segmentation_id
         for attempts in range(max_attempts):
             try:
                 return cls.create_network(
                     name=data_utils.rand_name('test_net'),
-                    shared=True,
+                    shared=not external,
+                    external=external,
                     provider_network_type='vlan',
                     provider_physical_network=physnet_name,
                     provider_segmentation_id=segmentation_id)

@@ -329,13 +329,10 @@ class RoutersTest(base_routers.BaseRouterTest):
 class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
 
     @classmethod
+    @tutils.requires_ext(extension="external-gateway-multihoming",
+                         service="network")
     def setUpClass(cls):
         super().setUpClass()
-        ext_alias = 'external-gateway-multihoming'
-        try:
-            cls.client.get_extension(ext_alias)
-        except lib_exc.NotFound:
-            raise cls.skipException(f'{ext_alias} extension not available.')
 
     @decorators.idempotent_id('33e9a156-a83f-435f-90ee-1a49dc9c350d')
     def test_create_router_enable_default_route_ecmp(self):

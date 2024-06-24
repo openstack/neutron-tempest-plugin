@@ -11,7 +11,6 @@
 #    under the License.
 
 import netaddr
-from tempest.common import utils as tutils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base
@@ -25,8 +24,6 @@ class SubnetsSearchCriteriaTest(base.BaseSearchCriteriaTest):
 
     @classmethod
     def resource_setup(cls):
-        if tutils.is_extension_enabled('subnet-external-network', 'network'):
-            cls.list_kwargs['router:external'] = False
         super(SubnetsSearchCriteriaTest, cls).resource_setup()
         net = cls.create_network(network_name='subnet-search-test-net')
         for name in cls.resource_names:
@@ -70,6 +67,8 @@ class SubnetsSearchCriteriaTest(base.BaseSearchCriteriaTest):
 
     @decorators.idempotent_id('c0f9280b-9d81-4728-a967-6be22659d4c8')
     def test_list_validation_filters(self):
+        if 'subnet-external-network' in self.get_loaded_network_extensions():
+            self.list_kwargs['router:external'] = False
         self._test_list_validation_filters(self.list_kwargs)
         self._test_list_validation_filters({
             'unknown_filter': 'value'}, filter_is_valid=False)

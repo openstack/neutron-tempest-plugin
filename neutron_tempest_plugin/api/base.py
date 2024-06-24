@@ -1221,6 +1221,16 @@ class BaseNetworkTest(test.BaseTestCase):
         client = client or ndp_proxy.get('client') or cls.client
         client.delete_ndp_proxy(ndp_proxy['id'])
 
+    @classmethod
+    def get_loaded_network_extensions(cls):
+        """Return the network service loaded extensions
+
+        :return: list of strings with the alias of the network service loaded
+                 extensions.
+        """
+        body = cls.client.list_extensions()
+        return [net_ext['alias'] for net_ext in body['extensions']]
+
 
 class BaseAdminNetworkTest(BaseNetworkTest):
 

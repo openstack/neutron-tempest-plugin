@@ -151,6 +151,7 @@
         ADVANCED_INSTANCE_TYPE: ds512M
         ADVANCED_INSTANCE_USER: ubuntu
         CUSTOMIZE_IMAGE: false
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -183,6 +184,7 @@
         ADVANCED_INSTANCE_TYPE: ds512M
         ADVANCED_INSTANCE_USER: ubuntu
         CUSTOMIZE_IMAGE: false
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -257,6 +259,8 @@
     required-projects: *required-projects-victoria
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-victoria
@@ -278,6 +282,7 @@
         ADVANCED_INSTANCE_TYPE: ds512M
         ADVANCED_INSTANCE_USER: ubuntu
         CUSTOMIZE_IMAGE: false
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-sfc-victoria
@@ -287,6 +292,8 @@
     required-projects: *required-projects-victoria
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-victoria
@@ -296,6 +303,8 @@
     required-projects: *required-projects-victoria
     vars:
       network_api_extensions: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing-victoria
@@ -314,3 +323,5 @@
     required-projects: *required-projects-victoria
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false

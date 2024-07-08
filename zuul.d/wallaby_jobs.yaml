@@ -109,6 +109,7 @@
       network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -136,6 +137,7 @@
           (^neutron_tempest_plugin.scenario.test_security_groups.NetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -194,6 +196,8 @@
     required-projects: *required-projects-wallaby
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-wallaby
@@ -217,6 +221,8 @@
     required-projects: *required-projects-wallaby
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-wallaby
@@ -226,6 +232,8 @@
     required-projects: *required-projects-wallaby
     vars:
       network_api_extensions: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing-wallaby
@@ -244,3 +252,5 @@
     required-projects: *required-projects-wallaby
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false

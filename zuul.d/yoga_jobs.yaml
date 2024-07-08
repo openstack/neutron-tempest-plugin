@@ -114,6 +114,7 @@
       network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_openvswitch) | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -135,6 +136,7 @@
       network_available_features: *available_features
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions + network_api_extensions_openvswitch) | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -195,6 +197,8 @@
     required-projects: *required-projects-yoga
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-yoga
@@ -213,6 +217,8 @@
     required-projects: *required-projects-yoga
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-yoga
@@ -222,6 +228,8 @@
     required-projects: *required-projects-yoga
     vars:
       network_api_extensions: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing-yoga
@@ -236,6 +244,7 @@
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_services:
         # Disable OVN services
         br-ex-tcpdump: false
@@ -262,6 +271,8 @@
     required-projects: *required-projects-yoga
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service-yoga
@@ -271,3 +282,5 @@
     required-projects: *required-projects-yoga
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false

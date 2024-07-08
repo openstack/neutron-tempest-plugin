@@ -95,6 +95,7 @@
         - uplink-status-propagation
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_openvswitch) | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -129,6 +130,7 @@
           (^neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_openvswitch) | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -238,6 +240,7 @@
         - dvr
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_dvr) | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-2023-1
@@ -250,11 +253,17 @@
     name: neutron-tempest-plugin-sfc-2023-1
     parent: neutron-tempest-plugin-sfc
     override-checkout: stable/2023.1
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-2023-1
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
     override-checkout: stable/2023.1
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing-2023-1
@@ -265,13 +274,22 @@
     name: neutron-tempest-plugin-fwaas-2023-1
     parent: neutron-tempest-plugin-fwaas
     override-checkout: stable/2023.1
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-vpnaas-2023-1
     parent: neutron-tempest-plugin-vpnaas
     override-checkout: stable/2023.1
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service-2023-1
     parent: neutron-tempest-plugin-tap-as-a-service
     override-checkout: stable/2023.1
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false

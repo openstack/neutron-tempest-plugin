@@ -34,9 +34,10 @@
         # NOTE(ykarel): seeing issues with host-passthrough mode
         # https://bugs.launchpad.net/neutron/+bug/2036603
         # LIBVIRT_CPU_MODE: host-passthrough
-        CIRROS_VERSION: 0.6.2
-        DEFAULT_IMAGE_NAME: cirros-0.6.2-x86_64-disk
-        DEFAULT_IMAGE_FILE_NAME: cirros-0.6.2-x86_64-disk.img
+        # TODO(ykarel): switch to 0.6.2+ once lp#2045549 is fixed
+        CIRROS_VERSION: 0.5.3
+        DEFAULT_IMAGE_NAME: cirros-0.5.3-x86_64-disk
+        DEFAULT_IMAGE_FILE_NAME: cirros-0.5.3-x86_64-disk.img
 
 # Base nested switch job for yoga and zed
 - job:

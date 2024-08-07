@@ -83,7 +83,7 @@ class RouterInterfaceFip(base.BaseAdminNetworkTest):
                                fip2['revision_number'])
         # NOTE(yamamoto): The status can be updated asynchronously.
         fip2_shown = self.client.show_floatingip(fip2['id'])['floatingip']
-        if 'revision_number' in fip2:
+        if 'revision_number' in fip2_shown:
             self.assertGreaterEqual(fip2_shown['revision_number'],
                                     fip2_updated['revision_number'])
         fip2_shown.pop('status')

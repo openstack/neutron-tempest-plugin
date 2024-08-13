@@ -1466,6 +1466,10 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
     def _extract_resources(cls, body):
         return body[cls.plural_name]
 
+    @classmethod
+    def _test_resources(cls, resources):
+        return [res for res in resources if res["name"] in cls.resource_names]
+
     def _test_list_sorts(self, direction):
         sort_args = {
             'sort_dir': direction,
@@ -1517,11 +1521,12 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
             'sort_key': self.field
         }
         body = self.list_method(**sort_args)
-        expected_resources = self._extract_resources(body)
+        total_resources = self._extract_resources(body)
+        expected_resources = self._test_resources(total_resources)
         self.assertNotEmpty(expected_resources)
 
         resources = lister(
-            len(expected_resources), sort_args
+            len(total_resources), sort_args
         )
 
         # finally, compare that the list retrieved in one go is identical to
@@ -1541,7 +1546,7 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
             resources_ = self._extract_resources(body)
             self.assertEqual(1, len(resources_))
             resources.extend(resources_)
-        return resources
+        return self._test_resources(resources)
 
     @_require_pagination
     @_require_sorting
@@ -1565,7 +1570,7 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
             )
             resources_ = self._extract_resources(body)
             self.assertEqual(1, len(resources_))
-            resources.extend(resources_)
+            resources.extend(self._test_resources(resources_))
 
         # The last element is empty and does not contain 'next' link
         uri = self.get_bare_url(prev_links['next'])
@@ -1583,7 +1588,7 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
             )
             resources_ = self._extract_resources(body)
             self.assertEqual(1, len(resources_))
-            resources2.extend(resources_)
+            resources2.extend(self._test_resources(resources_))
 
         self.assertSameOrder(resources, reversed(resources2))
 
@@ -1603,14 +1608,15 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
             'sort_key': self.field,
         }
         body = self.list_method(**pagination_args)
-        expected_resources = self._extract_resources(body)
+        total_resources = self._extract_resources(body)
+        expected_resources = self._test_resources(total_resources)
 
         page_size = 2
         pagination_args['limit'] = page_size
 
         prev_links = {}
         resources = []
-        num_resources = len(expected_resources)
+        num_resources = len(total_resources)
         niterations = int(math.ceil(float(num_resources) / page_size))
         for i in range(niterations):
             if prev_links:
@@ -1622,7 +1628,7 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
             prev_links, body = self.list_client.get_uri_with_links(
                 self.plural_name, uri
             )
-            resources_ = self._extract_resources(body)
+            resources_ = self._test_resources(self._extract_resources(body))
             self.assertGreaterEqual(page_size, len(resources_))
             resources.extend(reversed(resources_))
 

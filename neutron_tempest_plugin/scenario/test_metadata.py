@@ -193,15 +193,14 @@ class MetadataTest(base.BaseTempestTestCase):
         CONF.neutron_plugin_options.advanced_image_ref or
         CONF.neutron_plugin_options.default_image_is_advanced,
         'Advanced image is required to run this test.')
-    @testtools.skipUnless(
-        CONF.neutron_plugin_options.firewall_driver == 'ovn',
-        "OVN driver is required to run this test - "
-        " while LP#2076916 is fixed")
     @decorators.idempotent_id('7542892a-d132-471c-addb-172dcf888ff6')
     def test_metadata_ipv6_only_network(self):
         ipv6_network = self.create_network()
-        self.create_subnet(network=ipv6_network, ip_version=6,
-                           ipv6_ra_mode="slaac", ipv6_address_mode="slaac")
+        ipv6_subnet = self.create_subnet(network=ipv6_network, ip_version=6,
+                                         ipv6_ra_mode="slaac",
+                                         ipv6_address_mode="slaac")
+        if not CONF.neutron_plugin_options.firewall_driver == 'ovn':
+            self.create_router_interface(self.router['id'], ipv6_subnet['id'])
         use_advanced_image = (
             not CONF.neutron_plugin_options.default_image_is_advanced)
         params = self._get_metadata_query_script()

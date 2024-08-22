@@ -12,7 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import base64
 import collections
+import textwrap
+import time
 
 from neutron_lib import constants as nlib_const
 from oslo_log import log as logging
@@ -31,6 +34,8 @@ CONF = config.CONF
 
 Server = collections.namedtuple(
     'Server', ['floating_ip', 'server', 'ssh_client'])
+
+QUERY_MSG = 'Queried the metadata service over IPv6'
 
 
 class MetadataTest(base.BaseTempestTestCase):
@@ -86,18 +91,48 @@ class MetadataTest(base.BaseTempestTestCase):
                                 security_groups=[self.security_group['id']],
                                 **params)
 
-    def _create_server(self, port, use_advanced_image=False, **params):
+    def _create_server(self, port=None, network_id=None,
+                       use_advanced_image=False, **params):
         if use_advanced_image:
             flavor_ref = CONF.neutron_plugin_options.advanced_image_flavor_ref
             image_ref = CONF.neutron_plugin_options.advanced_image_ref
         else:
             flavor_ref = CONF.compute.flavor_ref
             image_ref = CONF.compute.image_ref
+        if port:
+            networks = [{'port': port['id']}]
+        else:
+            networks = [{'uuid': network_id}]
         return self.create_server(flavor_ref=flavor_ref,
                                   image_ref=image_ref,
                                   key_name=self.keypair['name'],
-                                  networks=[{'port': port['id']}],
+                                  networks=networks,
                                   **params)['server']
+
+    def _get_metadata_query_script(self):
+        sheebang_line = '\n#!/bin/bash'
+        curl_cmd = '\ncurl http://[%(address)s' % {'address':
+                                                   nlib_const.METADATA_V6_IP}
+        ip_cmd = ("%$(ip -6 -br address show scope link up | head -1 | "
+                  "cut -d ' ' -f1)]/openstack/")
+        echo_cmd = '\necho %s' % QUERY_MSG
+        script = '%s%s%s%s' % (sheebang_line, curl_cmd, ip_cmd, echo_cmd)
+        script_clean = textwrap.dedent(script).lstrip().encode('utf8')
+        script_b64 = base64.b64encode(script_clean)
+        return {'user_data': script_b64}
+
+    def _wait_for_metadata_query_msg(self, vm):
+        timeout = 300
+        start_time = int(time.time())
+        while int(time.time()) - start_time < timeout:
+            console_output = self.os_primary.servers_client.get_console_output(
+                vm['id'])['output']
+            pos = console_output.find(QUERY_MSG)
+            if pos > -1:
+                return console_output, pos
+            time.sleep(30)
+        self.fail('Failed to find metadata query message in console log %s' %
+                  console_output)
 
     def _create_ssh_client(self, floating_ip, use_advanced_image=False):
         if use_advanced_image:
@@ -153,3 +188,28 @@ class MetadataTest(base.BaseTempestTestCase):
         except exceptions.SSHExecCommandFailed:
             self._log_console_output()
             self._log_local_network_status()
+
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.advanced_image_ref or
+        CONF.neutron_plugin_options.default_image_is_advanced,
+        'Advanced image is required to run this test.')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.firewall_driver == 'ovn',
+        "OVN driver is required to run this test - "
+        " while LP#2076916 is fixed")
+    @decorators.idempotent_id('7542892a-d132-471c-addb-172dcf888ff6')
+    def test_metadata_ipv6_only_network(self):
+        ipv6_network = self.create_network()
+        self.create_subnet(network=ipv6_network, ip_version=6,
+                           ipv6_ra_mode="slaac", ipv6_address_mode="slaac")
+        use_advanced_image = (
+            not CONF.neutron_plugin_options.default_image_is_advanced)
+        params = self._get_metadata_query_script()
+        params['config_drive'] = True
+        vm = self._create_server(
+            network_id=ipv6_network['id'],
+            use_advanced_image=use_advanced_image, **params)
+        self.wait_for_server_active(server=vm)
+        self.wait_for_guest_os_ready(vm)
+        console_output, pos = self._wait_for_metadata_query_msg(vm)
+        self.assertIn('latest', console_output[pos - 100:])

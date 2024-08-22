@@ -1174,7 +1174,9 @@
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_sfc) | join(',') }}"
-        NEUTRON_DEPLOY_MOD_WSGI: true
+        # TODO(slaweq): Switch it back to be deployed with mod_wsgi as soon as
+        # bug with RPC worker will be resolved
+        NEUTRON_DEPLOY_MOD_WSGI: false
       # TODO(bcafarel): tests still fail from time to time in parallel
       # https://bugs.launchpad.net/neutron/+bug/1851500
       # https://bugs.launchpad.net/networking-sfc/+bug/1660366

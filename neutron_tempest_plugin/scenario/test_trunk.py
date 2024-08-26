@@ -193,7 +193,6 @@ class TrunkTest(base.BaseTempestTestCase):
         self._wait_for_port(port=vm.port)
         self._wait_for_port(port=vm.subport)
         self.check_connectivity(
-            host=vm.floating_ip['floating_ip_address'],
             ssh_client=vm.ssh_client,
             servers=[vm.server])
 

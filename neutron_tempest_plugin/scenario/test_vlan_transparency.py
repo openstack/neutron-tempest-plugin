@@ -138,9 +138,7 @@ class VlanTransparencyTest(base.BaseTempestTestCase):
             ssh_clients.append(
                 self._create_ssh_client(floating_ip=floating_ips[i]))
 
-            self.check_connectivity(
-                host=floating_ips[i]['floating_ip_address'],
-                ssh_client=ssh_clients[i])
+            self.check_connectivity(ssh_client=ssh_clients[i])
             self._configure_vlan_transparent(port=self.vm_ports[-1],
                                              ssh_client=ssh_clients[i],
                                              vlan_tag=vlan_tag,

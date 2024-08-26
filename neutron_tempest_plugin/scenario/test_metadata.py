@@ -169,8 +169,7 @@ class MetadataTest(base.BaseTempestTestCase):
             self.network, use_advanced_image=use_advanced_image)
         self.wait_for_server_active(server=vm.server)
         self.wait_for_guest_os_ready(vm.server)
-        self.check_connectivity(host=vm.floating_ip['floating_ip_address'],
-                                ssh_client=vm.ssh_client)
+        self.check_connectivity(ssh_client=vm.ssh_client)
         interface = self._get_primary_interface(vm.ssh_client)
 
         try:

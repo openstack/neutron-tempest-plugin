@@ -337,7 +337,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         if create_fip:
             self.fip = self.create_floatingip(port=self.port)
 
-    def check_connectivity(self, host, ssh_user=None, ssh_key=None,
+    def check_connectivity(self, host=None, ssh_user=None, ssh_key=None,
                            servers=None, ssh_timeout=None, ssh_client=None):
         # Either ssh_client or ssh_user+ssh_key is mandatory.
         if ssh_client is None:

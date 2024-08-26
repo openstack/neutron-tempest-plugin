@@ -81,7 +81,8 @@ NeutronPluginOptions = [
                 default=False,
                 help='Whether SNAT rules apply recursively to all connected '
                 'networks. This is the default behavior for ovs and '
-                'linuxbridge drivers.'),
+                'linuxbridge drivers. OVN requires '
+                'ovn_router_indirect_snat=True setting to implement it.'),
 
     # Multicast tests settings
     cfg.StrOpt('multicast_group_range',

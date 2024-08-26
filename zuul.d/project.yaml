@@ -185,10 +185,7 @@
       - release-notes-jobs-python3
     check:
       jobs:
-        - neutron-tempest-plugin-sfc:
-            # Note(lajoskatona): make it voting when #2068727
-            # is fixed.
-            voting: false
+        - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-sfc-2023-1
         - neutron-tempest-plugin-sfc-2023-2
         - neutron-tempest-plugin-sfc-2024-1
@@ -216,6 +213,7 @@
 
     gate:
       jobs:
+        - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-fwaas

@@ -1544,7 +1544,9 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
                 pagination_args['marker'] = resources[-1]['id']
             body = self.list_method(**pagination_args)
             resources_ = self._extract_resources(body)
-            self.assertEqual(1, len(resources_))
+            # Empty resource list can be returned when any concurrent
+            # tests delete them
+            self.assertGreaterEqual(1, len(resources_))
             resources.extend(resources_)
         return self._test_resources(resources)
 
@@ -1569,7 +1571,9 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
                 self.plural_name, uri
             )
             resources_ = self._extract_resources(body)
-            self.assertEqual(1, len(resources_))
+            # Empty resource list can be returned when any concurrent
+            # tests delete them
+            self.assertGreaterEqual(1, len(resources_))
             resources.extend(self._test_resources(resources_))
 
         # The last element is empty and does not contain 'next' link
@@ -1587,7 +1591,9 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
                 self.plural_name, uri
             )
             resources_ = self._extract_resources(body)
-            self.assertEqual(1, len(resources_))
+            # Empty resource list can be returned when any concurrent
+            # tests delete them
+            self.assertGreaterEqual(1, len(resources_))
             resources2.extend(self._test_resources(resources_))
 
         self.assertSameOrder(resources, reversed(resources2))

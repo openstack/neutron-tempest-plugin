@@ -18,7 +18,6 @@ import time
 import ddt
 from neutron_lib import constants as lib_constants
 from neutron_lib.services.qos import constants as qos_consts
-from neutron_lib.utils import test
 from oslo_log import log
 from tempest.common import utils
 from tempest.common import waiters
@@ -147,7 +146,6 @@ class FloatingIpSameNetwork(FloatingIpTestCasesMixin,
 
     same_network = True
 
-    @test.unstable_test("bug 1717302")
     @decorators.idempotent_id('05c4e3b3-7319-4052-90ad-e8916436c23b')
     @ddt.unpack
     @ddt.data({'src_has_fip': True, 'dest_has_fip': True},
@@ -165,7 +163,6 @@ class FloatingIpSeparateNetwork(FloatingIpTestCasesMixin,
 
     same_network = False
 
-    @test.unstable_test("bug 1717302")
     @decorators.idempotent_id('f18f0090-3289-4783-b956-a0f8ac511e8b')
     @ddt.unpack
     @ddt.data({'src_has_fip': True, 'dest_has_fip': True},

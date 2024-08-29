@@ -194,6 +194,7 @@
               image_is_advanced: true
               available_type_drivers: flat,geneve,vlan,gre,local,vxlan
               provider_net_base_segm_id: 1
+              snat_rules_apply_to_nested_networks: true
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
@@ -285,6 +286,7 @@
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               firewall_driver: openvswitch
+              snat_rules_apply_to_nested_networks: true
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
@@ -400,6 +402,7 @@
             neutron_plugin_options:
               available_type_drivers: flat,vlan,local,vxlan
               firewall_driver: iptables_hybrid
+              snat_rules_apply_to_nested_networks: true
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
@@ -575,6 +578,7 @@
               available_type_drivers: flat,vlan,local,vxlan
               q_agent: linuxbridge
               firewall_driver: iptables
+              snat_rules_apply_to_nested_networks: true
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
@@ -715,6 +719,7 @@
               available_type_drivers: local,flat,vlan,geneve
               is_igmp_snooping_enabled: True
               firewall_driver: ovn
+              snat_rules_apply_to_nested_networks: false
       zuul_copy_output:
         '{{ devstack_base_dir }}/data/ovs': 'logs'
         '{{ devstack_base_dir }}/data/ovn': 'logs'
@@ -937,6 +942,7 @@
               available_type_drivers: flat,geneve,vlan,gre,local,vxlan
               l3_agent_mode: dvr_snat
               firewall_driver: openvswitch
+              snat_rules_apply_to_nested_networks: true
     group-vars:
       subnode:
         devstack_services:

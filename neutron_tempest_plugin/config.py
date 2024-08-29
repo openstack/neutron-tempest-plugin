@@ -77,6 +77,11 @@ NeutronPluginOptions = [
                default='openstackgate.local',
                help='dns_domain value configured at neutron.conf, which will '
                     'be used for the DNS configuration of the instances'),
+    cfg.BoolOpt('snat_rules_apply_to_nested_networks',
+                default=False,
+                help='Whether SNAT rules apply recursively to all connected '
+                'networks. This is the default behavior for ovs and '
+                'linuxbridge drivers.'),
 
     # Multicast tests settings
     cfg.StrOpt('multicast_group_range',

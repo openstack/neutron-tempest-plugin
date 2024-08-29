@@ -201,6 +201,60 @@ class DefaultSnatToExternal(FloatingIpTestCasesMixin,
                                        gateway_external_ip,
                                        servers=[proxy, src_server])
 
+    @decorators.idempotent_id('b911b124-b6cb-449d-83d9-b34f3665741d')
+    @utils.requires_ext(extension='extraroute', service='network')
+    @testtools.skipUnless(
+        CONF.neutron_plugin_options.snat_rules_apply_to_nested_networks,
+        "Backend doesn't enable nested SNAT.")
+    def test_nested_snat_external_ip(self):
+        """Check connectivity to an external IP from a nested network."""
+        gateway_external_ip = self._get_external_gateway()
+
+        if not gateway_external_ip:
+            raise self.skipTest("IPv4 gateway is not configured for public "
+                                "network or public_network_id is not "
+                                "configured")
+        proxy = self._create_server()
+        proxy_client = ssh.Client(proxy['fip']['floating_ip_address'],
+                                  CONF.validation.image_ssh_user,
+                                  pkey=self.keypair['private_key'])
+
+        # Create a nested router
+        router = self.create_router(
+            router_name=data_utils.rand_name('router'),
+            admin_state_up=True)
+
+        # Attach outer subnet to it
+        outer_port = self.create_port(self.network)
+        self.client.add_router_interface_with_port_id(router['id'],
+                                                      outer_port['id'])
+
+        # Attach a nested subnet to it
+        network = self.create_network()
+        subnet = self.create_subnet(network)
+        self.create_router_interface(router['id'], subnet['id'])
+
+        # Set up static routes in both directions
+        self.client.update_extra_routes(
+            self.router['id'],
+            outer_port['fixed_ips'][0]['ip_address'], subnet['cidr'])
+        self.client.update_extra_routes(
+            router['id'], self.subnet['gateway_ip'], '0.0.0.0/0')
+
+        # Create a server inside the nested network
+        src_server = self._create_server(create_floating_ip=False,
+                                         network=network)
+
+        # Validate that it can access external gw ip (via nested snat)
+        src_server_ip = src_server['port']['fixed_ips'][0]['ip_address']
+        ssh_client = ssh.Client(src_server_ip,
+                                CONF.validation.image_ssh_user,
+                                pkey=self.keypair['private_key'],
+                                proxy_client=proxy_client)
+        self.check_remote_connectivity(ssh_client,
+                                       gateway_external_ip,
+                                       servers=[proxy, src_server])
+
 
 class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
                                 base.BaseTempestTestCase):

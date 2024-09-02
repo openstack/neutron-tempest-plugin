@@ -98,6 +98,7 @@
         - port-resource-request
         - port-resource-request-groups
         - port-mac-address-regenerate
+        - port-trusted-vif
         - port-security
         - port-security-groups-filtering
         - project-id
@@ -148,6 +149,7 @@
         neutron-tag-ports-during-bulk-creation: true
         neutron-ndp-proxy: true
         neutron-subnet-external-network: true
+        neutron-port-trusted-vif: true
         br-ex-tcpdump: true
         br-int-flows: true
         # Cinder services

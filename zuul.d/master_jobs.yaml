@@ -463,15 +463,6 @@
       devstack_localrc:
         NEUTRON_ENFORCE_SCOPE: false
 
-
-# TODO(slaweq): remove that job's definition as soon as new job
-# "neutron-tempest-plugin-openvswitch-iptables_hybrid" will be used in the
-# neutron repo as a parent for a
-# "neutron-ovs-tempest-plugin-scenario-iptables_hybrid-nftables" job
-- job:
-    name: neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid
-    parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
-
 - job:
     name: neutron-tempest-plugin-openvswitch-distributed-dhcp
     parent: neutron-tempest-plugin-openvswitch
@@ -631,13 +622,6 @@
       - ^zuul.d/xena_jobs.yaml
       - ^zuul.d/yoga_jobs.yaml
       - ^zuul.d/zed_jobs.yaml
-
-# TODO(slaweq): remove that job's definition as soon as new job
-# "neutron-tempest-plugin-linuxbridge" will be used in the neutron repo as
-# a parent for a "neutron-linuxbridge-tempest-plugin-scenario-nftables" job
-- job:
-    name: neutron-tempest-plugin-scenario-linuxbridge
-    parent: neutron-tempest-plugin-linuxbridge
 
 - job:
     name: neutron-tempest-plugin-ovn

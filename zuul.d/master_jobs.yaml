@@ -457,8 +457,8 @@
       - ^zuul.d/zed_jobs.yaml
 
 - job:
-    name: neutron-tempest-plugin-openvswitch-enforce-scope-old-defaults
-    parent: neutron-tempest-plugin-openvswitch
+    name: neutron-tempest-plugin-ovn-enforce-scope-old-defaults
+    parent: neutron-tempest-plugin-ovn
     vars:
       devstack_localrc:
         NEUTRON_ENFORCE_SCOPE: false

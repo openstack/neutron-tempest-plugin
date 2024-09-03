@@ -1054,9 +1054,6 @@
       - openstack/designate-dashboard
       - openstack/designate-tempest-plugin
     timeout: 3600
-    # TODO(gmann): make it voting once below bug is fixed
-    # https://bugs.launchpad.net/neutron/+bug/2078518
-    voting: false
     vars:
       network_api_extensions_common: *api_extensions
       devstack_localrc:

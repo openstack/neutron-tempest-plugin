@@ -51,46 +51,12 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
     credentials = ['primary', 'admin']
     required_extensions = ['router', 'security-group']
 
-    def _log_failure_state(self, servers=None):
-        self._log_console_output(servers)
-        self._log_local_network_status()
-
-    def _verify_http_connection(self, ssh_client, ssh_server,
-                                test_ip, test_port, servers, should_pass=True):
-        """Verify if HTTP connection works using remote hosts.
-
-        :param ssh.Client ssh_client: The client host active SSH client.
-        :param ssh.Client ssh_server: The HTTP server host active SSH client.
-        :param string test_ip: IP address of HTTP server
-        :param string test_port: Port of HTTP server
-        :param list servers: List of servers for which console output will be
-                             logged in case when test case
-        :param bool should_pass: Wheter test should pass or not.
-
-        :return: if passed or not
-        :rtype: bool
-        """
-        utils.kill_nc_process(ssh_server)
-        url = 'http://%s:%d' % (test_ip, test_port)
-        utils.spawn_http_server(ssh_server, port=test_port, message='foo_ok')
-        utils.process_is_running(ssh_server, 'nc')
-        try:
-            ret = utils.call_url_remote(ssh_client, url)
-            if should_pass:
-                self.assertIn('foo_ok', ret)
-                return
-            self.assertNotIn('foo_ok', ret)
-        except Exception as e:
-            if not should_pass:
-                return
-            self._log_failure_state(servers=servers)
-            raise e
-
     def _test_connection_and_log(self, con, *args, **kwargs):
         try:
             con.test_connection(*args, **kwargs)
         except utils.WaitTimeout:
-            self._log_failure_state()
+            self._log_console_output()
+            self._log_local_network_status()
             raise
 
     @classmethod

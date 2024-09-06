@@ -132,17 +132,6 @@ def process_is_running(ssh_client, process_name):
         return False
 
 
-def spawn_http_server(ssh_client, port, message):
-    cmd = ("(echo -e 'HTTP/1.1 200 OK\r\n'; echo '%(msg)s') "
-           "| sudo nc -lp %(port)d &" % {'msg': message, 'port': port})
-    ssh_client.exec_command(cmd)
-
-
-def call_url_remote(ssh_client, url):
-    cmd = "curl %s --retry 3 --connect-timeout 2" % url
-    return ssh_client.exec_command(cmd)
-
-
 class StatefulConnection:
     """Class to test connection that should remain opened
 

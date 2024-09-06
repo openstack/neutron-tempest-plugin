@@ -65,6 +65,42 @@ class PortTestCasesAdmin(base.BaseAdminNetworkTest):
         self.assertNotEqual(current_mac, new_mac)
         self.assertTrue(netaddr.valid_mac(new_mac))
 
+    @decorators.idempotent_id('4d75cc60-99d0-4949-b3ce-5826b81aa0a9')
+    @utils.requires_ext(extension="port-trusted-vif",
+                        service="network")
+    def test_port_create_with_trusted_attr_set(self):
+        port = self.admin_client.create_port(
+            network_id=self.network['id'], trusted=True)['port']
+        self.ports.append(port)
+        self.assertTrue(port['trusted'])
+        self.assertTrue(port['binding:profile']['trusted'])
+
+        port = self.admin_client.create_port(
+            network_id=self.network['id'], trusted=False)['port']
+        self.ports.append(port)
+        self.assertFalse(port['trusted'])
+        self.assertFalse(port['binding:profile']['trusted'])
+
+    @decorators.idempotent_id('26c15e2a-55b2-410f-8ed3-84db9406ff3f')
+    @utils.requires_ext(extension="port-trusted-vif",
+                        service="network")
+    def test_port_set_trusted_attr(self):
+        port = self.admin_client.create_port(
+            network_id=self.network['id'])['port']
+        self.ports.append(port)
+        self.assertIsNone(port['trusted'])
+        self.assertNotIn('trusted', port['binding:profile'])
+
+        updated_port = self.admin_client.update_port(
+            port['id'], trusted=True)['port']
+        self.assertTrue(updated_port['trusted'])
+        self.assertTrue(updated_port['binding:profile']['trusted'])
+
+        updated_port = self.admin_client.update_port(
+            port['id'], trusted=False)['port']
+        self.assertFalse(updated_port['trusted'])
+        self.assertFalse(updated_port['binding:profile']['trusted'])
+
 
 class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
 

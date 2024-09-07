@@ -87,7 +87,7 @@ class QuotasTest(QuotasTestBase):
         new_quotas = {'network': 0, 'security_group': 0}
 
         # Change quotas for tenant
-        quota_set = self._setup_quotas(tenant_id, **new_quotas)
+        quota_set = self._setup_quotas(tenant_id, force=True, **new_quotas)
         for key, value in new_quotas.items():
             self.assertEqual(value, quota_set[key])
 
@@ -111,6 +111,23 @@ class QuotasTest(QuotasTestBase):
         non_default_quotas = self.admin_client.list_quotas()
         for q in non_default_quotas['quotas']:
             self.assertNotEqual(tenant_id, q['tenant_id'])
+
+    @decorators.idempotent_id('43d01327-d8be-4773-a8f0-1d2e9664fda2')
+    @decorators.attr(type='gate')
+    @utils.requires_ext(extension='quota-check-limit-default',
+                        service='network')
+    def test_quotas_force_false(self):
+        project_id = self.create_project()['id']
+        self._create_network(project_id)
+
+        new_quotas = {'network': 0}
+        # force=false (by default)
+        self.assertRaises(lib_exc.BadRequest, self.admin_client.update_quotas,
+                          project_id, **new_quotas)
+
+        new_quotas['network'] = 100
+        quota_set = self._setup_quotas(project_id, **new_quotas)
+        self.assertEqual(new_quotas['network'], quota_set['network'])
 
     @decorators.idempotent_id('e974b5ba-090a-452c-a578-f9710151d9fc')
     @decorators.attr(type='gate')

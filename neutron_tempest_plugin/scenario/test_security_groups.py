@@ -51,6 +51,10 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
     credentials = ['primary', 'admin']
     required_extensions = ['router', 'security-group']
 
+    def _log_failure_state(self, servers=None):
+        self._log_console_output(servers)
+        self._log_local_network_status()
+
     def _verify_http_connection(self, ssh_client, ssh_server,
                                 test_ip, test_port, servers, should_pass=True):
         """Verify if HTTP connection works using remote hosts.
@@ -79,9 +83,15 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         except Exception as e:
             if not should_pass:
                 return
-            self._log_console_output(servers)
-            self._log_local_network_status()
+            self._log_failure_state(servers=servers)
             raise e
+
+    def _test_connection_and_log(self, con, *args, **kwargs):
+        try:
+            con.test_connection(*args, **kwargs)
+        except utils.WaitTimeout:
+            self._log_failure_state()
+            raise
 
     @classmethod
     def setup_credentials(cls):
@@ -601,7 +611,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         for port in range(80, 84):
             with utils.StatefulConnection(
                     ssh_clients[0], ssh_clients[2], test_ip, port) as con:
-                con.test_connection(should_pass=False)
+                self._test_connection_and_log(con, should_pass=False)
 
         # add two remote-group rules with port-ranges
         rule_list = [{'protocol': constants.PROTO_NUM_TCP,
@@ -636,7 +646,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         for port in range(80, 84):
             with utils.StatefulConnection(
                     ssh_clients[0], ssh_clients[2], test_ip, port) as con:
-                con.test_connection()
+                self._test_connection_and_log(con)
 
         # list the tcp rule id by SG id and port-range
         sg_rule_id = self.os_primary.network_client.list_security_group_rules(
@@ -650,7 +660,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         for port in range(80, 82):
             with utils.StatefulConnection(
                     ssh_clients[0], ssh_clients[2], test_ip, port) as con:
-                con.test_connection(should_pass=False)
+                self._test_connection_and_log(con, should_pass=False)
 
     def _test_overlapping_sec_grp_rules(self):
         """Test security group rules with overlapping port ranges"""
@@ -714,11 +724,11 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         for _ in range(2):
             with utils.StatefulConnection(
                     client_ssh[0], srv_ssh, srv_ip, tcp_port) as con:
-                con.test_connection()
+                self._test_connection_and_log(con)
             for port in range(tcp_port, tcp_port + 3):
                 with utils.StatefulConnection(
                         client_ssh[1], srv_ssh, srv_ip, port) as con:
-                    con.test_connection()
+                    self._test_connection_and_log(con)
 
     def _test_remove_sec_grp_from_active_vm(self):
         """Tests the following:
@@ -906,23 +916,23 @@ class StatefulNetworkSecGroupTest(BaseNetworkSecGroupTest):
                 vm_ssh[0], vm_ssh[1], srv_ip, 6666) as con:
             self.client.update_port(srv_port['id'],
                     security_groups=[ssh_sg['id'], sg['id']])
-            con.test_connection()
+            self._test_connection_and_log(con)
         with utils.StatefulConnection(
                 vm_ssh[0], vm_ssh[1], srv_ip, 6666) as con:
             self.client.update_port(
                     srv_port['id'], security_groups=[ssh_sg['id']])
-            con.test_connection(should_pass=False)
+            self._test_connection_and_log(con, should_pass=False)
         with utils.StatefulConnection(
                 vm_ssh[0], vm_ssh[1], srv_ip, 6666) as con:
             self.client.update_port(srv_port['id'],
                     security_groups=[ssh_sg['id'], sg['id']])
-            con.test_connection()
+            self._test_connection_and_log(con)
             self.client.update_port(srv_port['id'],
                     security_groups=[ssh_sg['id']])
-            con.test_connection(should_pass=False)
+            self._test_connection_and_log(con, should_pass=False)
             self.client.update_port(srv_port['id'],
                     security_groups=[ssh_sg['id'], sg['id']])
-            con.test_connection()
+            self._test_connection_and_log(con)
 
     @decorators.idempotent_id('4a724164-bbc0-4029-a844-644ece66c026')
     def test_connectivity_between_vms_using_different_sec_groups(self):

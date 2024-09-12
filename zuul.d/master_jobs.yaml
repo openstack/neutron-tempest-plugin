@@ -38,13 +38,6 @@
         # TODO(lucasagomes): Re-enable MOD_WSGI after
         # https://bugs.launchpad.net/neutron/+bug/1912359 is implemented
         NEUTRON_DEPLOY_MOD_WSGI: false
-        # TODO(ihrachys): remove OVN_BUILD_FROM_SOURCE once the OS packages
-        # include at least OVN v22.03.3.
-        OVN_BUILD_FROM_SOURCE: True
-        # TODO(ihrachys): switch back to a tagged version when it's released
-        # OVN_BRANCH: "v22.03.3"
-        OVN_BRANCH: "36e3ab9b47e93af0599a818e9d6b2930e49473f0"
-        OVS_BRANCH: "2410b95597fcec5f733caf77febdb46f4ffacd27"
       devstack_plugins:
         neutron: https://opendev.org/openstack/neutron.git
         neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
@@ -651,14 +644,6 @@
         OVN_DBS_LOG_LEVEL: dbg
         ENABLE_TLS: True
         OVN_IGMP_SNOOPING_ENABLE: True
-        # TODO(ihrachys): remove OVN_BUILD_FROM_SOURCE once the OS packages
-        # include at least OVN v22.03.3.
-        OVN_BUILD_FROM_SOURCE: True
-        # TODO(ihrachys): switch back to a tagged version when it's released
-        # OVN_BRANCH: "v22.03.3"
-        OVN_BRANCH: "36e3ab9b47e93af0599a818e9d6b2930e49473f0"
-        OVS_BRANCH: "2410b95597fcec5f733caf77febdb46f4ffacd27"
-        OVS_SYSCONFDIR: "/usr/local/etc/openvswitch"
       devstack_services:
         br-ex-tcpdump: true
         br-int-flows: true

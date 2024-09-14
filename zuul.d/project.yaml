@@ -178,6 +178,24 @@
         - neutron-tempest-plugin-linuxbridge-2024-1
         - neutron-tempest-plugin-dvr-multinode-scenario-2024-1
 
+- project-template:
+    name: neutron-tempest-plugin-jobs-2024-2
+    check:
+      jobs:
+        - neutron-tempest-plugin-openvswitch-2024-2
+        - neutron-tempest-plugin-openvswitch-iptables_hybrid-2024-2
+        - neutron-tempest-plugin-ovn-2024-2
+        - neutron-tempest-plugin-designate-scenario-2024-2
+    gate:
+      jobs:
+        - neutron-tempest-plugin-ovn-2024-2
+    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
+    #              the experimental queue when it will be more stable
+    experimental:
+      jobs:
+        - neutron-tempest-plugin-linuxbridge-2024-2
+        - neutron-tempest-plugin-dvr-multinode-scenario-2024-2
+
 - project:
     templates:
       - build-openstack-docs-pti
@@ -185,6 +203,7 @@
       - neutron-tempest-plugin-jobs-2023-1
       - neutron-tempest-plugin-jobs-2023-2
       - neutron-tempest-plugin-jobs-2024-1
+      - neutron-tempest-plugin-jobs-2024-2
       - check-requirements
       - tempest-plugin-jobs
       - release-notes-jobs-python3
@@ -194,27 +213,33 @@
         - neutron-tempest-plugin-sfc-2023-1
         - neutron-tempest-plugin-sfc-2023-2
         - neutron-tempest-plugin-sfc-2024-1
+        - neutron-tempest-plugin-sfc-2024-2
         - neutron-tempest-plugin-bgpvpn-bagpipe
         - neutron-tempest-plugin-bgpvpn-bagpipe-2023-1
         - neutron-tempest-plugin-bgpvpn-bagpipe-2023-2
         - neutron-tempest-plugin-bgpvpn-bagpipe-2024-1
+        - neutron-tempest-plugin-bgpvpn-bagpipe-2024-2
         - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-dynamic-routing-2023-1
         - neutron-tempest-plugin-dynamic-routing-2023-2
         - neutron-tempest-plugin-dynamic-routing-2024-1
+        - neutron-tempest-plugin-dynamic-routing-2024-2
         - neutron-tempest-plugin-fwaas
         - neutron-tempest-plugin-fwaas-2023-1
         - neutron-tempest-plugin-fwaas-2023-2
         - neutron-tempest-plugin-fwaas-2024-1
+        - neutron-tempest-plugin-fwaas-2024-2
         - neutron-tempest-plugin-vpnaas
         - neutron-tempest-plugin-vpnaas-ovn
         - neutron-tempest-plugin-vpnaas-2023-1
         - neutron-tempest-plugin-vpnaas-2023-2
         - neutron-tempest-plugin-vpnaas-2024-1
+        - neutron-tempest-plugin-vpnaas-2024-2
         - neutron-tempest-plugin-tap-as-a-service
         - neutron-tempest-plugin-tap-as-a-service-2023-1
         - neutron-tempest-plugin-tap-as-a-service-2023-2
         - neutron-tempest-plugin-tap-as-a-service-2024-1
+        - neutron-tempest-plugin-tap-as-a-service-2024-2
 
     gate:
       jobs:

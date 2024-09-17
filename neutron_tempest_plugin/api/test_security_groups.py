@@ -281,9 +281,10 @@ class BaseSecGroupQuota(base.BaseAdminNetworkTest):
     def _set_quota(self, val, resource):
         res_quota = self._get_quota(resource)
         project_id = self.client.project_id
-        self.admin_client.update_quotas(project_id, **{resource: val})
+        self.admin_client.update_quotas(project_id, **{resource: val,
+                                                       'force': True})
         self.addCleanup(self.admin_client.update_quotas,
-                        project_id, **{resource: res_quota})
+                        project_id, **{resource: res_quota, 'force': True})
 
     def _get_quota(self, resource):
         project_id = self.client.project_id
@@ -383,7 +384,8 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
     def _set_sg_rules_quota(self, val):
         project_id = self.client.project_id
         self.admin_client.update_quotas(project_id,
-                                        **{'security_group_rule': val})
+                                        **{'security_group_rule': val,
+                                           'force': True})
         LOG.info('Trying to update security group rule quota {} '.format(val))
 
     def _get_sg_rules_quota(self):
@@ -435,7 +437,8 @@ class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
         sg_rules_quota = self._get_sg_rules_quota()
         project_id = self.client.project_id
         self.addCleanup(self.admin_client.update_quotas,
-                        project_id, **{'security_group_rule': sg_rules_quota})
+                        project_id, **{'security_group_rule': sg_rules_quota,
+                                       'force': True})
         values = [-1, 0, 10, 2147483647]
         for value in values:
             self._set_sg_rules_quota(value)

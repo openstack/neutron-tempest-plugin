@@ -186,8 +186,6 @@
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
           (^tempest.api.compute.servers.test_multiple_create)"
-      tempest_exclude_regex: "\
-          (^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest)"
       network_api_extensions: *api_extensions
       network_api_extensions_ovn:
         - vlan-transparent

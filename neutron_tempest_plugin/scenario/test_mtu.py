@@ -170,18 +170,12 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
     networks = []
 
     @classmethod
-    def skip_checks(cls):
-        super(NetworkWritableMtuTest, cls).skip_checks()
-        supported_type_drivers = ['vxlan', 'geneve']
-        if not any(type_driver in supported_type_drivers for type_driver in
-                   config.CONF.neutron_plugin_options.available_type_drivers):
-            raise cls.skipException(
-                "Neither VXLAN nor GENEVE type_driver is enabled")
-
-    @classmethod
     @utils.requires_ext(extension="net-mtu-writable", service="network")
     def resource_setup(cls):
         super(NetworkWritableMtuTest, cls).resource_setup()
+        if cls.is_driver_ovn:
+            raise cls.skipException("East/west icmp fragmentation is not "
+                                    "supported with ML2/OVN")
 
     def _create_setup(self):
         self.admin_client = self.os_admin.network_client

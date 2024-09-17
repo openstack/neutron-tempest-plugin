@@ -210,10 +210,6 @@
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
           (^tempest.api.compute.servers.test_multiple_create)"
-      # TODO(jlibosva): Remove the NetworkWritableMtuTest test from the list
-      # once east/west fragmentation is supported in core OVN
-      tempest_exclude_regex: "\
-          (^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest)"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_ovn) | join(',') }}"
       devstack_services:

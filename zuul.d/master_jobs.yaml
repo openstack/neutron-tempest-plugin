@@ -627,10 +627,6 @@
       network_api_extensions_ovn:
         - vlan-transparent
         - external-gateway-multihoming
-      # TODO(jlibosva): Remove the NetworkWritableMtuTest test from the list
-      # once east/west fragmentation is supported in core OVN
-      tempest_exclude_regex: "\
-          (^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest)"
       devstack_localrc:
         Q_AGENT: ovn
         OVN_AGENT_EXTENSIONS: 'metadata'

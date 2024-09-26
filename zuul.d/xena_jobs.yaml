@@ -170,6 +170,8 @@
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
           (^tempest.api.compute.servers.test_multiple_create)"
+      # NOTE(ralonsoh): ``NetworkWritableMtuTest`` excluded because of https://bugs.launchpad.net/neutron/+bug/2082344
+      tempest_exclude_regex: "^neutron_tempest_plugin.scenario.test_mtu.NetworkWritableMtuTest.*"
       network_api_extensions: *api_extensions
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions | join(',') }}"

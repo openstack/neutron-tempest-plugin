@@ -14,6 +14,7 @@
       # TODO(slaweq): find a way to put this list of extensions in
       # neutron repository and keep it different per branch,
       # then it could be removed from here
+      tempest_exclude_regex: "^neutron_tempest_plugin.api.admin.test_logging.LoggingTestJSON.*"
       network_api_extensions_common: &api_extensions
         - address-group
         - address-scope

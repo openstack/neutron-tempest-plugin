@@ -460,6 +460,7 @@
     vars:
       devstack_localrc:
         NEUTRON_ENFORCE_SCOPE: false
+        NEUTRON_DEPLOY_MOD_WSGI: true
 
 - job:
     name: neutron-tempest-plugin-openvswitch-distributed-dhcp
@@ -644,6 +645,7 @@
         OVN_DBS_LOG_LEVEL: dbg
         ENABLE_TLS: True
         OVN_IGMP_SNOOPING_ENABLE: True
+        NEUTRON_DEPLOY_MOD_WSGI: true
       devstack_services:
         br-ex-tcpdump: true
         br-int-flows: true

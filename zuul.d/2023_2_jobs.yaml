@@ -207,6 +207,7 @@
           (^tempest.api.compute.servers.test_multiple_create)"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_ovn) | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_services:
         q-ovn-metadata-agent: true
         q-ovn-agent: false

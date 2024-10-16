@@ -1037,6 +1037,7 @@
         # empty
         ADVANCED_IMAGE_NAME: ""
         NETWORK_API_EXTENSIONS: "{{ network_api_extensions_common | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: true
       devstack_plugins:
         designate: https://opendev.org/openstack/designate.git
       devstack_services:

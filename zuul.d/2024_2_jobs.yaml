@@ -241,6 +241,8 @@
     override-checkout: stable/2024.2
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-sfc-2024-2

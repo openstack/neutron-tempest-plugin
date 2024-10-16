@@ -218,6 +218,8 @@
     nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       network_api_extensions_common: *api_extensions
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-sfc-yoga

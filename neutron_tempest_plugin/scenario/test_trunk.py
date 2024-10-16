@@ -164,14 +164,14 @@ class TrunkTest(base.BaseTempestTestCase):
         utils.wait_until_true(
             lambda: self._is_port_status(port, status),
             exception=RuntimeError(
-                "Timed out waiting for port {!r} to transition to get "
+                "Timed out waiting for port {!r} to transition to "
                 "status {!r}.".format(port['id'], status)))
 
     def _wait_for_trunk(self, trunk, status=constants.ACTIVE):
         utils.wait_until_true(
             lambda: self._is_trunk_status(trunk, status),
             exception=RuntimeError(
-                "Timed out waiting for trunk {!r} to transition to get "
+                "Timed out waiting for trunk {!r} to transition to "
                 "status {!r}.".format(trunk['id'], status)))
 
     def _create_ssh_client(self, floating_ip, use_advanced_image=False):

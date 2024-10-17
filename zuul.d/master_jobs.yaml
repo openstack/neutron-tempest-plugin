@@ -218,6 +218,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -326,6 +327,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -443,6 +445,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -610,6 +613,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -746,6 +750,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1004,6 +1009,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1097,6 +1103,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1184,6 +1191,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1263,6 +1271,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1327,6 +1336,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1403,6 +1413,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1483,6 +1494,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1553,6 +1565,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml
@@ -1673,6 +1686,7 @@
       - ^zuul.d/2023_1_jobs.yaml
       - ^zuul.d/2023_2_jobs.yaml
       - ^zuul.d/2024_1_jobs.yaml
+      - ^zuul.d/2024_2_jobs.yaml
       - ^zuul.d/base-nested-switch.yaml
       - ^zuul.d/master_jobs.yaml
       - ^zuul.d/victoria_jobs.yaml

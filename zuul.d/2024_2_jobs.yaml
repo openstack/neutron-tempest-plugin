@@ -1,6 +1,7 @@
 - job:
     name: neutron-tempest-plugin-openvswitch-2024-2
     parent: neutron-tempest-plugin-openvswitch
+    nodeset: neutron-nested-virt-ubuntu-jammy
     override-checkout: stable/2024.2
     vars:
       network_api_extensions_openvswitch: &api_extensions_openvswitch
@@ -107,6 +108,7 @@
 - job:
     name: neutron-tempest-plugin-openvswitch-iptables_hybrid-2024-2
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
+    nodeset: neutron-nested-virt-ubuntu-jammy
     override-checkout: stable/2024.2
     vars:
       network_api_extensions_common: *api_extensions
@@ -139,6 +141,7 @@
 - job:
     name: neutron-tempest-plugin-openvswitch-enforce-scope-new-defaults-2024-1
     parent: neutron-tempest-plugin-openvswitch-2024-1
+    nodeset: neutron-nested-virt-ubuntu-jammy
     override-checkout: stable/2024.1
     vars:
       devstack_localrc:
@@ -156,6 +159,7 @@
 - job:
     name: neutron-tempest-plugin-linuxbridge-2024-2
     parent: neutron-tempest-plugin-linuxbridge
+    nodeset: neutron-nested-virt-ubuntu-jammy
     override-checkout: stable/2024.2
     vars:
       network_api_extensions_common: *api_extensions
@@ -197,6 +201,7 @@
 - job:
     name: neutron-tempest-plugin-ovn-2024-2
     parent: neutron-tempest-plugin-ovn
+    nodeset: neutron-nested-virt-ubuntu-jammy
     override-checkout: stable/2024.2
     vars:
       network_api_extensions_ovn:
@@ -226,6 +231,7 @@
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-2024-2
     parent: neutron-tempest-plugin-dvr-multinode-scenario
+    nodeset: openstack-two-node-jammy
     override-checkout: stable/2024.2
     vars:
       network_api_extensions_common: *api_extensions
@@ -238,6 +244,7 @@
 - job:
     name: neutron-tempest-plugin-designate-scenario-2024-2
     parent: neutron-tempest-plugin-designate-scenario
+    nodeset: neutron-nested-virt-ubuntu-jammy
     override-checkout: stable/2024.2
     vars:
       network_api_extensions_common: *api_extensions
@@ -247,29 +254,35 @@
 - job:
     name: neutron-tempest-plugin-sfc-2024-2
     parent: neutron-tempest-plugin-sfc
+    nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.2
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-2024-2
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
+    nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.2
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing-2024-2
     parent: neutron-tempest-plugin-dynamic-routing
+    nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.2
 
 - job:
     name: neutron-tempest-plugin-fwaas-2024-2
     parent: neutron-tempest-plugin-fwaas
+    nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.2
 
 - job:
     name: neutron-tempest-plugin-vpnaas-2024-2
     parent: neutron-tempest-plugin-vpnaas
+    nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.2
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service-2024-2
     parent: neutron-tempest-plugin-tap-as-a-service
+    nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.2

@@ -1713,3 +1713,13 @@
       - ^zuul.d/xena_jobs.yaml
       - ^zuul.d/yoga_jobs.yaml
       - ^zuul.d/zed_jobs.yaml
+
+- job:
+    name: neutron-tempest-plugin-openvswitch-ubuntu-jammy
+    parent: neutron-tempest-plugin-openvswitch
+    nodeset: neutron-nested-virt-ubuntu-jammy
+
+- job:
+    name: neutron-tempest-plugin-ovn-ubuntu-jammy
+    parent: neutron-tempest-plugin-ovn
+    nodeset: neutron-nested-virt-ubuntu-jammy

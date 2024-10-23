@@ -200,7 +200,6 @@
     templates:
       - build-openstack-docs-pti
       - neutron-tempest-plugin-jobs
-      - neutron-tempest-plugin-jobs-2023-1
       - neutron-tempest-plugin-jobs-2023-2
       - neutron-tempest-plugin-jobs-2024-1
       - neutron-tempest-plugin-jobs-2024-2
@@ -210,33 +209,27 @@
     check:
       jobs:
         - neutron-tempest-plugin-sfc
-        - neutron-tempest-plugin-sfc-2023-1
         - neutron-tempest-plugin-sfc-2023-2
         - neutron-tempest-plugin-sfc-2024-1
         - neutron-tempest-plugin-sfc-2024-2
         - neutron-tempest-plugin-bgpvpn-bagpipe
-        - neutron-tempest-plugin-bgpvpn-bagpipe-2023-1
         - neutron-tempest-plugin-bgpvpn-bagpipe-2023-2
         - neutron-tempest-plugin-bgpvpn-bagpipe-2024-1
         - neutron-tempest-plugin-bgpvpn-bagpipe-2024-2
         - neutron-tempest-plugin-dynamic-routing
-        - neutron-tempest-plugin-dynamic-routing-2023-1
         - neutron-tempest-plugin-dynamic-routing-2023-2
         - neutron-tempest-plugin-dynamic-routing-2024-1
         - neutron-tempest-plugin-dynamic-routing-2024-2
         - neutron-tempest-plugin-fwaas
-        - neutron-tempest-plugin-fwaas-2023-1
         - neutron-tempest-plugin-fwaas-2023-2
         - neutron-tempest-plugin-fwaas-2024-1
         - neutron-tempest-plugin-fwaas-2024-2
         - neutron-tempest-plugin-vpnaas
         - neutron-tempest-plugin-vpnaas-ovn
-        - neutron-tempest-plugin-vpnaas-2023-1
         - neutron-tempest-plugin-vpnaas-2023-2
         - neutron-tempest-plugin-vpnaas-2024-1
         - neutron-tempest-plugin-vpnaas-2024-2
         - neutron-tempest-plugin-tap-as-a-service
-        - neutron-tempest-plugin-tap-as-a-service-2023-1
         - neutron-tempest-plugin-tap-as-a-service-2023-2
         - neutron-tempest-plugin-tap-as-a-service-2024-1
         - neutron-tempest-plugin-tap-as-a-service-2024-2

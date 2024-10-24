@@ -768,7 +768,7 @@
     name: neutron-tempest-plugin-api
     parent: neutron-tempest-plugin-ovn
 
-- job:
+- job:  # Needed only in Neutron stable/2024.2
     name: neutron-tempest-plugin-api-ovs-wsgi
     parent: neutron-tempest-plugin-openvswitch
     voting: false
@@ -776,13 +776,29 @@
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: true
 
-- job:
+- job:  # Needed only in Neutron stable/2024.2
     name: neutron-tempest-plugin-api-ovn-wsgi
     parent: neutron-tempest-plugin-ovn
     voting: false
     vars:
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: true
+
+- job:  # To be tested temporarily in the periodic queue
+    name: neutron-tempest-plugin-api-ovs-eventlet
+    parent: neutron-tempest-plugin-openvswitch
+    voting: false
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
+
+- job:  # To be tested temporarily in the periodic queue
+    name: neutron-tempest-plugin-api-ovn-eventlet
+    parent: neutron-tempest-plugin-ovn
+    voting: false
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario

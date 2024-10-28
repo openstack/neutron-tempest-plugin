@@ -39,6 +39,8 @@ LOG = log.getLogger(__name__)
 # when designate_tempest_plugin is not available
 dns_base = testtools.try_import('designate_tempest_plugin.tests.base')
 dns_waiters = testtools.try_import('designate_tempest_plugin.common.waiters')
+dns_data_utils = testtools.try_import('designate_tempest_plugin.data_utils')
+
 if dns_base:
     DNSMixin = dns_base.BaseDnsV2Test
 else:
@@ -53,7 +55,7 @@ class BaseDNSIntegrationTests(base.BaseTempestTestCase, DNSMixin):
         super(BaseDNSIntegrationTests, cls).setup_clients()
         cls.zone_client = cls.os_tempest.dns_v2.ZonesClient()
         cls.recordset_client = cls.os_tempest.dns_v2.RecordsetClient()
-        cls.query_client.build_timeout = 30
+        cls.query_client.build_timeout = 60
 
     @classmethod
     def skip_checks(cls):
@@ -68,12 +70,13 @@ class BaseDNSIntegrationTests(base.BaseTempestTestCase, DNSMixin):
     @utils.requires_ext(extension="dns-integration", service="network")
     def resource_setup(cls):
         super(BaseDNSIntegrationTests, cls).resource_setup()
-        cls.zone = cls.zone_client.create_zone()[1]
-        cls.addClassResourceCleanup(cls.zone_client.delete_zone,
-            cls.zone['id'], ignore_errors=lib_exc.NotFound)
-        dns_waiters.wait_for_zone_status(
-            cls.zone_client, cls.zone['id'], 'ACTIVE')
-
+        cls.zone_name = dns_data_utils.rand_zone_name(
+            name="basednsintegrationtests")
+        cls.zone = cls.zone_client.create_zone(
+            name=cls.zone_name, wait_until='ACTIVE')[1]
+        cls.addClassResourceCleanup(
+            cls.zone_client.delete_zone, cls.zone['id'],
+            ignore_errors=lib_exc.NotFound)
         cls.network = cls.create_network(dns_domain=cls.zone['name'])
         cls.subnet = cls.create_subnet(cls.network)
         cls.subnet_v6 = cls.create_subnet(cls.network, ip_version=6)
@@ -250,8 +253,9 @@ class DNSIntegrationExtraTests(BaseDNSIntegrationTests):
     @classmethod
     def resource_setup(cls):
         super(DNSIntegrationExtraTests, cls).resource_setup()
-        cls.network2 = cls.create_network()
-        cls.subnet2 = cls.create_subnet(cls.network2)
+        cls.network2 = cls.create_network(
+            name=data_utils.rand_name('dns_integration_net'))
+        cls.subnet2 = cls.create_subnet(cls.network2, cidr='10.123.151.0/24')
         cls.subnet2_v6 = cls.create_subnet(cls.network2,
                                            ip_version=6,
                                            dns_publish_fixed_ip=True)
@@ -274,6 +278,16 @@ class DNSIntegrationExtraTests(BaseDNSIntegrationTests):
         self.client.delete_port(port['id'])
         self._verify_dns_records(addr_v6, name, record_type='AAAA',
                                  found=False)
+        self.client.update_subnet(
+            self.subnet2['id'], dns_publish_fixed_ip=True)
+        port = self.create_port(self.network2,
+                                dns_domain=self.zone['name'],
+                                dns_name=name)
+        addr_v4 = port['fixed_ips'][1 - v6_index]['ip_address']
+        self._verify_dns_records(addr_v4, name, record_type='A')
+        self.client.delete_port(port['id'])
+        self._verify_dns_records(addr_v4, name, record_type='A',
+                                 found=False)
 
 
 class DNSIntegrationDomainPerProjectTests(BaseDNSIntegrationTests):
@@ -286,19 +300,15 @@ class DNSIntegrationDomainPerProjectTests(BaseDNSIntegrationTests):
     @classmethod
     def resource_setup(cls):
         super(BaseDNSIntegrationTests, cls).resource_setup()
-
-        name = data_utils.rand_name('test-domain')
-        zone_name = "%s.%s.%s.zone." % (cls.client.user_id,
+        cls.name = data_utils.rand_name('test-domain')
+        cls.zone_name = "%s.%s.%s.zone." % (cls.client.user_id,
                                         cls.client.project_id,
-                                        name)
-        dns_domain_template = "<user_id>.<project_id>.%s.zone." % name
-
-        cls.zone = cls.zone_client.create_zone(name=zone_name)[1]
+                                        cls.name)
+        dns_domain_template = "<user_id>.<project_id>.%s.zone." % cls.name
+        cls.zone = cls.zone_client.create_zone(
+            name=cls.zone_name, wait_until='ACTIVE')[1]
         cls.addClassResourceCleanup(cls.zone_client.delete_zone,
             cls.zone['id'], ignore_errors=lib_exc.NotFound)
-        dns_waiters.wait_for_zone_status(
-            cls.zone_client, cls.zone['id'], 'ACTIVE')
-
         cls.network = cls.create_network(dns_domain=dns_domain_template)
         cls.subnet = cls.create_subnet(cls.network,
                                        dns_publish_fixed_ip=True)

@@ -87,7 +87,7 @@ INTERFACE_PREFIXES = (lib_constants.TAP_DEVICE_PREFIX,
 
 ATTRIBUTES_TO_UPDATE = 'attributes_to_update'
 
-# Maximum value integer can take in MySQL and PostgreSQL
+# Maximum value integer can take in MySQL.
 # In SQLite integer can be stored in 1, 2, 3, 4, 6, or 8 bytes,
 # but here it will be limited by this value for consistency.
 DB_INTEGER_MAX_VALUE = 2 ** 31 - 1

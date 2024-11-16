@@ -107,8 +107,8 @@ class PortsTest(base.BaseTempestTestCase):
                 if port is not None:
                     break
             except Exception as e:
-                LOG.warning('Failed to create Port, using Fixed_IP:{}, '
-                            'the Error was:{}'.format(ip, e))
+                LOG.warning('Failed to create Port, using Fixed_IP:%s, '
+                            'the Error was:%s', ip, e)
         fip, server = self._create_instance_with_port(port)
         self.check_connectivity(fip[0]['floating_ip_address'],
                                 CONF.validation.image_ssh_user,

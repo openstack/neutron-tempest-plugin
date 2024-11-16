@@ -227,37 +227,37 @@ class NetworkWritableMtuTest(NetworkMtuBaseTest):
     @decorators.idempotent_id('bc470200-d8f4-4f07-b294-1b4cbaaa35b9')
     def test_connectivity_min_max_mtu(self):
         server_ssh_client, _, _, fip2 = self._create_setup()
-        log_msg = ("Ping with {mtu_size} MTU of 2 networks. Fragmentation is "
-                   "{fragmentation_state}. Expected result: ping "
-                   "{ping_status}")
+        log_msg = ("Ping with %(mtu_size)s MTU of 2 networks. "
+                   "Fragmentation is %(fragmentation_state)s. "
+                   "Expected result: ping %(ping_status)s")
 
         # ping with min mtu of 2 networks succeeds even when
         # fragmentation is disabled
-        LOG.debug(log_msg.format(mtu_size='minimal',
-                  fragmentation_state='disabled', ping_status='succeeded'))
+        LOG.debug(log_msg, mtu_size='minimal',
+                  fragmentation_state='disabled', ping_status='succeeded')
         self.check_remote_connectivity(
             server_ssh_client, fip2['fixed_ip_address'],
             mtu=self.networks[0]['mtu'], fragmentation=False)
 
         # ping with the size above min mtu of 2 networks
         # fails when fragmentation is disabled
-        LOG.debug(log_msg.format(mtu_size='size above minimal',
-                  fragmentation_state='disabled', ping_status='failed'))
+        LOG.debug(log_msg, mtu_size='size above minimal',
+                  fragmentation_state='disabled', ping_status='failed')
         self.check_remote_connectivity(
             server_ssh_client, fip2['fixed_ip_address'], should_succeed=False,
             mtu=self.networks[0]['mtu'] + 2, fragmentation=False)
 
         # ping with max mtu of 2 networks succeeds when
         # fragmentation is enabled
-        LOG.debug(log_msg.format(mtu_size='maximal',
-                  fragmentation_state='enabled', ping_status='succeeded'))
+        LOG.debug(log_msg, mtu_size='maximal',
+                  fragmentation_state='enabled', ping_status='succeeded')
         self.check_remote_connectivity(
             server_ssh_client, fip2['fixed_ip_address'],
             mtu=self.networks[1]['mtu'])
 
         # ping with max mtu of 2 networks fails when fragmentation is disabled
-        LOG.debug(log_msg.format(mtu_size='maximal',
-                  fragmentation_state='disabled', ping_status='failed'))
+        LOG.debug(log_msg, mtu_size='maximal',
+                  fragmentation_state='disabled', ping_status='failed')
         self.check_remote_connectivity(
             server_ssh_client, fip2['fixed_ip_address'], should_succeed=False,
             mtu=self.networks[1]['mtu'], fragmentation=False)

@@ -89,9 +89,9 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
                                 (ssh_source, remote_ip, should_connect),
                                 msg)
             except Exception:
-                LOG.exception("Unable to access {dest} via ssh to "
-                              "floating-ip {src}".format(dest=remote_ip,
-                                                         src=floating_ip))
+                LOG.exception("Unable to access %s via ssh to "
+                              "floating-ip %s",
+                              remote_ip, floating_ip)
                 raise
 
     def _check_remote_connectivity(self, source, dest, should_succeed=True,

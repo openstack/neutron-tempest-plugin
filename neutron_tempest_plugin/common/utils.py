@@ -194,29 +194,29 @@ class StatefulConnection:
                         sleep=self.test_sleep)
         try:
             LOG.info("Checking connectivity between server and client -"
-                    " attempt {}".format(self.test_attempt))
+                    " attempt %d", self.test_attempt)
             self.server_ssh.exec_command(
                     'grep {} output.txt'.format(self.test_str))
             self.client_ssh.exec_command(
                     'grep {} output.txt'.format(self.test_str))
             if not self.should_pass:
-                LOG.warning("attempt {} succeed while it should fail".format(
-                    self.test_attempt))
+                LOG.warning("attempt %d succeed while it should fail",
+                            self.test_attempt)
                 return False
             else:
                 if not self.connection_started:
                     self.connection_started = True
-                LOG.info("attempt {} succeed as it expected".format(
-                    self.test_attempt))
+                LOG.info("attempt %d succeed as it expected",
+                         self.test_attempt)
                 return True
         except exceptions.SSHExecCommandFailed:
             if self.should_pass:
-                LOG.warning("attempt {} failed while it should pass".format(
-                    self.test_attempt))
+                LOG.warning("attempt %d failed while it should pass",
+                            self.test_attempt)
                 return False
             else:
-                LOG.info("attempt {} failed as it expected".format(
-                    self.test_attempt))
+                LOG.info("attempt %d failed as it expected",
+                         self.test_attempt)
                 return True
         finally:
             self.test_attempt += 1

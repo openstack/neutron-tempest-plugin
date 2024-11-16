@@ -177,7 +177,7 @@ class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
         bgp_speaker = self.get_bgp_speaker(bgp_speaker_id)
         bgp_peers_list = bgp_speaker['peers']
         self.assertEqual(1, len(bgp_peers_list))
-        self.assertTrue(bgp_peer_id in bgp_peers_list)
+        self.assertIn(bgp_peer_id, bgp_peers_list)
 
     @decorators.idempotent_id('f9737708-1d79-440b-8350-779f97d882ee')
     def test_remove_bgp_peer(self):
@@ -188,7 +188,7 @@ class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
         self.add_bgp_peer(bgp_speaker_id, bgp_peer_id)
         bgp_speaker = self.get_bgp_speaker(bgp_speaker_id)
         bgp_peers_list = bgp_speaker['peers']
-        self.assertTrue(bgp_peer_id in bgp_peers_list)
+        self.assertIn(bgp_peer_id, bgp_peers_list)
 
         bgp_speaker = self.remove_bgp_peer(bgp_speaker_id, bgp_peer_id)
         bgp_speaker = self.get_bgp_speaker(bgp_speaker_id)
@@ -206,7 +206,7 @@ class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
         bgp_speaker = self.get_bgp_speaker(bgp_speaker_id)
         network_list = bgp_speaker['networks']
         self.assertEqual(1, len(network_list))
-        self.assertTrue(self.ext_net_id in network_list)
+        self.assertIn(self.ext_net_id, network_list)
 
     @decorators.idempotent_id('6cfc7137-0d99-4a3d-826c-9d1a3a1767b0')
     def test_remove_gateway_network(self):
@@ -218,7 +218,7 @@ class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
         bgp_speaker = self.get_bgp_speaker(bgp_speaker_id)
         networks = bgp_speaker['networks']
 
-        self.assertTrue(self.ext_net_id in networks)
+        self.assertIn(self.ext_net_id, networks)
         self.bgp_adm_client.remove_bgp_gateway_network(bgp_speaker_id,
                                                        self.ext_net_id)
         bgp_speaker = self.get_bgp_speaker(bgp_speaker_id)

@@ -386,7 +386,7 @@ class BaseSecGroupRulesQuota(base.BaseAdminNetworkTest):
         self.admin_client.update_quotas(project_id,
                                         **{'security_group_rule': val,
                                            'force': True})
-        LOG.info('Trying to update security group rule quota {} '.format(val))
+        LOG.info('Trying to update security group rule quota %r', val)
 
     def _get_sg_rules_quota(self):
         project_id = self.client.project_id

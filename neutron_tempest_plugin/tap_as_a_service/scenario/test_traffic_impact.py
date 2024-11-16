@@ -14,16 +14,15 @@
 #    under the License.
 
 from contextlib import contextmanager
-from oslo_log import log
-import testtools
 
+from oslo_log import log
 from tempest.common import utils
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils.linux import remote_client
 from tempest.lib.common.utils import test_utils
-
 from tempest.lib import decorators
+import testtools
 
 from neutron_tempest_plugin.tap_as_a_service.scenario import manager
 
@@ -151,7 +150,7 @@ class TestTaaSTrafficScenarios(manager.BaseTaasScenarioTests):
 
         # Ensure tcpdump is up and running
         psax = self.monitor_client.exec_command("ps -ax")
-        self.assertTrue("tcpdump" in psax)
+        self.assertIn("tcpdump", psax)
 
         # Run traffic from left_vm to right_vm
         LOG.debug('Check ICMP traffic: ping %s ', right_ip)

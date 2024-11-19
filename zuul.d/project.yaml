@@ -24,8 +24,6 @@
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-openvswitch-distributed-dhcp
         - neutron-tempest-plugin-openvswitch-iptables_hybrid-distributed-dhcp
-        - neutron-tempest-plugin-api-ovs-eventlet
-        - neutron-tempest-plugin-api-ovn-eventlet
         - neutron-tempest-plugin-ovn-enforce-scope-old-defaults
     periodic:
       jobs:

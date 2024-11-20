@@ -38,6 +38,7 @@ from tempest.lib import exceptions as lib_exc
 
 CONF = config.CONF
 LOG = log.getLogger(__name__)
+FRR_BASE_IMAGE = 'quay.io/nf-core/ubuntu:22.04'
 
 
 class FRROCIImage(ctn_base.DockerImage):
@@ -47,7 +48,7 @@ class FRROCIImage(ctn_base.DockerImage):
         baseimage: typing.Optional[str] = None,
         use_existing: bool = False,
     ):
-        super().__init__(baseimage=baseimage or 'ubuntu:22.04')
+        super().__init__(baseimage=baseimage or FRR_BASE_IMAGE)
         self.daemons = daemons
         self.tagname = 'frr-' + '-'.join(daemons)
         if use_existing and self.exist(self.tagname):

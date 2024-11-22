@@ -40,6 +40,7 @@ CHECKTIME = 180
 CHECKTIME_INFO = 60
 CHECKTIME_INT = 1
 BRIDGE_TYPE = ctn_base.BRIDGE_TYPE_DOCKER
+BASE_NDR_IMAGE = 'quay.io/nf-core/ubuntu:20.04'
 
 
 def _setup_client_args(auth_provider):

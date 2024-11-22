@@ -91,7 +91,7 @@ class BgpSpeakerIpv4Test(test_base.BgpSpeakerProtoTestBase):
                                        router_id=cls.L_AS.router_id)
         cls.dr.set_addr_info(bridge='br-docker-ipv4', ipv4=cls.public_gw)
         # quagga container
-        cls.dockerimg = ctn_base.DockerImage()
+        cls.dockerimg = ctn_base.DockerImage(baseimage=base.BASE_NDR_IMAGE)
         cls.q_img = cls.dockerimg.create_quagga(check_exist=True)
         cls.images.append(cls.q_img)
         for i in range(cls.RAS_MAX):

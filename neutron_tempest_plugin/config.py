@@ -164,16 +164,16 @@ NeutronPluginOptions = [
 for opt in NeutronPluginOptions:
     CONF.register_opt(opt, 'neutron_plugin_options')
 
-# TODO(slaweq): This config option is added to avoid running bgpvpn tests twice
-# on stable branches till stable/stein. We need to remove this config option
-# once stable/stein is EOL. Bgpvpn tempest plugin has been merged into
-# neutron-tempest-plugin from Train. Train onwards bgpvpn tests will run from
-# neutron-tempest-plugins.
 BgpvpnGroup = [
+    # TODO(tkajinam): This has been required since the plugin tests was merged
+    # into neutron-tempest-plugin in Train. Remove this after 2025.1 release.
     cfg.BoolOpt('run_bgpvpn_tests',
                 default=True,
                 help=("If it is set to False bgpvpn api and scenario tests "
-                      "will be skipped")),
+                      "will be skipped"),
+                deprecated_for_removal=True,
+                deprecated_reason='Tests are skipped according to '
+                                  'the available extensions.'),
     cfg.IntOpt('min_asn',
                default=100,
                help=("Minimum number for the range of "
@@ -197,16 +197,16 @@ bgpvpn_group = cfg.OptGroup(name="bgpvpn", title=("Networking-Bgpvpn Service "
 CONF.register_group(bgpvpn_group)
 CONF.register_opts(BgpvpnGroup, group="bgpvpn")
 
-# TODO(slaweq): This config option is added to avoid running fwaas tests twice
-# on stable branches till stable/stein. We need to remove this config option
-# once stable/stein is EOL. Fwaas tempest plugin has been merged into
-# neutron-tempest-plugin from Train. Train onwards fwaas tests will run from
-# neutron-tempest-plugins.
 FwaasGroup = [
+    # TODO(tkajinam): This has been required since the plugin tests was merged
+    # into neutron-tempest-plugin in Train. Remove this after 2025.1 release.
     cfg.BoolOpt('run_fwaas_tests',
                 default=True,
                 help=("If it is set to False fwaas api and scenario tests "
-                      "will be skipped")),
+                      "will be skipped"),
+                deprecated_for_removal=True,
+                deprecated_reason='Tests are skipped according to '
+                                  'the available extensions.'),
 ]
 
 fwaas_group = cfg.OptGroup(
@@ -214,16 +214,16 @@ fwaas_group = cfg.OptGroup(
 CONF.register_group(fwaas_group)
 CONF.register_opts(FwaasGroup, group="fwaas")
 
-# TODO(slaweq): This config option is added to avoid running SFC tests twice
-# on stable branches till stable/stein. We need to remove this config option
-# once stable/stein is EOL. SFC tempest plugin has been merged into
-# neutron-tempest-plugin from Train. Train onwards SFC tests will run from
-# neutron-tempest-plugins.
 SfcGroup = [
+    # TODO(tkajinam): This has been required since the plugin tests was merged
+    # into neutron-tempest-plugin in Train. Remove this after 2025.1 release.
     cfg.BoolOpt('run_sfc_tests',
                 default=True,
                 help=("If it is set to False SFC api and scenario tests "
-                      "will be skipped")),
+                      "will be skipped"),
+                deprecated_for_removal=True,
+                deprecated_reason='Tests are skipped according to '
+                                  'the available extensions.'),
 ]
 
 sfc_group = cfg.OptGroup(name="sfc", title=("Networking-sfc Service Options"))

@@ -595,15 +595,11 @@ class BaseNetworkTest(test.BaseTestCase):
             # Generate subnet CIDRs starting from configured values
             ip_version = ip_version or cls._ip_version
             if ip_version == const.IP_VERSION_4:
-                mask_bits = mask_bits or config.safe_get_config_value(
-                    'network', 'project_network_mask_bits')
-                cidr = netaddr.IPNetwork(config.safe_get_config_value(
-                    'network', 'project_network_cidr'))
+                mask_bits = mask_bits or CONF.network.project_network_mask_bits
+                cidr = netaddr.IPNetwork(CONF.network.project_network_cidr)
             elif ip_version == const.IP_VERSION_6:
-                mask_bits = config.safe_get_config_value(
-                    'network', 'project_network_v6_mask_bits')
-                cidr = netaddr.IPNetwork(config.safe_get_config_value(
-                    'network', 'project_network_v6_cidr'))
+                mask_bits = CONF.network.project_network_v6_mask_bits
+                cidr = netaddr.IPNetwork(CONF.network.project_network_v6_cidr)
             else:
                 raise ValueError('Invalid IP version: {!r}'.format(ip_version))
 

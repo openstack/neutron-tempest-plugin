@@ -38,9 +38,9 @@ class RoutersTest(base_routers.BaseRouterTest):
     def resource_setup(cls):
         super(RoutersTest, cls).resource_setup()
         cls.tenant_cidr = (
-            config.safe_get_config_value('network', 'project_network_cidr')
+            CONF.network.project_network_cidr
             if cls._ip_version == 4 else
-            config.safe_get_config_value('network', 'project_network_v6_cidr'))
+            CONF.network.project_network_v6_cidr)
 
     @decorators.idempotent_id('c72c1c0c-2193-4aca-eeee-b1442640eeee')
     @tutils.requires_ext(extension="standard-attr-description",

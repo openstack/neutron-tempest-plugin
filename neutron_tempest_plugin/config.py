@@ -259,19 +259,3 @@ dns_feature_group = cfg.OptGroup(
     name='designate_feature_enabled', title='Enabled Designate Features')
 CONF.register_group(dns_feature_group)
 CONF.register_opts(DnsFeatureGroup, group="designate_feature_enabled")
-
-config_opts_translator = {
-    'project_network_cidr': 'tenant_network_cidr',
-    'project_network_v6_cidr': 'tenant_network_v6_cidr',
-    'project_network_mask_bits': 'tenant_network_mask_bits',
-    'project_network_v6_mask_bits': 'tenant_network_v6_mask_bits'}
-
-
-def safe_get_config_value(group, name):
-    """Safely get Oslo config opts from Tempest, using old and new names."""
-    conf_group = getattr(CONF, group)
-
-    try:
-        return getattr(conf_group, name)
-    except cfg.NoSuchOptError:
-        return getattr(conf_group, config_opts_translator[name])

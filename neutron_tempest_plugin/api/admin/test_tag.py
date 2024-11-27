@@ -26,53 +26,55 @@ class TagTestJSON(base.BaseAdminNetworkTest):
         super(TagTestJSON, cls).resource_setup()
         cls.res_id = cls._create_resource()
 
-    def _get_and_compare_tags(self, tags):
-        res_body = self.client.get_tags(self.resource, self.res_id)
+    def _get_and_compare_tags(self, tags, client):
+        res_body = client.get_tags(self.resource, self.res_id)
         self.assertCountEqual(tags, res_body['tags'])
 
-    def _test_tag_operations(self):
+    def _test_tag_operations(self, client=None):
+        client = client or self.client
         # create and get tags
         tags = ['red', 'blue']
-        res_body = self.client.update_tags(self.resource, self.res_id, tags)
+        res_body = client.update_tags(self.resource, self.res_id, tags)
         self.assertCountEqual(tags, res_body['tags'])
-        self._get_and_compare_tags(tags)
+        self._get_and_compare_tags(tags, client)
 
         # add a tag
-        self.client.update_tag(self.resource, self.res_id, 'green')
-        self._get_and_compare_tags(['red', 'blue', 'green'])
+        client.update_tag(self.resource, self.res_id, 'green')
+        self._get_and_compare_tags(['red', 'blue', 'green'], client)
 
         # update tag exist
-        self.client.update_tag(self.resource, self.res_id, 'red')
-        self._get_and_compare_tags(['red', 'blue', 'green'])
+        client.update_tag(self.resource, self.res_id, 'red')
+        self._get_and_compare_tags(['red', 'blue', 'green'], client)
 
         # add a tag with a dot
-        self.client.update_tag(self.resource, self.res_id, 'black.or.white')
-        self._get_and_compare_tags(['red', 'blue', 'green', 'black.or.white'])
+        client.update_tag(self.resource, self.res_id, 'black.or.white')
+        self._get_and_compare_tags(['red', 'blue', 'green', 'black.or.white'],
+                                   client)
 
         # replace tags
         tags = ['red', 'yellow', 'purple']
-        res_body = self.client.update_tags(self.resource, self.res_id, tags)
+        res_body = client.update_tags(self.resource, self.res_id, tags)
         self.assertCountEqual(tags, res_body['tags'])
-        self._get_and_compare_tags(tags)
+        self._get_and_compare_tags(tags, client)
 
         # get tag
-        self.client.get_tag(self.resource, self.res_id, 'red')
+        client.get_tag(self.resource, self.res_id, 'red')
 
         # get tag not exist
-        self.assertRaises(lib_exc.NotFound, self.client.get_tag,
+        self.assertRaises(lib_exc.NotFound, client.get_tag,
                           self.resource, self.res_id, 'green')
 
         # delete tag
-        self.client.delete_tag(self.resource, self.res_id, 'red')
-        self._get_and_compare_tags(['yellow', 'purple'])
+        client.delete_tag(self.resource, self.res_id, 'red')
+        self._get_and_compare_tags(['yellow', 'purple'], client)
 
         # delete tag not exist
-        self.assertRaises(lib_exc.NotFound, self.client.delete_tag,
+        self.assertRaises(lib_exc.NotFound, client.delete_tag,
                           self.resource, self.res_id, 'green')
 
         # delete tags
-        self.client.delete_tags(self.resource, self.res_id)
-        self._get_and_compare_tags([])
+        client.delete_tags(self.resource, self.res_id)
+        self._get_and_compare_tags([], client)
 
 
 class TagNetworkTestJSON(TagTestJSON):
@@ -198,7 +200,7 @@ class TagQosPolicyTestJSON(TagTestJSON):
     @decorators.idempotent_id('e9bac15e-c8bc-4317-8295-4bf1d8d522b8')
     @utils.requires_ext(extension="standard-attr-tag", service="network")
     def test_qos_policy_tags(self):
-        self._test_tag_operations()
+        self._test_tag_operations(client=self.admin_client)
 
 
 class TagTrunkTestJSON(TagTestJSON):
@@ -225,16 +227,20 @@ class TagFilterTestJSON(base.BaseAdminNetworkTest):
     @classmethod
     def resource_setup(cls):
         super(TagFilterTestJSON, cls).resource_setup()
+        try:
+            client = cls.tag_client
+        except AttributeError:
+            client = cls.client
 
         cls.res_ids = []
         for i in range(5):
             cls.res_ids.append(cls._create_resource())
 
-        cls.client.update_tags(cls.resource, cls.res_ids[0], ['red'])
-        cls.client.update_tags(cls.resource, cls.res_ids[1], ['red', 'blue'])
-        cls.client.update_tags(cls.resource, cls.res_ids[2],
-                               ['red', 'blue', 'green'])
-        cls.client.update_tags(cls.resource, cls.res_ids[3], ['green'])
+        client.update_tags(cls.resource, cls.res_ids[0], ['red'])
+        client.update_tags(cls.resource, cls.res_ids[1], ['red', 'blue'])
+        client.update_tags(cls.resource, cls.res_ids[2],
+                           ['red', 'blue', 'green'])
+        client.update_tags(cls.resource, cls.res_ids[3], ['green'])
         # 5th resource: no tags
 
     @classmethod
@@ -440,6 +446,11 @@ class TagFilterQosPolicyTestJSON(TagFilterTestJSON):
     def _list_resource(self, filters):
         res = self.client.list_qos_policies(**filters)
         return res[self.resource]
+
+    @classmethod
+    def resource_setup(cls):
+        cls.tag_client = cls.admin_client
+        super().resource_setup()
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('c2f9a6ae-2529-4cb9-a44b-b16f8ba27832')

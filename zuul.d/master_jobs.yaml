@@ -782,7 +782,8 @@
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario
-    parent: tempest-multinode-full
+    parent: tempest-multinode-full-py3
+    timeout: 10800
     description: |
         Perform setup for Neutron tempest tests in multinode with DVR scenario
     roles:
@@ -830,15 +831,16 @@
       devstack_services:
         tls-proxy: true
         tempest: true
+        br-ex-tcpdump: true
+        br-int-flows: true
         # Disable OVN services
-        br-ex-tcpdump: false
-        br-int-flows: false
         ovn-controller: false
         ovn-northd: false
         ovs-vswitchd: false
         ovsdb-server: false
         q-ovn-metadata-agent: false
         # Neutron services
+        q-svc: true
         q-agt: true
         q-dhcp: true
         q-l3: true
@@ -917,8 +919,8 @@
       subnode:
         devstack_services:
           tls-proxy: true
-          br-ex-tcpdump: false
-          br-int-flows: false
+          br-ex-tcpdump: true
+          br-int-flows: true
           # Disable OVN services
           ovn-controller: false
           ovn-northd: false
@@ -934,8 +936,11 @@
           neutron-log: true
           neutron-port-forwarding: true
           # Cinder services
+          c-api: false
           c-bak: false
+          c-sch: false
           c-vol: false
+          cinder: false
           # We don't need Swift to be run in the Neutron jobs
           s-account: false
           s-container: false

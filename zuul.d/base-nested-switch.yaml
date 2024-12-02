@@ -18,16 +18,26 @@
         nodes:
           - controller
 
-# Base nested switch job for 2023.1 and later
+- nodeset:
+    name: neutron-nested-virt-ubuntu-noble
+    nodes:
+      - name: controller
+        label: nested-virt-ubuntu-noble
+    groups:
+      - name: tempest
+        nodes:
+          - controller
+
+# Base nested switch job for 2025.1 and later
 - job:
     name: neutron-tempest-plugin-base-nested-switch
     parent: neutron-tempest-plugin-base
     abstract: true
     branches:
-      regex: ^(unmaintained|stable/(victoria|wallaby|xena|yoga|zed)).*$
+      regex: ^(unmaintained|stable/(victoria|wallaby|xena|yoga|zed|2023|2024)).*$
       negate: true
     # Comment nodeset and vars to switch back to non nested nodes
-    nodeset: neutron-nested-virt-ubuntu-jammy
+    nodeset: neutron-nested-virt-ubuntu-noble
     vars: &nested_virt_vars
       devstack_localrc:
         LIBVIRT_TYPE: kvm
@@ -38,6 +48,16 @@
         CIRROS_VERSION: 0.5.3
         DEFAULT_IMAGE_NAME: cirros-0.5.3-x86_64-disk
         DEFAULT_IMAGE_FILE_NAME: cirros-0.5.3-x86_64-disk.img
+
+# Base nested switch job for 2023.1 till 2024.2
+- job:
+    name: neutron-tempest-plugin-base-nested-switch
+    parent: neutron-tempest-plugin-base
+    abstract: true
+    branches: ^(unmaintained|stable)/(2023|2024).*$
+    # Comment nodeset and vars to switch back to non nested nodes
+    nodeset: neutron-nested-virt-ubuntu-jammy
+    vars: *nested_virt_vars
 
 # Base nested switch job for yoga and zed
 - job:

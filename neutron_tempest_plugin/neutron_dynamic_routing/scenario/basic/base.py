@@ -84,7 +84,7 @@ class BgpSpeakerBasicTestJSONBase(base.BgpSpeakerScenarioTestJSONBase):
                                        router_id=cls.L_AS.router_id)
         cls.dr.set_addr_info(bridge='br-docker-basic', ipv4=cls.public_gw)
         # quagga container
-        cls.dockerimg = ctn_base.DockerImage(baseimage=base.BASE_NDR_IMAGE)
+        cls.dockerimg = ctn_base.DockerImage(baseimage=cls.baseimage)
         cls.q_img = cls.dockerimg.create_quagga(check_exist=True)
         cls.images.append(cls.q_img)
         for i in range(cls.RAS_MAX):

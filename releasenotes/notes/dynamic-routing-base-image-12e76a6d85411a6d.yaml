@@ -1,0 +1,6 @@
+---
+features:
+  - |
+    The new ``[dynamic_routing] base_image`` option has been added. This option
+    allows customizing the reference of the base container image used for
+    connectivity check in dynamic routing plugin tests.

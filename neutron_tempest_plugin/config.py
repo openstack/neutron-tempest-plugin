@@ -248,6 +248,21 @@ taas_group = cfg.OptGroup(name='taas',
 CONF.register_group(taas_group)
 CONF.register_opts(TaasGroup, group="taas")
 
+
+DynamicRoutingGroup = [
+    cfg.StrOpt('base_image',
+               default='quay.io/nf-core/ubuntu:20.04',
+               help=('Base image used to build the image for connectivity '
+                     'check')),
+]
+
+dynamic_routing_group = cfg.OptGroup(
+    name="dynamic_routing",
+    title=("Neutron-Dynamic-Routing Service Options"))
+CONF.register_group(dynamic_routing_group)
+CONF.register_opts(DynamicRoutingGroup, group="dynamic_routing")
+
+
 # DNS Integration with an External Service
 DnsFeatureGroup = [
     cfg.IntOpt(

@@ -278,6 +278,9 @@
     parent: neutron-tempest-plugin-dynamic-routing
     nodeset: openstack-single-node-jammy
     override-checkout: stable/2023.1
+    vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
 
 - job:
     name: neutron-tempest-plugin-fwaas-2023-1

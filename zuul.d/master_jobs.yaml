@@ -914,7 +914,7 @@
               available_type_drivers: flat,geneve,vlan,gre,local,vxlan
               l3_agent_mode: dvr_snat
               firewall_driver: openvswitch
-              snat_rules_apply_to_nested_networks: true
+              snat_rules_apply_to_nested_networks: false
     group-vars:
       subnode:
         devstack_services:

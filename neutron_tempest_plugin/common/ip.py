@@ -96,7 +96,7 @@ class IPCommand(object):
         return self.configure_vlan(addresses, port, vlan_tag, subport_ips,
                                    subport['mac_address'])
 
-    def configure_vlan_transparent(self, port, vlan_tag, ip_addresses):
+    def configure_inner_vlan(self, port, vlan_tag, ip_addresses):
         addresses = self.list_addresses()
         try:
             subport_device = get_vlan_device_name(addresses, ip_addresses)

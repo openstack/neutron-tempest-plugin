@@ -30,20 +30,27 @@ MIN_VLAN_ID = 1
 MAX_VLAN_ID = 4094
 
 
-class VlanTransparencyTest(base.BaseTempestTestCase):
-    credentials = ['primary', 'admin']
-    force_tenant_isolation = False
+class BaseVlanTest(base.BaseAdminTempestTestCase):
 
-    required_extensions = ['vlan-transparent', 'allowed-address-pairs']
+    """Base class common for the tests for the "vlan_transparent" and "qinq".
+
+    This base class covers common things for the tests for networks with
+    enabled either `qinq` or `vlan_transparent` attributes. Those 2 attributes
+    are functionally the same even from the end user's point of view. The only
+    difference between them is ethtype used for the outer VLAN tag but this
+    can't really be tested in the neutron-tempest-plugin tests.
+    """
+
+    network_kwargs = {}
 
     @classmethod
     def resource_setup(cls):
-        super(VlanTransparencyTest, cls).resource_setup()
+        super(BaseVlanTest, cls).resource_setup()
         # setup basic topology for servers we can log into
         cls.rand_name = data_utils.rand_name(
             cls.__name__.rsplit('.', 1)[-1])
         cls.network = cls.create_network(name=cls.rand_name,
-                                         vlan_transparent=True)
+                                         **cls.network_kwargs)
         cls.subnet = cls.create_subnet(network=cls.network,
                                        name=cls.rand_name)
         cls.router = cls.create_router_by_client()
@@ -63,7 +70,7 @@ class VlanTransparencyTest(base.BaseTempestTestCase):
 
     @classmethod
     def skip_checks(cls):
-        super(VlanTransparencyTest, cls).skip_checks()
+        super().skip_checks()
         if not (CONF.neutron_plugin_options.advanced_image_ref or
                 CONF.neutron_plugin_options.default_image_is_advanced):
             raise cls.skipException(
@@ -89,12 +96,11 @@ class VlanTransparencyTest(base.BaseTempestTestCase):
                                   networks=[{'port': self.vm_ports[-1]['id']}],
                                   name=server_name)['server']
 
-    def _configure_vlan_transparent(self, port, ssh_client,
-                                    vlan_tag, vlan_ip):
+    def _configure_inner_vlan(self, port, ssh_client, vlan_tag, vlan_ip):
         ip_command = ip.IPCommand(ssh_client=ssh_client)
         addresses = ip_command.list_addresses(port=port)
         port_iface = ip.get_port_device_name(addresses, port)
-        subport_iface = ip_command.configure_vlan_transparent(
+        subport_iface = ip_command.configure_inner_vlan(
             port=port, vlan_tag=vlan_tag, ip_addresses=[vlan_ip])
 
         for address in ip_command.list_addresses(ip_addresses=vlan_ip):
@@ -113,8 +119,9 @@ class VlanTransparencyTest(base.BaseTempestTestCase):
                           username=username,
                           pkey=self.keypair['private_key'])
 
-    def _test_basic_vlan_transparency_connectivity(
+    def _test_basic_inner_vlan_connectivity(
             self, port_security=True, use_allowed_address_pairs=False):
+        self._ensure_ethtype()
         vlan_tag = data_utils.rand_int_id(start=MIN_VLAN_ID, end=MAX_VLAN_ID)
         vlan_ipmask_template = '192.168.%d.{ip_last_byte}/24' % (vlan_tag %
                                                                  256)
@@ -139,10 +146,10 @@ class VlanTransparencyTest(base.BaseTempestTestCase):
                 self._create_ssh_client(floating_ip=floating_ips[i]))
 
             self.check_connectivity(ssh_client=ssh_clients[i])
-            self._configure_vlan_transparent(port=self.vm_ports[-1],
-                                             ssh_client=ssh_clients[i],
-                                             vlan_tag=vlan_tag,
-                                             vlan_ip=vlan_ipmasks[i])
+            self._configure_inner_vlan(port=self.vm_ports[-1],
+                                       ssh_client=ssh_clients[i],
+                                       vlan_tag=vlan_tag,
+                                       vlan_ip=vlan_ipmasks[i])
 
         if port_security:
             # Ping from vm0 to vm1 via VLAN interface should fail because
@@ -173,12 +180,63 @@ class VlanTransparencyTest(base.BaseTempestTestCase):
             self.vm_ports[-2]['fixed_ips'][0]['ip_address'],
             servers=vms)
 
+
+class VlanTransparencyTest(BaseVlanTest):
+    credentials = ['primary', 'admin']
+    force_tenant_isolation = False
+
+    required_extensions = ['vlan-transparent', 'allowed-address-pairs']
+
+    network_kwargs = {'vlan_transparent': True}
+
+    def _ensure_ethtype(self):
+        self.assertTrue(self.network.get('vlan_transparent'))
+        self.assertFalse(self.network.get('qinq'))
+
     @decorators.idempotent_id('a2694e3a-6d4d-4a23-9fcc-c3ed3ef37b16')
     def test_vlan_transparent_port_sec_disabled(self):
-        self._test_basic_vlan_transparency_connectivity(
+        self._test_basic_inner_vlan_connectivity(
             port_security=False, use_allowed_address_pairs=False)
 
     @decorators.idempotent_id('2dd03b4f-9c20-4cda-8c6a-40fa453ec69a')
     def test_vlan_transparent_allowed_address_pairs(self):
-        self._test_basic_vlan_transparency_connectivity(
+        self._test_basic_inner_vlan_connectivity(
+            port_security=True, use_allowed_address_pairs=True)
+
+
+class VlanQinqTest(BaseVlanTest):
+    credentials = ['primary', 'admin']
+    force_tenant_isolation = False
+
+    required_extensions = ['qinq', 'allowed-address-pairs']
+
+    network_kwargs = {
+        'qinq': True,
+        'provider_network_type': 'vlan'}
+
+    @classmethod
+    def resource_setup(cls):
+        cls.network_kwargs['provider_physical_network'] = (
+            CONF.neutron_plugin_options.provider_vlans[0])
+        super().resource_setup()
+
+    @classmethod
+    def skip_checks(cls):
+        super().skip_checks()
+        if not CONF.neutron_plugin_options.provider_vlans:
+            raise cls.skipException(
+                'Physical network is required to run these tests.')
+
+    def _ensure_ethtype(self):
+        self.assertFalse(self.network.get('vlan_transparent'))
+        self.assertTrue(self.network.get('qinq'))
+
+    @decorators.idempotent_id('ae78398e-9242-46b4-a5fc-227581821fca')
+    def test_vlan_transparent_port_sec_disabled(self):
+        self._test_basic_inner_vlan_connectivity(
+            port_security=False, use_allowed_address_pairs=False)
+
+    @decorators.idempotent_id('6ca983cd-b1c5-4e2c-949e-4be8ffa22a9c')
+    def test_vlan_transparent_allowed_address_pairs(self):
+        self._test_basic_inner_vlan_connectivity(
             port_security=True, use_allowed_address_pairs=True)

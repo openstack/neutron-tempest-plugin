@@ -628,6 +628,7 @@
     vars:
       network_api_extensions_ovn:
         - vlan-transparent
+        - qinq
         - external-gateway-multihoming
       devstack_localrc:
         Q_AGENT: ovn
@@ -678,6 +679,7 @@
             DEFAULT:
               enable_dvr: false
               vlan_transparent: true
+              vlan_qinq: true
           /$NEUTRON_CORE_PLUGIN_CONF:
             ml2:
               type_drivers: local,flat,vlan,geneve
@@ -688,6 +690,7 @@
             network-feature-enabled:
               available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
+              provider_vlans: public,
               available_type_drivers: local,flat,vlan,geneve
               is_igmp_snooping_enabled: True
               firewall_driver: ovn

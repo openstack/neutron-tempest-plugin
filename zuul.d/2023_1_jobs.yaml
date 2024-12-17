@@ -192,6 +192,7 @@
           (^neutron_tempest_plugin.scenario.test_floatingip.FloatingIPPortDetailsTest.test_floatingip_port_details)"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_linuxbridge) | join(',') }}"
+        NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:

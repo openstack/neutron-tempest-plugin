@@ -1,0 +1,9 @@
+---
+deprecations:
+  - |
+    The following options have been deprecated, in favor of the mechanism to
+    enable/disable tests according to the available extensions.
+
+    - ``[bgpvpn] run_bgpvpn_tests``
+    - ``[fwaas] run_fwaas_tests``
+    - ``[sfc] run_sfc_tests``

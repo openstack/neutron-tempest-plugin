@@ -3,7 +3,6 @@
     check:
       jobs:
         - neutron-tempest-plugin-openvswitch
-        - neutron-tempest-plugin-openvswitch-iptables_hybrid
         - neutron-tempest-plugin-ovn
         - neutron-tempest-plugin-designate-scenario:
             # TODO(slaweq) make job voting again once bug
@@ -15,7 +14,6 @@
       jobs:
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-ovn
-        - neutron-tempest-plugin-openvswitch-iptables_hybrid
     #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
     #              the experimental queue when it will be more stable
     experimental:
@@ -25,9 +23,11 @@
         - neutron-tempest-plugin-openvswitch-distributed-dhcp
         - neutron-tempest-plugin-openvswitch-iptables_hybrid-distributed-dhcp
         - neutron-tempest-plugin-ovn-enforce-scope-old-defaults
+        - neutron-tempest-plugin-openvswitch-iptables_hybrid
     periodic:
       jobs:
         - neutron-tempest-plugin-ovn-enforce-scope-old-defaults
+        - neutron-tempest-plugin-openvswitch-iptables_hybrid
 
 
 - project-template:

@@ -9,6 +9,8 @@
         override-checkout: 1.8.0
       - openstack/tempest
     vars:
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false
       tempest_concurrency: 4
       tempest_test_regex: ^neutron_tempest_plugin\.api
       # TODO(slaweq): find a way to put this list of extensions in

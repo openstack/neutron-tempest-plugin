@@ -110,10 +110,10 @@ class MetadataTest(base.BaseTempestTestCase):
                                   **params)['server']
 
     def _get_metadata_query_script(self):
-        sheebang_line = '\n#!/bin/bash'
+        sheebang_line = '\n#!/bin/bash -x'
         curl_cmd = '\ncurl http://[%(address)s' % {'address':
                                                    nlib_const.METADATA_V6_IP}
-        ip_cmd = ("%$(ip -6 -br address show scope link up | head -1 | "
+        ip_cmd = ("%25$(ip -6 -br address show scope link up | head -1 | "
                   "cut -d ' ' -f1)]/openstack/")
         echo_cmd = '\necho %s' % QUERY_MSG
         script = '%s%s%s%s' % (sheebang_line, curl_cmd, ip_cmd, echo_cmd)
@@ -198,8 +198,7 @@ class MetadataTest(base.BaseTempestTestCase):
         ipv6_subnet = self.create_subnet(network=ipv6_network, ip_version=6,
                                          ipv6_ra_mode="slaac",
                                          ipv6_address_mode="slaac")
-        if not CONF.neutron_plugin_options.firewall_driver == 'ovn':
-            self.create_router_interface(self.router['id'], ipv6_subnet['id'])
+        self.create_router_interface(self.router['id'], ipv6_subnet['id'])
         use_advanced_image = (
             not CONF.neutron_plugin_options.default_image_is_advanced)
         params = self._get_metadata_query_script()

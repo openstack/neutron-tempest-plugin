@@ -18,7 +18,6 @@
     #              the experimental queue when it will be more stable
     experimental:
       jobs:
-        - neutron-tempest-plugin-linuxbridge
         - neutron-tempest-plugin-dvr-multinode-scenario
         - neutron-tempest-plugin-openvswitch-distributed-dhcp
         - neutron-tempest-plugin-openvswitch-iptables_hybrid-distributed-dhcp

@@ -633,7 +633,10 @@
         Q_AGENT: ovn
         OVN_AGENT_EXTENSIONS: 'metadata'
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_ovn) | join(',') }}"
-        Q_ML2_PLUGIN_MECHANISM_DRIVERS: ovn,logger
+        # NOTE(ralonsoh): during the eventlet removal, the "logger" mech
+        # driver has been removed from this list. Re-add it once the removal
+        # is finished or the mech driver does not call monkey_patch().
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: ovn
         Q_ML2_PLUGIN_TYPE_DRIVERS: local,flat,vlan,geneve
         Q_ML2_TENANT_NETWORK_TYPE: geneve
         Q_USE_PROVIDERNET_FOR_PUBLIC: true

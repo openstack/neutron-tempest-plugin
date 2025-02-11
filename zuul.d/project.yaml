@@ -214,11 +214,21 @@
         - neutron-tempest-plugin-sfc-2023-2
         - neutron-tempest-plugin-sfc-2024-1
         - neutron-tempest-plugin-sfc-2024-2
-        - neutron-tempest-plugin-bgpvpn-bagpipe
+        - neutron-tempest-plugin-bgpvpn-bagpipe:
+            # TODO(lajoskatona) make job voting again once bug
+            # https://bugs.launchpad.net/neutron/+bug/2097367 will be fixed
+            voting: false
         - neutron-tempest-plugin-bgpvpn-bagpipe-2023-2
         - neutron-tempest-plugin-bgpvpn-bagpipe-2024-1
         - neutron-tempest-plugin-bgpvpn-bagpipe-2024-2
-        - neutron-tempest-plugin-dynamic-routing
+        - neutron-tempest-plugin-dynamic-routing:
+            # TODO(ralonsoh): this job is temporarily disabled; it will be
+            # restored once [1] is merged. This patch has been successfully
+            # tested in [2]. This job is removed from the gate queue,
+            # thus **remember to restore it in this queue too**.
+            # [1]https://review.opendev.org/c/openstack/neutron/+/941202
+            # [2]https://review.opendev.org/c/openstack/neutron-tempest-plugin/+/940906
+            voting: false
         - neutron-tempest-plugin-dynamic-routing-2023-2
         - neutron-tempest-plugin-dynamic-routing-2024-1
         - neutron-tempest-plugin-dynamic-routing-2024-2
@@ -239,7 +249,5 @@
     gate:
       jobs:
         - neutron-tempest-plugin-sfc
-        - neutron-tempest-plugin-bgpvpn-bagpipe
-        - neutron-tempest-plugin-dynamic-routing
         - neutron-tempest-plugin-fwaas
         - neutron-tempest-plugin-vpnaas-ovn

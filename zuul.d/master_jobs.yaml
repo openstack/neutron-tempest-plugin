@@ -1532,6 +1532,7 @@
       devstack_localrc:
         IPSEC_PACKAGE: strongswan
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_vpnaas) | join(',') }}"
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: ovn
       devstack_services:
         q-ovn-vpn-agent: true
       devstack_local_conf:

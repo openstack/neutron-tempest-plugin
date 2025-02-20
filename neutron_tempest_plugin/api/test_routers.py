@@ -424,9 +424,11 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
         router = self._create_router(
             data_utils.rand_name('router'),
             external_network_id=CONF.network.public_network_id,
-            enable_snat=False)
+            enable_snat=False,
+            client=self.admin_client,
+        )
         self.assertEqual(len(router['external_gateways']), 1)
-        res = self.client.router_add_external_gateways(
+        res = self.admin_client.router_add_external_gateways(
             router['id'],
             [{'network_id': CONF.network.public_network_id,
               'enable_snat': False}])
@@ -437,9 +439,10 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
         router = self._create_router(
             data_utils.rand_name('router'),
             external_network_id=CONF.network.public_network_id,
-            enable_snat=False)
+            enable_snat=False,
+            client=self.admin_client)
         self.assertEqual(len(router['external_gateways']), 1)
-        res = self.client.router_remove_external_gateways(
+        res = self.admin_client.router_remove_external_gateways(
             router['id'],
             [{'network_id': CONF.network.public_network_id}])
         self.assertEqual(len(res['router']['external_gateways']), 0)

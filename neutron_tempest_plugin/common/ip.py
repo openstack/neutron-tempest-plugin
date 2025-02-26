@@ -108,6 +108,11 @@ class IPCommand(object):
 
         return self.configure_vlan(addresses, port, vlan_tag, ip_addresses)
 
+    # NOTE(ralonsoh): some projects, like whitebox-neutron-tempest-plugin, are
+    # using ``configure_vlan_transparent`` method. The concept of "inner VLAN"
+    # does not exist in the VLAN transparency feature.
+    configure_vlan_transparent = configure_inner_vlan
+
     def list_namespaces(self):
         namespaces_output = self.execute("netns")
         ns_list = []

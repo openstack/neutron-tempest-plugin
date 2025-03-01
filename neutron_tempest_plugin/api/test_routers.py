@@ -377,7 +377,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
         router = self._create_router(data_utils.rand_name('router'))
         self.assertEqual(len(router['external_gateways']), 0)
 
-        res = self.client.router_add_external_gateways(
+        res = self.admin_client.router_add_external_gateways(
             router['id'],
             [{'network_id': CONF.network.public_network_id,
               'enable_snat': False}])
@@ -391,7 +391,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
         router = self._create_router(data_utils.rand_name('router'))
         self.assertEqual(len(router['external_gateways']), 0)
 
-        res = self.client.router_add_external_gateways(
+        res = self.admin_client.router_add_external_gateways(
             router['id'],
             [
                 {'network_id': CONF.network.public_network_id,
@@ -452,7 +452,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
         router = self._create_router(data_utils.rand_name('router'))
         self.assertEqual(len(router['external_gateways']), 0)
 
-        res = self.client.router_add_external_gateways(
+        res = self.admin_client.router_add_external_gateways(
             router['id'],
             [
                 {'network_id': CONF.network.public_network_id,
@@ -483,7 +483,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
         router = self._create_router(data_utils.rand_name('router'))
         self.assertEqual(len(router['external_gateways']), 0)
 
-        res = self.client.router_add_external_gateways(
+        res = self.admin_client.router_add_external_gateways(
             router['id'],
             [
                 {'network_id': CONF.network.public_network_id,
@@ -506,7 +506,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
                     remove_gateways[0])
 
         external_gateways[1] = remove_gateways[0]
-        res_update_gws = self.client.router_update_external_gateways(
+        res_update_gws = self.admin_client.router_update_external_gateways(
             router['id'],
             external_gateways)
 

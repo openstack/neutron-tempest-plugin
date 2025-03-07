@@ -685,6 +685,10 @@
               type_drivers: local,flat,vlan,geneve
             ml2_type_vlan:
               network_vlan_ranges: foo:1:10,public
+            ovn:
+              # This feature is available in OVN v24.03.4
+              # Latest Ubuntu 24.04 provides OVN v24.03.2
+              ovn_router_indirect_snat: false
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:

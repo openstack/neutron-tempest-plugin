@@ -201,12 +201,7 @@ class DefaultSnatToExternal(FloatingIpTestCasesMixin,
                                        gateway_external_ip,
                                        servers=[proxy, src_server])
 
-    @decorators.idempotent_id('b911b124-b6cb-449d-83d9-b34f3665741d')
-    @utils.requires_ext(extension='extraroute', service='network')
-    @testtools.skipUnless(
-        CONF.neutron_plugin_options.snat_rules_apply_to_nested_networks,
-        "Backend doesn't enable nested SNAT.")
-    def test_nested_snat_external_ip(self):
+    def _test_nested_snat_external_ip(self, feature_enabled_bool):
         """Check connectivity to an external IP from a nested network."""
         gateway_external_ip = self._get_external_gateway()
 
@@ -245,7 +240,7 @@ class DefaultSnatToExternal(FloatingIpTestCasesMixin,
         src_server = self._create_server(create_floating_ip=False,
                                          network=network)
 
-        # Validate that it can access external gw ip (via nested snat)
+        # Check connectivity if nested SNAT is enabled, else no connectivity
         src_server_ip = src_server['port']['fixed_ips'][0]['ip_address']
         ssh_client = ssh.Client(src_server_ip,
                                 CONF.validation.image_ssh_user,
@@ -253,7 +248,16 @@ class DefaultSnatToExternal(FloatingIpTestCasesMixin,
                                 proxy_client=proxy_client)
         self.check_remote_connectivity(ssh_client,
                                        gateway_external_ip,
+                                       should_succeed=feature_enabled_bool,
                                        servers=[proxy, src_server])
+
+    @decorators.idempotent_id('b911b124-b6cb-449d-83d9-b34f3665741d')
+    @utils.requires_ext(extension='extraroute', service='network')
+    def test_nested_snat_external_ip(self):
+        feature_enabled_bool = (
+            CONF.neutron_plugin_options.snat_rules_apply_to_nested_networks
+        )
+        self._test_nested_snat_external_ip(feature_enabled_bool)
 
 
 class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,

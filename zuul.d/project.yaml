@@ -4,10 +4,7 @@
       jobs:
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-ovn
-        - neutron-tempest-plugin-designate-scenario:
-            # TODO(slaweq) make job voting again once bug
-            # https://bugs.launchpad.net/designate/+bug/2072627 will be fixed
-              voting: false
+        - neutron-tempest-plugin-designate-scenario
         - neutron-tempest-plugin-openvswitch-ubuntu-jammy:
             # TODO(ralonsoh): LP#2101857
               voting: false

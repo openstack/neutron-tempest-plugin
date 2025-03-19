@@ -282,6 +282,12 @@
     vars:
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
+      # NOTE(haleyb): Scenario tests are disabled since they are failing trying
+      # to create the unmaintained/2023.1 branch due to an os-ken issue. See
+      # https://review.opendev.org/c/openstack/neutron-dynamic-routing/+/935090
+      # for more details.
+      tempest_exclude_regex: "\
+          (^neutron_tempest_plugin.neutron_dynamic_routing.scenario)"
 
 - job:
     name: neutron-tempest-plugin-fwaas-2023-1

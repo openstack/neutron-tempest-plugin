@@ -127,6 +127,7 @@
         - trunk
         - trunk-details
         - uplink-status-propagation
+        - uplink-status-propagation-updatable
       devstack_services:
         tempest: true
         neutron-dns: true

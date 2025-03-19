@@ -97,6 +97,7 @@
         - trunk
         - trunk-details
         - uplink-status-propagation
+        - uplink-status-propagation-updatable
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_openvswitch) | join(',') }}"
       devstack_local_conf:

@@ -5,12 +5,8 @@
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-ovn
         - neutron-tempest-plugin-designate-scenario
-        - neutron-tempest-plugin-openvswitch-ubuntu-jammy:
-            # TODO(ralonsoh): LP#2101857
-              voting: false
-        - neutron-tempest-plugin-ovn-ubuntu-jammy:
-            # TODO(ralonsoh): LP#2101857
-            voting: false
+        - neutron-tempest-plugin-openvswitch-ubuntu-jammy
+        - neutron-tempest-plugin-ovn-ubuntu-jammy
     gate:
       jobs:
         - neutron-tempest-plugin-openvswitch

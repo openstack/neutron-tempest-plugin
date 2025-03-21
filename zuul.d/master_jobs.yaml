@@ -1721,3 +1721,6 @@
     name: neutron-tempest-plugin-ovn-ubuntu-jammy
     parent: neutron-tempest-plugin-ovn
     nodeset: neutron-nested-virt-ubuntu-jammy
+    vars:
+      # NOTE(ykarel) exclude QinqTest due to https://bugs.launchpad.net/neutron/+bug/2101857
+      tempest_exclude_regex: "^neutron_tempest_plugin.scenario.test_vlan_transparency.VlanQinqTest.*"

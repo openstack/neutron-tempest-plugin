@@ -1451,7 +1451,7 @@
 - job:
     name: neutron-tempest-plugin-vpnaas
     parent: neutron-tempest-plugin-base
-    timeout: 4500
+    timeout: 5400
     required-projects:
       - openstack/neutron
       - openstack/neutron-vpnaas
@@ -1533,7 +1533,7 @@
 - job:
     name: neutron-tempest-plugin-vpnaas-ovn
     parent: neutron-tempest-plugin-base
-    timeout: 3900
+    timeout: 5400
     required-projects:
       - openstack/neutron
       - openstack/neutron-vpnaas

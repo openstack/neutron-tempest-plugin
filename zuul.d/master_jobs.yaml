@@ -193,16 +193,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
-      - ^.*\.conf\.sample$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^tools/.*$
       - ^tox.ini$
       - ^plugin.spec$
@@ -215,18 +215,8 @@
       - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-openvswitch
@@ -286,16 +276,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
-      - ^.*\.conf\.sample$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^tools/.*$
       - ^tox.ini$
       - ^plugin.spec$
@@ -324,18 +314,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-openvswitch-iptables_hybrid
@@ -403,16 +383,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
-      - ^.*\.conf\.sample$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^tools/.*$
       - ^tox.ini$
       - ^plugin.spec$
@@ -442,18 +422,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-ovn-enforce-scope-old-defaults
@@ -544,7 +514,7 @@
         Q_AGENT: linuxbridge
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_linuxbridge) | join(',') }}"
         Q_ML2_TENANT_NETWORK_TYPE: vxlan
-        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch,linuxbridge
+        Q_ML2_PLUGIN_MECHANISM_DRIVERS: linuxbridge
       devstack_local_conf:
         post-config:
           $NEUTRON_CONF:
@@ -572,16 +542,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
-      - ^.*\.conf\.sample$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^tools/.*$
       - ^tox.ini$
       - ^plugin.spec$
@@ -611,18 +581,8 @@
       - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-ovn
@@ -716,16 +676,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
-      - ^.*\.conf\.sample$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^tools/.*$
       - ^tox.ini$
       - ^plugin.spec$
@@ -759,18 +719,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 # TODO(slaweq): remove that job's definition as soon as new job
 # "neutron-tempest-plugin-ovn" will be used in the neutron-lib repo as
@@ -987,16 +937,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
-      - ^.*\.conf\.sample$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^tools/.*$
       - ^tox.ini$
       - ^plugin.spec$
@@ -1024,18 +974,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-designate-scenario
@@ -1066,16 +1006,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
       - ^setup.cfg$
       - ^.*\.rst$
-      - ^.*\.conf\.sample$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^tools/.*$
       - ^tox.ini$
       - ^plugin.spec$
@@ -1120,18 +1060,8 @@
       - ^neutron/services/timestamp/.*$
       - ^neutron/services/trunk/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-sfc
@@ -1182,16 +1112,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
-      - ^.*\.conf\.sample$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
@@ -1209,18 +1139,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe
@@ -1263,16 +1183,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
-      - ^.*\.conf\.sample$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
@@ -1290,18 +1210,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing
@@ -1332,16 +1242,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
-      - ^.*\.conf\.sample$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
@@ -1357,18 +1267,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-fwaas
@@ -1409,15 +1309,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
-      - ^.*\.conf\.sample$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
@@ -1435,18 +1336,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-vpnaas
@@ -1490,16 +1381,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
-      - ^.*\.conf\.sample$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
@@ -1517,18 +1408,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-vpnaas-ovn
@@ -1564,16 +1445,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
-      - ^.*\.conf\.sample$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
@@ -1591,18 +1472,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service
@@ -1686,16 +1557,16 @@
     irrelevant-files:
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
-      - lower-constraints.txt
+      - ^lower-constraints.txt$
       - ^releasenotes/.*$
       - ^doc/.*$
-      - ^.*\.conf\.sample$
       - ^setup.cfg$
       - ^.*\.rst$
+      - ^.*\.sample$
       - ^neutron/locale/.*$
       - ^neutron/tests/unit/.*$
-      - ^neutron/tests/fullstack/.*
-      - ^neutron/tests/functional/.*
+      - ^neutron/tests/fullstack/.*$
+      - ^neutron/tests/functional/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
@@ -1713,18 +1584,8 @@
       - ^playbooks/.*linuxbridge.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
-      - ^zuul.d/2023_1_jobs.yaml
-      - ^zuul.d/2023_2_jobs.yaml
-      - ^zuul.d/2024_1_jobs.yaml
-      - ^zuul.d/2024_2_jobs.yaml
-      - ^zuul.d/2025_1_jobs.yaml
+      - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
-      - ^zuul.d/master_jobs.yaml
-      - ^zuul.d/victoria_jobs.yaml
-      - ^zuul.d/wallaby_jobs.yaml
-      - ^zuul.d/xena_jobs.yaml
-      - ^zuul.d/yoga_jobs.yaml
-      - ^zuul.d/zed_jobs.yaml
 
 - job:
     name: neutron-tempest-plugin-openvswitch-ubuntu-jammy

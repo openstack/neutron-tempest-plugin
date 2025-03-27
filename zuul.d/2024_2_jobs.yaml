@@ -139,10 +139,10 @@
               firewall_driver: iptables_hybrid
 
 - job:
-    name: neutron-tempest-plugin-openvswitch-enforce-scope-new-defaults-2024-1
-    parent: neutron-tempest-plugin-openvswitch-2024-1
+    name: neutron-tempest-plugin-openvswitch-enforce-scope-new-defaults-2024-2
+    parent: neutron-tempest-plugin-openvswitch-2024-2
     nodeset: neutron-nested-virt-ubuntu-jammy
-    override-checkout: stable/2024.1
+    override-checkout: stable/2024.2
     vars:
       devstack_localrc:
         # Enabeling the scope and new defaults for services.

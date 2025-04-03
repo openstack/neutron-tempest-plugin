@@ -316,7 +316,6 @@ class TrunkTest(base.BaseTempestTestCase):
                                          vlan_subnet=vlan_subnet)
             self._check_servers_remote_connectivity(vms=vms)
 
-    @test.unstable_test("bug 1897796")
     @testtools.skipUnless(
         (CONF.neutron_plugin_options.advanced_image_ref or
          CONF.neutron_plugin_options.default_image_is_advanced),

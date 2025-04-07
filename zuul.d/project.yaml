@@ -5,8 +5,6 @@
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-ovn
         - neutron-tempest-plugin-designate-scenario
-        - neutron-tempest-plugin-openvswitch-ubuntu-jammy
-        - neutron-tempest-plugin-ovn-ubuntu-jammy
     gate:
       jobs:
         - neutron-tempest-plugin-openvswitch

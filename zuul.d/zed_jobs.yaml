@@ -288,7 +288,7 @@
 
 - job:
     name: neutron-tempest-plugin-fwaas-zed
-    parent: neutron-tempest-plugin-fwaas
+    parent: neutron-tempest-plugin-fwaas-openvswitch
     nodeset: openstack-single-node-focal
     override-checkout: unmaintained/zed
     required-projects: *required-projects-zed

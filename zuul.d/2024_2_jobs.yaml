@@ -271,7 +271,7 @@
 
 - job:
     name: neutron-tempest-plugin-fwaas-2024-2
-    parent: neutron-tempest-plugin-fwaas
+    parent: neutron-tempest-plugin-fwaas-openvswitch
     nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.2
 

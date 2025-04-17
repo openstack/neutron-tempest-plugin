@@ -1271,8 +1271,8 @@
       - ^zuul.d/base-nested-switch.yaml
 
 - job:
-    name: neutron-tempest-plugin-fwaas
-    parent: neutron-tempest-plugin-base
+    name: neutron-tempest-plugin-fwaas-ovn
+    parent: neutron-tempest-plugin-ovn
     timeout: 10800
     required-projects:
       - openstack/neutron-fwaas
@@ -1284,29 +1284,16 @@
       tempest_test_regex: ^neutron_tempest_plugin\.fwaas
       devstack_plugins:
         neutron-fwaas: https://opendev.org/openstack/neutron-fwaas.git
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
       network_api_extensions_fwaas:
         - fwaas_v2
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_fwaas) | join(',') }}"
-        Q_AGENT: openvswitch
-        Q_ML2_TENANT_NETWORK_TYPE: vxlan
-        Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
-      devstack_services:
-        # Disable OVN services
-        br-ex-tcpdump: false
-        br-int-flows: false
-        ovn-controller: false
-        ovn-northd: false
-        q-ovn-metadata-agent: false
-        # Neutron services
-        q-agt: true
-        q-dhcp: true
-        q-meta: true
-        q-metering: true
-        q-l3: true
-        neutron-log: false
-    irrelevant-files:
+      devstack_local_conf:
+        test-config:
+          $TEMPEST_CONFIG:
+            fwaas:
+              driver: ovn
+    irrelevant-files: &fwaas_irrelevant_files
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1338,6 +1325,44 @@
       # Ignore everything except for zuul.d/project.yaml
       - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
+
+- job:
+    name: neutron-tempest-plugin-fwaas-openvswitch
+    parent: neutron-tempest-plugin-openvswitch
+    required-projects:
+      - openstack/neutron-fwaas
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - openstack/tempest
+    vars:
+      tempest_concurrency: 4
+      tempest_test_regex: ^neutron_tempest_plugin\.fwaas
+      devstack_plugins:
+        neutron-fwaas: https://opendev.org/openstack/neutron-fwaas.git
+      network_api_extensions_fwaas:
+        - fwaas_v2
+      devstack_localrc:
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_fwaas) | join(',') }}"
+      devstack_services:
+        # Neutron services
+        q-agt: true
+        q-dhcp: true
+        q-meta: true
+        q-metering: true
+        q-l3: true
+        neutron-log: false
+      devstack_local_conf:
+        test-config:
+          $TEMPEST_CONFIG:
+            fwaas:
+              driver: openvswitch
+    irrelevant-files: *fwaas_irrelevant_files
+
+# TODO(slaweq):
+# Remove this alias once jobs in fwaas project will be moved to the new names
+- job:
+    name: neutron-tempest-plugin-fwaas
+    parent: neutron-tempest-plugin-fwaas-openvswitch
 
 - job:
     name: neutron-tempest-plugin-vpnaas

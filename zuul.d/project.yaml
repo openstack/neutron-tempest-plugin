@@ -246,7 +246,8 @@
         - neutron-tempest-plugin-dynamic-routing-2024-1
         - neutron-tempest-plugin-dynamic-routing-2024-2
         - neutron-tempest-plugin-dynamic-routing-2025-1
-        - neutron-tempest-plugin-fwaas
+        - neutron-tempest-plugin-fwaas-ovn
+        - neutron-tempest-plugin-fwaas-openvswitch
         - neutron-tempest-plugin-fwaas-2023-2
         - neutron-tempest-plugin-fwaas-2024-1
         - neutron-tempest-plugin-fwaas-2024-2
@@ -267,5 +268,5 @@
       jobs:
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
-        - neutron-tempest-plugin-fwaas
+        - neutron-tempest-plugin-fwaas-ovn
         - neutron-tempest-plugin-vpnaas-ovn

@@ -25,7 +25,6 @@ try:
 except ImportError:
     from urllib import parse as urlparse
 
-import eventlet
 from neutron_lib._i18n import _
 from oslo_log import log
 from tempest.lib import exceptions
@@ -79,15 +78,14 @@ def wait_until_true(predicate, timeout=60, sleep=1, exception=None):
     :param exception: Exception instance to raise on timeout. If None is passed
                       (default) then WaitTimeout exception is raised.
     """
-    try:
-        with eventlet.Timeout(timeout):
-            while not predicate():
-                eventlet.sleep(sleep)
-    except eventlet.Timeout:
-        if exception is not None:
-            # pylint: disable=raising-bad-type
-            raise exception
-        raise WaitTimeout(_("Timed out after %d seconds" % timeout))
+    start_time = time.time()
+    while not predicate():
+        elapsed_time = time.time() - start_time
+        if elapsed_time > timeout:
+            raise exception if exception else WaitTimeout(
+                _("Timed out after %d seconds") % timeout
+            )
+        time.sleep(sleep)
 
 
 def override_class(overriden_class, overrider_class):

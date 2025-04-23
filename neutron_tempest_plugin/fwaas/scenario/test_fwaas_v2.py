@@ -269,12 +269,11 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
 
         # Scenario 3: Create a rule allowing ICMP only from server_fixed_ip_1
         # to server_fixed_ip_2 and check that traffic from opposite direction
-        # is blocked.
+        # is blocked (for ovs driver where rules are stateful).
         fw_allow_unidirectional_icmp_rule = self.create_firewall_rule(
             action="allow", protocol="icmp",
             source_ip_address=topology['server_fixed_ip_1'],
             destination_ip_address=topology['server_fixed_ip_2'])
-
         self.remove_firewall_rule_from_policy_and_wait(
             firewall_group_id=fw_group['id'],
             firewall_rule_id=fw_deny_icmp_rule['id'],
@@ -283,6 +282,20 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
             firewall_group_id=fw_group['id'],
             firewall_rule_id=fw_allow_unidirectional_icmp_rule['id'],
             firewall_policy_id=fw_policy['id'])
+
+        if CONF.fwaas.driver == 'ovn':
+            # NOTE(slaweq): OVN driver in FWaaS implements only stateless rules
+            # so allowing only unidirectional traffic is not enough as ICMP
+            # replies are still blocked and to make it working additional rule
+            # for the opposite direction is required also:
+            fw_allow_icmp_reply_rule = self.create_firewall_rule(
+                action="allow", protocol="icmp",
+                source_ip_address=topology['server_fixed_ip_2'],
+                destination_ip_address=topology['server_fixed_ip_1'])
+            self.insert_firewall_rule_in_policy_and_wait(
+                firewall_group_id=fw_group['id'],
+                firewall_rule_id=fw_allow_icmp_reply_rule['id'],
+                firewall_policy_id=fw_policy['id'])
 
         self._check_server_connectivity(
             topology['server_floating_ip_1'],
@@ -293,7 +306,7 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
             topology['server_floating_ip_2'],
             topology['private_key2'],
             address_list=[topology['server_fixed_ip_1']],
-            should_connect=False)
+            should_connect=CONF.fwaas.driver == 'ovn')
 
         # Disassociate ports of this firewall group for cleanup resources
         self.update_firewall_group_and_wait(fw_group['id'], ports=[])

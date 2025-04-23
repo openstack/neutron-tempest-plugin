@@ -207,6 +207,10 @@ FwaasGroup = [
                 deprecated_for_removal=True,
                 deprecated_reason='Tests are skipped according to '
                                   'the available extensions.'),
+    cfg.StrOpt('driver',
+               default=None,
+               choices=['openvswitch', 'ovn'],
+               help='Driver used by the FWaaS plugin.'),
 ]
 
 fwaas_group = cfg.OptGroup(

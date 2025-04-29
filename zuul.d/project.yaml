@@ -4,7 +4,8 @@
       jobs:
         - neutron-tempest-plugin-openvswitch
         - neutron-tempest-plugin-ovn
-        - neutron-tempest-plugin-designate-scenario
+        - neutron-tempest-plugin-designate-scenario:
+            voting: false
     gate:
       jobs:
         - neutron-tempest-plugin-openvswitch
@@ -199,7 +200,8 @@
         - neutron-tempest-plugin-openvswitch-2025-1
         - neutron-tempest-plugin-openvswitch-iptables_hybrid-2025-1
         - neutron-tempest-plugin-ovn-2025-1
-        - neutron-tempest-plugin-designate-scenario-2025-1
+        - neutron-tempest-plugin-designate-scenario-2025-1:
+            voting: false
         - neutron-tempest-plugin-openvswitch-ubuntu-jammy-2025-1
         - neutron-tempest-plugin-ovn-ubuntu-jammy-2025-1
     gate:

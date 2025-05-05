@@ -722,13 +722,6 @@
       - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
 
-# TODO(slaweq): remove that job's definition as soon as new job
-# "neutron-tempest-plugin-ovn" will be used in the neutron-lib repo as
-# instead of old "neutron-tempest-plugin-api" job
-- job:
-    name: neutron-tempest-plugin-api
-    parent: neutron-tempest-plugin-ovn
-
 - job:  # Needed only in Neutron stable/2024.2
     name: neutron-tempest-plugin-api-ovs-wsgi
     parent: neutron-tempest-plugin-openvswitch
@@ -1357,12 +1350,6 @@
             fwaas:
               driver: openvswitch
     irrelevant-files: *fwaas_irrelevant_files
-
-# TODO(slaweq):
-# Remove this alias once jobs in fwaas project will be moved to the new names
-- job:
-    name: neutron-tempest-plugin-fwaas
-    parent: neutron-tempest-plugin-fwaas-openvswitch
 
 - job:
     name: neutron-tempest-plugin-vpnaas

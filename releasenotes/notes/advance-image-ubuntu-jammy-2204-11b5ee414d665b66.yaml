@@ -1,0 +1,5 @@
+---
+other:
+  - |
+    The testing advanced image used in some jobs has been bumped from Ubuntu
+    Focal 20.04 to Ubuntu Jammy 22.04.

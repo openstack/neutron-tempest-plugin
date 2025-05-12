@@ -67,6 +67,18 @@ function chroot_image {
     bind_dir "/dev/pts" "${mount_dir}/dev/pts"
     bind_dir "/proc" "${mount_dir}/proc"
     bind_dir "/sys" "${mount_dir}/sys"
+    if [ -f /etc/apt/sources.list ]; then
+      mirror=$(grep -oP 'https?://\K[^/ ]+' /etc/apt/sources.list|head -1)
+      if [ -f ${mount_dir}/etc/apt/sources.list ]; then
+          source ${mount_dir}/etc/os-release
+          sudo tee ${mount_dir}/etc/apt/sources.list <<EOF
+          deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME} main universe
+          deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-updates main universe
+          deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-backports main universe
+          deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-security main universe
+EOF
+      fi
+    fi
 
     # Mount to keep temporary files out of guest image
     mkdir -p "${temp_dir}/apt" "${temp_dir}/cache" "${temp_dir}/tmp"

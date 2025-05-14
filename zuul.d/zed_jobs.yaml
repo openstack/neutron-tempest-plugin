@@ -225,7 +225,13 @@
     name: neutron-tempest-plugin-designate-scenario-zed
     parent: neutron-tempest-plugin-designate-scenario
     override-checkout: unmaintained/zed
-    required-projects: *required-projects-zed
+    required-projects:
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: zed-last
+      - openstack/tempest
+      - name: openstack/designate-tempest-plugin
+        override-checkout: zed-last
     nodeset: neutron-nested-virt-ubuntu-focal
     vars:
       network_api_extensions_common: *api_extensions

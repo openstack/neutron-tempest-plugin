@@ -6,8 +6,12 @@
     required-projects: &required-projects-yoga
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 2.6.0
+        override-checkout: yoga-last
       - openstack/tempest
+      - name: openstack/designate-tempest-plugin
+        override-checkout: yoga-last
+      - name: openstack/designate
+        override-checkout: yoga-eol
     vars:
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false

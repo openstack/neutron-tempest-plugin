@@ -1145,6 +1145,7 @@
     required-projects:
       - openstack/networking-bagpipe
       - openstack/networking-bgpvpn
+    timeout: 10800
     vars:
       devstack_services:
         # Disable OVN services

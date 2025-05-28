@@ -123,8 +123,8 @@ class BaseVlanTest(base.BaseAdminTempestTestCase):
             self, port_security=True, use_allowed_address_pairs=False):
         self._ensure_ethtype()
         vlan_tag = data_utils.rand_int_id(start=MIN_VLAN_ID, end=MAX_VLAN_ID)
-        vlan_ipmask_template = '192.168.%d.{ip_last_byte}/24' % (vlan_tag %
-                                                                 256)
+        vtag = vlan_tag % 256
+        vlan_ipmask_template = '192.%d.%d.{ip_last_byte}/24' % (vtag, vtag)
         vms = []
         vlan_ipmasks = []
         floating_ips = []

@@ -610,10 +610,11 @@
         OVN_DBS_LOG_LEVEL: dbg
         ENABLE_TLS: True
         OVN_IGMP_SNOOPING_ENABLE: True
-        # NOTE(ralonsoh): ubuntu-22.04-minimal is not used due to an issue with
-        # the IGMP messages. See https://bugs.launchpad.net/cloud-images/+bug/2110520
-        IMAGE_URLS: https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img
-        ADVANCED_IMAGE_NAME: jammy-server-cloudimg-amd64
+      # NOTE(ralonsoh): The advance image used "ubuntu-22.04-minimal" has a reported issue (LP#2110520)
+      # with the IGMP report messages. Because of that and because ML2/OVN has "igmp_snooping_enable"
+      # set, the receiver VM cannot subscribe to the IGMP group nor receive any IGMP message.
+      tempest_exclude_regex: "\
+        (^neutron_tempest_plugin.scenario.test_multicast.MulticastTestIPv4.test_multicast_between_vms_on_same_network)"
       devstack_services:
         br-ex-tcpdump: true
         br-int-flows: true

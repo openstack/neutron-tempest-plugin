@@ -183,6 +183,18 @@
     name: neutron-tempest-plugin-ovn-ubuntu-jammy-2025-1
     parent: neutron-tempest-plugin-ovn-2025-1
     nodeset: neutron-nested-virt-ubuntu-jammy
+    vars:
+      # NOTE(ralonsoh): The advance image used "ubuntu-22.04-minimal" has a reported issue (LP#2110520)
+      # with the IGMP report messages. Because of that and because ML2/OVN has "igmp_snooping_enable"
+      # set, the receiver VM cannot subscribe to the IGMP group nor receive any IGMP message.
+      # NOTE(ykarel) Known issue in OVN version included in OVN jammy
+      # https://bugs.launchpad.net/neutron/+bug/2112620, skipping random failing tests
+      # test_vlan_transparent_allowed_address_pairs
+      # test_packets_of_any_connection_state_can_reach_dest
+      tempest_exclude_regex: "\
+        (^neutron_tempest_plugin.scenario.test_multicast.MulticastTestIPv4.test_multicast_between_vms_on_same_network)|\
+        (test_vlan_transparent_allowed_address_pairs)|\
+        (test_packets_of_any_connection_state_can_reach_dest)"
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-2025-1

@@ -189,12 +189,12 @@
       # set, the receiver VM cannot subscribe to the IGMP group nor receive any IGMP message.
       # NOTE(ykarel) Known issue in OVN version included in OVN jammy
       # https://bugs.launchpad.net/neutron/+bug/2112620, skipping random failing tests
-      # test_vlan_transparent_allowed_address_pairs
-      # test_packets_of_any_connection_state_can_reach_dest
+      # neutron_tempest_plugin.scenario.test_vlan_transparency
+      # neutron_tempest_plugin.scenario.test_security_groups
       tempest_exclude_regex: "\
         (^neutron_tempest_plugin.scenario.test_multicast.MulticastTestIPv4.test_multicast_between_vms_on_same_network)|\
-        (test_vlan_transparent_allowed_address_pairs)|\
-        (test_packets_of_any_connection_state_can_reach_dest)"
+        (^neutron_tempest_plugin.scenario.test_vlan_transparency)|\
+        (^neutron_tempest_plugin.scenario.test_security_groups)"
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-2025-1

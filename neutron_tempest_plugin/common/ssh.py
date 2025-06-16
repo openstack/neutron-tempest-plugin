@@ -230,8 +230,6 @@ class Client(ssh.Client):
 
             # Update local environment
             lang, encoding = locale.getlocale()
-            if not lang:
-                lang, encoding = locale.getdefaultlocale()
             _locale = '.'.join([lang, encoding])
             channel.update_environment({'LC_ALL': _locale,
                                         'LANG': _locale})

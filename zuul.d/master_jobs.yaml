@@ -23,7 +23,6 @@
           (^tempest.api.compute.servers.test_attach_interfaces)|\
           (^tempest.api.compute.servers.test_multiple_create)"
       devstack_localrc:
-        USE_PYTHON3: true
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         PHYSICAL_NETWORK: public
         IMAGE_URLS: https://cloud-images.ubuntu.com/minimal/releases/jammy/release/ubuntu-22.04-minimal-cloudimg-amd64.img
@@ -770,7 +769,6 @@
         - dhcp_agent_scheduler
         - dvr
       devstack_localrc:
-        USE_PYTHON3: true
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_dvr) | join(',') }}"
         PHYSICAL_NETWORK: default
         CIRROS_VERSION: 0.6.3
@@ -910,7 +908,6 @@
           s-object: false
           s-proxy: false
         devstack_localrc:
-          USE_PYTHON3: true
           Q_AGENT: openvswitch
           Q_ML2_TENANT_NETWORK_TYPE: vxlan
           Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch

@@ -100,6 +100,7 @@ NeutronPluginOptions = [
                help='User name used to connect to "ssh_proxy_jump_host".'),
     cfg.StrOpt('ssh_proxy_jump_password',
                default=None,
+               secret=True,
                help='Password used to connect to "ssh_proxy_jump_host".'),
     cfg.StrOpt('ssh_proxy_jump_keyfile',
                default=None,

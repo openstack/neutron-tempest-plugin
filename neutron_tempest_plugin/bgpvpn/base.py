@@ -72,13 +72,8 @@ class BaseBgpvpnTest(test.BaseNetworkTest):
     @classmethod
     def skip_checks(cls):
         super(BaseBgpvpnTest, cls).skip_checks()
-        msg = None
         if not utils.is_extension_enabled('bgpvpn', 'network'):
             msg = "Bgpvpn extension not enabled."
-        elif not CONF.bgpvpn.run_bgpvpn_tests:
-            msg = ("Running of bgpvpn related tests is disabled in "
-                   "plugin configuration.")
-        if msg:
             raise cls.skipException(msg)
 
     def create_bgpvpn(self, client, **kwargs):

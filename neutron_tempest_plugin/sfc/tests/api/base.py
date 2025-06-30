@@ -34,16 +34,6 @@ class BaseFlowClassifierTest(
 ):
 
     @classmethod
-    def skip_checks(cls):
-        super(BaseFlowClassifierTest, cls).skip_checks()
-        msg = None
-        if not CONF.sfc.run_sfc_tests:
-            msg = ("Running of SFC related tests is disabled in "
-                   "plugin configuration.")
-        if msg:
-            raise cls.skipException(msg)
-
-    @classmethod
     def resource_setup(cls):
         super(BaseFlowClassifierTest, cls).resource_setup()
         if not utils.is_extension_enabled('flow_classifier', 'network'):

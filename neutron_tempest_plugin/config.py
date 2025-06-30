@@ -165,15 +165,6 @@ for opt in NeutronPluginOptions:
     CONF.register_opt(opt, 'neutron_plugin_options')
 
 BgpvpnGroup = [
-    # TODO(tkajinam): This has been required since the plugin tests was merged
-    # into neutron-tempest-plugin in Train. Remove this after 2025.1 release.
-    cfg.BoolOpt('run_bgpvpn_tests',
-                default=True,
-                help=("If it is set to False bgpvpn api and scenario tests "
-                      "will be skipped"),
-                deprecated_for_removal=True,
-                deprecated_reason='Tests are skipped according to '
-                                  'the available extensions.'),
     cfg.IntOpt('min_asn',
                default=100,
                help=("Minimum number for the range of "
@@ -198,15 +189,6 @@ CONF.register_group(bgpvpn_group)
 CONF.register_opts(BgpvpnGroup, group="bgpvpn")
 
 FwaasGroup = [
-    # TODO(tkajinam): This has been required since the plugin tests was merged
-    # into neutron-tempest-plugin in Train. Remove this after 2025.1 release.
-    cfg.BoolOpt('run_fwaas_tests',
-                default=True,
-                help=("If it is set to False fwaas api and scenario tests "
-                      "will be skipped"),
-                deprecated_for_removal=True,
-                deprecated_reason='Tests are skipped according to '
-                                  'the available extensions.'),
     cfg.StrOpt('driver',
                default=None,
                choices=['openvswitch', 'ovn'],
@@ -217,22 +199,6 @@ fwaas_group = cfg.OptGroup(
     name="fwaas", title=("Neutron-fwaas Service Options"))
 CONF.register_group(fwaas_group)
 CONF.register_opts(FwaasGroup, group="fwaas")
-
-SfcGroup = [
-    # TODO(tkajinam): This has been required since the plugin tests was merged
-    # into neutron-tempest-plugin in Train. Remove this after 2025.1 release.
-    cfg.BoolOpt('run_sfc_tests',
-                default=True,
-                help=("If it is set to False SFC api and scenario tests "
-                      "will be skipped"),
-                deprecated_for_removal=True,
-                deprecated_reason='Tests are skipped according to '
-                                  'the available extensions.'),
-]
-
-sfc_group = cfg.OptGroup(name="sfc", title=("Networking-sfc Service Options"))
-CONF.register_group(sfc_group)
-CONF.register_opts(SfcGroup, group="sfc")
 
 
 TaasGroup = [

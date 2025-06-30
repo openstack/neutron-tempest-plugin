@@ -31,16 +31,6 @@ class ScenarioTest(manager.NetworkScenarioTest):
 
     credentials = ['primary']
 
-    @classmethod
-    def skip_checks(cls):
-        super(ScenarioTest, cls).skip_checks()
-        msg = None
-        if not CONF.fwaas.run_fwaas_tests:
-            msg = ("Running of fwaas related tests is disabled in "
-                   "plugin configuration.")
-        if msg:
-            raise cls.skipException(msg)
-
 
 class NetworkScenarioTest(ScenarioTest):
     """Base class for network scenario tests.

@@ -69,17 +69,19 @@ function chroot_image {
     bind_dir "/sys" "${mount_dir}/sys"
     if [ -f /etc/apt/sources.list ]; then
       mirror=$(grep -oP 'https?://\K[^/ ]+' /etc/apt/sources.list|head -1)
-      if sudo test -f ${mount_dir}/etc/apt/sources.list.d/ubuntu.sources; then
-          sudo sed -Ei "s|(http[s]?://)([^/]+)|\1${mirror}|g" ${mount_dir}/etc/apt/sources.list.d/ubuntu.sources
-          sudo sed -i "/URIs:/a Trusted: yes" ${mount_dir}/etc/apt/sources.list.d/ubuntu.sources
-      elif sudo test -f ${mount_dir}/etc/apt/sources.list; then
-          source <(sudo cat ${mount_dir}/etc/os-release)
-          sudo tee ${mount_dir}/etc/apt/sources.list <<EOF
-          deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME} main universe
-          deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-updates main universe
-          deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-backports main universe
-          deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-security main universe
+      if [ -n "${mirror}" ]; then
+          if sudo test -f ${mount_dir}/etc/apt/sources.list.d/ubuntu.sources; then
+              sudo sed -Ei "s|(http[s]?://)([^/]+)|\1${mirror}|g" ${mount_dir}/etc/apt/sources.list.d/ubuntu.sources
+              sudo sed -i "/URIs:/a Trusted: yes" ${mount_dir}/etc/apt/sources.list.d/ubuntu.sources
+          elif sudo test -f ${mount_dir}/etc/apt/sources.list; then
+              source <(sudo cat ${mount_dir}/etc/os-release)
+              sudo tee ${mount_dir}/etc/apt/sources.list <<EOF
+              deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME} main universe
+              deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-updates main universe
+              deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-backports main universe
+              deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-security main universe
 EOF
+          fi
       fi
     fi
 

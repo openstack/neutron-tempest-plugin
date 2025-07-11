@@ -86,3 +86,53 @@ class NetworksTestAdmin(base.BaseAdminNetworkTest):
         network = self.admin_client.show_network(
             network['id'])['network']
         self.assertEqual('vxlan', network['provider:network_type'])
+
+    @decorators.idempotent_id('bbb9a2be-c9a7-4693-ac8e-d51b5371b68d')
+    def test_list_network_filter_provider_attributes(self):
+        project_id = self.client.project_id
+        physnet_name = config.CONF.neutron_plugin_options.provider_vlans[0]
+        # Check project networks pre-created.
+        body = self.client.list_networks(project_id=project_id)['networks']
+        num_networks_precreated = len(body)
+
+        networks = []
+        num_networks = 5
+        for _ in range(num_networks):
+            networks.append(self.create_network(
+                provider_network_type='vlan',
+                provider_physical_network=physnet_name,
+                project_id=project_id))
+
+        # Check new project networks created.
+        body = self.client.list_networks(project_id=project_id)['networks']
+        self.assertEqual(num_networks + num_networks_precreated, len(body))
+
+        vlan_ids = [net['provider:segmentation_id'] for net in networks]
+
+        # List networks with limit (from 1 to num_networks).
+        # Each filter (except from the 'provider:segmentation_id'), uses the
+        # value directly and in a list.
+        for idx in range(1, num_networks + 1):
+            # Filter by 'provider:network_type'
+            kwargs = {'provider:network_type': 'vlan',
+                      'project_id': project_id, 'limit': idx}
+            body = self.client.list_networks(**kwargs)['networks']
+            self.assertEqual(idx, len(body))
+            kwargs['provider:network_type'] = ['vlan']
+            body = self.client.list_networks(**kwargs)['networks']
+            self.assertEqual(idx, len(body))
+
+            # Filter by 'provider:physical_network'.
+            kwargs = {'provider:physical_network': physnet_name,
+                      'project_id': project_id, 'limit': idx}
+            body = self.client.list_networks(**kwargs)['networks']
+            self.assertEqual(idx, len(body))
+            kwargs['provider:physical_network'] = [physnet_name]
+            body = self.client.list_networks(**kwargs)['networks']
+            self.assertEqual(idx, len(body))
+
+            # Filter by 'provider:segmentation_id'
+            kwargs = {'provider:segmentation_id': vlan_ids,
+                      'project_id': project_id, 'limit': idx}
+            body = self.client.list_networks(**kwargs)['networks']
+            self.assertEqual(idx, len(body))

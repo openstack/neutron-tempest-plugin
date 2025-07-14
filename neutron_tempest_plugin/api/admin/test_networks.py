@@ -89,6 +89,8 @@ class NetworksTestAdmin(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('bbb9a2be-c9a7-4693-ac8e-d51b5371b68d')
     def test_list_network_filter_provider_attributes(self):
+        if not config.CONF.neutron_plugin_options.provider_vlans:
+            raise self.skipException("No provider VLAN networks available")
         project_id = self.client.project_id
         physnet_name = config.CONF.neutron_plugin_options.provider_vlans[0]
         # Check project networks pre-created.

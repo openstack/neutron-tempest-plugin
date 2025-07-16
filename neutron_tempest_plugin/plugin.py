@@ -16,7 +16,10 @@
 
 import os
 
+from tempest import config
 from tempest.test_discover import plugins
+
+from neutron_tempest_plugin import config as neutron_config
 
 
 class NeutronTempestPlugin(plugins.TempestPlugin):
@@ -28,7 +31,31 @@ class NeutronTempestPlugin(plugins.TempestPlugin):
         return full_test_dir, base_path
 
     def register_opts(self, conf):
-        pass
+        config.register_opt_group(conf, neutron_config.neutron_group,
+                                  neutron_config.NeutronPluginOptions)
+        config.register_opt_group(conf, neutron_config.bgpvpn_group,
+                                  neutron_config.BgpvpnGroup)
+        config.register_opt_group(conf, neutron_config.fwaas_group,
+                                  neutron_config.FwaasGroup)
+        config.register_opt_group(conf, neutron_config.taas_group,
+                                  neutron_config.TaasGroup)
+        config.register_opt_group(conf, neutron_config.dynamic_routing_group,
+                                  neutron_config.DynamicRoutingGroup)
+        config.register_opt_group(conf, neutron_config.dns_feature_group,
+                                  neutron_config.DnsFeatureGroup)
 
     def get_opt_lists(self):
-        pass
+        return [
+            (neutron_config.neutron_group.name,
+             neutron_config.NeutronPluginOptions),
+            (neutron_config.bgpvpn_group.name,
+             neutron_config.BgpvpnGroup),
+            (neutron_config.fwaas_group.name,
+             neutron_config.FwaasGroup),
+            (neutron_config.taas_group.name,
+             neutron_config.TaasGroup),
+            (neutron_config.dynamic_routing_group.name,
+             neutron_config.DynamicRoutingGroup),
+            (neutron_config.dns_feature_group.name,
+             neutron_config.DnsFeatureGroup)
+        ]

@@ -158,11 +158,9 @@ NeutronPluginOptions = [
                 default=False,
                 help='Schedule BGP speakers to agents explicitly.'),
 ]
+neutron_group = cfg.OptGroup(name="neutron_plugin_options",
+                             title="Neutron Plugin Options")
 
-# TODO(amuller): Redo configuration options registration as part of the planned
-# transition to the Tempest plugin architecture
-for opt in NeutronPluginOptions:
-    CONF.register_opt(opt, 'neutron_plugin_options')
 
 BgpvpnGroup = [
     cfg.IntOpt('min_asn',
@@ -182,11 +180,8 @@ BgpvpnGroup = [
                help=("Maximum number for the range of "
                      "assigned number for distinguishers.")),
 ]
-
 bgpvpn_group = cfg.OptGroup(name="bgpvpn", title=("Networking-Bgpvpn Service "
                                                   "Options"))
-CONF.register_group(bgpvpn_group)
-CONF.register_opts(BgpvpnGroup, group="bgpvpn")
 
 FwaasGroup = [
     cfg.StrOpt('driver',
@@ -194,11 +189,8 @@ FwaasGroup = [
                choices=['openvswitch', 'ovn'],
                help='Driver used by the FWaaS plugin.'),
 ]
-
 fwaas_group = cfg.OptGroup(
     name="fwaas", title=("Neutron-fwaas Service Options"))
-CONF.register_group(fwaas_group)
-CONF.register_opts(FwaasGroup, group="fwaas")
 
 
 TaasGroup = [
@@ -215,8 +207,6 @@ TaasGroup = [
 ]
 taas_group = cfg.OptGroup(name='taas',
                           title='TaaS Tempest Options')
-CONF.register_group(taas_group)
-CONF.register_opts(TaasGroup, group="taas")
 
 
 DynamicRoutingGroup = [
@@ -225,12 +215,9 @@ DynamicRoutingGroup = [
                help=('Base image used to build the image for connectivity '
                      'check')),
 ]
-
 dynamic_routing_group = cfg.OptGroup(
     name="dynamic_routing",
     title=("Neutron-Dynamic-Routing Service Options"))
-CONF.register_group(dynamic_routing_group)
-CONF.register_opts(DynamicRoutingGroup, group="dynamic_routing")
 
 
 # DNS Integration with an External Service
@@ -242,5 +229,3 @@ DnsFeatureGroup = [
 ]
 dns_feature_group = cfg.OptGroup(
     name='designate_feature_enabled', title='Enabled Designate Features')
-CONF.register_group(dns_feature_group)
-CONF.register_opts(DnsFeatureGroup, group="designate_feature_enabled")

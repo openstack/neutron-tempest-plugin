@@ -1,0 +1,8 @@
+---
+upgrade:
+  - |
+    The following options have been removed.
+
+    - ``[bgpvpn] run_bgpvpn_tests``
+    - ``[fwaas] run_fwaas_tests``
+    - ``[sfc] run_sfc_tests``

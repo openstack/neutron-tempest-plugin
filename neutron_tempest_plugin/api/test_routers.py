@@ -506,9 +506,17 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
                     remove_gateways[0])
 
         external_gateways[1] = remove_gateways[0]
-        res_update_gws = self.admin_client.router_update_external_gateways(
-            router['id'],
-            external_gateways)
+        try:
+            res_update_gws = self.admin_client.router_update_external_gateways(
+                router['id'],
+                external_gateways)
+        except lib_exc.Conflict as exc:
+            if 'IpAddressAlreadyAllocated' in str(exc):
+                self.skipTest(
+                    'The IP address of the removed gateway port is already '
+                    'used by other test, thus this exception is dismissed and '
+                    'the rest of the test skipped')
+            raise exc
 
         self.assertEqual(len(res_update_gws['router']['external_gateways']), 2)
         for n in range(0, 2):

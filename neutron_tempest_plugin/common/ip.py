@@ -159,21 +159,22 @@ class IPCommand(object):
         # ip addr del 192.168.1.1/24 dev em1
         return self.execute('address', 'del', address, 'dev', device)
 
-    def add_route(self, address, device, gateway=None):
+    def add_route(self, address, device, gateway=None, ip_version=4):
         if gateway:
-            # ip route add 192.168.1.0/24 via 192.168.22.1 dev em1
             return self.execute(
                 'route', 'add', address, 'via', gateway, 'dev', device)
         else:
-            # ip route add 192.168.1.0/24 dev em1
-            return self.execute('route', 'add', address, 'dev', device)
+            return self.execute(
+                f'-{ip_version}', 'route', 'add', address, 'dev', device)
 
-    def delete_route(self, address, device):
-        # ip route del 192.168.1.0/24 dev em1
-        return self.execute('route', 'del', address, 'dev', device)
+    def delete_route(self, address, device, ip_version=4):
+        return self.execute(
+            f'-{ip_version}', 'route', 'del', address, 'dev', device)
 
-    def list_routes(self, *args):
-        output = self.execute('route', 'show', *args)
+    def list_routes(self, *args, device=None, ip_version=4):
+        if not args and device:
+            args = ("dev", device)
+        output = self.execute(f'-{ip_version}', 'route', 'show', *args)
         return list(parse_routes(output))
 
     def get_nic_name_by_mac(self, mac_address):

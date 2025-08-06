@@ -306,5 +306,8 @@
     required-projects: *required-projects-yoga
     vars:
       network_api_extensions_common: *api_extensions
+      network_api_extensions_tempest:
+        - taas
+        - taas-vlan-filter
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false

@@ -326,5 +326,9 @@
     nodeset: openstack-single-node-jammy
     required-projects: *required-projects-2023-1
     vars:
+      network_api_extensions_common: *api_extensions
+      network_api_extensions_tempest:
+        - taas
+        - taas-vlan-filter
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false

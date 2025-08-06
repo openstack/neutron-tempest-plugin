@@ -287,3 +287,10 @@
     parent: neutron-tempest-plugin-tap-as-a-service
     nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.2
+    vars:
+      network_api_extensions_common: *api_extensions
+      network_api_extensions_tempest:
+        - taas
+        - taas-vlan-filter
+      devstack_localrc:
+        NEUTRON_DEPLOY_MOD_WSGI: false

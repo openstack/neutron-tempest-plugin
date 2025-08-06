@@ -252,3 +252,9 @@
     parent: neutron-tempest-plugin-tap-as-a-service
     nodeset: openstack-single-node-noble
     override-checkout: stable/2025.1
+
+- job:
+    name: neutron-tempest-plugin-tap-as-a-service-ovn-2025-1
+    parent: neutron-tempest-plugin-tap-as-a-service-ovn
+    nodeset: openstack-single-node-noble
+    override-checkout: stable/2025.1

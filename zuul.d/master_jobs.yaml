@@ -1512,12 +1512,14 @@
       network_api_extensions_tempest:
         - taas
         - taas-vlan-filter
+        - tap-mirror
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
         BUILD_TIMEOUT: 784
         Q_AGENT: openvswitch
         Q_ML2_TENANT_NETWORK_TYPE: vxlan,vlan
         Q_ML2_PLUGIN_MECHANISM_DRIVERS: openvswitch
+        OVS_BRANCH: "branch-3.3"
       devstack_local_conf:
         post-config:
           /$NEUTRON_CORE_PLUGIN_CONF:
@@ -1569,10 +1571,11 @@
         q-svc: true
         neutron: true
         taas: true
+        tap_mirror: true
         taas_openvswitch_agent: true
         tempest: true
         dstat: true
-    irrelevant-files:
+    irrelevant-files: &taas_irrelevant_files
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1604,3 +1607,52 @@
       # Ignore everything except for zuul.d/project.yaml
       - ^zuul.d/.*_jobs\.yaml$
       - ^zuul.d/base-nested-switch.yaml
+
+- job:
+    name: neutron-tempest-plugin-tap-as-a-service-ovn
+    parent: neutron-tempest-plugin-base
+    description: |
+      Test tap-mirrors with OVN
+    roles:
+      - zuul: openstack/devstack
+    required-projects:
+      - openstack/neutron
+      - openstack/neutron-tempest-plugin
+      - openstack/tap-as-a-service
+      - openstack/tempest
+    vars:
+      tempest_concurrency: 4
+      tempest_test_regex: ^neutron_tempest_plugin\.tap_as_a_service
+      tox_envlist: all
+      network_api_extensions_tempest:
+        - taas
+        - tap-mirror
+      devstack_localrc:
+        Q_AGENT: ovn
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"
+        BUILD_TIMEOUT: 784
+        TAAS_SERVICE_DRIVER: "TAAS:TAAS:neutron_taas.services.taas.service_drivers.ovn.taas_ovn.TaasOvnDriver:default"
+        # mirroring is available from OVN 22.12.0 and use OVS 3.2.1 that also have this
+        # feature and builds with the above OVN
+        OVN_BRANCH: "branch-24.03"
+        OVS_BRANCH: "branch-3.3"
+      devstack_local_conf:
+        test-config:
+          $TEMPEST_CONFIG:
+            neutron_plugin_options:
+              image_is_advanced: true
+              advanced_image_flavor_ref: d1
+            taas:
+              provider_physical_network: public
+              provider_segmentation_id: 100
+            image_feature_enabled:
+              api_v2: true
+      devstack_plugins:
+        neutron: git://opendev.org/openstack/neutron.git
+        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
+        tap-as-a-service: git://opendev.org/openstack/tap-as-a-service.git
+      devstack_services:
+        tap_mirror: true
+        taas: true
+        tempest: true
+    irrelevant-files: *taas_irrelevant_files

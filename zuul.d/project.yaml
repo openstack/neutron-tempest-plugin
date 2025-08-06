@@ -235,9 +235,11 @@
         - neutron-tempest-plugin-vpnaas-2024-2
         - neutron-tempest-plugin-vpnaas-2025-1
         - neutron-tempest-plugin-tap-as-a-service
+        - neutron-tempest-plugin-tap-as-a-service-ovn
         - neutron-tempest-plugin-tap-as-a-service-2024-1
         - neutron-tempest-plugin-tap-as-a-service-2024-2
         - neutron-tempest-plugin-tap-as-a-service-2025-1
+        - neutron-tempest-plugin-tap-as-a-service-ovn-2025-1
 
     gate:
       jobs:

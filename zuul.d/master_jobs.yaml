@@ -211,6 +211,7 @@
       - ^neutron_tempest_plugin/scenario/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*functional.*$
       - ^vagrant/.*$
       # Ignore everything except for zuul.d/project.yaml
@@ -307,6 +308,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -415,6 +417,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -575,6 +578,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -717,6 +721,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -1026,6 +1031,7 @@
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -1128,6 +1134,7 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -1200,6 +1207,7 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -1258,6 +1266,7 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*functional.*$
       - ^playbooks/.*linuxbridge.*$
@@ -1313,6 +1322,7 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -1417,6 +1427,7 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -1481,6 +1492,7 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$
@@ -1596,6 +1608,7 @@
       - ^plugin.spec$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
+      - ^roles/.*multi-node-setup.*$
       - ^playbooks/.*dvr-multinode.*$
       - ^playbooks/.*dynamic-routing.*$
       - ^playbooks/.*functional.*$

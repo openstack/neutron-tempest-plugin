@@ -1,12 +1,12 @@
 - name: Ensure the infra bridge exists
   become: yes
-  openvswitch_bridge:
-    bridge: "{{ infra_bridge_name }}"
+  command: >-
+    ovs-vsctl --may-exist add-br {{ infra_bridge_name }}
 
 - name: Ensure the Neutron external bridge exists
   become: yes
-  openvswitch_bridge:
-    bridge: "{{ neutron_external_bridge_name }}"
+  command: >-
+    ovs-vsctl --may-exist add-br {{ neutron_external_bridge_name }}
 
 - name: Create patch port between bridges
   become: yes

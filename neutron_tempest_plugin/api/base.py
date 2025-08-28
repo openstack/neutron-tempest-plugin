@@ -18,6 +18,7 @@ import math
 import time
 
 import netaddr
+from neutron_lib._i18n import _
 from neutron_lib import constants as const
 from oslo_log import log
 from tempest.common import utils as tutils
@@ -492,7 +493,7 @@ class BaseNetworkTest(test.BaseTestCase):
             if ip_version:
                 if ip_version != gateway_ip.version:
                     raise ValueError(
-                        "Gateway IP version doesn't match IP version")
+                        _("Gateway IP version doesn't match IP version"))
             else:
                 ip_version = gateway_ip.version
         else:
@@ -541,8 +542,8 @@ class BaseNetworkTest(test.BaseTestCase):
         """
 
         if not cls.try_reserve_subnet_cidr(addr, **ipnetwork_kwargs):
-            raise ValueError('Subnet CIDR already reserved: {0!r}'.format(
-                addr))
+            raise ValueError(_('Subnet CIDR already reserved: {0!r}'.format(
+                addr)))
 
     @classmethod
     def try_reserve_subnet_cidr(cls, addr, **ipnetwork_kwargs):
@@ -601,7 +602,8 @@ class BaseNetworkTest(test.BaseTestCase):
                 mask_bits = CONF.network.project_network_v6_mask_bits
                 cidr = netaddr.IPNetwork(CONF.network.project_network_v6_cidr)
             else:
-                raise ValueError('Invalid IP version: {!r}'.format(ip_version))
+                raise ValueError(_(
+                    'Invalid IP version: {!r}'.format(ip_version)))
 
         if mask_bits:
             subnet_cidrs = cidr.subnet(mask_bits)
@@ -687,8 +689,9 @@ class BaseNetworkTest(test.BaseTestCase):
         if port:
             port_id = kwargs.setdefault('port_id', port['id'])
             if port_id != port['id']:
-                message = "Port ID specified twice: {!s} != {!s}".format(
-                    port_id, port['id'])
+                message = _(
+                    "Port ID specified twice: {!s} != {!s}".format(
+                        port_id, port['id']))
                 raise ValueError(message)
 
         fip = client.create_floatingip(external_network_id,
@@ -985,7 +988,7 @@ class BaseNetworkTest(test.BaseTestCase):
             project_id = kwargs.setdefault('project_id', project['id'])
             tenant_id = kwargs.setdefault('tenant_id', project['id'])
             if project_id != project['id'] or tenant_id != project['id']:
-                raise ValueError('Project ID specified multiple times')
+                raise ValueError(_('Project ID specified multiple times'))
         else:
             client = client or cls.client
 
@@ -1008,7 +1011,7 @@ class BaseNetworkTest(test.BaseTestCase):
         for security_group in security_groups:
             if security_group['name'] == name:
                 return security_group
-        raise ValueError("No such security group named {!r}".format(name))
+        raise ValueError(_("No such security group named {!r}".format(name)))
 
     @classmethod
     def create_security_group_rule(cls, security_group=None, project=None,
@@ -1018,7 +1021,7 @@ class BaseNetworkTest(test.BaseTestCase):
             project_id = kwargs.setdefault('project_id', project['id'])
             tenant_id = kwargs.setdefault('tenant_id', project['id'])
             if project_id != project['id'] or tenant_id != project['id']:
-                raise ValueError('Project ID specified multiple times')
+                raise ValueError(_('Project ID specified multiple times'))
 
         if 'security_group_id' not in kwargs:
             security_group = (security_group or
@@ -1029,7 +1032,8 @@ class BaseNetworkTest(test.BaseTestCase):
             security_group_id = kwargs.setdefault('security_group_id',
                                                   security_group['id'])
             if security_group_id != security_group['id']:
-                raise ValueError('Security group ID specified multiple times.')
+                raise ValueError(
+                    _('Security group ID specified multiple times.'))
 
         ip_version = ip_version or cls._ip_version
         default_params = (

@@ -19,6 +19,7 @@ import re
 import subprocess
 
 import netaddr
+from neutron_lib._i18n import _
 from neutron_lib import constants
 from oslo_log import log
 from oslo_utils import excutils
@@ -89,9 +90,9 @@ class IPCommand(object):
             for ip, prefix_len in _get_ip_address_prefix_len_pairs(
                 port=subport, subnets=subnets)]
         if not subport_ips:
-            raise ValueError(
+            raise ValueError(_(
                 "Unable to get IP address and subnet prefix lengths for "
-                "subport")
+                "subport"))
 
         return self.configure_vlan(addresses, port, vlan_tag, subport_ips,
                                    subport['mac_address'])
@@ -353,7 +354,7 @@ def get_port_device_name(addresses, port):
     for address in list_ip_addresses(addresses=addresses, port=port):
         return address.device.name
 
-    msg = "Port {0!r} fixed IPs not found on server.".format(port['id'])
+    msg = _("Port {0!r} fixed IPs not found on server.".format(port['id']))
     raise ValueError(msg)
 
 
@@ -362,7 +363,8 @@ def get_vlan_device_name(addresses, ip_addresses):
             ip_addresses=ip_addresses):
         return address.device.name
 
-    msg = "Fixed IPs {0!r} not found on server.".format(' '.join(ip_addresses))
+    msg = _(
+        "Fixed IPs {0!r} not found on server.".format(' '.join(ip_addresses)))
     raise ValueError(msg)
 
 

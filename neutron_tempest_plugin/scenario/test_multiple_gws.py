@@ -12,7 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-import json
+
 import os
 import subprocess
 import time
@@ -29,6 +29,7 @@ from neutron_tempest_plugin.scenario import base
 from neutron_lib import constants as const
 
 from oslo_log import log
+from oslo_serialization import jsonutils
 
 from os_ken.tests.integrated.common import docker_base as ctn_base
 
@@ -288,7 +289,7 @@ class BFDContainer(FRRContainer):
         )
 
     def show_bfd_peer(self, peer: str) -> typing.Dict[str, typing.Any]:
-        return json.loads(self.vtysh([f'show bfd peer {peer} json']))
+        return jsonutils.loads(self.vtysh([f'show bfd peer {peer} json']))
 
     def wait_for_bfd_peer_status(
         self, peer: str, status: str, try_times=30, interval=1

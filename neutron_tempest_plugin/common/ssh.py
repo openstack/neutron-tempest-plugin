@@ -17,6 +17,7 @@ import os
 import socket
 import time
 
+from neutron_lib._i18n import _
 from oslo_log import log
 import paramiko
 from tempest.lib.common import ssh
@@ -70,8 +71,8 @@ class Client(ssh.Client):
         host = cls.proxy_jump_host
         if not host:
             # proxy_jump_host string cannot be empty or None
-            raise ValueError(
-                "'proxy_jump_host' configuration option is empty.")
+            raise ValueError(_(
+                "'proxy_jump_host' configuration option is empty."))
 
         # Let accept an empty string as a synonymous of default value on below
         # options
@@ -82,9 +83,9 @@ class Client(ssh.Client):
         # Port must be a positive integer
         port = cls.proxy_jump_port
         if port <= 0 or port > 65535:
-            raise ValueError(
+            raise ValueError(_(
                 "Invalid value for 'proxy_jump_port' configuration option: "
-                "{!r}".format(port))
+                "{!r}".format(port)))
 
         login = "{username}@{host}:{port}".format(username=username, host=host,
                                                   port=port)
@@ -99,9 +100,9 @@ class Client(ssh.Client):
             else:
                 # This message could help the user to identify a
                 # mis-configuration in tempest.conf
-                raise ValueError(
+                raise ValueError(_(
                     "Cannot find file specified as 'proxy_jump_keyfile' "
-                    "option: {!r}".format(key_file))
+                    "option: {!r}".format(key_file)))
 
         elif password:
             LOG.debug("Going to create SSH connection to %r using password.",

@@ -18,6 +18,7 @@ import subprocess
 
 from debtcollector import removals
 import netaddr
+from neutron_lib._i18n import _
 from neutron_lib.api import validators
 from neutron_lib import constants as neutron_lib_constants
 from oslo_log import log
@@ -680,8 +681,8 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             router = client.update_router(router['id'], **kwargs)['router']
             return router
         else:
-            raise Exception("Neither of 'public_router_id' or "
-                            "'public_network_id' has been defined.")
+            raise Exception(_("Neither of 'public_router_id' or "
+                              "'public_network_id' has been defined."))
 
     def _update_router_admin_state(self, router, admin_state_up):
         kwargs = dict(admin_state_up=admin_state_up)

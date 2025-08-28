@@ -17,6 +17,7 @@ import os
 import random
 
 import netaddr
+from neutron_lib._i18n import _
 from neutron_lib.utils import test
 from oslo_concurrency import lockutils
 from oslo_log import log as logging
@@ -42,8 +43,8 @@ NET_C = 'C'
 if "SUBNETPOOL_PREFIX_V4" in os.environ:
     subnet_base = netaddr.IPNetwork(os.environ['SUBNETPOOL_PREFIX_V4'])
     if subnet_base.prefixlen > 21:
-        raise Exception("if SUBNETPOOL_PREFIX_V4 is set, it needs to offer "
-                        "space for at least 8 /24 subnets")
+        raise Exception(_("if SUBNETPOOL_PREFIX_V4 is set, it needs to offer "
+                          "space for at least 8 /24 subnets"))
 else:
     subnet_base = netaddr.IPNetwork("10.100.0.0/16")
 

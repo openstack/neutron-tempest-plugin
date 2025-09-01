@@ -333,12 +333,20 @@ class BaseMulticastTest(object):
                     "Receiver {!r} didn't get multicast message".format(
                         receiver['id'])))
 
-        # TODO(slaweq): add validation of answears on sended server
-        replies_result = sender['ssh_client'].execute_script(
-            "cat {path} || echo '{path} not exists yet'".format(
-                path=self.sender_output_file))
-        for receiver_id in receiver_ids:
-            self.assertIn(receiver_id, replies_result)
+        def _sender_completed():
+            replies_result = sender['ssh_client'].execute_script(
+                "cat {path} 2>/dev/null || echo ''".format(
+                    path=self.sender_output_file))
+            for receiver_id in receiver_ids:
+                expected_pattern = "received reply b'{}' from".format(
+                    receiver_id)
+                if expected_pattern not in replies_result:
+                    return False
+            return replies_result.count('received reply') == len(receiver_ids)
+
+        utils.wait_until_true(
+            _sender_completed,
+            exception=RuntimeError("Sender didn't complete properly"))
 
         def check_unregistered_host():
             unregistered_result = unregistered['ssh_client'].execute_script(

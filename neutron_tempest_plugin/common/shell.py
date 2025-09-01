@@ -16,7 +16,6 @@
 
 import collections
 import subprocess
-import sys
 
 from oslo_log import log
 from tempest.lib import exceptions as lib_exc
@@ -130,12 +129,6 @@ def execute_local_command(command, timeout=None):
                                universal_newlines=True,
                                stdout=subprocess.PIPE,
                                stderr=subprocess.PIPE)
-
-    if timeout and sys.version_info < (3, 3):
-        # TODO(fressi): re-implement to timeout support on older Pythons
-        LOG.warning("Popen.communicate method doens't support for timeout "
-                    "on Python %r", sys.version)
-        timeout = None
 
     # Wait for process execution while reading STDERR and STDOUT streams
     if timeout:

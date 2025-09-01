@@ -43,3 +43,37 @@ class NetworksNegativeTest(base.BaseNetworkTest):
         with testtools.ExpectedException(lib_exc.BadRequest):
             self.client.create_network(
                 mtu=CONF.neutron_plugin_options.max_mtu + 1)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('53537bba-d6c3-4a2e-bda4-ab5b009fb7d9')
+    def test_create_subnet_mtu_below_minimum_ipv4(self):
+        network = self.create_network(mtu=67)
+        with testtools.ExpectedException(lib_exc.Conflict):
+            self.create_subnet(network, ip_version=4, cidr='10.0.0.0/24')
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('1de68cb6-e6d4-47df-b820-c5048796f33a')
+    @testtools.skipUnless(config.CONF.network_feature_enabled.ipv6,
+                          'IPv6 is not enabled')
+    def test_create_subnet_mtu_below_minimum_ipv6(self):
+        network = self.create_network(mtu=1279)
+        with testtools.ExpectedException(lib_exc.Conflict):
+            self.create_subnet(network, ip_version=6, cidr='2001:db8:0:1::/64')
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('5213df6d-7141-40b2-90ea-a958d9bc97e5')
+    def test_update_network_mtu_below_minimum_ipv4(self):
+        network = self.create_network(mtu=1280)
+        self.create_subnet(network, ip_version=4, cidr='10.0.0.0/24')
+        with testtools.ExpectedException(lib_exc.Conflict):
+            self.client.update_network(network['id'], mtu=67)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('1a714fc4-24b1-4c07-a005-d5c218672eab')
+    @testtools.skipUnless(config.CONF.network_feature_enabled.ipv6,
+                          'IPv6 is not enabled')
+    def test_update_network_mtu_below_minimum_ipv6(self):
+        network = self.create_network(mtu=1280)
+        self.create_subnet(network, ip_version=6, cidr='2001:db8:0:1::/64')
+        with testtools.ExpectedException(lib_exc.Conflict):
+            self.client.update_network(network['id'], mtu=1279)

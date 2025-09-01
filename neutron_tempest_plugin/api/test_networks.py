@@ -132,8 +132,6 @@ class NetworksTestJSON(base.BaseNetworkTest):
         _check_list_networks_fields(['project_id', 'tenant_id'], True, True)
 
 
-# TODO(ihrachys): check that bad mtu is not allowed; current API extension
-# definition doesn't enforce values
 # TODO(ihrachys): check that new segment reservation updates mtu, once
 # https://review.opendev.org/#/c/353115/ is merged
 class NetworksMtuTestJSON(base.BaseNetworkTest):

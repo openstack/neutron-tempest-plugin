@@ -1023,7 +1023,6 @@
       - ^neutron/privileged/.*$
       - ^neutron/plugins/ml2/drivers/.*$
       - ^neutron/scheduler/.*$
-      - ^neutron/services/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$

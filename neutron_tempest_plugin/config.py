@@ -144,14 +144,12 @@ NeutronPluginOptions = [
     # while testing in parallel.
     cfg.BoolOpt('create_shared_resources',
                 default=False,
-                help='Allow creation of shared resources.'
-                     'The default value is false.'),
+                help='Allow creation of shared resources.'),
     cfg.BoolOpt('is_igmp_snooping_enabled',
                 default=False,
                 help='Indicates whether IGMP snooping is enabled or not. '
                      'If True, multicast test(s) will assert that multicast '
-                     'traffic is not being flooded to all ports. Defaults '
-                     'to False.'),
+                     'traffic is not being flooded to all ports.'),
     # Option for scheduling BGP speakers to agents explicitly
     # The default is false with automatic scheduling on creation
     # happening with the default scheduler

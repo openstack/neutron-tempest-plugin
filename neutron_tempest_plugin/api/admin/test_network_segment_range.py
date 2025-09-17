@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib import constants as n_constants
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
@@ -21,6 +22,7 @@ from neutron_tempest_plugin.api import base
 
 TEST_SEGMENT_RANGE_MINIMUM_ID = 1100
 TEST_SEGMENT_RANGE_MAXIMUM_ID = 1105
+NETWORK_TYPE = n_constants.TYPE_VXLAN
 
 
 class NetworkSegmentRangeTestBase(base.BaseAdminNetworkTest):
@@ -34,7 +36,7 @@ class NetworkSegmentRangeTestBase(base.BaseAdminNetworkTest):
     @classmethod
     def resource_setup(cls):
         super(NetworkSegmentRangeTestBase, cls).resource_setup()
-        network_type = "vxlan"
+        network_type = NETWORK_TYPE
         physical_network = ""
         minimum = TEST_SEGMENT_RANGE_MINIMUM_ID
         maximum = TEST_SEGMENT_RANGE_MAXIMUM_ID
@@ -132,7 +134,8 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         # Creates a network
         name = data_utils.rand_name('test_network_for_' + project_id)
         network = self.create_network(
-            name, client=self.admin_client, project_id=project_id)
+            name, client=self.admin_client, project_id=project_id,
+            provider_network_type=NETWORK_TYPE)
         # Updates a network segment range
         updated_maximum = TEST_SEGMENT_RANGE_MAXIMUM_ID + 50
         self.assertRaises(lib_exc.Conflict,
@@ -237,7 +240,8 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         # Creates a network
         name = data_utils.rand_name('test_network_for_' + project_id)
         network = self.create_network(
-            name, client=self.admin_client, project_id=project_id)
+            name, client=self.admin_client, project_id=project_id,
+            provider_network_type=NETWORK_TYPE)
         # Deletes a network segment range
         self.assertRaises(lib_exc.Conflict,
                           self.admin_client.delete_network_segment_range,

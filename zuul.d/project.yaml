@@ -233,7 +233,8 @@
         - neutron-tempest-plugin-bgpvpn-bagpipe-2024-2
         - neutron-tempest-plugin-bgpvpn-bagpipe-2025-1
         - neutron-tempest-plugin-bgpvpn-bagpipe-2025-2
-        - neutron-tempest-plugin-dynamic-routing
+        - neutron-tempest-plugin-dynamic-routing:
+            voting: false  # See LP#2130631
         - neutron-tempest-plugin-dynamic-routing-2024-1
         - neutron-tempest-plugin-dynamic-routing-2024-2
         - neutron-tempest-plugin-dynamic-routing-2025-1
@@ -263,6 +264,7 @@
       jobs:
         - neutron-tempest-plugin-sfc
         - neutron-tempest-plugin-bgpvpn-bagpipe
-        - neutron-tempest-plugin-dynamic-routing
+        - neutron-tempest-plugin-dynamic-routing:
+            voting: false  # See LP#2130631
         - neutron-tempest-plugin-fwaas-ovn
         - neutron-tempest-plugin-vpnaas-ovn

@@ -271,6 +271,7 @@
 - job:
     name: neutron-tempest-plugin-dynamic-routing-2024-1
     parent: neutron-tempest-plugin-dynamic-routing
+    voting: false
     nodeset: openstack-single-node-jammy
     override-checkout: stable/2024.1
     vars:

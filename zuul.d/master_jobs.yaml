@@ -189,6 +189,7 @@
               provider_net_base_segm_id: 1
               snat_rules_apply_to_nested_networks: true
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -273,6 +274,7 @@
               firewall_driver: openvswitch
               snat_rules_apply_to_nested_networks: true
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -381,6 +383,7 @@
               firewall_driver: iptables_hybrid
               snat_rules_apply_to_nested_networks: true
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -541,6 +544,7 @@
               firewall_driver: iptables
               snat_rules_apply_to_nested_networks: true
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -681,6 +685,7 @@
         '/var/log/openvswitch': 'logs'
         '/var/lib/ovn': 'logs'
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -934,6 +939,7 @@
               agent:
                 availability_zone: nova
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1003,6 +1009,7 @@
         - neutron-tempest-plugin
       tempest_test_regex: ^neutron_tempest_plugin\.scenario\.test_dns_integration
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1109,6 +1116,7 @@
       # https://bugs.launchpad.net/networking-sfc/+bug/1660366
       tempest_concurrency: 1
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1182,6 +1190,7 @@
         networking-bgpvpn: https://git.openstack.org/openstack/networking-bgpvpn
         networking-bagpipe: https://git.openstack.org/openstack/networking-bagpipe
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1242,6 +1251,7 @@
       tempest_concurrency: 1
       tempest_test_regex: ^neutron_tempest_plugin\.neutron_dynamic_routing
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1297,6 +1307,7 @@
             fwaas:
               driver: ovn
     irrelevant-files: &fwaas_irrelevant_files
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1402,6 +1413,7 @@
         q-metering: true
         q-l3: true
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1467,6 +1479,7 @@
               skip_6in6_tests: true
 
     irrelevant-files:
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$
@@ -1583,6 +1596,7 @@
         tempest: true
         dstat: true
     irrelevant-files: &taas_irrelevant_files
+      - ^\.pre-commit-config\.yaml$
       - ^\.pylintrc$
       - ^(test-|)requirements.txt$
       - ^lower-constraints.txt$

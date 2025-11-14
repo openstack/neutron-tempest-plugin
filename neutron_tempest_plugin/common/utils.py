@@ -165,7 +165,7 @@ class StatefulConnection:
         self.server_ssh.exec_command(
                 'echo "{}" > input.txt'.format(self.test_str))
         server_exec_method('tail -f input.txt | sudo nc -lp '
-                '{} &> output.txt &'.format(self.port))
+                '{} &> output.txt & sleep 1'.format(self.port))
         self.client_ssh.exec_command(
                 'echo "{}" > input.txt'.format(self.test_str))
         client_exec_method('tail -f input.txt | sudo nc {} {} &>'

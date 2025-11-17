@@ -20,6 +20,7 @@ from neutron_lib.services.qos import constants as qos_consts
 from oslo_log import log as logging
 from tempest.common import utils as tutils
 from tempest.common import waiters
+from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
 from tempest.lib import decorators
 
@@ -134,13 +135,12 @@ class QoSTestMixin(object):
                                    self.security_groups[-1]['id'])
 
     def _create_qos_policy(self):
+        name = data_utils.rand_name('test-policy')
         policy = self.os_admin.network_client.create_qos_policy(
-                                        name='test-policy',
+                                        name=name,
                                         description='test-qos-policy',
                                         shared=True)
         self.qos_policies.append(policy['policy'])
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-            self.os_admin.network_client.delete_qos_policy, policy)
         return policy['policy']['id']
 
     def _create_qos_bw_limit_rule(self, policy_id, rule_data):

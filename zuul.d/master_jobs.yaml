@@ -168,9 +168,11 @@
             ml2_type_vlan:
               network_vlan_ranges: foo:1:10
             ml2_type_vxlan:
-              vni_ranges: 1:2000
+              vni_ranges: 1:1000
             ml2_type_gre:
               tunnel_id_ranges: 1:1000
+            ml2_type_geneve:
+              vni_ranges: 1:1000
             network_log:
               local_output_log_base: /tmp/test_log.log
           $NEUTRON_L3_CONF:
@@ -850,9 +852,11 @@
             ml2_type_vlan:
               network_vlan_ranges: foo:1:10
             ml2_type_vxlan:
-              vni_ranges: 1:2000
+              vni_ranges: 1:1000
             ml2_type_gre:
               tunnel_id_ranges: 1:1000
+            ml2_type_geneve:
+              vni_ranges: 1:1000
             agent:
               enable_distributed_routing: True
               l2_population: True

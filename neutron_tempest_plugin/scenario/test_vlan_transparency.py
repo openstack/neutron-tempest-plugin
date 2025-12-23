@@ -60,13 +60,7 @@ class BaseVlanTest(base.BaseAdminTempestTestCase):
         cls.security_group = cls.create_security_group(name=cls.rand_name)
         cls.create_loginable_secgroup_rule(cls.security_group['id'])
 
-        if CONF.neutron_plugin_options.default_image_is_advanced:
-            cls.flavor_ref = CONF.compute.flavor_ref
-            cls.image_ref = CONF.compute.image_ref
-        else:
-            cls.flavor_ref = \
-                CONF.neutron_plugin_options.advanced_image_flavor_ref
-            cls.image_ref = CONF.neutron_plugin_options.advanced_image_ref
+        cls.setup_advanced_image()
 
     @classmethod
     def skip_checks(cls):
@@ -111,12 +105,8 @@ class BaseVlanTest(base.BaseAdminTempestTestCase):
             self.fail("Sub-port fixed IP not found on server.")
 
     def _create_ssh_client(self, floating_ip):
-        if CONF.neutron_plugin_options.default_image_is_advanced:
-            username = CONF.validation.image_ssh_user
-        else:
-            username = CONF.neutron_plugin_options.advanced_image_ssh_user
         return ssh.Client(host=floating_ip['floating_ip_address'],
-                          username=username,
+                          username=self.username,
                           pkey=self.keypair['private_key'])
 
     def _test_basic_inner_vlan_connectivity(

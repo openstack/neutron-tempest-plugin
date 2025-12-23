@@ -269,6 +269,18 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
         raise cls.skipTest("No L3 agent with '%s' extension enabled found." %
                            extension)
 
+    @classmethod
+    def setup_advanced_image(cls):
+        if CONF.neutron_plugin_options.default_image_is_advanced:
+            cls.flavor_ref = CONF.compute.flavor_ref
+            cls.image_ref = CONF.compute.image_ref
+            cls.username = CONF.validation.image_ssh_user
+        else:
+            cls.flavor_ref = (
+                CONF.neutron_plugin_options.advanced_image_flavor_ref)
+            cls.image_ref = CONF.neutron_plugin_options.advanced_image_ref
+            cls.username = CONF.neutron_plugin_options.advanced_image_ssh_user
+
     @removals.remove(version='Stein',
                      message="Please use create_floatingip method instead of "
                              "create_and_associate_floatingip.")

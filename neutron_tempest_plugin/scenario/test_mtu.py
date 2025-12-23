@@ -46,24 +46,12 @@ class NetworkMtuBaseTest(base.BaseTempestTestCase):
             secgroup_id=cls.secgroup['security_group']['id'])
         cls.create_pingable_secgroup_rule(
             secgroup_id=cls.secgroup['security_group']['id'])
-        if CONF.neutron_plugin_options.default_image_is_advanced:
-            cls.use_advanced_image = False
-            cls.username = CONF.validation.image_ssh_user
-        else:
-            cls.use_advanced_image = True
-            cls.username = CONF.neutron_plugin_options.advanced_image_ssh_user
+        cls.setup_advanced_image()
 
     def create_pingable_vm(self, net, keypair, secgroup):
-        if self.use_advanced_image:
-            flavor_ref = CONF.neutron_plugin_options.advanced_image_flavor_ref
-            image_ref = CONF.neutron_plugin_options.advanced_image_ref
-        else:
-            flavor_ref = CONF.compute.flavor_ref
-            image_ref = CONF.compute.image_ref
-
         server = self.create_server(
-            flavor_ref=flavor_ref,
-            image_ref=image_ref,
+            flavor_ref=self.flavor_ref,
+            image_ref=self.image_ref,
             key_name=keypair['name'],
             networks=[{'uuid': net['id']}],
             security_groups=[{'name': secgroup[

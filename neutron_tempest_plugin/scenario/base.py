@@ -674,7 +674,7 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
             body = client.show_router(router_id)
             return body['router']
         elif network_id:
-            router = self.create_router_by_client()
+            router = self.create_router_by_client(tenant_id=tenant_id)
             self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                             client.delete_router, router['id'])
             kwargs = {'external_gateway_info': dict(network_id=network_id)}

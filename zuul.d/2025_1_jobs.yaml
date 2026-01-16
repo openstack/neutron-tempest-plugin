@@ -259,3 +259,6 @@
     parent: neutron-tempest-plugin-tap-as-a-service-ovn
     nodeset: openstack-single-node-noble
     override-checkout: stable/2025.1
+    vars:
+      network_api_extensions_tempest:
+        - tap-mirror

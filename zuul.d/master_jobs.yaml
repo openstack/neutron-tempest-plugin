@@ -1534,6 +1534,7 @@
       tempest_test_regex: ^neutron_tempest_plugin\.tap_as_a_service
       tox_envlist: all
       network_api_extensions_tempest:
+        # taas extension (tap-service and tap-flow) is only supported in ML2/OVS
         - taas
         - taas-vlan-filter
         - tap-mirror

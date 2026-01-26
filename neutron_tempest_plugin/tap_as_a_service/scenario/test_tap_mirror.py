@@ -10,7 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from oslo_log import log as logging
 from tempest.common import utils
 from tempest import config
 from tempest.lib.common.utils import data_utils
@@ -21,7 +20,6 @@ from tempest.lib import decorators
 from neutron_tempest_plugin.tap_as_a_service.scenario import manager
 
 CONF = config.CONF
-LOG = logging.getLogger(__name__)
 
 
 class TestTapMirror(manager.BaseTaasScenarioTests):

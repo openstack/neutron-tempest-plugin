@@ -10,6 +10,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_log import log as logging
 from tempest.common import utils
 from tempest import config
 from tempest.lib.common.utils import data_utils
@@ -20,6 +21,7 @@ from tempest.lib import decorators
 from neutron_tempest_plugin.tap_as_a_service.scenario import manager
 
 CONF = config.CONF
+LOG = logging.getLogger(__name__)
 
 
 class TestTapMirror(manager.BaseTaasScenarioTests):
@@ -111,6 +113,9 @@ class TestTapMirror(manager.BaseTaasScenarioTests):
         self.monitor_client.validate_authentication()
 
         r_ip = vm_mon_fip['floating_ip_address']
+        directions = {'IN': '101', 'OUT': '102'}
+        if utils.is_extension_enabled('tap-mirror-both-direction', 'network'):
+            directions['BOTH'] = '103'
         # Create GRE mirror, as tcpdump cant extract ERSPAN
         # it is just visible as a type of GRE traffic.
         # direction IN and that the test pings from vm0 to vm1
@@ -119,7 +124,7 @@ class TestTapMirror(manager.BaseTaasScenarioTests):
         tap_mirror = self.tap_mirrors_client.create_tap_mirror(
             name=data_utils.rand_name("tap_mirror"),
             port_id=vm1_port['id'],
-            directions={'IN': '101', 'OUT': '102'},
+            directions=directions,
             remote_ip=r_ip,
             mirror_type='gre',
         )
@@ -139,3 +144,54 @@ class TestTapMirror(manager.BaseTaasScenarioTests):
         self.assertIn('key=0x65', output)
         # GRE Key for Direction OUT:102
         self.assertIn('key=0x66', output)
+        if 'BOTH' in directions:
+            # GRE Key for Direction BOTH:103
+            self.assertIn('key=0x67', output)
+
+        vm0_ip = vm0_port['fixed_ips'][0]['ip_address']
+        output_lines = output.splitlines()
+
+        self._check_icmp_mirror_direction(output_lines, vm0_ip, vm1_ip, "IN",
+                                          "key=0x65")
+        self._check_icmp_mirror_direction(output_lines, vm0_ip, vm1_ip, "OUT",
+                                          "key=0x66")
+        if 'BOTH' in directions:
+            self._check_icmp_mirror_direction(output_lines, vm0_ip, vm1_ip,
+                                              "BOTH", "key=0x67")
+
+    def _check_icmp_mirror_direction(self, output_lines, ip_sender,
+                                     ip_receiver, direction, key):
+        """Check direction of the mirroring is consistent with what is expected
+
+        output_lines[i+2] should have the following format for OUT:
+        [ip_receiver] > [ip_sender]: ICMP echo reply, id ...
+
+        output_lines[i+2] should have the following format for IN:
+        [ip_sender] > [ip_receiver]: ICMP echo request, id ...
+
+        BOTH direction should have at least one iteration of each.
+        """
+
+        directions = [direction] if direction != "BOTH" else ['IN', 'OUT']
+        for d in directions:
+            found_log = False
+            if d == 'IN':
+                left_ip, right_ip = ip_sender, ip_receiver
+                icmp_msg = 'ICMP echo request'
+            elif d == 'OUT':
+                left_ip, right_ip = ip_receiver, ip_sender
+                icmp_msg = 'ICMP echo reply'
+            for i, line in enumerate(output_lines):
+                icmp_log = None
+                if key not in line:
+                    continue
+                icmp_log = output_lines[i + 2].split(':')
+                if icmp_msg in icmp_log[1]:
+                    self.assertIn(left_ip + ' > ' + right_ip, icmp_log[0])
+                    found_log = True
+                    break
+            # Make sure we have found at least one coincidence of the target
+            # string for this direction.
+            self.assertTrue(found_log, msg=f"Did not find direction "
+                f"{direction} and key {key} in the tcpdump log. ICMP "
+                f"log: {icmp_log}")

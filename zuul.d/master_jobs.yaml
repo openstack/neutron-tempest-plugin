@@ -1652,8 +1652,8 @@
       tempest_test_regex: ^neutron_tempest_plugin\.tap_as_a_service
       tox_envlist: all
       network_api_extensions_tempest:
-        - taas
         - tap-mirror
+        - tap-mirror-both-direction
       devstack_localrc:
         Q_AGENT: ovn
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_tempest) | join(',') }}"

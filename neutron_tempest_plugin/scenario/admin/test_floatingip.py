@@ -57,14 +57,31 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
             secgroup_id=cls.secgroup['id'],
             client=network_client),
 
-    def _list_hypervisors(self):
-        # List of hypervisors
-        return self.os_admin.hv_client.list_hypervisors()['hypervisors']
-
-    def _list_availability_zones(self):
-        # List of availability zones
-        func = self.os_admin.az_client.list_availability_zones
-        return func()['availabilityZoneInfo']
+    def _choose_az_and_node(self):
+        az_list = self.os_admin.az_client.list_availability_zones(
+            detail=True)['availabilityZoneInfo']
+        hv_list = self.os_admin.hv_client.list_hypervisors()['hypervisors']
+        for az in az_list:
+            if not az['zoneState']['available']:
+                continue
+            for host, services in az['hosts'].items():
+                for service, info in services.items():
+                    if (
+                        service == 'nova-compute' and
+                        info['active'] and info['available']
+                    ):
+                        hv = [
+                            h for h in hv_list
+                            if (
+                                h['hypervisor_hostname'].startswith(host) and
+                                h["state"] == "up" and
+                                h["status"] == "enabled"
+                            )
+                        ]
+                        if not hv:
+                            continue
+                        return az['zoneName'], hv[0]['hypervisor_hostname']
+        return None, None
 
     def _create_vms(self, hyper, avail_zone, num_servers=2):
         servers, fips, server_ssh_clients = ([], [], [])
@@ -103,10 +120,9 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
         that were created in the same compute node and same availability zone
         to reach each other.
         """
-        # Get hypervisor list to pass it for vm creation
-        hyper = self._list_hypervisors()[0]['hypervisor_hostname']
-        # Get availability zone list to pass it for vm creation
-        avail_zone = self._list_availability_zones()[0]['zoneName']
+        avail_zone, hyper = self._choose_az_and_node()
+        if not (avail_zone and hyper):
+            self.fail("No compute host is available")
         servers, server_ssh_clients, fips = self._create_vms(hyper, avail_zone)
         self.check_remote_connectivity(
             server_ssh_clients[0], fips[1]['floating_ip_address'],

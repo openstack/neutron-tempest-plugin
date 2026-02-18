@@ -65,7 +65,7 @@ class BgpSpeakerBasicTestJSONBase(base.BgpSpeakerScenarioTestJSONBase):
     ]
 
     def setUp(self):
-        super(BgpSpeakerBasicTestJSONBase, self).setUp()
+        super().setUp()
 
     @classmethod
     def resource_setup_container(cls):

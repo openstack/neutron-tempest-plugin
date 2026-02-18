@@ -95,7 +95,7 @@ class Vpnaas(base.BaseTempestTestCase):
     @classmethod
     @utils.requires_ext(extension="vpnaas", service="network")
     def resource_setup(cls):
-        super(Vpnaas, cls).resource_setup()
+        super().resource_setup()
 
         # common
         cls.keypair = cls.create_keypair()

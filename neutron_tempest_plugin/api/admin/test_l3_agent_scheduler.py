@@ -45,7 +45,7 @@ class L3AgentSchedulerTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(L3AgentSchedulerTestJSON, cls).resource_setup()
+        super().resource_setup()
         body = cls.admin_client.list_agents()
         agents = body['agents']
         for agent in agents:

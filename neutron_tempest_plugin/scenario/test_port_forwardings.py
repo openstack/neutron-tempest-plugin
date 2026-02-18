@@ -36,7 +36,7 @@ class PortForwardingTestJSON(base.BaseTempestTestCase):
 
     @classmethod
     def resource_setup(cls):
-        super(PortForwardingTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.skip_if_no_extension_enabled_in_l3_agents("port_forwarding")
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)

@@ -37,7 +37,7 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
 
     @classmethod
     def setup_clients(cls):
-        super(BaseTaasScenarioTests, cls).setup_clients()
+        super().setup_clients()
 
         cls.client = cls.os_primary.network_client
         cls.admin_network_client = cls.os_admin.network_client
@@ -121,10 +121,10 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
                 is_overlapping_cidr = 'overlaps with another subnet' in str(e)
                 if not is_overlapping_cidr:
                     raise
-        assert result is not None, 'Unable to allocate tenant network'
+        self.assertIsNotNone(result, 'Unable to allocate tenant network')
 
         subnet = result['subnet']
-        assert subnet['cidr'] == str_cidr
+        self.assertEqual(subnet['cidr'], str_cidr)
 
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                        subnets_client.delete_subnet, subnet['id'])

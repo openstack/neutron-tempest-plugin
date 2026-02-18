@@ -18,4 +18,4 @@ from oslo_concurrency.fixture import lockutils
 
 class LockFixture(lockutils.LockFixture):
     def __init__(self, name):
-        super(LockFixture, self).__init__(name, 'tempest-')
+        super().__init__(name, 'tempest-')

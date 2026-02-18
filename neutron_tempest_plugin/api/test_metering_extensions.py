@@ -36,7 +36,7 @@ class MeteringTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(MeteringTestJSON, cls).resource_setup()
+        super().resource_setup()
         description = "metering label created by tempest"
         name = data_utils.rand_name("metering-label")
         cls.metering_label = cls.create_metering_label(name, description)

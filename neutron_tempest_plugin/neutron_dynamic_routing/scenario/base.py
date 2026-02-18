@@ -69,7 +69,7 @@ class BgpSpeakerScenarioTestJSONBase(base.BaseAdminNetworkTest):
 
     def setUp(self):
         self.addCleanup(self.net_resource_cleanup)
-        super(BgpSpeakerScenarioTestJSONBase, self).setUp()
+        super().setUp()
 
     @classmethod
     def _setup_bgp_non_admin_client(cls):
@@ -87,7 +87,7 @@ class BgpSpeakerScenarioTestJSONBase(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(BgpSpeakerScenarioTestJSONBase, cls).resource_setup()
+        super().resource_setup()
         if not utils.is_extension_enabled('bgp', 'network'):
             msg = "BGP Speaker extension is not enabled."
             raise cls.skipException(msg)
@@ -116,7 +116,7 @@ class BgpSpeakerScenarioTestJSONBase(base.BaseAdminNetworkTest):
             ctn.remove()
         for br in cls.bridges:
             br.delete()
-        super(BgpSpeakerScenarioTestJSONBase, cls).resource_cleanup()
+        super().resource_cleanup()
 
     @classmethod
     def get_subnet(self, start='10.10.1.0', end='10.10.255.0', step=256):

@@ -29,7 +29,7 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
 
     @classmethod
     def setup_clients(cls):
-        super(FloatingIpTestCasesAdmin, cls).setup_clients()
+        super().setup_clients()
         # admin_client set in BaseAdminNetworkTest but here we inherit from
         # BaseNetworkTest
         if not cls.admin_client:
@@ -38,7 +38,7 @@ class FloatingIpTestCasesAdmin(base.BaseTempestTestCase):
     @classmethod
     @utils.requires_ext(extension="router", service="network")
     def resource_setup(cls):
-        super(FloatingIpTestCasesAdmin, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
         cls.create_subnet(cls.network)
         router = cls.create_router_by_client()

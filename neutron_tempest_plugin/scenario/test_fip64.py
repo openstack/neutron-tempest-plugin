@@ -36,7 +36,7 @@ class Fip64(base.BaseTempestTestCase):
     @classmethod
     @utils.requires_ext(extension="fip64", service="network")
     def resource_setup(cls):
-        super(Fip64, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
         router = cls.create_router_by_client()

@@ -38,11 +38,11 @@ class TestTaaSTrafficScenarios(manager.BaseTaasScenarioTests):
     @utils.requires_ext(extension='security-group', service='network')
     @utils.requires_ext(extension='router', service='network')
     def skip_checks(cls):
-        super(TestTaaSTrafficScenarios, cls).skip_checks()
+        super().skip_checks()
 
     @classmethod
     def resource_setup(cls):
-        super(TestTaaSTrafficScenarios, cls).resource_setup()
+        super().resource_setup()
         cls.provider_network = None
         cls.keypair = cls.create_keypair()
         cls.secgroup = cls.create_security_group(

@@ -24,7 +24,7 @@ class NetworksNegativeTest(base.BaseNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(NetworksNegativeTest, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
 

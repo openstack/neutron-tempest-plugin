@@ -72,7 +72,7 @@ class BgpSpeaker4byteASNTest(test_base.BgpSpeakerProtoTestBase):
     @classmethod
     @utils.requires_ext(extension="bgp_4byte_asn", service="network")
     def resource_setup(cls):
-        super(BgpSpeaker4byteASNTest, cls).resource_setup()
+        super().resource_setup()
 
     @classmethod
     def resource_setup_container(cls):

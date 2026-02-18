@@ -28,11 +28,11 @@ from neutron_tempest_plugin.fwaas.services import v2_client
 CONF = config.CONF
 
 
-class FWaaSClientMixin(object):
+class FWaaSClientMixin:
 
     @classmethod
     def resource_setup(cls):
-        super(FWaaSClientMixin, cls).resource_setup()
+        super().resource_setup()
         manager = cls.os_primary
         cls.firewall_groups_client = v2_client.FirewallGroupsClient(
             manager.auth_provider,

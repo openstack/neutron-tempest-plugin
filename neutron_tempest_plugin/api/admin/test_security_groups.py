@@ -23,7 +23,7 @@ class SecGroupAdminTest(base.BaseNetworkTest):
 
     @classmethod
     def setup_clients(cls):
-        super(SecGroupAdminTest, cls).setup_clients()
+        super().setup_clients()
         cls.admin_client = cls.os_admin.network_client
         cls.identity_admin_client = cls.os_admin.projects_client
 

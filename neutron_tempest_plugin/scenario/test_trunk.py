@@ -46,7 +46,7 @@ class TrunkTest(base.BaseTempestTestCase):
     @classmethod
     @tutils.requires_ext(extension="trunk", service="network")
     def resource_setup(cls):
-        super(TrunkTest, cls).resource_setup()
+        super().resource_setup()
         # setup basic topology for servers we can log into
         cls.rand_name = data_utils.rand_name(
             cls.__name__.rsplit('.', 1)[-1])
@@ -58,7 +58,7 @@ class TrunkTest(base.BaseTempestTestCase):
         cls.keypair = cls.create_keypair(name=cls.rand_name)
 
     def setUp(self):
-        super(TrunkTest, self).setUp()
+        super().setUp()
         self.security_group = self.create_security_group(name=self.rand_name)
         self.create_loginable_secgroup_rule(self.security_group['id'])
 

@@ -39,7 +39,7 @@ class TestTimeStamp(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(TestTimeStamp, cls).resource_setup()
+        super().resource_setup()
         prefixes = ['10.11.12.0/24']
         cls._subnetpool_data = {'min_prefixlen': '29', 'prefixes': prefixes}
 
@@ -211,7 +211,7 @@ class TestTimeStampWithL3(base_routers.BaseRouterTest):
 
     @classmethod
     def resource_setup(cls):
-        super(TestTimeStampWithL3, cls).resource_setup()
+        super().resource_setup()
         cls.ext_net_id = CONF.network.public_network_id
 
     @decorators.idempotent_id('433ba770-b310-4da9-5d42-733217a1c7b1')
@@ -283,7 +283,7 @@ class TestTimeStampWithSecurityGroup(base.BaseNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(TestTimeStampWithSecurityGroup, cls).resource_setup()
+        super().resource_setup()
         cls.ext_net_id = CONF.network.public_network_id
 
     @decorators.idempotent_id('a3150a7b-d31a-423a-abf3-45e71c97cbac')

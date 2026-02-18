@@ -29,9 +29,9 @@ class SubnetPoolsTestBase(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(SubnetPoolsTestBase, cls).resource_setup()
+        super().resource_setup()
         min_prefixlen = '29'
-        prefixes = [u'10.11.12.0/24']
+        prefixes = ['10.11.12.0/24']
         cls._subnetpool_data = {'prefixes': prefixes,
                                 'min_prefixlen': min_prefixlen}
 
@@ -56,9 +56,9 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
     min_prefixlen = '28'
     max_prefixlen = '30'
     _ip_version = 4
-    subnet_cidr = u'10.11.12.0/29'
-    new_prefix = u'10.11.15.0/24'
-    larger_prefix = u'10.11.0.0/16'
+    subnet_cidr = '10.11.12.0/29'
+    new_prefix = '10.11.15.0/24'
+    larger_prefix = '10.11.0.0/16'
 
     """Test Subnet Pools
 
@@ -341,14 +341,14 @@ class SubnetPoolsTestV6(SubnetPoolsTest):
     max_prefixlen = '64'
     _ip_version = 6
     subnet_cidr = '2001:db8:3::/64'
-    new_prefix = u'2001:db8:5::/64'
-    larger_prefix = u'2001:db8::/32'
+    new_prefix = '2001:db8:5::/64'
+    larger_prefix = '2001:db8::/32'
 
     @classmethod
     def resource_setup(cls):
-        super(SubnetPoolsTestV6, cls).resource_setup()
+        super().resource_setup()
         min_prefixlen = '64'
-        prefixes = [u'2001:db8:3::/48']
+        prefixes = ['2001:db8:3::/48']
         cls._subnetpool_data = {'min_prefixlen': min_prefixlen,
                                 'prefixes': prefixes}
 
@@ -375,7 +375,7 @@ class SubnetPoolsSearchCriteriaTest(base.BaseSearchCriteriaTest,
 
     @classmethod
     def resource_setup(cls):
-        super(SubnetPoolsSearchCriteriaTest, cls).resource_setup()
+        super().resource_setup()
         for name in cls.resource_names:
             cls._create_subnetpool(name=name)
 
@@ -430,7 +430,7 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
 
     @classmethod
     def resource_setup(cls):
-        super(RbacSubnetPoolTest, cls).resource_setup()
+        super().resource_setup()
         cls.client2 = cls.os_alt.network_client
 
     def _make_admin_snp_shared_to_project_id(self, project_id):

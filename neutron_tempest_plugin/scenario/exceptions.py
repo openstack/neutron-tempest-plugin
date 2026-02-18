@@ -14,20 +14,18 @@
 #    under the License.
 from tempest.lib import exceptions
 
-TempestException = exceptions.TempestException
 
-
-class QoSLimitReached(TempestException):
+class QoSLimitReached(exceptions.TempestException):
     message = "Limit reached, limit = %(limit)d"
 
 
-class SocketConnectionRefused(TempestException):
+class SocketConnectionRefused(exceptions.TempestException):
     message = "Unable to connect to %(host)s port %(port)d:Connection Refused"
 
 
-class ConnectionTimeoutException(TempestException):
+class ConnectionTimeoutException(exceptions.TempestException):
     message = "Timeout connecting to %(host)s port %(port)d"
 
 
-class FileCreationFailedException(TempestException):
+class FileCreationFailedException(exceptions.TempestException):
     message = "File %(file)s has not been created or has the wrong size"

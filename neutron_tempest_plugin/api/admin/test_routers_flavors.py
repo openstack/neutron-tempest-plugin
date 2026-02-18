@@ -25,7 +25,7 @@ class RoutersFlavorTestCase(base.BaseRouterTest):
 
     @classmethod
     def resource_setup(cls):
-        super(RoutersFlavorTestCase, cls).resource_setup()
+        super().resource_setup()
         cls.service_profiles = []
         cls.flavor_service_profiles = []
         # make a flavor based on legacy router for regular tenant to use
@@ -73,7 +73,7 @@ class RoutersFlavorTestCase(base.BaseRouterTest):
         for service_profile in cls.service_profiles:
             cls.admin_client.delete_service_profile(
                 service_profile['id'])
-        super(RoutersFlavorTestCase, cls).resource_cleanup()
+        super().resource_cleanup()
 
     @decorators.idempotent_id('a4d01977-e968-4983-b4d9-824ea6c33f4b')
     def test_create_router_with_flavor(self):

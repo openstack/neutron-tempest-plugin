@@ -407,7 +407,7 @@ class SecGroupRulesQuotaTest(BaseSecGroupRulesQuota):
     required_extensions = ['security-group', 'quotas']
 
     def setUp(self):
-        super(SecGroupRulesQuotaTest, self).setUp()
+        super().setUp()
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         self.admin_client.reset_quotas, self.client.project_id)
         self._set_sg_rules_quota(10)
@@ -583,7 +583,7 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(RbacSharedSecurityGroupTest, cls).resource_setup()
+        super().resource_setup()
         cls.client2 = cls.os_alt.network_client
 
     def _create_security_group(self):
@@ -723,7 +723,7 @@ class SecGroupSearchCriteriaTest(base.BaseSearchCriteriaTest):
 
     @classmethod
     def resource_setup(cls):
-        super(SecGroupSearchCriteriaTest, cls).resource_setup()
+        super().resource_setup()
         cls.security_group = cls.create_security_group()
         for name in cls.resource_names:
             cls.create_security_group(name=name)

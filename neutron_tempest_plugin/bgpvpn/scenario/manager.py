@@ -50,7 +50,7 @@ class NetworkScenarioTest(ScenarioTest):
 
     @classmethod
     def skip_checks(cls):
-        super(NetworkScenarioTest, cls).skip_checks()
+        super().skip_checks()
         if not CONF.service_available.neutron:
             raise cls.skipException('Neutron not available')
         if not utils.is_extension_enabled('bgpvpn', 'network'):

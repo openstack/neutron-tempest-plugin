@@ -58,13 +58,13 @@ class FWaaSv2ExtensionTestJSON(v2_base.BaseFWaaSTest):
 
     @classmethod
     def resource_setup(cls):
-        super(FWaaSv2ExtensionTestJSON, cls).resource_setup()
+        super().resource_setup()
         if not utils.is_extension_enabled('fwaas_v2', 'network'):
             msg = "FWaaS v2  Extension not enabled."
             raise cls.skipException(msg)
 
     def setUp(self):
-        super(FWaaSv2ExtensionTestJSON, self).setUp()
+        super().setUp()
         self.fw_rule_1 = self.create_firewall_rule(action="allow",
                                                  protocol="tcp")
         self.fw_rule_2 = self.create_firewall_rule(action="deny",

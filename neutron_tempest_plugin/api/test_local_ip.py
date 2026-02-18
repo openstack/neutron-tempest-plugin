@@ -29,7 +29,7 @@ class LocalIPTestJSON(base.BaseNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(LocalIPTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.ext_net_id = CONF.network.public_network_id
 
         # Create network and subnet
@@ -89,7 +89,7 @@ class LocalIPAssociationTestJSON(base.BaseNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(LocalIPAssociationTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.ext_net_id = CONF.network.public_network_id
         # Create network
         cls.network = cls.create_network()

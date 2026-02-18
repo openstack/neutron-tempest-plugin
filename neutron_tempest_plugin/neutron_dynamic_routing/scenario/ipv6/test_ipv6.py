@@ -73,7 +73,7 @@ class BgpSpeakerIpv6Test(test_base.BgpSpeakerProtoTestBase):
     ]
 
     def setUp(self):
-        super(BgpSpeakerIpv6Test, self).setUp()
+        super().setUp()
 
     @classmethod
     def resource_setup_container(cls):

@@ -197,7 +197,7 @@ class TrunkTestInheritJSONBase(TrunkTestJSONBase):
 
     @classmethod
     def skip_checks(cls):
-        super(TrunkTestInheritJSONBase, cls).skip_checks()
+        super().skip_checks()
         if ("vlan" not in
                 CONF.neutron_plugin_options.available_type_drivers):
             raise cls.skipException("VLAN type_driver is not enabled")
@@ -246,13 +246,13 @@ class TrunkTestMtusJSONBase(TrunkTestJSONBase):
 
     @classmethod
     def skip_checks(cls):
-        super(TrunkTestMtusJSONBase, cls).skip_checks()
+        super().skip_checks()
         if not all(cls.is_type_driver_enabled(t) for t in ['vlan', 'vxlan']):
             msg = "Either vxlan or vlan type driver not enabled."
             raise cls.skipException(msg)
 
     def setUp(self):
-        super(TrunkTestMtusJSONBase, self).setUp()
+        super().setUp()
         physnet_name = CONF.neutron_plugin_options.provider_vlans[0]
 
         # VXLAN autocomputed MTU (1450) is smaller than that of VLAN (1480)
@@ -314,7 +314,7 @@ class TrunksSearchCriteriaTest(base.BaseSearchCriteriaTest):
 
     @classmethod
     def resource_setup(cls):
-        super(TrunksSearchCriteriaTest, cls).resource_setup()
+        super().resource_setup()
         net = cls.create_network(network_name='trunk-search-test-net')
         for name in cls.resource_names:
             parent_port = cls.create_port(net)

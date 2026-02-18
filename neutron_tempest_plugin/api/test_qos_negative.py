@@ -144,7 +144,7 @@ class QosBandwidthLimitRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
 
     @classmethod
     def setup_clients(cls):
-        super(QosBandwidthLimitRuleNegativeTestJSON, cls).setup_clients()
+        super().setup_clients()
         cls.qos_bw_limit_rule_client = \
             cls.os_admin.qos_limit_bandwidth_rules_client
 
@@ -154,7 +154,7 @@ class QosBandwidthLimitRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
             cls.qos_bw_limit_rule_client.create_limit_bandwidth_rule
         cls.rule_update_m = \
             cls.qos_bw_limit_rule_client.update_limit_bandwidth_rule
-        super(QosBandwidthLimitRuleNegativeTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('e9ce8042-c828-4cb9-b1f1-85bd35e6553a')
@@ -185,7 +185,7 @@ class QosMinimumBandwidthRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
             create_minimum_bandwidth_rule
         cls.rule_update_m = cls.os_admin.qos_minimum_bandwidth_rules_client.\
             update_minimum_bandwidth_rule
-        super(QosMinimumBandwidthRuleNegativeTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('08b8455b-4d4f-4119-bad3-9357085c3a80')
@@ -218,7 +218,7 @@ class QosMinimumPpsRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
             create_minimum_packet_rate_rule
         cls.rule_update_m = cls.os_admin.qos_minimum_packet_rate_rules_client.\
             update_minimum_packet_rate_rule
-        super(QosMinimumPpsRuleNegativeTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('ddd16824-3e10-11ec-928d-5b1ef3fb9f43')
@@ -249,7 +249,7 @@ class QosDscpRuleNegativeTestJSON(QosRuleNegativeBaseTestJSON):
     def resource_setup(cls):
         cls.rule_create_m = cls.create_qos_dscp_marking_rule
         cls.rule_update_m = cls.admin_client.update_dscp_marking_rule
-        super(QosDscpRuleNegativeTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('d47d5fbe-3e98-476f-b2fd-97818175dea5')

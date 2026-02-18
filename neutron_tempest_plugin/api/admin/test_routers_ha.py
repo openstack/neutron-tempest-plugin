@@ -31,7 +31,7 @@ class RoutersTestHA(base.BaseRouterTest):
         # admin credentials to create router with ha=True attribute
         # and checking for BadRequest exception and that the resulting router
         # has a high availability attribute.
-        super(RoutersTestHA, cls).resource_setup()
+        super().resource_setup()
         name = data_utils.rand_name('pretest-check')
         router = cls.admin_client.create_router(name)
         cls.admin_client.delete_router(router['router']['id'])

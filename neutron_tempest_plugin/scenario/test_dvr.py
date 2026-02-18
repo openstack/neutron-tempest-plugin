@@ -23,7 +23,7 @@ from neutron_tempest_plugin.scenario import base
 CONF = config.CONF
 
 
-class NetworkTestMixin(object):
+class NetworkTestMixin:
     def _check_connectivity(self):
         self.check_connectivity(self.fip['floating_ip_address'],
                                 CONF.validation.image_ssh_user,
@@ -52,7 +52,7 @@ class NetworkDvrTest(base.BaseTempestTestCase, NetworkTestMixin):
     @classmethod
     @utils.requires_ext(extension="dvr", service="network")
     def skip_checks(cls):
-        super(NetworkDvrTest, cls).skip_checks()
+        super().skip_checks()
 
     @decorators.idempotent_id('3d73ec1a-2ec6-45a9-b0f8-04a283d9d344')
     @testtools.skipUnless(

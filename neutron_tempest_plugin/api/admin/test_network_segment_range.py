@@ -31,11 +31,11 @@ class NetworkSegmentRangeTestBase(base.BaseAdminNetworkTest):
 
     @classmethod
     def skip_checks(cls):
-        super(NetworkSegmentRangeTestBase, cls).skip_checks()
+        super().skip_checks()
 
     @classmethod
     def resource_setup(cls):
-        super(NetworkSegmentRangeTestBase, cls).resource_setup()
+        super().resource_setup()
         network_type = NETWORK_TYPE
         physical_network = ""
         minimum = TEST_SEGMENT_RANGE_MINIMUM_ID

@@ -82,7 +82,7 @@ class AddressScopeTestNegative(test_address_scopes.AddressScopeTestBase):
     @decorators.idempotent_id('1e471e5c-6f9c-437a-9257-fd9bc4b6f0fb')
     def test_delete_address_scope_associated_with_subnetpool(self):
         address_scope = self._create_address_scope(ip_version=4)
-        prefixes = [u'10.11.12.0/24']
+        prefixes = ['10.11.12.0/24']
         subnetpool_data = {
             'name': 'foo-subnetpool',
             'min_prefixlen': '29', 'prefixes': prefixes,

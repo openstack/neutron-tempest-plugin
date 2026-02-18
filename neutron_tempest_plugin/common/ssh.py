@@ -59,7 +59,7 @@ class Client(ssh.Client):
             proxy_client = self.create_proxy_client(
                 timeout=timeout, channel_timeout=channel_timeout)
 
-        super(Client, self).__init__(
+        super().__init__(
             host=host, username=username, password=password, timeout=timeout,
             pkey=pkey, channel_timeout=channel_timeout,
             look_for_keys=look_for_keys, key_filename=key_filename, port=port,
@@ -136,7 +136,7 @@ class Client(ssh.Client):
         :raises tempest.lib.exceptions.SSHTimeout: in case it fails to connect
            to remote server.
         """
-        return super(Client, self)._get_ssh_connection(*args, **kwargs)
+        return super()._get_ssh_connection(*args, **kwargs)
 
     # This overrides superclass test_connection_auth method forbidding it to
     # close connection
@@ -170,7 +170,7 @@ class Client(ssh.Client):
             original_timeout = self.timeout
             self.timeout = timeout
         try:
-            return super(Client, self).exec_command(cmd=cmd, encoding=encoding)
+            return super().exec_command(cmd=cmd, encoding=encoding)
         finally:
             if timeout:
                 self.timeout = original_timeout

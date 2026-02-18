@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -15,14 +14,17 @@
 import os
 import sys
 
+
 def autodoc_skip_member_handler(app, what, name, obj, skip, options):
     return skip or (
         (what == "class" and not name.startswith("test")) or
         # NOTE(fnordahl): Sphinx does not like the ASCII art in the docstring.
         (what == 'module' and name == 'NetworkMultipleGWTest'))
 
+
 def setup(app):
     app.connect('autodoc-skip-member', autodoc_skip_member_handler)
+
 
 sys.path.insert(0, os.path.abspath('../../neutron_tempest_plugin'))
 
@@ -86,4 +88,4 @@ latex_documents = [
 ]
 
 # Example configuration for intersphinx: refer to the Python standard library.
-#intersphinx_mapping = {'http://docs.python.org/': None}
+# intersphinx_mapping = {'http://docs.python.org/': None}

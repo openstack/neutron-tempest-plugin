@@ -32,7 +32,7 @@ class TestFlavorsJson(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(TestFlavorsJson, cls).resource_setup()
+        super().resource_setup()
 
         # Use flavors service type as know this is loaded
         service_type = "FLAVORS"

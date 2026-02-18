@@ -26,7 +26,7 @@ CONF = config.CONF
 class BaseNetworkTest(base.BaseNetworkTest):
     @classmethod
     def resource_setup(cls):
-        super(BaseNetworkTest, cls).resource_setup()
+        super().resource_setup()
         cls.vpnservices = []
         cls.ikepolicies = []
         cls.ipsecpolicies = []
@@ -36,7 +36,7 @@ class BaseNetworkTest(base.BaseNetworkTest):
     @classmethod
     def get_client_manager(cls, credential_type=None, roles=None,
                            force_new=None):
-        manager = super(BaseNetworkTest, cls).get_client_manager(
+        manager = super().get_client_manager(
             credential_type=credential_type,
             roles=roles,
             force_new=force_new)
@@ -69,7 +69,7 @@ class BaseNetworkTest(base.BaseNetworkTest):
             for vpnservice in cls.vpnservices:
                 cls._try_delete_resource(cls.client.delete_vpnservice,
                                          vpnservice['id'])
-        super(BaseNetworkTest, cls).resource_cleanup()
+        super().resource_cleanup()
 
     @classmethod
     def create_vpnservice(cls, subnet_id, router_id, name=None):
@@ -155,6 +155,6 @@ class BaseAdminNetworkTest(BaseNetworkTest):
 
     @classmethod
     def setup_clients(cls):
-        super(BaseAdminNetworkTest, cls).setup_clients()
+        super().setup_clients()
         cls.admin_client = cls.os_admin.network_client
         cls.identity_admin_client = cls.os_admin.tenants_client

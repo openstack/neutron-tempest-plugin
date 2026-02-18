@@ -30,10 +30,10 @@ from neutron_tempest_plugin.services.bgp import bgp_client
 CONF = config.CONF
 
 
-class BgpClientMixin(object):
+class BgpClientMixin:
     @classmethod
     def resource_setup(cls):
-        super(BgpClientMixin, cls).resource_setup()
+        super().resource_setup()
         if bgp_client is None:
             msg = "No BGP service client is available"
             raise cls.skipException(msg)
@@ -96,7 +96,7 @@ class Bgp(BgpClientMixin, base.BaseTempestTestCase):
     @utils.requires_ext(extension="bgp-speaker-router-insertion",
                         service="network")
     def resource_setup(cls):
-        super(Bgp, cls).resource_setup()
+        super().resource_setup()
 
         # common
         cls.keypair = cls.create_keypair()

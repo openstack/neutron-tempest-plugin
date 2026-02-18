@@ -41,18 +41,18 @@ class BgpSpeakerTestJSONBase(base.BaseAdminNetworkTest):
 
     def setUp(self):
         self.addCleanup(self.resource_cleanup)
-        super(BgpSpeakerTestJSONBase, self).setUp()
+        super().setUp()
 
     @classmethod
     def setup_clients(cls):
-        super(BgpSpeakerTestJSONBase, cls).setup_clients()
+        super().setup_clients()
         cls.bgp_client = cls.os_primary.bgp_client
         cls.bgp_adm_client = cls.os_admin.bgp_client
 
     @classmethod
     def get_client_manager(cls, credential_type=None, roles=None,
                            force_new=None):
-        manager = super(BgpSpeakerTestJSONBase, cls).get_client_manager(
+        manager = super().get_client_manager(
             credential_type=credential_type,
             roles=roles,
             force_new=force_new
@@ -61,7 +61,7 @@ class BgpSpeakerTestJSONBase(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(BgpSpeakerTestJSONBase, cls).resource_setup()
+        super().resource_setup()
         if not utils.is_extension_enabled('bgp', 'network'):
             msg = "BGP Speaker extension is not enabled."
             raise cls.skipException(msg)
@@ -83,7 +83,7 @@ class BgpSpeakerTestJSONBase(base.BaseAdminNetworkTest):
         for router in cls.admin_routers:
             cls._try_delete_resource(cls.admin_client.delete_router,
                                      router['id'])
-        super(BgpSpeakerTestJSONBase, cls).resource_cleanup()
+        super().resource_cleanup()
 
     def create_bgp_speaker(self, auto_delete=True, **args):
         data = {'bgp_speaker': args}

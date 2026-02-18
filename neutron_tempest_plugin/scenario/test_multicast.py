@@ -120,7 +120,7 @@ tcpdump -i %(interface)s host %(group)s -vvneA -s0 -l -c1 &> %(result_file)s &
            'result_file': result_file}
 
 
-class BaseMulticastTest(object):
+class BaseMulticastTest:
 
     credentials = ['primary', 'admin']
     force_tenant_isolation = False
@@ -138,7 +138,7 @@ class BaseMulticastTest(object):
 
     @classmethod
     def skip_checks(cls):
-        super(BaseMulticastTest, cls).skip_checks()
+        super().skip_checks()
         advanced_image_available = (
             CONF.neutron_plugin_options.advanced_image_ref or
             CONF.neutron_plugin_options.default_image_is_advanced)
@@ -148,7 +148,7 @@ class BaseMulticastTest(object):
 
     @classmethod
     def resource_setup(cls):
-        super(BaseMulticastTest, cls).resource_setup()
+        super().resource_setup()
 
         cls.setup_advanced_image()
 

@@ -87,7 +87,7 @@ class BaseNetworkTest(test.BaseTestCase):
     @classmethod
     def get_client_manager(cls, credential_type=None, roles=None,
                            force_new=None):
-        manager = super(BaseNetworkTest, cls).get_client_manager(
+        manager = super().get_client_manager(
             credential_type=credential_type,
             roles=roles,
             force_new=force_new
@@ -100,7 +100,7 @@ class BaseNetworkTest(test.BaseTestCase):
 
     @classmethod
     def skip_checks(cls):
-        super(BaseNetworkTest, cls).skip_checks()
+        super().skip_checks()
         if not CONF.service_available.neutron:
             raise cls.skipException("Neutron support is required")
         if (cls._ip_version == const.IP_VERSION_6 and
@@ -115,16 +115,16 @@ class BaseNetworkTest(test.BaseTestCase):
     def setup_credentials(cls):
         # Create no network resources for these test.
         cls.set_network_resources()
-        super(BaseNetworkTest, cls).setup_credentials()
+        super().setup_credentials()
 
     @classmethod
     def setup_clients(cls):
-        super(BaseNetworkTest, cls).setup_clients()
+        super().setup_clients()
         cls.client = cls.os_primary.network_client
 
     @classmethod
     def resource_setup(cls):
-        super(BaseNetworkTest, cls).resource_setup()
+        super().resource_setup()
 
         cls.networks = []
         cls.admin_networks = []
@@ -313,7 +313,7 @@ class BaseNetworkTest(test.BaseTestCase):
                     cls.admin_client.delete_network_segment_range,
                     network_segment_range['id'])
 
-        super(BaseNetworkTest, cls).resource_cleanup()
+        super().resource_cleanup()
 
     @classmethod
     def _try_delete_resource(cls, delete_callable, *args, **kwargs):
@@ -542,7 +542,7 @@ class BaseNetworkTest(test.BaseTestCase):
         """
 
         if not cls.try_reserve_subnet_cidr(addr, **ipnetwork_kwargs):
-            raise ValueError(_('Subnet CIDR already reserved: {0!r}'.format(
+            raise ValueError(_('Subnet CIDR already reserved: {!r}'.format(
                 addr)))
 
     @classmethod
@@ -659,6 +659,13 @@ class BaseNetworkTest(test.BaseTestCase):
     def create_admin_router(cls, *args, **kwargs):
         return cls._create_router_with_client(cls.os_admin.network_client,
                                               *args, **kwargs)
+
+    @classmethod
+    def _list_router_interfaces(cls, client, router_id):
+        body = client.list_router_interfaces(router_id)
+        interfaces = [port for port in body['ports']
+                      if port['device_owner'] in const.ROUTER_INTERFACE_OWNERS]
+        return interfaces
 
     @classmethod
     def create_floatingip(cls, external_network_id=None, port=None,
@@ -861,7 +868,6 @@ class BaseNetworkTest(test.BaseTestCase):
 
     @classmethod
     def delete_local_ip_association(cls, association, client=None):
-
         """Delete Local IP Association
 
         :param client: Client to be used
@@ -1238,7 +1244,7 @@ class BaseAdminNetworkTest(BaseNetworkTest):
 
     @classmethod
     def setup_clients(cls):
-        super(BaseAdminNetworkTest, cls).setup_clients()
+        super().setup_clients()
         cls.admin_client = cls.os_admin.network_client
         cls.identity_admin_client = cls.os_admin.projects_client
 

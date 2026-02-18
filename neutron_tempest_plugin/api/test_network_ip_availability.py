@@ -51,7 +51,7 @@ class NetworksIpAvailabilityTest(base.BaseAdminNetworkTest):
     @classmethod
     @utils.requires_ext(extension="network-ip-availability", service="network")
     def skip_checks(cls):
-        super(NetworksIpAvailabilityTest, cls).skip_checks()
+        super().skip_checks()
 
     @staticmethod
     def _get_availability(network, net_availability):
@@ -89,7 +89,7 @@ def calc_total_ips(prefix, ip_version):
 class NetworksIpAvailabilityIPv4Test(NetworksIpAvailabilityTest):
 
     def setUp(self):
-        super(NetworksIpAvailabilityIPv4Test, self).setUp()
+        super().setUp()
         net_name = data_utils.rand_name('network')
         self.network = self.create_network(network_name=net_name)
 

@@ -36,7 +36,7 @@ class NetworksTestJSON(base.BaseNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(NetworksTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
 
     @decorators.idempotent_id('2bf13842-c93f-4a69-83ed-717d2ec3b44e')
@@ -167,7 +167,7 @@ class NetworksSearchCriteriaTest(base.BaseSearchCriteriaTest):
 
     @classmethod
     def resource_setup(cls):
-        super(NetworksSearchCriteriaTest, cls).resource_setup()
+        super().resource_setup()
         for name in cls.resource_names:
             cls.create_network(network_name=name)
 

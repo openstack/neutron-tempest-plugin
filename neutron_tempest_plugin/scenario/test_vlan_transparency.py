@@ -45,7 +45,7 @@ class BaseVlanTest(base.BaseAdminTempestTestCase):
 
     @classmethod
     def resource_setup(cls):
-        super(BaseVlanTest, cls).resource_setup()
+        super().resource_setup()
         # setup basic topology for servers we can log into
         cls.rand_name = data_utils.rand_name(
             cls.__name__.rsplit('.', 1)[-1])

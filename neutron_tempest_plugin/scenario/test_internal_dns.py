@@ -41,7 +41,7 @@ class InternalDNSBase(base.BaseTempestTestCase):
 
     @classmethod
     def resource_setup(cls):
-        super(InternalDNSBase, cls).resource_setup()
+        super().resource_setup()
         cls.router = cls.create_router_by_client()
         cls.keypair = cls.create_keypair(
             name=cls._rand_name('shared-keypair'))

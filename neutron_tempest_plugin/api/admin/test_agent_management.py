@@ -26,7 +26,7 @@ class AgentManagementTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(AgentManagementTestJSON, cls).resource_setup()
+        super().resource_setup()
         body = cls.admin_client.list_agents()
         agents = body['agents']
         cls.agent = agents[0]  # don't modify this agent

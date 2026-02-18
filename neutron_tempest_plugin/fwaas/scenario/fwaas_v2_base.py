@@ -23,7 +23,7 @@ from neutron_tempest_plugin.fwaas.scenario import fwaas_v2_manager as manager
 CONF = config.CONF
 
 
-class FWaaSScenarioTestBase(object):
+class FWaaSScenarioTestBase:
     def check_connectivity(self, ip_address, username=None, private_key=None,
                            should_connect=True,
                            check_icmp=True, check_ssh=True,

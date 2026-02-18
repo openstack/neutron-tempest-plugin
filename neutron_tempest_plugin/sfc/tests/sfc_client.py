@@ -20,11 +20,11 @@ from neutron_tempest_plugin.sfc.services import sfc_client
 CONF = config.CONF
 
 
-class SfcClientMixin(object):
+class SfcClientMixin:
 
     @classmethod
     def resource_setup(cls):
-        super(SfcClientMixin, cls).resource_setup()
+        super().resource_setup()
         manager = cls.os_admin
         cls.portchain_client = (
             sfc_client.PortChainClient(

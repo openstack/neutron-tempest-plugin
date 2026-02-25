@@ -2,17 +2,17 @@
     name: neutron-tempest-plugin-openvswitch-2024-1
     parent: neutron-tempest-plugin-openvswitch
     nodeset: neutron-nested-virt-ubuntu-jammy
+    override-checkout: unmaintained/2024.1
     required-projects: &required-projects-2024-1
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
-        override-checkout: 2024.1-last
+        override-checkout: 2.12.0
       - openstack/tempest
     vars:
       network_api_extensions_openvswitch: &api_extensions_openvswitch
         - dhcp_agent_scheduler
         - local_ip
         - qos-bw-minimum-ingress
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
           (^neutron_tempest_plugin.scenario)|\
@@ -104,7 +104,6 @@
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_openvswitch) | join(',') }}"
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -120,7 +119,6 @@
       network_api_extensions_common: *api_extensions
       network_api_extensions_openvswitch: *api_extensions_openvswitch
       network_available_features: *available_features
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
           (^neutron_tempest_plugin.scenario)|\
@@ -137,7 +135,6 @@
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_openvswitch) | join(',') }}"
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -175,7 +172,6 @@
         - dhcp_agent_scheduler
         - vlan-transparent
       network_available_features: *available_features
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
           (^neutron_tempest_plugin.scenario)|\
@@ -198,7 +194,6 @@
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_linuxbridge) | join(',') }}"
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -217,7 +212,6 @@
     vars:
       network_api_extensions_ovn:
         - vlan-transparent
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
           (^neutron_tempest_plugin.scenario)|\
@@ -226,7 +220,6 @@
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_ovn) | join(',') }}"
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
@@ -247,11 +240,9 @@
       network_api_extensions_dvr:
         - dhcp_agent_scheduler
         - dvr
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_dvr) | join(',') }}"
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
 
 - job:
     name: neutron-tempest-plugin-designate-scenario-2024-1
@@ -260,10 +251,8 @@
     required-projects: *required-projects-2024-1
     vars:
       network_api_extensions_common: *api_extensions
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
 
 - job:
     name: neutron-tempest-plugin-sfc-2024-1
@@ -271,10 +260,8 @@
     nodeset: openstack-single-node-jammy
     required-projects: *required-projects-2024-1
     vars:
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-2024-1
@@ -282,10 +269,8 @@
     nodeset: openstack-single-node-jammy
     required-projects: *required-projects-2024-1
     vars:
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing-2024-1
@@ -294,10 +279,8 @@
     nodeset: openstack-single-node-jammy
     required-projects: *required-projects-2024-1
     vars:
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
 
 - job:
     name: neutron-tempest-plugin-fwaas-2024-1
@@ -305,10 +288,8 @@
     nodeset: openstack-single-node-jammy
     required-projects: *required-projects-2024-1
     vars:
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
 
 - job:
     name: neutron-tempest-plugin-vpnaas-2024-1
@@ -316,10 +297,8 @@
     nodeset: openstack-single-node-jammy
     required-projects: *required-projects-2024-1
     vars:
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service-2024-1
@@ -327,11 +306,9 @@
     nodeset: openstack-single-node-jammy
     required-projects: *required-projects-2024-1
     vars:
-      stable_constraints_file: "https://releases.openstack.org/constraints/upper/master"
       network_api_extensions_common: *api_extensions
       network_api_extensions_tempest:
         - taas
         - taas-vlan-filter
       devstack_localrc:
         NEUTRON_DEPLOY_MOD_WSGI: false
-        TEMPEST_VENV_UPPER_CONSTRAINTS: master

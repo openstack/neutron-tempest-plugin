@@ -13,9 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+import importlib
 import ipaddress
-
-import testtools
 
 from oslo_log import log
 from tempest.common import utils
@@ -37,9 +36,21 @@ LOG = log.getLogger(__name__)
 
 # Note(jh): Need to do a bit of juggling here in order to avoid failures
 # when designate_tempest_plugin is not available
-dns_base = testtools.try_import('designate_tempest_plugin.tests.base')
-dns_waiters = testtools.try_import('designate_tempest_plugin.common.waiters')
-dns_data_utils = testtools.try_import('designate_tempest_plugin.data_utils')
+try:
+    dns_base = importlib.import_module('designate_tempest_plugin.tests.base')
+except ImportError:
+    dns_base = None
+try:
+    dns_waiters = importlib.import_module(
+        'designate_tempest_plugin.common.waiters')
+except ImportError:
+    dns_waiters = None
+try:
+    dns_data_utils = importlib.import_module(
+        'designate_tempest_plugin.data_utils')
+except ImportError:
+    dns_data_utils = None
+
 
 if dns_base:
     DNSMixin = dns_base.BaseDnsV2Test

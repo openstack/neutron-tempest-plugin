@@ -33,21 +33,21 @@ CONF = config.CONF
 LOG = log.getLogger(__name__)
 
 
-def turn_nic6_on(ssh, ipv6_port, config_nic=True):
+def turn_nic6_on(ssh, nic, config_nic=True):
     """Turns the IPv6 vNIC on
 
     Required because guest images usually set only the first vNIC on boot.
-    Searches for the IPv6 vNIC's MAC and brings it up.
+    Brings the specified NIC up.
     # NOTE(slaweq): on RHEL based OS ifcfg file for new interface is
     # needed to make IPv6 working on it, so if
     # /etc/sysconfig/network-scripts directory exists ifcfg-%(nic)s file
     # should be added in it
 
     @param ssh: RemoteClient ssh instance to server
-    @param ipv6_port: port from IPv6 network attached to the server
+    @param nic: network interface name
+    @param config_nic: whether to configure with NetworkManager
     """
     ip_command = ip.IPCommand(ssh)
-    nic = ip_command.get_nic_name_by_mac(ipv6_port['mac_address'])
 
     if config_nic:
         try:
@@ -150,16 +150,26 @@ class IPv6Test(base.BaseTempestTestCase):
     def _test_ipv6_address_configured(self, ssh_client, vm, ipv6_port):
         ipv6_address = ipv6_port['fixed_ips'][0]['ip_address']
         ip_command = ip.IPCommand(ssh_client)
+        nic = ip_command.get_nic_name_by_mac(ipv6_port['mac_address'])
 
         def guest_has_address(expected_address):
             ip_addresses = [a.address for a in ip_command.list_addresses()]
             for ip_address in ip_addresses:
                 if expected_address in ip_address:
                     return True
+
+            # NOTE(ykarel): Sometimes with the cirros VM a race is seen with
+            # ovs_create_tap feature https://launchpad.net/bugs/2069718 and
+            # ipv6 is not configured, adding nic restart if dad failure is
+            # detected to workaround this
+            if ip_command.has_dadfailed(nic):
+                LOG.debug('DAD failure detected on %s, restarting', nic)
+                ip_command.set_link(nic, "down")
+                ip_command.set_link(nic, "up")
             return False
         # Set NIC with IPv6 to be UP and wait until IPv6 address
         # will be configured on this NIC
-        turn_nic6_on(ssh_client, ipv6_port, False)
+        turn_nic6_on(ssh_client, nic, False)
         # And check if IPv6 address will be properly configured
         # on this NIC
         try:
@@ -179,7 +189,7 @@ class IPv6Test(base.BaseTempestTestCase):
             try:
                 # Set NIC with IPv6 to be UP and wait until IPv6 address
                 # will be configured on this NIC
-                turn_nic6_on(ssh_client, ipv6_port)
+                turn_nic6_on(ssh_client, nic)
                 # And check if IPv6 address will be properly configured
                 # on this NIC
                 utils.wait_until_true(

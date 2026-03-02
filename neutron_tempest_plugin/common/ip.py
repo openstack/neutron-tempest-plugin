@@ -184,6 +184,11 @@ class IPCommand(object):
             if mac_address in nic_line:
                 return nic_line.split(":")[1].strip()
 
+    def has_dadfailed(self, device):
+        """Check if device has any IPv6 addresses in dadfailed state"""
+        output = self.execute('address', 'show', 'dev', device)
+        return 'dadfailed' in output
+
 
 def parse_addresses(command_output):
     address = device = None

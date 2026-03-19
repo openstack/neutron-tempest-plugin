@@ -185,7 +185,7 @@ bgpvpn_group = cfg.OptGroup(name="bgpvpn", title=("Networking-Bgpvpn Service "
 FwaasGroup = [
     cfg.StrOpt('driver',
                default=None,
-               choices=['openvswitch', 'ovn'],
+               choices=['iptables_v2', 'ovn'],
                help='Driver used by the FWaaS plugin.'),
 ]
 fwaas_group = cfg.OptGroup(

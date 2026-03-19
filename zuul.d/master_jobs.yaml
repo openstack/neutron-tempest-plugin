@@ -1369,12 +1369,11 @@
         q-meta: true
         q-metering: true
         q-l3: true
-        neutron-log: false
       devstack_local_conf:
         test-config:
           $TEMPEST_CONFIG:
             fwaas:
-              driver: openvswitch
+              driver: iptables_v2
     irrelevant-files: *fwaas_irrelevant_files
 
 - job:

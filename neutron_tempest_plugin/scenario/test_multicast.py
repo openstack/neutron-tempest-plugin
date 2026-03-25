@@ -150,15 +150,7 @@ class BaseMulticastTest(object):
     def resource_setup(cls):
         super(BaseMulticastTest, cls).resource_setup()
 
-        if CONF.neutron_plugin_options.default_image_is_advanced:
-            cls.flavor_ref = CONF.compute.flavor_ref
-            cls.image_ref = CONF.compute.image_ref
-            cls.username = CONF.validation.image_ssh_user
-        else:
-            cls.flavor_ref = (
-                CONF.neutron_plugin_options.advanced_image_flavor_ref)
-            cls.image_ref = CONF.neutron_plugin_options.advanced_image_ref
-            cls.username = CONF.neutron_plugin_options.advanced_image_ssh_user
+        cls.setup_advanced_image()
 
         # setup basic topology for servers we can log into it
         cls.network = cls.create_network()

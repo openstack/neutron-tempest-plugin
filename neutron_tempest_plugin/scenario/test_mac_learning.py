@@ -79,15 +79,7 @@ class MacLearningTest(base.BaseTempestTestCase):
     def resource_setup(cls):
         super(MacLearningTest, cls).resource_setup()
 
-        if CONF.neutron_plugin_options.default_image_is_advanced:
-            cls.flavor_ref = CONF.compute.flavor_ref
-            cls.image_ref = CONF.compute.image_ref
-            cls.username = CONF.validation.image_ssh_user
-        else:
-            cls.flavor_ref = (
-                CONF.neutron_plugin_options.advanced_image_flavor_ref)
-            cls.image_ref = CONF.neutron_plugin_options.advanced_image_ref
-            cls.username = CONF.neutron_plugin_options.advanced_image_ssh_user
+        cls.setup_advanced_image()
 
         # Setup basic topology for servers so that we can log into them
         # It's important to keep port security and DHCP disabled for this test

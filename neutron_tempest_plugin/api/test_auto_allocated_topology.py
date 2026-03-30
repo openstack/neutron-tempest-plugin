@@ -84,11 +84,10 @@ class TestAutoAllocatedTopology(base.BaseAdminNetworkTest):
         body = self.client.validate_auto_allocated_topology_requirements()
         topology = body['auto_allocated_topology']
         self.assertIn('dry-run', topology['id'])
-        self.assertIn('tenant_id', topology)
         self.assertIn('project_id', topology)
 
     @decorators.idempotent_id('64bc0b02-cee4-11e5-9f3c-080027605a2b')
-    def test_get_allocated_net_topology_as_tenant(self):
+    def test_get_allocated_net_topology_as_project(self):
         resources_before = self._count_topology_resources()
         self.assertEqual((0, 0, 0), resources_before)
 
@@ -114,7 +113,7 @@ class TestAutoAllocatedTopology(base.BaseAdminNetworkTest):
         self.assertEqual(resources_after1, resources_after2)
 
     @decorators.idempotent_id('aabc0b02-cee4-11e5-9f3c-091127605a2b')
-    def test_delete_allocated_net_topology_as_tenant(self):
+    def test_delete_allocated_net_topology_as_project(self):
         resources_before = self._count_topology_resources()
         self.assertEqual((0, 0, 0), resources_before)
         body = self.client.get_auto_allocated_topology()

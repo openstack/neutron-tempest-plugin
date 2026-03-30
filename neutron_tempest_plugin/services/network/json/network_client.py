@@ -805,23 +805,23 @@ class NetworkClientJSON(service_client.RestClient):
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
 
-    def validate_auto_allocated_topology_requirements(self, tenant_id=None):
+    def validate_auto_allocated_topology_requirements(self, project_id=None):
         uri = '%s/auto-allocated-topology/%s?fields=dry-run' % (
-            self.uri_prefix, tenant_id)
+            self.uri_prefix, project_id)
         resp, body = self.get(uri)
         self.expected_success(200, resp.status)
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
 
-    def get_auto_allocated_topology(self, tenant_id=None):
-        uri = '%s/auto-allocated-topology/%s' % (self.uri_prefix, tenant_id)
+    def get_auto_allocated_topology(self, project_id=None):
+        uri = '%s/auto-allocated-topology/%s' % (self.uri_prefix, project_id)
         resp, body = self.get(uri)
         self.expected_success(200, resp.status)
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)
 
-    def delete_auto_allocated_topology(self, tenant_id=None):
-        uri = '%s/auto-allocated-topology/%s' % (self.uri_prefix, tenant_id)
+    def delete_auto_allocated_topology(self, project_id=None):
+        uri = '%s/auto-allocated-topology/%s' % (self.uri_prefix, project_id)
         resp, body = self.delete(uri)
         self.expected_success(204, resp.status)
         return service_client.ResponseBody(resp, body)

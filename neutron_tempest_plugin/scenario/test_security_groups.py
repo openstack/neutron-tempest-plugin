@@ -67,7 +67,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
     @classmethod
     def setup_clients(cls):
         super().setup_clients()
-        cls.project_id = cls.os_primary.credentials.tenant_id
+        cls.project_id = cls.os_primary.credentials.project_id
 
     @classmethod
     def resource_setup(cls):

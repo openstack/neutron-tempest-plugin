@@ -23,19 +23,19 @@ class AddressScopeTestNegative(test_address_scopes.AddressScopeTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('9c92ec34-0c50-4104-aa47-9ce98d5088df')
-    def test_tenant_create_shared_address_scope(self):
+    def test_project_create_shared_address_scope(self):
         self.assertRaises(lib_exc.Forbidden, self._create_address_scope,
                           shared=True, ip_version=4)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('a857b61e-bf53-4fab-b21a-b0daaf81b5bd')
-    def test_tenant_update_address_scope_shared_true(self):
+    def test_project_update_address_scope_shared_true(self):
         self.assertRaises(lib_exc.Forbidden,
                           self._test_update_address_scope_helper, shared=True)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('a859ef2f-9c76-4e2e-ba0f-e0339a489e8c')
-    def test_tenant_update_address_scope_shared_false(self):
+    def test_project_update_address_scope_shared_false(self):
         self.assertRaises(lib_exc.Forbidden,
                           self._test_update_address_scope_helper, shared=False)
 
@@ -48,10 +48,10 @@ class AddressScopeTestNegative(test_address_scopes.AddressScopeTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('ef213552-f2da-487d-bf4a-e1705d115ff1')
-    def test_tenant_get_not_shared_admin_address_scope(self):
+    def test_project_get_not_shared_admin_address_scope(self):
         address_scope = self._create_address_scope(is_admin=True,
                                                    ip_version=4)
-        # None-shared admin address scope cannot be retrieved by tenant user.
+        # None-shared admin address scope cannot be retrieved by project user.
         self.assertRaises(lib_exc.NotFound, self.client.show_address_scope,
                           address_scope['id'])
 

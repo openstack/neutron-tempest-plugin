@@ -281,7 +281,7 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
                 action='access_as_shared',
                 target_tenant=self.client2.project_id)
 
-        # make sure the rbac-policy is invisible to the tenant for which it's
+        # make sure the rbac-policy is invisible to the project for which it's
         # being shared
         self.assertFalse(self.client.list_rbac_policies()['rbac_policies'])
 

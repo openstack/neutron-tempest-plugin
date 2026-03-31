@@ -74,5 +74,5 @@ class FloatingIPAdminTestJSON(base.BaseAdminNetworkTest):
         else:
             self.fail("Could not get an unused IP after 100 attempts")
         self.assertIsNotNone(created_floating_ip['id'])
-        self.assertIsNotNone(created_floating_ip['tenant_id'])
+        self.assertIsNotNone(created_floating_ip['project_id'])
         self.assertEqual(created_floating_ip['floating_ip_address'], fip)

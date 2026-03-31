@@ -65,9 +65,9 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
 
-        create a subnetpool for a tenant
-        list tenant's subnetpools
-        show a tenant subnetpool details
+        create a subnetpool for a project
+        list project's subnetpools
+        show a project subnetpool details
         subnetpool update
         delete a subnetpool
 
@@ -149,7 +149,7 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
         self.assertEqual(self.client.project_id, show_subnetpool['tenant_id'])
 
     @decorators.idempotent_id('764f1b93-1c4a-4513-9e7b-6c2fc5e9270c')
-    def test_tenant_update_subnetpool(self):
+    def test_project_update_subnetpool(self):
         created_subnetpool = self._create_subnetpool()
         pool_id = created_subnetpool['id']
         subnetpool_data = self._new_subnetpool_attributes()
@@ -195,7 +195,7 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
         created_subnetpool = self._create_subnetpool(is_admin=True,
                                                      shared=True)
         pool_id = created_subnetpool['id']
-        # Shared subnetpool can be retrieved by tenant user.
+        # Shared subnetpool can be retrieved by project user.
         body = self.client.show_subnetpool(pool_id)
         subnetpool = body['subnetpool']
         self.assertEqual(created_subnetpool['name'], subnetpool['name'])
@@ -329,7 +329,7 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
 
     @decorators.idempotent_id('4c6963c2-f54c-4347-b288-75d18421c4c4')
     @utils.requires_ext(extension='default-subnetpools', service='network')
-    def test_tenant_create_non_default_subnetpool(self):
+    def test_project_create_non_default_subnetpool(self):
         """Test creates a subnetpool, the "is_default" attribute is False."""
         created_subnetpool = self._create_subnetpool()
         self.assertFalse(created_subnetpool['is_default'])
@@ -585,6 +585,6 @@ class RbacSubnetPoolTest(SubnetPoolsTestBase):
                 action='access_as_shared',
                 target_tenant=self.client2.project_id)
 
-        # make sure the rbac-policy is invisible to the tenant for which it's
+        # make sure the rbac-policy is invisible to the project for which it's
         # being shared
         self.assertFalse(self.client.list_rbac_policies()['rbac_policies'])

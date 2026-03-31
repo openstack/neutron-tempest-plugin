@@ -149,7 +149,7 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         self.admin_client.delete_network(network['id'])
 
     @decorators.idempotent_id('0019de49-c0ea-4554-af57-18ad4ae30195')
-    def test_create_network_with_tenant_specific_network_segment_range(self):
+    def test_create_network_with_project_specific_network_segment_range(self):
         # Creates a network segment range
         network_segment_range = self._create_network_segment_range()
         project_id = network_segment_range['project_id']

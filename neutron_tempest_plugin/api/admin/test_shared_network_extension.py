@@ -99,11 +99,11 @@ class SharedNetworksTest(base.BaseAdminNetworkTest):
         self.assertFalse(updated_net['admin_state_up'])
 
     @decorators.idempotent_id('9c31fabb-0181-464f-9ace-95144fe9ca77')
-    def test_create_port_shared_network_as_non_admin_tenant(self):
+    def test_create_port_shared_network_as_non_admin_project(self):
         # create a port as non admin
         port = self.create_port(self.shared_network)
         self.addCleanup(self.admin_client.delete_port, port['id'])
-        # verify the tenant id of admin network and non admin port
+        # verify the project id of admin network and non admin port
         self.assertNotEqual(self.shared_network['project_id'],
                             port['project_id'])
 
@@ -197,14 +197,14 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('86c3529b-1231-40de-803c-bfffffff1eee')
-    def test_create_rbac_policy_with_target_tenant_none(self):
+    def test_create_rbac_policy_with_target_project_none(self):
         with testtools.ExpectedException(lib_exc.BadRequest):
             self._make_admin_net_and_subnet_shared_to_project_id(
                 project_id=None)
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('86c3529b-1231-40de-803c-bfffffff1fff')
-    def test_create_rbac_policy_with_target_tenant_too_long_id(self):
+    def test_create_rbac_policy_with_target_project_too_long_id(self):
         with testtools.ExpectedException(lib_exc.BadRequest):
             target_project = '1234' * 100
             self._make_admin_net_and_subnet_shared_to_project_id(
@@ -279,7 +279,7 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
         self.client.delete_port(port['id'])
 
     @decorators.idempotent_id('86c3529b-1231-40de-803c-beefbeefbeef')
-    def test_tenant_can_delete_port_on_own_network(self):
+    def test_project_can_delete_port_on_own_network(self):
         net = self.create_network()  # owned by self.client
         self.client.create_rbac_policy(
             object_type='network', object_id=net['id'],
@@ -288,7 +288,7 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
         self.client.delete_port(port['id'])
 
     @decorators.idempotent_id('f7539232-389a-4e9c-9e37-e42a129eb541')
-    def test_tenant_cant_delete_other_tenants_ports(self):
+    def test_project_cant_delete_other_projects_ports(self):
         net = self.create_network()
         port = self.create_port(net)
         with testtools.ExpectedException(lib_exc.NotFound):

@@ -78,7 +78,7 @@ class NetworksTestAdmin(base.BaseAdminNetworkTest):
                           available_type_drivers,
                           'VXLAN type_driver is not enabled')
     @utils.requires_ext(extension="provider", service="network")
-    def test_create_tenant_network_vxlan(self):
+    def test_create_project_network_vxlan(self):
         network = self.admin_client.create_network(
             **{"provider:network_type": "vxlan"})['network']
         self.addCleanup(self.admin_client.delete_network,

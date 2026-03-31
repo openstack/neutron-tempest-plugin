@@ -27,9 +27,9 @@ class NetworksTestJSON(base.BaseNetworkTest):
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
 
-        list tenant's networks
+        list project's networks
         show a network
-        show a tenant network details
+        show a project network details
 
     v2.0 of the Neutron API is assumed.
     """
@@ -50,7 +50,7 @@ class NetworksTestJSON(base.BaseNetworkTest):
         for key in fields:
             self.assertEqual(network[key], self.network[key])
         project_id = self.client.project_id
-        self.assertEqual(project_id, network['tenant_id'])
+        self.assertEqual(project_id, network['project_id'])
         if utils.is_extension_enabled('project-id', 'network'):
             self.assertEqual(project_id, network['project_id'])
 

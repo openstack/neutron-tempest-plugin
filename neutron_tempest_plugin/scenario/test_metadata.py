@@ -40,7 +40,7 @@ QUERY_MSG = 'Queried the metadata service over IPv6'
 
 class MetadataTest(base.BaseTempestTestCase):
 
-    """Test metadata access over IPv6 tenant subnet.
+    """Test metadata access over IPv6 project subnet.
 
     Please note that there is metadata over IPv4 test coverage in tempest:
 

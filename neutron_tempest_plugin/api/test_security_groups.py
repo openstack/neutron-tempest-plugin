@@ -87,8 +87,8 @@ class BaseSecGroupTest(base.BaseAdminNetworkTest):
     def _test_list_security_group_rules_contains_all_rules(self):
         """Test list security group rules.
 
-        This test checks if all SG rules which belongs to the tenant OR
-        which belongs to the tenant's security group are listed.
+        This test checks if all SG rules which belongs to the project OR
+        which belongs to the project's security group are listed.
         """
         sg_kwargs = {}
         if self.stateless_sg:
@@ -711,7 +711,7 @@ class RbacSharedSecurityGroupTest(base.BaseAdminNetworkTest):
                 action='access_as_shared',
                 target_tenant=self.client2.project_id)
 
-        # make sure the rbac-policy is invisible to the tenant for which it's
+        # make sure the rbac-policy is invisible to the project for which it's
         # being shared
         self.assertFalse(self.client.list_rbac_policies()['rbac_policies'])
 

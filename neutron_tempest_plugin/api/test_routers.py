@@ -37,7 +37,7 @@ class RoutersTest(base_routers.BaseRouterTest):
     @classmethod
     def resource_setup(cls):
         super().resource_setup()
-        cls.tenant_cidr = (
+        cls.project_cidr = (
             CONF.network.project_network_cidr
             if cls._ip_version == 4 else
             CONF.network.project_network_v6_cidr)
@@ -551,7 +551,7 @@ class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
     @decorators.idempotent_id('644d7a4a-01a1-4b68-bb8d-0c0042cb1729')
     def test_convert_distributed_router_back_to_centralized(self):
         # Convert a centralized router to distributed firstly
-        router_args = {'tenant_id': self.client.project_id,
+        router_args = {'project_id': self.client.project_id,
                        'distributed': False, 'ha': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=False,
@@ -583,7 +583,7 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('0ffb9973-0c1a-4b76-a1f2-060178057661')
     def test_convert_centralized_router_to_distributed_extended(self):
-        router_args = {'tenant_id': self.client.project_id,
+        router_args = {'project_id': self.client.project_id,
                        'distributed': False, 'ha': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
@@ -606,7 +606,7 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('e9a8f55b-c535-44b7-8b0a-20af6a7c2921')
     def test_convert_distributed_router_to_centralized_extended(self):
-        router_args = {'tenant_id': self.client.project_id,
+        router_args = {'project_id': self.client.project_id,
                        'distributed': True, 'ha': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
@@ -712,7 +712,7 @@ class RoutersDeleteTest(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('dbbc5c74-63c8-11eb-8881-74e5f9e2a801')
     def test_delete_router(self):
-        # Create a port on tenant network and associate to the router.
+        # Create a port on project network and associate to the router.
         # Try to delete router. Expected result: "Conflict Error" is raised.
         network = self.create_network()
         subnet = self.create_subnet(network)

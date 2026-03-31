@@ -27,11 +27,11 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('952f9b24-9156-4bdc-90f3-682a3d4302f0')
     def test_create_network_when_quotas_is_full(self):
-        tenant_id = self.create_project()['id']
+        project_id = self.create_project()['id']
         new_quotas = {'network': 1}
-        self._setup_quotas(tenant_id, **new_quotas)
+        self._setup_quotas(project_id, **new_quotas)
 
-        net_args = {'tenant_id': tenant_id}
+        net_args = {'project_id': project_id}
         net = self.admin_client.create_network(**net_args)['network']
         self.addCleanup(self.admin_client.delete_network, net['id'])
 
@@ -41,32 +41,32 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('9f676a6e-d729-428b-adcd-4de2867c50e6')
     def test_set_network_quota_lower_than_networks_amount(self):
-        tenant_id = self.create_project()['id']
+        project_id = self.create_project()['id']
         high_quota = 3
         low_quota = 1
         new_quotas = {'network': high_quota}
-        self._setup_quotas(tenant_id, **new_quotas)
+        self._setup_quotas(project_id, **new_quotas)
         for _ in range(high_quota - 1):
-            self._create_network(tenant_id)
+            self._create_network(project_id)
         # TODO(mblue): remove check_limit=True when it is default
         new_quotas.update({'network': low_quota, 'check_limit': True})
 
         self.assertRaises(lib_exc.BadRequest,
                           self.admin_client.update_quotas,
-                          tenant_id, **new_quotas)
+                          project_id, **new_quotas)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('0b7f99e3-9f77-45ce-9a89-b39a184de618')
     def test_create_subnet_when_quotas_is_full(self):
-        tenant_id = self.create_project()['id']
+        project_id = self.create_project()['id']
         new_quotas = {'subnet': 1}
-        self._setup_quotas(tenant_id, **new_quotas)
+        self._setup_quotas(project_id, **new_quotas)
 
-        net_args = {'tenant_id': tenant_id}
+        net_args = {'project_id': project_id}
         net = self.admin_client.create_network(**net_args)['network']
         self.addCleanup(self.admin_client.delete_network, net['id'])
 
-        subnet_args = {'tenant_id': tenant_id,
+        subnet_args = {'project_id': project_id,
                        'network_id': net['id'],
                        'cidr': '10.0.0.0/24',
                        'ip_version': '4'}
@@ -80,12 +80,12 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('fe20d9f9-346c-4a20-bbfa-d9ca390f4dc6')
     def test_create_port_when_quotas_is_full(self):
-        tenant_id = self.create_project()['id']
-        net_args = {'tenant_id': tenant_id}
+        project_id = self.create_project()['id']
+        net_args = {'project_id': project_id}
         net = self.admin_client.create_network(**net_args)['network']
         self.addCleanup(self.admin_client.delete_network, net['id'])
 
-        subnet_args = {'tenant_id': tenant_id,
+        subnet_args = {'project_id': project_id,
                        'network_id': net['id'],
                        'enable_dhcp': False,
                        'cidr': '10.0.0.0/24',
@@ -93,12 +93,12 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
         subnet = self.admin_client.create_subnet(**subnet_args)['subnet']
         self.addCleanup(self.admin_client.delete_subnet, subnet['id'])
 
-        ports = self.admin_client.list_ports(tenant_id=tenant_id)
+        ports = self.admin_client.list_ports(project_id=project_id)
         quota_limit = len(ports['ports']) + 1
         new_quotas = {'port': quota_limit}
-        self._setup_quotas(tenant_id, **new_quotas)
+        self._setup_quotas(project_id, **new_quotas)
 
-        port_args = {'tenant_id': tenant_id,
+        port_args = {'project_id': project_id,
                      'network_id': net['id']}
         port = self.admin_client.create_port(**port_args)['port']
         self.addCleanup(self.admin_client.delete_port, port['id'])
@@ -110,12 +110,12 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
     @decorators.idempotent_id('bb1e9c3c-7e6f-41f1-b579-63dbc655ecb7')
     @utils.requires_ext(extension="router", service="network")
     def test_create_router_when_quotas_is_full(self):
-        tenant_id = self.create_project()['id']
+        project_id = self.create_project()['id']
         new_quotas = {'router': 1}
-        self._setup_quotas(tenant_id, **new_quotas)
+        self._setup_quotas(project_id, **new_quotas)
 
         name = data_utils.rand_name('test_router')
-        router_args = {'tenant_id': tenant_id}
+        router_args = {'project_id': project_id}
         router = self.admin_client.create_router(
             name, True, **router_args)['router']
         self.addCleanup(self.admin_client.delete_router, router['id'])
@@ -132,7 +132,7 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
 
         # Set quotas to allow to create only one more security group
         security_groups = self.admin_client.list_security_groups(
-            tenant_id=project['id'])['security_groups']
+            project_id=project['id'])['security_groups']
         self._setup_quotas(project['id'],
                            security_group=len(security_groups) + 1)
 
@@ -149,7 +149,7 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
 
         # Set quotas to allow to create only one more security group rule
         security_group_rules = self.admin_client.list_security_group_rules(
-            tenant_id=project['id'])['security_group_rules']
+            project_id=project['id'])['security_group_rules']
         self._setup_quotas(project['id'],
                            security_group_rule=len(security_group_rules) + 1)
 
@@ -165,11 +165,11 @@ class QuotasAdminNegativeTestJSON(test_quotas.QuotasTestBase):
     @decorators.idempotent_id('d00fe5bb-9db8-4e1a-9c31-490f52897e6f')
     @utils.requires_ext(extension="router", service="network")
     def test_create_floatingip_when_quotas_is_full(self):
-        tenant_id = self.create_project()['id']
+        project_id = self.create_project()['id']
         new_quotas = {'floatingip': 1}
-        self._setup_quotas(tenant_id, **new_quotas)
+        self._setup_quotas(project_id, **new_quotas)
 
-        self.create_floatingip(client=self.admin_client, tenant_id=tenant_id)
+        self.create_floatingip(client=self.admin_client, project_id=project_id)
 
         self.assertRaises(lib_exc.Conflict, self.create_floatingip,
-                          client=self.admin_client, tenant_id=tenant_id)
+                          client=self.admin_client, project_id=project_id)

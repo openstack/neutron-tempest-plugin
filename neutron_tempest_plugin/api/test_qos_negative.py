@@ -23,7 +23,7 @@ from neutron_tempest_plugin.api import base
 
 LONG_NAME_NG = 'z' * (db_const.NAME_FIELD_SIZE + 1)
 LONG_DESCRIPTION_NG = 'z' * (db_const.LONG_DESCRIPTION_FIELD_SIZE + 1)
-LONG_TENANT_ID_NG = 'z' * (db_const.PROJECT_ID_FIELD_SIZE + 1)
+LONG_PROJECT_ID_NG = 'z' * (db_const.PROJECT_ID_FIELD_SIZE + 1)
 
 
 class QosNegativeTestJSON(base.BaseAdminNetworkTest):
@@ -46,11 +46,11 @@ class QosNegativeTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('b9dce444-d3b3-11e5-950a-54ee757c77dc')
-    def test_add_policy_with_too_long_tenant_id(self):
+    def test_add_policy_with_too_long_project_id(self):
         self.assertRaises(lib_exc.BadRequest,
                           self.client.create_qos_policy,
                           'test-policy', 'test policy desc1',
-                          False, LONG_TENANT_ID_NG)
+                          False, LONG_PROJECT_ID_NG)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('0e85f3e4-7a93-4187-b847-8f4e835aae1b')

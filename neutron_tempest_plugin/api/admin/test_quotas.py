@@ -32,7 +32,7 @@ class QuotasTestBase(base.BaseAdminNetworkTest):
         super().resource_setup()
 
     def _setup_quotas(self, project_id, **new_quotas):
-        # Change quotas for tenant
+        # Change quotas for project
         quota_set = self.admin_client.update_quotas(project_id,
                                                     **new_quotas)
         self.addCleanup(self._cleanup_quotas, project_id)
@@ -49,7 +49,7 @@ class QuotasTestBase(base.BaseAdminNetworkTest):
 
     def _create_network(self, project_id):
         network = self.create_network(client=self.admin_client,
-                                      tenant_id=project_id)
+                                      project_id=project_id)
         self.addCleanup(self.admin_client.delete_network,
                         network['id'])
         return network
@@ -67,14 +67,14 @@ class QuotasTest(QuotasTestBase):
     Tests the following operations in the Neutron API using the REST client for
     Neutron:
 
-        list quotas for tenants who have non-default quota values
-        show quotas for a specified tenant
-        show detail quotas for a specified tenant
-        update quotas for a specified tenant
-        reset quotas to default values for a specified tenant
+        list quotas for projects who have non-default quota values
+        show quotas for a specified project
+        show detail quotas for a specified project
+        update quotas for a specified project
+        reset quotas to default values for a specified project
 
     v2.0 of the API is assumed.
-    It is also assumed that the per-tenant quota extension API is configured
+    It is also assumed that the per-project quota extension API is configured
     in /etc/neutron/neutron.conf as follows:
 
         quota_driver = neutron.db.driver.DbQuotaDriver
@@ -83,34 +83,34 @@ class QuotasTest(QuotasTestBase):
     @decorators.attr(type='gate')
     @decorators.idempotent_id('2390f766-836d-40ef-9aeb-e810d78207fb')
     def test_quotas(self):
-        tenant_id = self.create_project()['id']
+        project_id = self.create_project()['id']
         new_quotas = {'network': 0, 'security_group': 0}
 
-        # Change quotas for tenant
-        quota_set = self._setup_quotas(tenant_id, force=True, **new_quotas)
+        # Change quotas for project
+        quota_set = self._setup_quotas(project_id, force=True, **new_quotas)
         for key, value in new_quotas.items():
             self.assertEqual(value, quota_set[key])
 
-        # Confirm our tenant is listed among tenants with non default quotas
+        # Confirm our project is listed among projects with non default quotas
         non_default_quotas = self.admin_client.list_quotas()
         found = False
         for qs in non_default_quotas['quotas']:
-            if qs['tenant_id'] == tenant_id:
-                self.assertEqual(tenant_id, qs['project_id'])
+            if qs['project_id'] == project_id:
+                self.assertEqual(project_id, qs['project_id'])
                 found = True
         self.assertTrue(found)
 
-        # Confirm from API quotas were changed as requested for tenant
-        quota_set = self.admin_client.show_quotas(tenant_id)
+        # Confirm from API quotas were changed as requested for project
+        quota_set = self.admin_client.show_quotas(project_id)
         quota_set = quota_set['quota']
         for key, value in new_quotas.items():
             self.assertEqual(value, quota_set[key])
 
         # Reset quotas to default and confirm
-        self.admin_client.reset_quotas(tenant_id)
+        self.admin_client.reset_quotas(project_id)
         non_default_quotas = self.admin_client.list_quotas()
         for q in non_default_quotas['quotas']:
-            self.assertNotEqual(tenant_id, q['tenant_id'])
+            self.assertNotEqual(project_id, q['project_id'])
 
     @decorators.idempotent_id('43d01327-d8be-4773-a8f0-1d2e9664fda2')
     @decorators.attr(type='gate')
@@ -133,33 +133,33 @@ class QuotasTest(QuotasTestBase):
     @decorators.attr(type='gate')
     @utils.requires_ext(extension="quota_details", service="network")
     def test_detail_quotas(self):
-        tenant_id = self.create_project()['id']
+        project_id = self.create_project()['id']
         new_quotas = {'network': {'used': 1, 'limit': 2, 'reserved': 0},
                       'port': {'used': 1, 'limit': 2, 'reserved': 0}}
 
         # create test resources
-        network = self._create_network(tenant_id)
+        network = self._create_network(project_id)
         post_body = {"network_id": network['id'],
-                     "tenant_id": tenant_id}
+                     "project_id": project_id}
 
         # NOTE(lucasagomes): Some backends such as OVN will create a port
         # to be used by the metadata agent upon creating a network. In
         # order to make this test more generic we need to calculate the
         # number of expected used ports after the network is created and
         # prior for the port being created
-        ports = self.admin_client.list_ports(tenant_id=tenant_id)
+        ports = self.admin_client.list_ports(project_id=project_id)
         new_quotas['port']['used'] += len(ports['ports'])
 
         self._create_port(**post_body)
 
-        # update quota limit for tenant
+        # update quota limit for project
         new_quota = {'network': new_quotas['network']['limit'], 'port':
                      new_quotas['port']['limit']}
-        quota_set = self._setup_quotas(tenant_id, **new_quota)
+        quota_set = self._setup_quotas(project_id, **new_quota)
 
         # confirm from extended API quotas were changed
-        # as requested for tenant
-        quota_set = self.admin_client.show_details_quota(tenant_id)
+        # as requested for project
+        quota_set = self.admin_client.show_details_quota(project_id)
         quota_set = quota_set['quota']
         for key, value in new_quotas.items():
             self.assertEqual(new_quotas[key]['limit'],
@@ -170,6 +170,6 @@ class QuotasTest(QuotasTestBase):
                              quota_set[key]['used'])
 
         # validate 'default' action for old extension
-        quota_limit = self.admin_client.show_quotas(tenant_id)['quota']
+        quota_limit = self.admin_client.show_quotas(project_id)['quota']
         for key, value in new_quotas.items():
             self.assertEqual(new_quotas[key]['limit'], quota_limit[key])

@@ -14,13 +14,14 @@ from tempest.common import utils as tutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
+from neutron_lib import constants
+
 from neutron_tempest_plugin.api import base_routers as base
 
 
 class RoutersTestHA(base.BaseRouterTest):
 
     required_extensions = ['router', 'l3-ha']
-    HA_NETWORK_NAME_TEMPL = "HA network tenant %s"
 
     @classmethod
     def resource_setup(cls):
@@ -115,7 +116,7 @@ class RoutersTestHA(base.BaseRouterTest):
             router = self._create_admin_router(
                 data_utils.rand_name('router%d' % i),
                 ha=True)
-        ha_net_name = self.HA_NETWORK_NAME_TEMPL % router['tenant_id']
+        ha_net_name = constants.HA_NETWORK_NAME % router['tenant_id']
         ha_network_pre_delete = self.admin_client.list_networks(
             name=ha_net_name)['networks'][0]
         segmentation_id = ha_network_pre_delete['provider:segmentation_id']

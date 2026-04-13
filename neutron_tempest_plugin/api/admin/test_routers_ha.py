@@ -102,8 +102,8 @@ class RoutersTestHA(base.BaseRouterTest):
     def test_delete_ha_router_keeps_ha_network_segment_data(self):
         """Test deleting an HA router keeps correct segment data for network.
 
-        Each tenant with HA router has an HA network. The HA network is a
-        normal tenant network with segmentation data like type (vxlan) and
+        Each project with HA router has an HA network. The HA network is a
+        normal project network with segmentation data like type (vxlan) and
         segmenation id. This test makes sure that after an HA router is
         deleted, those segmentation data are kept in HA network. This tests
         regression of https://bugs.launchpad.net/neutron/+bug/1732543.
@@ -116,9 +116,22 @@ class RoutersTestHA(base.BaseRouterTest):
             router = self._create_admin_router(
                 data_utils.rand_name('router%d' % i),
                 ha=True)
-        ha_net_name = constants.HA_NETWORK_NAME % router['tenant_id']
-        ha_network_pre_delete = self.admin_client.list_networks(
-            name=ha_net_name)['networks'][0]
+        ha_net_name = constants.HA_NETWORK_NAME % router['project_id']
+        # Remove try/except once
+        # https://review.opendev.org/c/openstack/neutron-lib/+/982598
+        # merges and requirements bumped in neutron
+        try:
+            ha_network_pre_delete = self.admin_client.list_networks(
+                name=ha_net_name)['networks'][0]
+        except IndexError:
+            # we were using the newer version, just fail
+            if 'tenant' not in ha_net_name:
+                self.fail('HA project network not found')
+            # try with the project version
+            HA_NETWORK_NAME = 'HA network project %s'
+            ha_net_name = HA_NETWORK_NAME % router['project_id']
+            ha_network_pre_delete = self.admin_client.list_networks(
+                name=ha_net_name)['networks'][0]
         segmentation_id = ha_network_pre_delete['provider:segmentation_id']
         self._delete_router(router['id'], self.admin_client)
 

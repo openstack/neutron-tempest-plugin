@@ -194,7 +194,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
         body = (self.admin_client.
                 create_ikepolicy(name=name, ike_version="v1",
                                  encryption_algorithm="aes-128",
-                                 auth_algorithm="sha1",
+                                 auth_algorithm="sha256",
                                  tenant_id=tenant_id))
         ikepolicy = body['ikepolicy']
         self.assertIsNotNone(ikepolicy['id'])
@@ -274,7 +274,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                 name=name,
                 ike_version="v1",
                 encryption_algorithm="aes-128",
-                auth_algorithm="sha1"))
+                auth_algorithm="sha256"))
         ikepolicy = body['ikepolicy']
         self.assertIsNotNone(ikepolicy['id'])
         self.addCleanup(self._delete_ike_policy, ikepolicy['id'])
@@ -338,7 +338,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
         ipsec_policy_body = {'name': data_utils.rand_name('ipsec-policy'),
                              'pfs': 'group5',
                              'encryption_algorithm': "aes-128",
-                             'auth_algorithm': 'sha1'}
+                             'auth_algorithm': 'sha256'}
         resp_body = self.client.create_ipsecpolicy(**ipsec_policy_body)
         ipsecpolicy = resp_body['ipsecpolicy']
         self.addCleanup(self._delete_ipsec_policy, ipsecpolicy['id'])

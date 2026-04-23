@@ -37,7 +37,7 @@ class BaseBgpvpnTest(test.BaseNetworkTest):
     def resource_cleanup(cls):
         for bgpvpn in cls.bgpvpns:
             cls.bgpvpn_admin_client.delete_bgpvpn(bgpvpn['id'])
-        super(BaseBgpvpnTest, cls).resource_cleanup()
+        super().resource_cleanup()
 
     @classmethod
     def resource_setup(cls):
@@ -67,11 +67,11 @@ class BaseBgpvpnTest(test.BaseNetworkTest):
             build_interval=CONF.network.build_interval,
             build_timeout=CONF.network.build_timeout,
             **cls.os_alt.default_params)
-        super(BaseBgpvpnTest, cls).resource_setup()
+        super().resource_setup()
 
     @classmethod
     def skip_checks(cls):
-        super(BaseBgpvpnTest, cls).skip_checks()
+        super().skip_checks()
         if not utils.is_extension_enabled('bgpvpn', 'network'):
             msg = "Bgpvpn extension not enabled."
             raise cls.skipException(msg)

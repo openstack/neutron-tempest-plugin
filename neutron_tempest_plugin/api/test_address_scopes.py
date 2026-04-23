@@ -126,7 +126,7 @@ class RbacAddressScopeTest(AddressScopeTestBase):
 
     @classmethod
     def resource_setup(cls):
-        super(RbacAddressScopeTest, cls).resource_setup()
+        super().resource_setup()
         cls.client2 = cls.os_alt.network_client
 
     def _make_admin_as_shared_to_project_id(self, project_id):

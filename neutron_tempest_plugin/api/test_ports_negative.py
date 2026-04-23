@@ -25,7 +25,7 @@ class PortsNegativeTestJSON(base.BaseNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(PortsNegativeTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
 
     @decorators.attr(type='negative')

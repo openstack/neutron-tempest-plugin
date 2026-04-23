@@ -32,7 +32,7 @@ class RoutersNegativeTestBase(base.BaseRouterTest):
 
     @classmethod
     def resource_setup(cls):
-        super(RoutersNegativeTestBase, cls).resource_setup()
+        super().resource_setup()
         cls.router = cls.create_router(data_utils.rand_name('router'))
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)

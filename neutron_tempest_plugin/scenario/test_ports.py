@@ -32,7 +32,7 @@ class PortsTest(base.BaseTempestTestCase):
 
     @classmethod
     def resource_setup(cls):
-        super(PortsTest, cls).resource_setup()
+        super().resource_setup()
         # setup basic topology for servers we can log into it
         cls.router = cls.create_router_by_client()
         cls.keypair = cls.create_keypair()

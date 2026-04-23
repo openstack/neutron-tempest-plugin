@@ -150,7 +150,7 @@ class RbacSharedAddressGroupTest(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(RbacSharedAddressGroupTest, cls).resource_setup()
+        super().resource_setup()
         cls.client2 = cls.os_alt.network_client
 
     def _create_address_group(self, is_admin=False, **kwargs):

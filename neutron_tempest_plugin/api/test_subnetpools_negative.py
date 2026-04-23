@@ -29,7 +29,7 @@ SUBNETPOOL_NAME = 'smoke-subnetpool'
 
 class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
 
-    smaller_prefix = u'10.11.12.0/26'
+    smaller_prefix = '10.11.12.0/26'
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('0212a042-603a-4f46-99e0-e37de9374d30')
@@ -136,7 +136,7 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
         addr_scope_id = address_scope['id']
         self._create_subnetpool(address_scope_id=addr_scope_id)
         subnetpool_data = {'name': 'foo-subnetpool',
-                           'prefixes': [u'10.11.12.13/24'],
+                           'prefixes': ['10.11.12.13/24'],
                            'min_prefixlen': '29',
                            'address_scope_id': addr_scope_id}
         self.assertRaises(lib_exc.Conflict, self._create_subnetpool,
@@ -150,9 +150,9 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
             name=data_utils.rand_name('smoke-address-scope'),
             ip_version=4)
         addr_scope_id = address_scope['id']
-        self._create_subnetpool(prefixes=[u'20.0.0.0/18', u'30.0.0.0/18'],
+        self._create_subnetpool(prefixes=['20.0.0.0/18', '30.0.0.0/18'],
                                 address_scope_id=addr_scope_id)
-        prefixes = [u'40.0.0.0/18', u'50.0.0.0/18', u'30.0.0.0/12']
+        prefixes = ['40.0.0.0/18', '50.0.0.0/18', '30.0.0.0/12']
         subnetpool_data = {'name': 'foo-subnetpool',
                            'prefixes': prefixes,
                            'min_prefixlen': '29',
@@ -221,9 +221,9 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
     @decorators.idempotent_id('96006292-7214-40e0-a471-153fb76e6b31')
     @utils.requires_ext(extension='address-scope', service='network')
     def test_update_subnetpool_prefix_intersect(self):
-        pool_1_prefix = [u'20.0.0.0/18']
-        pool_2_prefix = [u'20.10.0.0/24']
-        pool_1_updated_prefix = [u'20.0.0.0/12']
+        pool_1_prefix = ['20.0.0.0/18']
+        pool_2_prefix = ['20.10.0.0/24']
+        pool_1_updated_prefix = ['20.0.0.0/12']
         self._test_update_subnetpool_prefix_intersect_helper(
             pool_1_prefix, pool_2_prefix, pool_1_updated_prefix)
 
@@ -231,10 +231,10 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
     @decorators.idempotent_id('4d3f8a79-c530-4e59-9acf-6c05968adbfe')
     @utils.requires_ext(extension='address-scope', service='network')
     def test_update_subnetpool_multiple_prefix_intersect(self):
-        pool_1_prefixes = [u'20.0.0.0/18', u'30.0.0.0/18']
-        pool_2_prefixes = [u'20.10.0.0/24', u'40.0.0.0/18', '50.0.0.0/18']
-        pool_1_updated_prefixes = [u'20.0.0.0/18', u'30.0.0.0/18',
-                                   u'50.0.0.0/12']
+        pool_1_prefixes = ['20.0.0.0/18', '30.0.0.0/18']
+        pool_2_prefixes = ['20.10.0.0/24', '40.0.0.0/18', '50.0.0.0/18']
+        pool_1_updated_prefixes = ['20.0.0.0/18', '30.0.0.0/18',
+                                   '50.0.0.0/12']
         self._test_update_subnetpool_prefix_intersect_helper(
             pool_1_prefixes, pool_2_prefixes, pool_1_updated_prefixes)
 
@@ -246,7 +246,7 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
             name=data_utils.rand_name('smoke-address-scope'), is_admin=True,
             shared=True, ip_version=4)
         addr_scope_id = address_scope['id']
-        pool_values = {'prefixes': [u'20.0.0.0/18', u'30.0.0.0/18']}
+        pool_values = {'prefixes': ['20.0.0.0/18', '30.0.0.0/18']}
 
         created_subnetpool = self._create_subnetpool(**pool_values)
         pool_id = created_subnetpool['id']
@@ -259,7 +259,7 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
 
         # updating the subnetpool prefix by the tenant user should fail
         # since the tenant is not the owner of address scope
-        update_prefixes = [u'20.0.0.0/18', u'30.0.0.0/18', u'40.0.0.0/18']
+        update_prefixes = ['20.0.0.0/18', '30.0.0.0/18', '40.0.0.0/18']
         self.assertRaises(lib_exc.BadRequest, self.client.update_subnetpool,
                           pool_id, prefixes=update_prefixes)
 

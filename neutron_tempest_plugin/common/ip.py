@@ -32,7 +32,7 @@ from neutron_tempest_plugin.common import utils as common_utils
 LOG = log.getLogger(__name__)
 
 
-class IPCommand(object):
+class IPCommand:
 
     sudo = 'sudo'
     ip_path = '/sbin/ip'
@@ -138,7 +138,7 @@ class IPCommand(object):
         if link:
             command += ['link', link]
         command += ['name', name, 'type', link_type]
-        if id:
+        if segmentation_id:
             command += ['id', segmentation_id]
         return self.execute('link', *command)
 
@@ -237,7 +237,8 @@ def parse_addresses(command_output):
                 LOG.debug("Address properties parsed: %r", address.properties)
 
             else:
-                assert False, "Invalid line indentation: {!r}".format(indent)
+                LOG.error("Invalid line indentation: %s", indent)
+                raise
 
         except Exception:
             with excutils.save_and_reraise_exception():
@@ -257,7 +258,7 @@ def parse_properties(fields):
             yield key, field
 
 
-class HasProperties(object):
+class HasProperties:
 
     def __getattr__(self, name):
         try:
@@ -265,7 +266,7 @@ class HasProperties(object):
         except KeyError:
             pass
         # This should raise AttributeError
-        return getattr(super(HasProperties, self), name)
+        return getattr(super(), name)
 
 
 class Address(HasProperties,
@@ -359,7 +360,7 @@ def get_port_device_name(addresses, port):
     for address in list_ip_addresses(addresses=addresses, port=port):
         return address.device.name
 
-    msg = _("Port {0!r} fixed IPs not found on server.".format(port['id']))
+    msg = _("Port {!r} fixed IPs not found on server.".format(port['id']))
     raise ValueError(msg)
 
 
@@ -369,7 +370,7 @@ def get_vlan_device_name(addresses, ip_addresses):
         return address.device.name
 
     msg = _(
-        "Fixed IPs {0!r} not found on server.".format(' '.join(ip_addresses)))
+        "Fixed IPs {!r} not found on server.".format(' '.join(ip_addresses)))
     raise ValueError(msg)
 
 

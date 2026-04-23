@@ -124,14 +124,14 @@ class IPv6Test(base.BaseTempestTestCase):
 
     @classmethod
     def skip_checks(cls):
-        super(IPv6Test, cls).skip_checks()
+        super().skip_checks()
         if not CONF.network_feature_enabled.ipv6:
             raise cls.skipException("IPv6 is not enabled")
 
     @classmethod
     @tempest_utils.requires_ext(extension="router", service="network")
     def resource_setup(cls):
-        super(IPv6Test, cls).resource_setup()
+        super().resource_setup()
         cls.reserve_external_subnet_cidrs()
         cls._setup_basic_resources()
 

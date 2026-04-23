@@ -31,7 +31,7 @@ class PortTestCasesAdmin(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(PortTestCasesAdmin, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
         cls.create_subnet(cls.network)
 
@@ -114,14 +114,14 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
 
     @classmethod
     def skip_checks(cls):
-        super(PortTestCasesResourceRequest, cls).skip_checks()
+        super().skip_checks()
         if not config.CONF.neutron_plugin_options.provider_vlans:
             msg = "Skipped as provider VLANs are not available in config"
             raise cls.skipException(msg)
 
     @classmethod
     def resource_setup(cls):
-        super(PortTestCasesResourceRequest, cls).resource_setup()
+        super().resource_setup()
 
         cls.vnic_type = 'normal'
 
@@ -133,7 +133,7 @@ class PortTestCasesResourceRequest(base.BaseAdminNetworkTest):
 
     @classmethod
     def setup_clients(cls):
-        super(PortTestCasesResourceRequest, cls).setup_clients()
+        super().setup_clients()
         cls.qos_minimum_bandwidth_rules_client = \
             cls.os_admin.qos_minimum_bandwidth_rules_client
         cls.qos_bw_limit_rule_client = \

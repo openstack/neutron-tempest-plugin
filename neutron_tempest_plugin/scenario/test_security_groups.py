@@ -61,17 +61,17 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
 
     @classmethod
     def setup_credentials(cls):
-        super(BaseNetworkSecGroupTest, cls).setup_credentials()
+        super().setup_credentials()
         cls.network_client = cls.os_admin.network_client
 
     @classmethod
     def setup_clients(cls):
-        super(BaseNetworkSecGroupTest, cls).setup_clients()
+        super().setup_clients()
         cls.project_id = cls.os_primary.credentials.tenant_id
 
     @classmethod
     def resource_setup(cls):
-        super(BaseNetworkSecGroupTest, cls).resource_setup()
+        super().resource_setup()
         # setup basic topology for servers we can log into it
         cls.reserve_external_subnet_cidrs()
         cls.network = cls.create_network()
@@ -88,7 +88,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
         cls.keypair = cls.create_keypair()
 
     def setUp(self):
-        super(BaseNetworkSecGroupTest, self).setUp()
+        super().setUp()
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         self.network_client.reset_quotas, self.project_id)
         self.network_client.update_quotas(self.project_id, security_group=-1)
@@ -152,7 +152,7 @@ class BaseNetworkSecGroupTest(base.BaseTempestTestCase):
     def _create_security_group(self, name_prefix, **kwargs):
         if self.stateless_sg:
             kwargs['stateful'] = False
-        return super(BaseNetworkSecGroupTest, self).create_security_group(
+        return super().create_security_group(
             name=data_utils.rand_name(name_prefix), **kwargs)
 
     def _create_client_and_server_vms(

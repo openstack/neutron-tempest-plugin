@@ -24,7 +24,7 @@ class BaseTaasTest(test.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(BaseTaasTest, cls).resource_setup()
+        super().resource_setup()
         os_primary = cls.os_primary
         cls.tap_services_client = taas_client.TapServicesClient(
             os_primary.auth_provider,

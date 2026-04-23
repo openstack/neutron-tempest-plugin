@@ -24,7 +24,7 @@ CONF = config.CONF
 
 class Manager(manager.Manager):
     def __init__(self, credentials=None, service=None):
-        super(Manager, self).__init__(credentials, service)
+        super().__init__(credentials, service)
         self.bgp_client = BgpSpeakerClientJSON(
             self.auth_provider,
             CONF.network.catalog_type,
@@ -45,7 +45,7 @@ class BgpSpeakerClientJSON(rest_client.RestClient):
         return rest_client.ResponseBody(resp, body)
 
     def get_bgp_speaker(self, id):
-        uri = 'v2.0/bgp-speakers/{0}'.format(id)
+        uri = 'v2.0/bgp-speakers/{}'.format(id)
         resp, body = self.get(uri)
         body = jsonutils.loads(body)
         self.expected_success(200, resp.status)
@@ -59,7 +59,7 @@ class BgpSpeakerClientJSON(rest_client.RestClient):
         return rest_client.ResponseBodyList(resp, body)
 
     def update_bgp_speaker(self, id, put_data):
-        uri = 'v2.0/bgp-speakers/{0}'.format(id)
+        uri = 'v2.0/bgp-speakers/{}'.format(id)
         update_body = {'bgp_speaker': put_data}
         update_body = jsonutils.dumps(update_body)
         resp, body = self.put(uri, update_body)
@@ -68,7 +68,7 @@ class BgpSpeakerClientJSON(rest_client.RestClient):
         return rest_client.ResponseBody(resp, body)
 
     def delete_bgp_speaker(self, id):
-        uri = 'v2.0/bgp-speakers/{0}'.format(id)
+        uri = 'v2.0/bgp-speakers/{}'.format(id)
         resp, body = self.delete(uri)
         self.expected_success(204, resp.status)
         return rest_client.ResponseBody(resp, body)
@@ -81,14 +81,14 @@ class BgpSpeakerClientJSON(rest_client.RestClient):
         return rest_client.ResponseBody(resp, body)
 
     def get_bgp_peer(self, id):
-        uri = 'v2.0/bgp-peers/{0}'.format(id)
+        uri = 'v2.0/bgp-peers/{}'.format(id)
         resp, body = self.get(uri)
         body = jsonutils.loads(body)
         self.expected_success(200, resp.status)
         return rest_client.ResponseBody(resp, body)
 
     def delete_bgp_peer(self, id):
-        uri = 'v2.0/bgp-peers/{0}'.format(id)
+        uri = 'v2.0/bgp-peers/{}'.format(id)
         resp, body = self.delete(uri)
         self.expected_success(204, resp.status)
         return rest_client.ResponseBody(resp, body)

@@ -34,7 +34,7 @@ class NegativeSecGroupTest(base.BaseNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(NegativeSecGroupTest, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
 
     @decorators.attr(type='negative')
@@ -180,7 +180,7 @@ class NegativeSecGroupRulesQuotaTest(
     required_extensions = ['security-group', 'quotas']
 
     def setUp(self):
-        super(NegativeSecGroupRulesQuotaTest, self).setUp()
+        super().setUp()
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         self.admin_client.reset_quotas, self.client.project_id)
         self._set_sg_rules_quota(10)

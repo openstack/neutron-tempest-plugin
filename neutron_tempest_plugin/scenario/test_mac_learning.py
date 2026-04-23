@@ -67,7 +67,7 @@ class MacLearningTest(base.BaseTempestTestCase):
 
     @classmethod
     def skip_checks(cls):
-        super(MacLearningTest, cls).skip_checks()
+        super().skip_checks()
         advanced_image_available = (
             CONF.neutron_plugin_options.advanced_image_ref or
             CONF.neutron_plugin_options.default_image_is_advanced)
@@ -77,7 +77,7 @@ class MacLearningTest(base.BaseTempestTestCase):
 
     @classmethod
     def resource_setup(cls):
-        super(MacLearningTest, cls).resource_setup()
+        super().resource_setup()
 
         cls.setup_advanced_image()
 

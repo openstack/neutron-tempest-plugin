@@ -34,7 +34,7 @@ class NetworkClient(network_client.NetworkClientJSON):
         if resource_name in resource_plural_map:
             return resource_plural_map.get(resource_name)
 
-        return super(NetworkClient, self).pluralize(resource_name)
+        return super().pluralize(resource_name)
 
     def get_uri(self, plural_name):
         # get service prefix from resource name
@@ -54,12 +54,12 @@ class NetworkClient(network_client.NetworkClientJSON):
                                 plural_name)
             return uri
 
-        return super(NetworkClient, self).get_uri(plural_name)
+        return super().get_uri(plural_name)
 
 
 class Manager(manager.Manager):
     def __init__(self, credentials=None, service=None):
-        super(Manager, self).__init__(credentials=credentials)
+        super().__init__(credentials=credentials)
         self.network_client = NetworkClient(
             self.auth_provider,
             CONF.network.catalog_type,

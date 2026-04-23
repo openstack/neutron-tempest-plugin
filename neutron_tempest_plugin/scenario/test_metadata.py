@@ -53,13 +53,13 @@ class MetadataTest(base.BaseTempestTestCase):
 
     @classmethod
     def skip_checks(cls):
-        super(MetadataTest, cls).skip_checks()
+        super().skip_checks()
         if not utils.is_network_feature_enabled('ipv6_metadata'):
             raise cls.skipException("Metadata over IPv6 is not enabled")
 
     @classmethod
     def resource_setup(cls):
-        super(MetadataTest, cls).resource_setup()
+        super().resource_setup()
         cls.rand_name = data_utils.rand_name(
             cls.__name__.rsplit('.', 1)[-1])
         cls.reserve_external_subnet_cidrs()

@@ -43,7 +43,7 @@ def _try_connect(host_ip, port, socket_timeout):
         client_socket.connect((host_ip, port))
         client_socket.settimeout(socket_timeout)
         return client_socket
-    except socket.error as serr:
+    except OSError as serr:
         if serr.errno == errno.ECONNREFUSED:
             raise sc_exceptions.SocketConnectionRefused(host=host_ip,
                                                         port=port)
@@ -68,7 +68,7 @@ def _connect_socket(host, port, socket_timeout):
                                                                port=port)
 
 
-class QoSTestMixin(object):
+class QoSTestMixin:
     credentials = ['primary', 'admin']
     force_tenant_isolation = False
 
@@ -108,7 +108,7 @@ class QoSTestMixin(object):
                        'bytes_per_second': bytes_per_second,
                        'expected_bw': expected_bw})
             return bytes_per_second <= expected_bw
-        except socket.timeout:
+        except TimeoutError:
             LOG.warning('Socket timeout while reading the remote file, bytes '
                         'read: %s', total_bytes_read)
             utils.kill_nc_process(ssh_client)
@@ -201,11 +201,11 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
     @tutils.requires_ext(extension="qos", service="network")
     @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
     def resource_setup(cls):
-        super(QoSTest, cls).resource_setup()
+        super().resource_setup()
 
     @classmethod
     def setup_clients(cls):
-        super(QoSTest, cls).setup_clients()
+        super().setup_clients()
         cls.admin_client = cls.os_admin.network_client
         cls.qos_bw_limit_rule_client = \
             cls.os_admin.qos_limit_bandwidth_rules_client
@@ -336,8 +336,8 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
     def test_attach_previously_used_port_to_new_instance(self):
         """The test spawns new instance using port with QoS policy.
 
-        Ports with attached QoS policy could be used multiple times.
-        The policy rules have to be enforced on the new machines.
+        Ports with attached QoS policy could be used multiple times.
+        The policy rules have to be enforced on the new machines.
         """
         self.network = self.create_network()
         self.subnet = self.create_subnet(self.network)
@@ -371,8 +371,8 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
             vm_port['id'])
         self.assertEqual(port_policy['id'],
                          retrieved_port['port']['qos_policy_id'],
-                         """The expected policy ID is {0},
-                         the actual value is {1}""".
+                         """The expected policy ID is {},
+                         the actual value is {}""".
                          format(port_policy['id'],
                                 retrieved_port['port']['qos_policy_id']))
 
@@ -382,8 +382,8 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
         retrieved_rule_id = retrieved_policy['policy']['rules'][0]['id']
         self.assertEqual(rule['id'],
                          retrieved_rule_id,
-                         """The expected rule ID is {0},
-                         the actual value is {1}""".
+                         """The expected rule ID is {},
+                         the actual value is {}""".
                          format(rule['id'], retrieved_rule_id))
 
     @decorators.idempotent_id('4eee64da-5646-11ea-82b4-0242ac130003')
@@ -406,8 +406,8 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
         retrieved_net = self.client.show_network(network['id'])
         self.assertEqual(qos_policy['id'],
                          retrieved_net['network']['qos_policy_id'],
-                         """The expected policy ID is {0},
-                         the actual value is {1}""".
+                         """The expected policy ID is {},
+                         the actual value is {}""".
                          format(qos_policy['id'],
                                 retrieved_net['network']['qos_policy_id']))
 
@@ -417,7 +417,7 @@ class QoSTest(QoSTestMixin, base.BaseTempestTestCase):
 
         self.assertEqual(rule['id'],
                          retrieved_rule_id,
-                         """The expected rule ID is {0},
-                         the actual value is {1}""".
+                         """The expected rule ID is {},
+                         the actual value is {}""".
                          format(rule['id'],
                                 retrieved_rule_id))

@@ -31,7 +31,7 @@ class NDPProxyTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(NDPProxyTestJSON, cls).resource_setup()
+        super().resource_setup()
         address_scope = cls.create_address_scope(
             "test-as", **{'ip_version': constants.IP_VERSION_6})
         subnetpool = cls.create_subnetpool(

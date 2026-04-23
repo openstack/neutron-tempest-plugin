@@ -36,12 +36,12 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def setup_clients(cls):
-        super(QosTestJSON, cls).setup_clients()
+        super().setup_clients()
         cls.qos_bw_limit_rule_client = \
             cls.os_admin.qos_limit_bandwidth_rules_client
 
     def setUp(self):
-        super(QosTestJSON, self).setUp()
+        super().setUp()
         self.policy_name = data_utils.rand_name(name='test', prefix='policy')
 
     @staticmethod
@@ -458,7 +458,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def setup_clients(cls):
-        super(QosBandwidthLimitRuleTestJSON, cls).setup_clients()
+        super().setup_clients()
         cls.qos_bw_limit_rule_client = \
             cls.os_admin.qos_limit_bandwidth_rules_client
         cls.qos_bw_limit_rule_client_primary = \
@@ -467,10 +467,10 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
     def resource_setup(cls):
-        super(QosBandwidthLimitRuleTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     def setUp(self):
-        super(QosBandwidthLimitRuleTestJSON, self).setUp()
+        super().setUp()
         self.policy_name = data_utils.rand_name(name='test', prefix='policy')
 
     def _create_qos_bw_limit_rule(self, policy_id, rule_data):
@@ -701,10 +701,10 @@ class QosBandwidthLimitRuleWithDirectionTestJSON(
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
     def resource_setup(cls):
-        super(QosBandwidthLimitRuleWithDirectionTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     def setUp(self):
-        super(QosBandwidthLimitRuleWithDirectionTestJSON, self).setUp()
+        super().setUp()
         self.policy_name = data_utils.rand_name(name='test', prefix='policy')
 
     @decorators.idempotent_id('c8cbe502-0f7e-11ea-8d71-362b9e155667')
@@ -759,7 +759,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(RbacSharedQosPoliciesTest, cls).resource_setup()
+        super().resource_setup()
         cls.client2 = cls.os_alt.network_client
 
     def _create_qos_policy(self, project_id=None):
@@ -1014,10 +1014,10 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_DSCP_MARKING)
     def resource_setup(cls):
-        super(QosDscpMarkingRuleTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     def setUp(self):
-        super(QosDscpMarkingRuleTestJSON, self).setUp()
+        super().setUp()
         self.policy_name = data_utils.rand_name(name='test', prefix='policy')
 
     @decorators.idempotent_id('f5cbaceb-5829-497c-9c60-ad70969e9a08')
@@ -1165,7 +1165,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
                         dscp_policy_id, rule_id)['dscp_marking_rule']
                     self.assertEqual(mark, retrieved_rule['dscp_mark'],
                                      """current DSCP mark is incorrect:
-                                     expected value {0} actual value {1}
+                                     expected value {} actual value {}
                                      """.format(mark,
                                      retrieved_rule['dscp_mark']))
 
@@ -1214,7 +1214,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
         self.assertEqual(n_constants.VALID_DSCP_MARKS[0],
                          retrieved_rule['dscp_mark'],
                          """current DSCP mark is incorrect:
-                         expected value {0} actual value {1}
+                         expected value {} actual value {}
                          """.format(n_constants.VALID_DSCP_MARKS[0],
                          retrieved_rule['dscp_mark']))
 
@@ -1233,18 +1233,18 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_MINIMUM_BANDWIDTH)
     def resource_setup(cls):
-        super(QosMinimumBandwidthRuleTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     @classmethod
     def setup_clients(cls):
-        super(QosMinimumBandwidthRuleTestJSON, cls).setup_clients()
+        super().setup_clients()
         cls.qos_min_bw_rules_client = \
             cls.os_admin.qos_minimum_bandwidth_rules_client
         cls.qos_min_bw_rules_client_primary = \
             cls.os_primary.qos_minimum_bandwidth_rules_client
 
     def setUp(self):
-        super(QosMinimumBandwidthRuleTestJSON, self).setUp()
+        super().setUp()
         self.policy_name = data_utils.rand_name(name='test', prefix='policy')
 
     @decorators.idempotent_id('aa59b00b-3e9c-4787-92f8-93a5cdf5e378')
@@ -1421,17 +1421,17 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
     @utils.requires_ext(service='network',
                         extension='port-resource-request-groups')
     def resource_setup(cls):
-        super(QosMinimumPpsRuleTestJSON, cls).resource_setup()
+        super().resource_setup()
 
     @classmethod
     def setup_clients(cls):
-        super(QosMinimumPpsRuleTestJSON, cls).setup_clients()
+        super().setup_clients()
         cls.min_pps_client = cls.os_admin.qos_minimum_packet_rate_rules_client
         cls.min_pps_client_primary = \
             cls.os_primary.qos_minimum_packet_rate_rules_client
 
     def setUp(self):
-        super(QosMinimumPpsRuleTestJSON, self).setUp()
+        super().setUp()
         self.policy_name = data_utils.rand_name(name='test', prefix='policy')
         self.RULE_NAME = qos_consts.RULE_TYPE_MINIMUM_PACKET_RATE + "_rule"
         self.RULES_NAME = self.RULE_NAME + "s"
@@ -1652,7 +1652,7 @@ class QosSearchCriteriaTest(base.BaseSearchCriteriaTest,
 
     @classmethod
     def resource_setup(cls):
-        super(QosSearchCriteriaTest, cls).resource_setup()
+        super().resource_setup()
         for name in cls.resource_names:
             cls.create_qos_policy(
                 name=name, description='search-criteria-test')

@@ -26,7 +26,7 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(ExternalNetworksRBACTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.client2 = cls.os_alt.network_client
 
     def _create_network(self, external=True):

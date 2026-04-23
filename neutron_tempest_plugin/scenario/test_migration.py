@@ -39,7 +39,7 @@ class NetworkMigrationTestBase(base.BaseTempestTestCase,
     @utils.requires_ext(extension="dvr", service="network")
     @utils.requires_ext(extension="l3-ha", service="network")
     def skip_checks(cls):
-        super(NetworkMigrationTestBase, cls).skip_checks()
+        super().skip_checks()
 
     def _check_update(self, router, is_dvr, is_ha):
         router = self.os_admin.network_client.show_router(router['id'])

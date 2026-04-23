@@ -26,7 +26,7 @@ class AgentAvailabilityZoneTestCase(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(AgentAvailabilityZoneTestCase, cls).resource_setup()
+        super().resource_setup()
         body = cls.admin_client.list_agents()
         agents = body['agents']
         agents_type = [agent.get('agent_type') for agent in agents]

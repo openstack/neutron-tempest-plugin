@@ -42,11 +42,11 @@ class TestTaaS(manager.BaseTaasScenarioTests):
     @utils.requires_ext(extension='security-group', service='network')
     @utils.requires_ext(extension='router', service='network')
     def skip_checks(cls):
-        super(TestTaaS, cls).skip_checks()
+        super().skip_checks()
 
     @classmethod
     def resource_setup(cls):
-        super(TestTaaS, cls).resource_setup()
+        super().resource_setup()
         cls.keypair = cls.create_keypair()
         cls.secgroup = cls.create_security_group(
             name=data_utils.rand_name('secgroup'))

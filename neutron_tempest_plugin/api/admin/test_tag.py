@@ -23,7 +23,7 @@ class TagTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(TagTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.res_id = cls._create_resource()
 
     def _get_and_compare_tags(self, tags, client):
@@ -226,7 +226,7 @@ class TagFilterTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(TagFilterTestJSON, cls).resource_setup()
+        super().resource_setup()
         try:
             client = cls.tag_client
         except AttributeError:
@@ -245,7 +245,7 @@ class TagFilterTestJSON(base.BaseAdminNetworkTest):
 
     @classmethod
     def setup_clients(cls):
-        super(TagFilterTestJSON, cls).setup_clients()
+        super().setup_clients()
         cls.client = cls.os_alt.network_client
 
     def _assertEqualResources(self, expected, res):

@@ -30,7 +30,7 @@ LOG = log.getLogger(__name__)
 class TestSfc(base.SfcScenarioTest):
     @classmethod
     def skip_checks(cls):
-        super(TestSfc, cls).skip_checks()
+        super().skip_checks()
         if not (CONF.network.project_networks_reachable or
                 CONF.network.public_network_id):
             msg = ('Either project_networks_reachable must be "true", or '
@@ -46,10 +46,10 @@ class TestSfc(base.SfcScenarioTest):
     def setup_credentials(cls):
         # Create no network resources for these tests.
         cls.set_network_resources()
-        super(TestSfc, cls).setup_credentials()
+        super().setup_credentials()
 
     def setUp(self):
-        super(TestSfc, self).setUp()
+        super().setUp()
 
         self.multi_node = CONF.compute.min_compute_nodes > 1
         if self.multi_node:

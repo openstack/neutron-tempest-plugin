@@ -39,13 +39,13 @@ CONF = config.CONF
 LOG = log.getLogger(__name__)
 
 
-class FloatingIpTestCasesMixin(object):
+class FloatingIpTestCasesMixin:
     credentials = ['primary', 'admin']
 
     @classmethod
     @utils.requires_ext(extension="router", service="network")
     def resource_setup(cls):
-        super(FloatingIpTestCasesMixin, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
         cls.router = cls.create_router_by_client()
@@ -268,7 +268,7 @@ class FloatingIPPortDetailsTest(FloatingIpTestCasesMixin,
     @utils.requires_ext(extension="router", service="network")
     @utils.requires_ext(extension="fip-port-details", service="network")
     def resource_setup(cls):
-        super(FloatingIPPortDetailsTest, cls).resource_setup()
+        super().resource_setup()
 
     @decorators.idempotent_id('a663aeee-dd81-492b-a207-354fd6284dbe')
     def test_floatingip_port_details(self):
@@ -403,11 +403,11 @@ class FloatingIPQosTest(FloatingIpTestCasesMixin,
     @utils.requires_ext(extension="qos-fip", service="network")
     @base_api.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
     def resource_setup(cls):
-        super(FloatingIPQosTest, cls).resource_setup()
+        super().resource_setup()
 
     @classmethod
     def setup_clients(cls):
-        super(FloatingIPQosTest, cls).setup_clients()
+        super().setup_clients()
         cls.admin_client = cls.os_admin.network_client
         cls.qos_bw_limit_rule_client = \
             cls.os_admin.qos_limit_bandwidth_rules_client
@@ -555,7 +555,7 @@ class FloatingIpMultipleRoutersTest(base.BaseTempestTestCase):
     @classmethod
     @utils.requires_ext(extension="router", service="network")
     def skip_checks(cls):
-        super(FloatingIpMultipleRoutersTest, cls).skip_checks()
+        super().skip_checks()
 
     def _create_keypair_and_secgroup(self):
         self.keypair = self.create_keypair()

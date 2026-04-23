@@ -19,11 +19,11 @@ from neutron_tempest_plugin.sfc.services import flowclassifier_client
 CONF = config.CONF
 
 
-class FlowClassifierClientMixin(object):
+class FlowClassifierClientMixin:
 
     @classmethod
     def resource_setup(cls):
-        super(FlowClassifierClientMixin, cls).resource_setup()
+        super().resource_setup()
         manager = cls.os_admin
         cls.flowclassifier_client = (
             flowclassifier_client.FlowClassifierClient(

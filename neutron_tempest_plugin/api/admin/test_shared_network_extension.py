@@ -28,7 +28,7 @@ class SharedNetworksTest(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(SharedNetworksTest, cls).resource_setup()
+        super().resource_setup()
         cls.shared_network = cls.create_network(shared=True)
 
     @decorators.idempotent_id('6661d219-b96d-4597-ad10-55766123421a')
@@ -154,7 +154,7 @@ class AllowedAddressPairSharedNetworkTest(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(AllowedAddressPairSharedNetworkTest, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network(shared=True)
         cls.create_subnet(cls.network, client=cls.admin_client)
 
@@ -180,7 +180,7 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(RBACSharedNetworksTest, cls).resource_setup()
+        super().resource_setup()
         cls.client2 = cls.os_alt.network_client
 
     def _make_admin_net_and_subnet_shared_to_project_id(self, project_id):

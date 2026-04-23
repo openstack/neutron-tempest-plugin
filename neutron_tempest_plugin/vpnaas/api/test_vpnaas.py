@@ -45,7 +45,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
         if not utils.is_extension_enabled('vpnaas', 'network'):
             msg = "vpnaas extension not enabled."
             raise cls.skipException(msg)
-        super(VPNaaSTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.ext_net_id = CONF.network.public_network_id
         network_name = data_utils.rand_name('network-')
         cls.network = cls.create_network(network_name)

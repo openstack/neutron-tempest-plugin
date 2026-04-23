@@ -35,7 +35,7 @@ class DefaultSecurityGroupRuleTest(base.BaseAdminNetworkTest):
 
     @classmethod
     def setup_clients(cls):
-        super(DefaultSecurityGroupRuleTest, cls).setup_clients()
+        super().setup_clients()
         cls.admin_client = cls.os_admin.network_client
 
     def _filter_not_relevant_rule_keys(self, rule, expected_keys=None):

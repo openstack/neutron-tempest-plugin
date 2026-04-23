@@ -29,7 +29,7 @@ class ExpectedException(testtools.ExpectedException):
         return self
 
     def __exit__(self, exc_type, exc_value, tb):
-        if super(ExpectedException, self).__exit__(exc_type, exc_value, tb):
+        if super().__exit__(exc_type, exc_value, tb):
             self.exception = exc_value
             return True
         return False
@@ -39,7 +39,7 @@ class RouterInterfaceFip(base.BaseAdminNetworkTest):
     @classmethod
     @utils.requires_ext(extension="router-interface-fip", service="network")
     def resource_setup(cls):
-        super(RouterInterfaceFip, cls).resource_setup()
+        super().resource_setup()
 
     @decorators.idempotent_id('943ab44d-0ea7-4c6a-bdfd-8ba759622992')
     def test_router_interface_fip(self):

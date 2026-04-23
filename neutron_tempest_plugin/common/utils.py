@@ -40,7 +40,7 @@ CONF = config.CONF
 LOG = log.getLogger(__name__)
 
 
-class classproperty(object):
+class classproperty:
     def __init__(self, f):
         self.func = f
 
@@ -52,7 +52,7 @@ class WaitTimeout(Exception):
     """Default exception coming from wait_until_true() function."""
 
 
-class LockWithTimer(object):
+class LockWithTimer:
     def __init__(self, threshold):
         self._threshold = threshold
         self.timestamp = 0

@@ -25,11 +25,11 @@ class TaaSExtensionTestJSON(base.BaseTaasTest):
     @classmethod
     @utils.requires_ext(extension='taas', service='network')
     def skip_checks(cls):
-        super(TaaSExtensionTestJSON, cls).skip_checks()
+        super().skip_checks()
 
     @classmethod
     def resource_setup(cls):
-        super(TaaSExtensionTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
         cls.ts_port = cls.create_port(cls.network)
         cls.tf_port = cls.create_port(cls.network)

@@ -34,7 +34,7 @@ class LocalIPTest(base.BaseTempestTestCase):
     @classmethod
     @utils.requires_ext(extension="local_ip", service="network")
     def resource_setup(cls):
-        super(LocalIPTest, cls).resource_setup()
+        super().resource_setup()
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
         cls.keypair = cls.create_keypair()

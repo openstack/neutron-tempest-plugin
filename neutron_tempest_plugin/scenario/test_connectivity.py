@@ -35,7 +35,7 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
     @classmethod
     @utils.requires_ext(extension="router", service="network")
     def resource_setup(cls):
-        super(NetworkConnectivityTest, cls).resource_setup()
+        super().resource_setup()
         # Create keypair with admin privileges
         cls.keypair = cls.create_keypair()
         # Create security group with admin privileges

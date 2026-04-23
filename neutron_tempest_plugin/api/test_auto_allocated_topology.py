@@ -35,7 +35,7 @@ class TestAutoAllocatedTopology(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(TestAutoAllocatedTopology, cls).resource_setup()
+        super().resource_setup()
 
         # The deployment must contain a default subnetpool
         body = cls.client.list_subnetpools(is_default=True)

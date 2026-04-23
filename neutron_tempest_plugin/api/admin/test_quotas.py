@@ -29,7 +29,7 @@ class QuotasTestBase(base.BaseAdminNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(QuotasTestBase, cls).resource_setup()
+        super().resource_setup()
 
     def _setup_quotas(self, project_id, **new_quotas):
         # Change quotas for tenant

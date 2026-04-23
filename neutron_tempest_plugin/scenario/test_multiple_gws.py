@@ -45,8 +45,8 @@ FRR_BASE_IMAGE = 'quay.io/nf-core/ubuntu:22.04'
 class FRROCIImage(ctn_base.DockerImage):
     def __init__(
         self,
-        daemons: typing.Tuple[str],
-        baseimage: typing.Optional[str] = None,
+        daemons: tuple[str, str],
+        baseimage: str | None = None,
         use_existing: bool = False,
     ):
         super().__init__(baseimage=baseimage or FRR_BASE_IMAGE)
@@ -85,13 +85,13 @@ class FRRContainer(ctn_base.Container):
         ctn_ifname: str
         host_ifname: str
 
-    _veths: typing.List[veth_info]
+    _veths: list[veth_info]
 
     class route(typing.NamedTuple):
         dst: netaddr.IPNetwork
         next_hop: netaddr.IPNetwork
 
-    _ctn_routes: typing.List[route]
+    _ctn_routes: list[route]
 
     def __init__(
         self,
@@ -104,18 +104,18 @@ class FRRContainer(ctn_base.Container):
 
     # XXX upstream to os-ken
     def next_if_name(self) -> str:
-        name = 'eth{0}'.format(len(self.eths))
+        name = f'eth{len(self.eths)}'
         self.eths.append(name)
         return name
 
     # XXX upstream to os-ken
-    def run(self, network: typing.Optional[str] = None) -> int:
+    def run(self, network: str | None = None) -> int:
         c = ctn_base.CmdBuffer(' ')
         c << "docker run --privileged=true"
         for sv in self.shared_volumes:
-            c << "-v {0}:{1}".format(sv[0], sv[1])
+            c << f"-v {sv[0]}:{sv[1]}"
         if network:
-            c << "--network {0}".format(network)
+            c << f"--network {network}"
         c << "--name {0} --hostname {0} -id {1}".format(
             self.docker_name(), self.image
         )
@@ -168,16 +168,16 @@ class FRRContainer(ctn_base.Container):
         bridge_type: str,
         ipv4_cidr: str,
         ipv6_cidr: str,
-        ipv6_prefix: typing.Optional[netaddr.IPNetwork] = None,
-        vlan: typing.Optional[int] = None,
+        ipv6_prefix: netaddr.IPNetwork | None = None,
+        vlan: int | None = None,
     ) -> None:
-        assert self.is_running, (
-            'the container must be running before '
-            'calling add_veth_to_bridge'
-        )
-        assert (
-            bridge_type == ctn_base.BRIDGE_TYPE_OVS
-        ), f'bridge_type must be {ctn_base.BRIDGE_TYPE_OVS}'
+        if not self.is_running:
+            LOG.error('The container must be running before calling '
+                      'add_veth_to_bridge')
+            raise
+        if bridge_type != ctn_base.BRIDGE_TYPE_OVS:
+            LOG.error('bridge_type must be %s', ctn_base.BRIDGE_TYPE_OVS)
+            raise
         veth_pair = (
             self.hash_ifname(f'{self.name}-int{len(self._veths)}'),
             self.hash_ifname(f'{self.name}-ext{len(self._veths)}'),
@@ -251,7 +251,7 @@ class FRRContainer(ctn_base.Container):
                 )
         super().remove(check_exist=check_exist)
 
-    def vtysh(self, cmd: typing.List[str]) -> ctn_base.CommandOut:
+    def vtysh(self, cmd: list[str]) -> ctn_base.CommandOut:
         cmd_str = ' '.join(f"-c '{c}'" for c in cmd)
         return self.exec_on_ctn(f'vtysh {cmd_str}', capture=True)
 
@@ -260,13 +260,15 @@ class BFDContainer(FRRContainer):
     def __init__(
         self,
         name: str,
-        image: typing.Optional[FRROCIImage] = None,
+        image: FRROCIImage | None = None,
     ):
         image = image or FRROCIImage(
             daemons=('zebra', 'bfdd'), use_existing=True
         )
         super().__init__(name, image)
-        assert 'bfdd' in image.daemons
+        if 'bfdd' not in image.daemons:
+            LOG.error("'bffd' was not found in '%s'", image.daemons)
+            raise
 
     def add_bfd_peer(self, ip_address: str) -> None:
         self.vtysh(
@@ -288,7 +290,7 @@ class BFDContainer(FRRContainer):
             ]
         )
 
-    def show_bfd_peer(self, peer: str) -> typing.Dict[str, typing.Any]:
+    def show_bfd_peer(self, peer: str) -> dict[str, typing.Any]:
         return jsonutils.loads(self.vtysh([f'show bfd peer {peer} json']))
 
     def wait_for_bfd_peer_status(
@@ -342,7 +344,7 @@ class NetworkMultipleGWTest(base.BaseAdminTempestTestCase):
         dst: netaddr.IPNetwork
         next_hop: netaddr.IPNetwork
 
-    host_routes: typing.List[host_route] = []
+    host_routes: list[host_route] = []
 
     credentials = ['primary', 'admin']
 
@@ -469,7 +471,7 @@ class NetworkMultipleGWTest(base.BaseAdminTempestTestCase):
 
     @staticmethod
     def add_host_route(
-        lst: typing.List[host_route],
+        lst: list[host_route],
         route: host_route
     ) -> None:
         subprocess.run(
@@ -485,13 +487,13 @@ class NetworkMultipleGWTest(base.BaseAdminTempestTestCase):
             ),
             capture_output=True,
             check=True,
-            universal_newlines=True,
+            text=True,
         )
         lst.append(route)
 
     @staticmethod
     def del_host_route(
-        lst: typing.List[host_route],
+        lst: list[host_route],
         route: host_route
     ) -> None:
         subprocess.run(
@@ -507,7 +509,7 @@ class NetworkMultipleGWTest(base.BaseAdminTempestTestCase):
             ),
             capture_output=True,
             check=True,
-            universal_newlines=True,
+            text=True,
         )
         lst.remove(route)
 
@@ -539,14 +541,16 @@ class NetworkMultipleGWTest(base.BaseAdminTempestTestCase):
 
     def add_routes_for_router(
         self,
-        router: typing.Dict[str, typing.Any],
+        router: dict[str, typing.Any],
         ctn: FRRContainer,
         add_ctn_route: bool = True,
         add_host_route: bool = True,
     ):
-        for port in self.admin_client.list_router_interfaces(router['id'])[
-            'ports'
-        ]:
+        ports = self._list_router_interfaces(
+            self.admin_client,
+            router_id=router['id']
+        )
+        for port in ports:
             if port['device_owner'] != const.DEVICE_OWNER_ROUTER_INTF:
                 continue
             for fixed_ip in port['fixed_ips']:

@@ -30,7 +30,7 @@ class FloatingIPNegativeTestJSON(base.BaseNetworkTest):
 
     @classmethod
     def resource_setup(cls):
-        super(FloatingIPNegativeTestJSON, cls).resource_setup()
+        super().resource_setup()
         cls.ext_net_id = CONF.network.public_network_id
         # Create a network with a subnet connected to a router.
         cls.network = cls.create_network()

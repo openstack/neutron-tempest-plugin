@@ -37,7 +37,7 @@ class DHCPTest(base.BaseTempestTestCase):
 
     @classmethod
     def resource_setup(cls):
-        super(DHCPTest, cls).resource_setup()
+        super().resource_setup()
         cls.rand_name = data_utils.rand_name(
             cls.__name__.rsplit('.', 1)[-1])
         cls.network = cls.create_network(name=cls.rand_name)
@@ -104,7 +104,7 @@ class DHCPPortUpdateTest(base.BaseTempestTestCase):
 
     @classmethod
     def resource_setup(cls):
-        super(DHCPPortUpdateTest, cls).resource_setup()
+        super().resource_setup()
         cls.rand_name = data_utils.rand_name(
             cls.__name__.rsplit('.', 1)[-1])
         cls.network = cls.create_network(name=cls.rand_name)

@@ -117,18 +117,17 @@ class RoutersTestHA(base.BaseRouterTest):
                 data_utils.rand_name('router%d' % i),
                 ha=True)
         ha_net_name = constants.HA_NETWORK_NAME % router['project_id']
-        # Remove try/except once
+        # Remove try/except once 2026.1 goes to unmaintained, related to
         # https://review.opendev.org/c/openstack/neutron-lib/+/982598
-        # merges and requirements bumped in neutron
         try:
             ha_network_pre_delete = self.admin_client.list_networks(
                 name=ha_net_name)['networks'][0]
         except IndexError:
-            # we were using the newer version, just fail
-            if 'tenant' not in ha_net_name:
-                self.fail('HA project network not found')
-            # try with the project version
-            HA_NETWORK_NAME = 'HA network project %s'
+            # try the other version to support old and new neutron-lib
+            if 'tenant' in ha_net_name:
+                HA_NETWORK_NAME = 'HA network project %s'
+            else:
+                HA_NETWORK_NAME = 'HA network tenant %s'
             ha_net_name = HA_NETWORK_NAME % router['project_id']
             ha_network_pre_delete = self.admin_client.list_networks(
                 name=ha_net_name)['networks'][0]

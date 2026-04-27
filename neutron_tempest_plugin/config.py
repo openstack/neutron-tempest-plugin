@@ -66,7 +66,7 @@ NeutronPluginOptions = [
                     'a connectivity test'),
     cfg.StrOpt('q_agent',
                default=None,
-               choices=['None', 'linuxbridge', 'ovs', 'sriov'],
+               choices=['None', 'ovs', 'sriov'],
                help='Agent used for devstack@q-agt.service'),
     cfg.StrOpt('firewall_driver',
                default=None,
@@ -80,9 +80,9 @@ NeutronPluginOptions = [
     cfg.BoolOpt('snat_rules_apply_to_nested_networks',
                 default=False,
                 help='Whether SNAT rules apply recursively to all connected '
-                'networks. This is the default behavior for ovs and '
-                'linuxbridge drivers. OVN requires '
-                'ovn_router_indirect_snat=True setting to implement it.'),
+                     'networks. This is the default behavior for the OVS '
+                     'driver. OVN requires ovn_router_indirect_snat=True '
+                     'setting to implement it.'),
 
     # Multicast tests settings
     cfg.StrOpt('multicast_group_range',

@@ -96,7 +96,11 @@ class BaseNetworkTest(base.BaseNetworkTest):
     @classmethod
     def create_ikepolicy(cls, name):
         """Wrapper utility that returns a test ike policy."""
-        body = cls.client.create_ikepolicy(name=name)
+        body = cls.client.create_ikepolicy(
+            name=name,
+            auth_algorithm='sha256',
+            encryption_algorithm='aes-256',
+        )
         ikepolicy = body['ikepolicy']
         cls.ikepolicies.append(ikepolicy)
         return ikepolicy
@@ -104,7 +108,11 @@ class BaseNetworkTest(base.BaseNetworkTest):
     @classmethod
     def create_ipsecpolicy(cls, name):
         """Wrapper utility that returns a test ipsec policy."""
-        body = cls.client.create_ipsecpolicy(name=name)
+        body = cls.client.create_ipsecpolicy(
+            name=name,
+            auth_algorithm='sha256',
+            encryption_algorithm='aes-256',
+        )
         ipsecpolicy = body['ipsecpolicy']
         cls.ipsecpolicies.append(ipsecpolicy)
         return ipsecpolicy

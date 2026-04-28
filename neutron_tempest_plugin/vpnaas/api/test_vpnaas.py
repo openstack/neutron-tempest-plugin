@@ -146,8 +146,12 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
         tenant_id = self._get_tenant_id()
         # Create IPSec policy for the newly created tenant
         name = data_utils.rand_name('ipsec-policy')
-        body = (self.admin_client.
-                create_ipsecpolicy(name=name, tenant_id=tenant_id))
+        body = self.admin_client.create_ipsecpolicy(
+            name=name,
+            tenant_id=tenant_id,
+            auth_algorithm='sha256',
+            encryption_algorithm='aes-256',
+        )
         ipsecpolicy = body['ipsecpolicy']
         self.assertIsNotNone(ipsecpolicy['id'])
         self.addCleanup(self.admin_client.delete_ipsecpolicy,

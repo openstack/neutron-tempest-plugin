@@ -20,7 +20,6 @@ from tempest.lib.services.compute import hypervisor_client
 from tempest.lib.services.compute import interfaces_client
 from tempest.lib.services.compute import keypairs_client
 from tempest.lib.services.compute import servers_client
-from tempest.lib.services.identity.v2 import tenants_client
 from tempest.lib.services.identity.v3 import projects_client
 from tempest.lib.services.network import qos_limit_bandwidth_rules_client
 from tempest.lib.services.network import qos_minimum_bandwidth_rules_client
@@ -135,9 +134,6 @@ class Manager(clients.ServiceClients):
         params.update(self.default_params_with_timeout_values)
         params_v2_admin = params.copy()
         params_v2_admin['endpoint_type'] = CONF.identity.v2_admin_endpoint_type
-        # Client uses admin endpoint type of Keystone API v2
-        self.tenants_client = tenants_client.TenantsClient(self.auth_provider,
-                                                           **params_v2_admin)
         # Client uses admin endpoint type of Keystone API v3
         self.projects_client = projects_client.ProjectsClient(
             self.auth_provider, **params_v2_admin)

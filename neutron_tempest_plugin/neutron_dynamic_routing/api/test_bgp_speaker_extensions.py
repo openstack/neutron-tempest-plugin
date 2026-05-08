@@ -242,40 +242,40 @@ class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
         bgp_speaker_id = bgp_speaker['id']
         self.bgp_adm_client.add_bgp_gateway_network(bgp_speaker_id,
                                                     self.ext_net_id)
-        tenant_net = self.create_network()
-        tenant_subnet = self.create_subnet(tenant_net)
+        project_net = self.create_network()
+        project_subnet = self.create_subnet(project_net)
         ext_gw_info = {'network_id': self.ext_net_id}
         router = self.create_router(ext_gw_info)
         self.admin_routers.append(router)
         self.admin_client.add_router_interface_with_subnet_id(
                                                        router['id'],
-                                                       tenant_subnet['id'])
+                                                       project_subnet['id'])
         self.admin_routerports.append({'router_id': router['id'],
-                                       'subnet_id': tenant_subnet['id']})
-        tenant_port = self.create_port(tenant_net)
+                                       'subnet_id': project_subnet['id']})
+        project_port = self.create_port(project_net)
         floatingip = self.create_floatingip(self.ext_net_id)
         self.admin_floatingips.append(floatingip)
         self.client.update_floatingip(floatingip['id'],
-                                      port_id=tenant_port['id'])
+                                      port_id=project_port['id'])
         routes = self.bgp_adm_client.get_bgp_advertised_routes(bgp_speaker_id)
         self.assertEqual(1, len(routes['advertised_routes']))
         self.assertEqual(floatingip['floating_ip_address'] + '/32',
                          routes['advertised_routes'][0]['destination'])
 
     @decorators.idempotent_id('c9ad566e-fe8f-4559-8303-bbad9062a30c')
-    def test_get_advertised_routes_tenant_networks(self):
+    def test_get_advertised_routes_project_networks(self):
         self.useFixture(fixtures.LockFixture('gateway_network_binding'))
         addr_scope = self.create_address_scope('my-scope', ip_version=4)
         ext_net = self.create_shared_network(**{'router:external': True})
-        tenant_net = self.create_network()
+        project_net = self.create_network()
         ext_subnetpool = self.create_subnetpool(
                                             'test-pool-ext',
                                             is_admin=True,
                                             default_prefixlen=24,
                                             address_scope_id=addr_scope['id'],
                                             prefixes=['8.0.0.0/8'])
-        tenant_subnetpool = self.create_subnetpool(
-                                            'tenant-test-pool',
+        project_subnetpool = self.create_subnetpool(
+                                            'project-test-pool',
                                             default_prefixlen=25,
                                             address_scope_id=addr_scope['id'],
                                             prefixes=['10.10.0.0/16'])
@@ -284,26 +284,26 @@ class BgpSpeakerTestJSON(BgpSpeakerTestJSONBase):
                            ip_version=4,
                            client=self.admin_client,
                            subnetpool_id=ext_subnetpool['id'])
-        tenant_subnet = self.create_subnet(
-                                       {'id': tenant_net['id']},
+        project_subnet = self.create_subnet(
+                                       {'id': project_net['id']},
                                        cidr=netaddr.IPNetwork('10.10.0.0/24'),
                                        ip_version=4,
-                                       subnetpool_id=tenant_subnetpool['id'])
+                                       subnetpool_id=project_subnetpool['id'])
         ext_gw_info = {'network_id': ext_net['id']}
         router = self.create_router(ext_gw_info)
         self.admin_routers.append(router)
         self.admin_client.add_router_interface_with_subnet_id(
                                                        router['id'],
-                                                       tenant_subnet['id'])
+                                                       project_subnet['id'])
         self.admin_routerports.append({'router_id': router['id'],
-                                       'subnet_id': tenant_subnet['id']})
+                                       'subnet_id': project_subnet['id']})
         bgp_speaker = self.create_bgp_speaker(**self.default_bgp_speaker_args)
         bgp_speaker_id = bgp_speaker['id']
         self.bgp_adm_client.add_bgp_gateway_network(bgp_speaker_id,
                                                     ext_net['id'])
         routes = self.bgp_adm_client.get_bgp_advertised_routes(bgp_speaker_id)
         self.assertEqual(1, len(routes['advertised_routes']))
-        self.assertEqual(tenant_subnet['cidr'],
+        self.assertEqual(project_subnet['cidr'],
                          routes['advertised_routes'][0]['destination'])
         fixed_ip = router['external_gateway_info']['external_fixed_ips'][0]
         self.assertEqual(fixed_ip['ip_address'],

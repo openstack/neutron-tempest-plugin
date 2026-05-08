@@ -136,19 +136,19 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                 endpoint_group_list.append(e['id'])
             self.assertNotIn(endpoint_group_list, endpoint_group_id)
 
-    def _get_tenant_id(self):
-        """Returns the tenant_id of the client current user"""
+    def _get_project_id(self):
+        """Returns the project_id of the client current user"""
         return self.client.project_id
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('74dcf2d3-a40e-4a6c-a25a-747d764bee81')
-    def test_admin_create_ipsec_policy_for_tenant(self):
-        tenant_id = self._get_tenant_id()
-        # Create IPSec policy for the newly created tenant
+    def test_admin_create_ipsec_policy_for_project(self):
+        project_id = self._get_project_id()
+        # Create IPSec policy for the newly created project
         name = data_utils.rand_name('ipsec-policy')
         body = self.admin_client.create_ipsecpolicy(
             name=name,
-            tenant_id=tenant_id,
+            project_id=project_id,
             auth_algorithm='sha256',
             encryption_algorithm='aes-256',
         )
@@ -164,10 +164,10 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('016b1861-fe55-4184-ba3c-e049ebbeb570')
-    def test_admin_create_vpn_service_for_tenant(self):
-        tenant_id = self._get_tenant_id()
+    def test_admin_create_vpn_service_for_project(self):
+        project_id = self._get_project_id()
 
-        # Create vpn service for the newly created tenant
+        # Create vpn service for the newly created project
         network2 = self.create_network()
         subnet2 = self.create_subnet(network2)
         router2 = self.create_router(data_utils.rand_name('router-'),
@@ -179,7 +179,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
             router_id=router2['id'],
             name=name,
             admin_state_up=True,
-            tenant_id=tenant_id)
+            project_id=project_id)
         vpnservice = body['vpnservice']
         self.assertIsNotNone(vpnservice['id'])
         self.addCleanup(self.admin_client.delete_vpnservice, vpnservice['id'])
@@ -190,16 +190,16 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('8f33c292-558d-4fdb-b32c-ab1677e8bdc8')
-    def test_admin_create_ike_policy_for_tenant(self):
-        tenant_id = self._get_tenant_id()
+    def test_admin_create_ike_policy_for_project(self):
+        project_id = self._get_project_id()
 
-        # Create IKE policy for the newly created tenant
+        # Create IKE policy for the newly created project
         name = data_utils.rand_name('ike-policy')
         body = (self.admin_client.
                 create_ikepolicy(name=name, ike_version="v1",
                                  encryption_algorithm="aes-128",
                                  auth_algorithm="sha256",
-                                 tenant_id=tenant_id))
+                                 project_id=project_id))
         ikepolicy = body['ikepolicy']
         self.assertIsNotNone(ikepolicy['id'])
         self.addCleanup(self.admin_client.delete_ikepolicy, ikepolicy['id'])
@@ -256,7 +256,8 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                          vpnservice['description'])
         self.assertEqual(self.vpnservice['router_id'], vpnservice['router_id'])
         self.assertEqual(self.vpnservice['subnet_id'], vpnservice['subnet_id'])
-        self.assertEqual(self.vpnservice['tenant_id'], vpnservice['tenant_id'])
+        self.assertEqual(self.vpnservice['project_id'],
+                         vpnservice['project_id'])
         valid_status = ["ACTIVE", "DOWN", "BUILD", "ERROR", "PENDING_CREATE",
                         "PENDING_UPDATE", "PENDING_DELETE"]
         self.assertIn(vpnservice['status'], valid_status)
@@ -318,8 +319,8 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                          ikepolicy['encryption_algorithm'])
         self.assertEqual(self.ikepolicy['auth_algorithm'],
                          ikepolicy['auth_algorithm'])
-        self.assertEqual(self.ikepolicy['tenant_id'],
-                         ikepolicy['tenant_id'])
+        self.assertEqual(self.ikepolicy['project_id'],
+                         ikepolicy['project_id'])
         self.assertEqual(self.ikepolicy['pfs'],
                          ikepolicy['pfs'])
         self.assertEqual(self.ikepolicy['phase1_negotiation_mode'],
@@ -457,9 +458,9 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('06a268fa-c53b-4cd1-9350-b83892e4a394')
     def test_create_vpn_service_subnet_not_on_router(self):
         # Verify create VPN service with a subnet not on router
-        tenant_id = self._get_tenant_id()
+        project_id = self._get_project_id()
 
-        # Create vpn service for the newly created tenant
+        # Create vpn service for the newly created project
         network2 = self.create_network()
         subnet2 = self.create_subnet(network2)
         router2 = self.create_router(data_utils.rand_name('router-'),
@@ -474,7 +475,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
             router_id=router2['id'],
             name=name,
             admin_state_up=True,
-            tenant_id=tenant_id)
+            project_id=project_id)
 
     @decorators.attr(type=['negative', 'smoke'])
     @decorators.idempotent_id('7678798a-fc20-46cd-ad78-b6b3d599de18')
@@ -539,12 +540,12 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
     @decorators.attr(type=['negative', 'smoke'])
     @decorators.idempotent_id('68e17a9b-5b33-4d3e-90f2-01a6728d2c26')
     def test_create_connection_with_cidr_and_endpoint_group(self):
-        tenant_id = self._get_tenant_id()
-        # Create endpoint group for the newly created tenant
+        project_id = self._get_project_id()
+        # Create endpoint group for the newly created project
         name = data_utils.rand_name('endpoint_group')
         subnet_id = self.subnet['id']
         body = self.client.create_endpoint_group(
-                        tenant_id=tenant_id,
+                        project_id=project_id,
                         name=name,
                         type='subnet',
                         endpoints=subnet_id)
@@ -553,7 +554,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                         endpoint_group_local['id'])
         name = data_utils.rand_name('endpoint_group')
         body = self.client.create_endpoint_group(
-                        tenant_id=tenant_id,
+                        project_id=project_id,
                         name=name,
                         type='cidr',
                         endpoints=["10.103.0.0/24", "10.104.0.0/24"])
@@ -583,13 +584,13 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
     def test_create_vpn_connection_with_missing_remote_endpoint_group(self):
         # Verify create VPN connection without subnet in vpnservice
         # and has only local endpoint group
-        tenant_id = self._get_tenant_id()
-        # Create endpoint group for the newly created tenant
-        tenant_id = self._get_tenant_id()
+        project_id = self._get_project_id()
+        # Create endpoint group for the newly created project
+        project_id = self._get_project_id()
         name = data_utils.rand_name('endpoint_group')
         subnet_id = self.subnet['id']
         body = self.client.create_endpoint_group(
-                        tenant_id=tenant_id,
+                        project_id=project_id,
                         name=name,
                         type='subnet',
                         endpoints=subnet_id)
@@ -616,12 +617,11 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
     def test_create_vpn_connection_with_missing_local_endpoint_group(self):
         # Verify create VPN connection without subnet in vpnservice
         # and only have only local endpoint group
-        tenant_id = self._get_tenant_id()
-        # Create endpoint group for the newly created tenant
-        tenant_id = self._get_tenant_id()
+        project_id = self._get_project_id()
+        # Create endpoint group for the newly created project
         name = data_utils.rand_name('endpoint_group')
         body = self.client.create_endpoint_group(
-                        tenant_id=tenant_id,
+                        project_id=project_id,
                         name=name,
                         type='cidr',
                         endpoints=["10.101.0.0/24", "10.102.0.0/24"])
@@ -646,12 +646,12 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
     @decorators.attr(type=['negative', 'smoke'])
     @decorators.idempotent_id('427bbc1b-4040-42e4-b661-6395a0bd8762')
     def test_create_connection_with_mix_ip_endpoint_group(self):
-        tenant_id = self._get_tenant_id()
-        # Create endpoint group for the newly created tenant
+        project_id = self._get_project_id()
+        # Create endpoint group for the newly created project
         name = data_utils.rand_name('endpoint_group')
         subnet_id = self.subnet['id']
         body = self.client.create_endpoint_group(
-                        tenant_id=tenant_id,
+                        project_id=project_id,
                         name=name,
                         type='subnet',
                         endpoints=subnet_id)
@@ -660,7 +660,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                         endpoint_group_local['id'])
         name_v6 = data_utils.rand_name('endpoint_group')
         body_v6 = self.client.create_endpoint_group(
-                        tenant_id=tenant_id,
+                        project_id=project_id,
                         name=name_v6,
                         type='cidr',
                         endpoints=["fec0:101::/64", "fec0:102::/64"])
@@ -689,11 +689,11 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
     @decorators.attr(type=['negative', 'smoke'])
     @decorators.idempotent_id('eac56769-ec2d-4817-ba45-ca101d676bfc')
     def test_create_connection_with_subnet_and_remote_endpoint_group(self):
-        tenant_id = self._get_tenant_id()
-        # Create endpoint group for the newly created tenant
+        project_id = self._get_project_id()
+        # Create endpoint group for the newly created project
         name = data_utils.rand_name('endpoint_group')
         body = self.client.create_endpoint_group(
-                        tenant_id=tenant_id,
+                        project_id=project_id,
                         name=name,
                         type='cidr',
                         endpoints=["10.101.0.0/24", "10.102.0.0/24"])
@@ -717,12 +717,12 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
     @decorators.attr(type=['negative', 'smoke'])
     @decorators.idempotent_id('92cd1221-3c7c-47ea-adad-8d8c2fc0f247')
     def test_create_connection_with_subnet_and_local_endpoint_group(self):
-        tenant_id = self._get_tenant_id()
-        # Create endpoint group for the newly created tenant
+        project_id = self._get_project_id()
+        # Create endpoint group for the newly created project
         name = data_utils.rand_name('endpoint_group')
         subnet_id = self.subnet['id']
         body = self.client.create_endpoint_group(
-                        tenant_id=tenant_id,
+                        project_id=project_id,
                         name=name,
                         type='subnet',
                         endpoints=subnet_id)
@@ -772,16 +772,16 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.attr(type='smoke')
     @decorators.idempotent_id('69ee29e9-f72c-4d84-b6ab-c3f5576440fc')
-    def test_admin_create_endpoint_group_for_tenant(self):
-        # Create endpoint group for the newly created tenant
-        tenant_id = self._get_tenant_id()
+    def test_admin_create_endpoint_group_for_project(self):
+        # Create endpoint group for the newly created project
+        project_id = self._get_project_id()
         name = data_utils.rand_name('endpoint_group')
         body = (self.client.
                 create_endpoint_group(
                         name=name,
                         type='cidr',
                         endpoints=["10.2.0.0/24", "10.3.0.0/24"],
-                        tenant_id=tenant_id))
+                        project_id=project_id))
         endpoint_group = body['endpoint_group']
         self.assertIsNotNone(endpoint_group['id'])
         self.addCleanup(self._delete_endpoint_group, endpoint_group['id'])
@@ -803,8 +803,8 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                          endpoint_group['name'])
         self.assertEqual(self.endpoint_group_local['description'],
                          endpoint_group['description'])
-        self.assertEqual(self.endpoint_group_local['tenant_id'],
-                         endpoint_group['tenant_id'])
+        self.assertEqual(self.endpoint_group_local['project_id'],
+                         endpoint_group['project_id'])
         self.assertEqual(self.endpoint_group_local['type'],
                          endpoint_group['type'])
         self.assertEqual(self.endpoint_group_local['endpoints'],
@@ -820,8 +820,8 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                          endpoint_group['name'])
         self.assertEqual(self.endpoint_group_remote['description'],
                          endpoint_group['description'])
-        self.assertEqual(self.endpoint_group_remote['tenant_id'],
-                         endpoint_group['tenant_id'])
+        self.assertEqual(self.endpoint_group_remote['project_id'],
+                         endpoint_group['project_id'])
         self.assertEqual(self.endpoint_group_remote['type'],
                          endpoint_group['type'])
         self.assertEqual(self.endpoint_group_remote['endpoints'],

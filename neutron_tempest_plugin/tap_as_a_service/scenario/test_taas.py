@@ -76,15 +76,15 @@ class TestTaaS(manager.BaseTaasScenarioTests):
                           'Provider physical network parameter not provided.')
     @utils.requires_ext(extension="provider", service="network")
     def _create_network_sriov(self, networks_client=None,
-                              tenant_id=None,
+                              project_id=None,
                               namestart='network-smoke-sriov-',
                               port_security_enabled=True):
         if not networks_client:
             networks_client = self.networks_client
-        if not tenant_id:
-            tenant_id = networks_client.project_id
+        if not project_id:
+            project_id = networks_client.project_id
         name = data_utils.rand_name(namestart)
-        network_kwargs = dict(name=name, tenant_id=tenant_id)
+        network_kwargs = dict(name=name, project_id=project_id)
         # Neutron disables port security by default so we have to check the
         # config before trying to create the network with
         # port_security_enabled
@@ -117,20 +117,20 @@ class TestTaaS(manager.BaseTaasScenarioTests):
     @utils.requires_ext(extension="provider", service="network")
     def create_networks_sriov(self, networks_client=None,
                               routers_client=None, subnets_client=None,
-                              tenant_id=None, dns_nameservers=None,
+                              project_id=None, dns_nameservers=None,
                               port_security_enabled=True):
         """Create a network with a subnet connected to a router.
 
         The baremetal driver is a special case since all nodes are
         on the same shared network.
 
-        :param tenant_id: id of tenant to create resources in.
+        :param project_id: id of project to create resources in.
         :param dns_nameservers: list of dns servers to send to subnet.
         :returns: network, subnet, router
         """
         router = None
         if CONF.network.shared_physical_network:
-            # NOTE(Shrews): This exception is for environments where tenant
+            # NOTE(Shrews): This exception is for environments where project
             # credential isolation is available, but network separation is
             # not (the current baremetal case). Likely can be removed when
             # test account mgmt is reworked:
@@ -144,7 +144,7 @@ class TestTaaS(manager.BaseTaasScenarioTests):
         else:
             network = self._create_network_sriov(
                 networks_client=networks_client,
-                tenant_id=tenant_id,
+                project_id=project_id,
                 port_security_enabled=port_security_enabled)
             subnet_kwargs = dict(network=network,
                                  subnets_client=subnets_client,

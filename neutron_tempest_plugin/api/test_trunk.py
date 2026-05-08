@@ -96,9 +96,8 @@ class TrunkTestJSON(TrunkTestJSONBase):
     def test_show_trunk_has_project_id(self):
         trunk = self._create_trunk_with_network_and_parent()
         observed_trunk = self._show_trunk(trunk)
-        for key in ['project_id', 'tenant_id']:
-            self.assertIn(key, observed_trunk)
-            self.assertEqual(self.client.project_id, observed_trunk[key])
+        self.assertIn('project_id', observed_trunk)
+        self.assertEqual(self.client.project_id, observed_trunk['project_id'])
 
     @decorators.idempotent_id('4ce46c22-a2b6-4659-bc5a-0ef2463cab32')
     def test_create_update_trunk(self):

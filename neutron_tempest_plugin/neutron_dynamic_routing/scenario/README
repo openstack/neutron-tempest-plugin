@@ -2,7 +2,7 @@ scenario tests use the following environment.
 
 diagram:
 
-       ----------------------+--------------- tenant
+       ----------------------+--------------- project
                              |                network
                         +--------+
                         | router |

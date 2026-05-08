@@ -30,7 +30,7 @@ class BgpSpeakerBasicTestJSONBase(base.BgpSpeakerScenarioTestJSONBase):
     PPool = base.Pool(name='test-pool-ext', prefixlen=PNet.mask,
                       prefixes=[PNet.net + '/8'])
     PSubNet = base.SubNet(name='', cidr=PNet.cidr, mask=PNet.mask)
-    TPool = base.Pool(name='tenant-test-pool', prefixlen=28,
+    TPool = base.Pool(name='project-test-pool', prefixlen=28,
                       prefixes=['10.10.0.0/16'])
     L_AS = base.AS(asn='64512', router_id='192.168.0.2', adv_net='')
     ras_l = [

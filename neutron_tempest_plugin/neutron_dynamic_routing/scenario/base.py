@@ -201,20 +201,20 @@ class BgpSpeakerScenarioTestJSONBase(base.BaseAdminNetworkTest):
             client=self.admin_client,
             subnetpool_id=ext_subnetpool['id'],
             reserve_cidr=False)
-        # tenant network
-        tenant_subnetpool = self.create_subnetpool(
+        # project network
+        project_subnetpool = self.create_subnetpool(
             tpool.name,
             default_prefixlen=tpool.prefixlen,
             address_scope_id=addr_scope['id'],
             prefixes=tpool.prefixes)
         for tnet, tsubnet, router in tnets:
-            tenant_net = self.create_network()
-            tenant_subnet = self.create_subnet(
-                {'id': tenant_net['id']},
+            project_net = self.create_network()
+            project_subnet = self.create_subnet(
+                {'id': project_net['id']},
                 cidr=netaddr.IPNetwork(tsubnet.cidr),
                 mask_bits=tsubnet.mask,
                 ip_version=ip_version,
-                subnetpool_id=tenant_subnetpool['id'],
+                subnetpool_id=project_subnetpool['id'],
                 reserve_cidr=False)
             # router
             ext_gw_info = {'network_id': ext_net_id}
@@ -224,9 +224,9 @@ class BgpSpeakerScenarioTestJSONBase(base.BaseAdminNetworkTest):
             self.admin_routers.append(router_cr)
             self.admin_client.add_router_interface_with_subnet_id(
                 router_cr['id'],
-                tenant_subnet['id'])
+                project_subnet['id'])
             self.admin_routerports.append({'router_id': router_cr['id'],
-                                           'subnet_id': tenant_subnet['id']})
+                                           'subnet_id': project_subnet['id']})
             router = self.admin_client.show_router(router_cr['id'])['router']
             fixed_ips = router['external_gateway_info']['external_fixed_ips']
             self.admin_router_ip.append(fixed_ips[0]['ip_address'])

@@ -408,9 +408,8 @@ class BaseNetworkTest(test.BaseTestCase):
                 if not shared:
                     # Keep this network visible from current project
                     project_id = (kwargs.get('project_id') or
-                                  kwargs.get('tenant_id') or
                                   cls.client.project_id)
-                    kwargs.update(project_id=project_id, tenant_id=project_id)
+                    kwargs.update(project_id=project_id)
             else:
                 # Use default client
                 client = cls.client
@@ -992,8 +991,7 @@ class BaseNetworkTest(test.BaseTestCase):
         if project:
             client = client or cls.admin_client
             project_id = kwargs.setdefault('project_id', project['id'])
-            tenant_id = kwargs.setdefault('tenant_id', project['id'])
-            if project_id != project['id'] or tenant_id != project['id']:
+            if project_id != project['id']:
                 raise ValueError(_('Project ID specified multiple times'))
         else:
             client = client or cls.client
@@ -1025,8 +1023,7 @@ class BaseNetworkTest(test.BaseTestCase):
         if project:
             client = client or cls.admin_client
             project_id = kwargs.setdefault('project_id', project['id'])
-            tenant_id = kwargs.setdefault('tenant_id', project['id'])
-            if project_id != project['id'] or tenant_id != project['id']:
+            if project_id != project['id']:
                 raise ValueError(_('Project ID specified multiple times'))
 
         if 'security_group_id' not in kwargs:

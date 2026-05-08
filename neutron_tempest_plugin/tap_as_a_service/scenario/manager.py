@@ -72,44 +72,44 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
                        namestart='subnet-smoke', **kwargs):
         """Create a subnet for the given network
 
-        within the cidr block configured for tenant networks.
+        within the cidr block configured for project networks.
         """
         if not subnets_client:
             subnets_client = self.client
 
-        def cidr_in_use(cidr, tenant_id):
+        def cidr_in_use(cidr, project_id):
             """Check cidr existence
 
-            :returns: True if subnet with cidr already exist in tenant
+            :returns: True if subnet with cidr already exist in project
                   False else
             """
             cidr_in_use = self.os_admin.network_client.list_subnets(
-                tenant_id=tenant_id, cidr=cidr)['subnets']
+                project_id=project_id, cidr=cidr)['subnets']
             return len(cidr_in_use) != 0
 
         ip_version = kwargs.pop('ip_version', 4)
 
         if ip_version == 6:
-            tenant_cidr = netaddr.IPNetwork(
+            project_cidr = netaddr.IPNetwork(
                 CONF.network.project_network_v6_cidr)
             num_bits = CONF.network.project_network_v6_mask_bits
         else:
-            tenant_cidr = netaddr.IPNetwork(CONF.network.project_network_cidr)
+            project_cidr = netaddr.IPNetwork(CONF.network.project_network_cidr)
             num_bits = CONF.network.project_network_mask_bits
 
         result = None
         str_cidr = None
         # Repeatedly attempt subnet creation with sequential cidr
         # blocks until an unallocated block is found.
-        for subnet_cidr in tenant_cidr.subnet(num_bits):
+        for subnet_cidr in project_cidr.subnet(num_bits):
             str_cidr = str(subnet_cidr)
-            if cidr_in_use(str_cidr, tenant_id=network['tenant_id']):
+            if cidr_in_use(str_cidr, project_id=network['project_id']):
                 continue
 
             subnet = dict(
                 name=data_utils.rand_name(namestart),
                 network_id=network['id'],
-                tenant_id=network['tenant_id'],
+                project_id=network['project_id'],
                 cidr=str_cidr,
                 ip_version=ip_version,
                 **kwargs
@@ -121,7 +121,7 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
                 is_overlapping_cidr = 'overlaps with another subnet' in str(e)
                 if not is_overlapping_cidr:
                     raise
-        self.assertIsNotNone(result, 'Unable to allocate tenant network')
+        self.assertIsNotNone(result, 'Unable to allocate project network')
 
         subnet = result['subnet']
         self.assertEqual(subnet['cidr'], str_cidr)
@@ -184,7 +184,7 @@ class BaseTaasScenarioTests(base.BaseTempestTestCase):
         :returns: network, subnet, router
         """
         if CONF.network.shared_physical_network:
-            # NOTE(Shrews): This exception is for environments where tenant
+            # NOTE(Shrews): This exception is for environments where project
             # credential isolation is available, but network separation is
             # not (the current baremetal case). Likely can be removed when
             # test account mgmt is reworked:

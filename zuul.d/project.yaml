@@ -157,24 +157,6 @@
         - neutron-tempest-plugin-dvr-multinode-scenario-2024-1
 
 - project-template:
-    name: neutron-tempest-plugin-jobs-2024-2
-    check:
-      jobs:
-        - neutron-tempest-plugin-openvswitch-2024-2
-        - neutron-tempest-plugin-openvswitch-iptables_hybrid-2024-2
-        - neutron-tempest-plugin-ovn-2024-2
-        - neutron-tempest-plugin-designate-scenario-2024-2
-    gate:
-      jobs:
-        - neutron-tempest-plugin-ovn-2024-2
-    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
-    #              the experimental queue when it will be more stable
-    experimental:
-      jobs:
-        - neutron-tempest-plugin-linuxbridge-2024-2
-        - neutron-tempest-plugin-dvr-multinode-scenario-2024-2
-
-- project-template:
     name: neutron-tempest-plugin-jobs-2025-1
     check:
       jobs:

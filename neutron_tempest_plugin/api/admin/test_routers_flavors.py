@@ -28,7 +28,7 @@ class RoutersFlavorTestCase(base.BaseRouterTest):
         super().resource_setup()
         cls.service_profiles = []
         cls.flavor_service_profiles = []
-        # make a flavor based on legacy router for regular tenant to use
+        # make a flavor based on legacy router for regular project to use
         driver = ('neutron.services.l3_router.service_providers.'
                   'single_node.SingleNodeDriver')
         try:

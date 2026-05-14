@@ -103,8 +103,8 @@ class MeteringTestJSON(base.BaseAdminNetworkTest):
         body = self.admin_client.show_metering_label(self.metering_label['id'])
         metering_label = body['metering_label']
         self.assertEqual(self.metering_label['id'], metering_label['id'])
-        self.assertEqual(self.metering_label['tenant_id'],
-                         metering_label['tenant_id'])
+        self.assertEqual(self.metering_label['project_id'],
+                         metering_label['project_id'])
         self.assertEqual(self.metering_label['name'], metering_label['name'])
         self.assertEqual(self.metering_label['description'],
                          metering_label['description'])

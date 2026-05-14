@@ -44,7 +44,7 @@ class PortsNegativeTestJSON(base.BaseNetworkTest):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('5b69a905-3a84-43a4-807a-1a67ab85caeb')
-    def test_add_port_with_nonexist_tenant_id(self):
+    def test_add_port_with_nonexist_project_id(self):
         self.assertRaises(lib_exc.BadRequest,
                           self.create_port,
                           self.network,

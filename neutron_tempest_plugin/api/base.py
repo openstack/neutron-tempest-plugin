@@ -47,10 +47,10 @@ class BaseNetworkTest(test.BaseTestCase):
     following options are defined in the [network] section of etc/tempest.conf:
 
         project_network_cidr with a block of cidr's from which smaller blocks
-        can be allocated for tenant networks
+        can be allocated for project networks
 
         project_network_mask_bits with the mask bits to be used to partition
-        the block defined by tenant-network_cidr
+        the block defined by project_network_cidr
 
     Finally, it is assumed that the following option is defined in the
     [service_available] section of etc/tempest.conf
@@ -978,7 +978,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.projects.append(project)
         # Create a project will create a default security group.
         sgs_list = cls.admin_client.list_security_groups(
-            tenant_id=project['id'])['security_groups']
+            project_id=project['id'])['security_groups']
         for security_group in sgs_list:
             # Make sure delete_security_group method will use
             # the admin client for this group

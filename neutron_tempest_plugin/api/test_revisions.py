@@ -347,7 +347,7 @@ class TestRevisions(base.BaseAdminNetworkTest):
             raise self.skipException("Test not meant for OVN driver")
         # updates from CVR to CVR-HA are supported on every release,
         # but only the admin can forcibly create a non-HA router
-        router_args = {'tenant_id': self.client.project_id,
+        router_args = {'project_id': self.client.project_id,
                        'ha': False}
         router = self.admin_client.create_router('r1', True,
             **router_args)['router']

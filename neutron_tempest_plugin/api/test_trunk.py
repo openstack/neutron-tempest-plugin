@@ -48,7 +48,7 @@ class TrunkTestJSONBase(base.BaseAdminNetworkTest):
         if parent_network_type:
             client = cls.admin_client
             network_kwargs = {"provider:network_type": parent_network_type,
-                              "tenant_id": cls.client.project_id}
+                              "project_id": cls.client.project_id}
         network = cls.create_network(client=client, **network_kwargs)
         parent_port = cls.create_port(network)
         return cls.create_trunk(parent_port, subports, **kwargs)

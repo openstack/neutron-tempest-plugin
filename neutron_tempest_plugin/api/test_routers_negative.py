@@ -44,7 +44,7 @@ class RoutersNegativePolicyTest(RoutersNegativeTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('159f576d-a423-46b5-b501-622694c02f6b')
-    def test_add_interface_wrong_tenant(self):
+    def test_add_interface_wrong_project(self):
         client2 = self.os_alt.network_client
         network = client2.create_network()['network']
         self.addCleanup(client2.delete_network, network['id'])
@@ -110,7 +110,7 @@ class DvrRoutersNegativeTest(RoutersNegativeTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('4990b055-8fc7-48ab-bba7-aa28beaad0b9')
-    def test_router_create_tenant_distributed_returns_forbidden(self):
+    def test_router_create_project_distributed_returns_forbidden(self):
         with testtools.ExpectedException(lib_exc.Forbidden):
             self.create_router(
                 data_utils.rand_name('router'), distributed=True)
@@ -124,7 +124,7 @@ class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
     @decorators.idempotent_id('5379fe06-e45e-4a4f-8b4a-9e28a924b451')
     def test_router_update_distributed_returns_exception(self):
         # create a centralized router
-        router_args = {'tenant_id': self.client.project_id,
+        router_args = {'project_id': self.client.project_id,
                        'distributed': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
@@ -141,7 +141,7 @@ class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
     @decorators.idempotent_id('c277e945-3b39-442d-b149-e2e8cc6a2b40')
     def test_router_update_centralized_returns_exception(self):
         # create a centralized router
-        router_args = {'tenant_id': self.client.project_id,
+        router_args = {'project_id': self.client.project_id,
                        'distributed': False}
         router = self._create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
@@ -172,7 +172,7 @@ class HaRoutersNegativeTest(RoutersNegativeTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('821b85b9-9c51-40f3-831f-bf223a7e0084')
-    def test_router_create_tenant_ha_returns_forbidden(self):
+    def test_router_create_project_ha_returns_forbidden(self):
         with testtools.ExpectedException(lib_exc.Forbidden):
             self.create_router(
                 data_utils.rand_name('router'), ha=True)

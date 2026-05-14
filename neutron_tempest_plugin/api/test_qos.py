@@ -149,7 +149,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         self.assertEqual([], retrieved_policy['rules'])
 
     @decorators.idempotent_id('6e880e0f-bbfc-4e54-87c6-680f90e1b618')
-    def test_policy_update_forbidden_for_regular_tenants_own_policy(self):
+    def test_policy_update_forbidden_for_regular_projects_own_policy(self):
         policy = self.create_qos_policy(name=self.policy_name,
                                         description='',
                                         shared=False,
@@ -160,7 +160,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
             policy['id'], description='test policy')
 
     @decorators.idempotent_id('4ecfd7e7-47b6-4702-be38-be9235901a87')
-    def test_policy_update_forbidden_for_regular_tenants_foreign_policy(self):
+    def test_policy_update_forbidden_for_regular_projects_foreign_policy(self):
         policy = self.create_qos_policy(
             name=self.policy_name,
             description='',
@@ -268,7 +268,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
             policy['id'], retrieved_network['network']['qos_policy_id'])
 
     @decorators.idempotent_id('1738de5d-0476-4163-9022-5e1b548c208e')
-    def test_policy_association_with_tenant_network(self):
+    def test_policy_association_with_project_network(self):
         policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=True)
@@ -403,7 +403,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
         self.assertEqual(obtained_policy, policy)
 
     @decorators.idempotent_id('aed8e2a6-22da-421b-89b9-935a2c1a1b50')
-    def test_policy_create_forbidden_for_regular_tenants(self):
+    def test_policy_create_forbidden_for_regular_projects(self):
         self.assertRaises(
             exceptions.Forbidden,
             self.client.create_qos_policy,
@@ -588,14 +588,14 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
             'policy', {'max_kbps': 200, 'max_burst_kbps': 1337})
 
     @decorators.idempotent_id('a4a2e7ad-786f-4927-a85a-e545a93bd274')
-    def test_rule_create_forbidden_for_regular_tenants(self):
+    def test_rule_create_forbidden_for_regular_projects(self):
         self.assertRaises(
             exceptions.Forbidden,
             self.qos_bw_limit_rule_client_primary.create_limit_bandwidth_rule,
             'policy', **{'max_kbps': 1, 'max_burst_kbps': 2})
 
     @decorators.idempotent_id('1bfc55d9-6fd8-4293-ab3a-b1d69bf7cd2e')
-    def test_rule_update_forbidden_for_regular_tenants_own_policy(self):
+    def test_rule_update_forbidden_for_regular_projects_own_policy(self):
         policy = self.create_qos_policy(name=self.policy_name,
                                         description='test policy',
                                         shared=False,
@@ -609,7 +609,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
             policy['id'], rule['id'], **{'max_kbps': 2, 'max_burst_kbps': 4})
 
     @decorators.idempotent_id('9a607936-4b6f-4c2f-ad21-bd5b3d4fc91f')
-    def test_rule_update_forbidden_for_regular_tenants_foreign_policy(self):
+    def test_rule_update_forbidden_for_regular_projects_foreign_policy(self):
         policy = self.create_qos_policy(
             name=self.policy_name,
             description='test policy',
@@ -651,7 +651,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
         """Creation of shared resources should be allowed,
         setting the create_shared_resources option as 'True' is needed""")
     @decorators.idempotent_id('d911707e-fa2c-11e9-9553-5076af30bbf5')
-    def test_attach_and_detach_a_policy_by_a_tenant(self):
+    def test_attach_and_detach_a_policy_by_a_project(self):
         # As an admin create an non shared QoS policy,add a rule
         # and associate it with a network
         self.network = self.create_network()
@@ -664,7 +664,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
         self.admin_client.update_network(
             self.network['id'], qos_policy_id=policy['id'])
 
-        # As a tenant, try to detach the policy from the network
+        # As a project, try to detach the policy from the network
         # The operation should be forbidden
         self.assertRaises(
             exceptions.Forbidden,
@@ -674,7 +674,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
         # As an admin, make the policy shared
         self.admin_client.update_qos_policy(policy['id'], shared=True)
 
-        # As a tenant, try to detach the policy from the network
+        # As a project, try to detach the policy from the network
         # The operation should be allowed
         self.client.update_network(self.network['id'],
                                    qos_policy_id=None)
@@ -682,7 +682,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
         retrieved_network = self.admin_client.show_network(self.network['id'])
         self.assertIsNone(retrieved_network['network']['qos_policy_id'])
 
-        # As a tenant, try to delete the policy from the network
+        # As a project, try to delete the policy from the network
         # should be forbidden
         self.assertRaises(
             exceptions.Forbidden,
@@ -830,7 +830,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
     def _create_net_bound_qos_rbacs(self):
         res = self._make_admin_policy_shared_to_project_id(
             self.client.project_id)
-        qos_policy, rbac_for_client_tenant = res['policy'], res['rbac_policy']
+        qos_policy, rbac_for_client_project = res['policy'], res['rbac_policy']
 
         # add a wildcard rbac rule - now the policy globally shared
         rbac_wildcard = self.admin_client.create_rbac_policy(
@@ -840,10 +840,10 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
             target_tenant='*',
         )['rbac_policy']
 
-        # tenant1 now uses qos policy for net
+        # project1 now uses qos policy for net
         self._create_network(qos_policy['id'], self.client)
 
-        return rbac_for_client_tenant, rbac_wildcard
+        return rbac_for_client_project, rbac_wildcard
 
     @decorators.idempotent_id('328b1f70-d424-11e5-a57f-54ee756c66df')
     def test_net_bound_shared_policy_wildcard_and_project_id_wild_remove(self):
@@ -919,7 +919,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
         with testtools.ExpectedException(exceptions.Conflict):
             self.admin_client.delete_rbac_policy(wild['id'])
 
-        # we can't update the policy to a different tenant
+        # we can't update the policy to a different project
         with testtools.ExpectedException(exceptions.Conflict):
             self.admin_client.update_rbac_policy(
                 wild['id'], target_tenant=self.client2.project_id)
@@ -1000,7 +1000,7 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
                 action='access_as_shared',
                 target_tenant=self.client2.project_id)
 
-        # make sure the rbac-policy is invisible to the tenant for which it's
+        # make sure the rbac-policy is invisible to the project for which it's
         # being shared
         self.assertFalse(self.client.list_rbac_policies()['rbac_policies'])
 
@@ -1104,7 +1104,7 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
             'policy', self.VALID_DSCP_MARK1)
 
     @decorators.idempotent_id('bf6002ea-29de-486f-b65d-08aea6d4c4e2')
-    def test_rule_create_forbidden_for_regular_tenants(self):
+    def test_rule_create_forbidden_for_regular_projects(self):
         self.assertRaises(
             exceptions.Forbidden,
             self.client.create_dscp_marking_rule,
@@ -1381,7 +1381,7 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
             **{'direction': self.DIRECTION_EGRESS, 'min_kbps': 200})
 
     @decorators.idempotent_id('b4a2e7ad-786f-4927-a85a-e545a93bd274')
-    def test_rule_create_forbidden_for_regular_tenants(self):
+    def test_rule_create_forbidden_for_regular_projects(self):
         self.assertRaises(
             exceptions.Forbidden,
             self.qos_min_bw_rules_client_primary.create_minimum_bandwidth_rule,
@@ -1604,7 +1604,7 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
                           policy['id'], rule['id'])
 
     @decorators.idempotent_id('1a6b6128-3d3e-11ec-bf49-57b326d417c0')
-    def test_rule_create_forbidden_for_regular_tenants(self):
+    def test_rule_create_forbidden_for_regular_projects(self):
         self.assertRaises(
             exceptions.Forbidden,
             self.min_pps_client_primary.create_minimum_packet_rate_rule,

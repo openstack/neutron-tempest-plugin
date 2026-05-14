@@ -304,7 +304,7 @@ class DefaultSecurityGroupRuleTest(base.BaseAdminNetworkTest):
         # First check rules for default SG created automatically for each
         # project
         default_sg = self.admin_client.list_security_groups(
-            tenant_id=project['id'], name='default')['security_groups'][0]
+            project_id=project['id'], name='default')['security_groups'][0]
         self._validate_security_group_rules(default_sg, is_default_sg=True)
 
         # And now create different SG for same project and check SG rules for

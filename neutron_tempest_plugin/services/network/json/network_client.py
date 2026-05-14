@@ -342,17 +342,17 @@ class NetworkClientJSON(service_client.RestClient):
     def serialize_list(self, data, root=None, item=None):
         return self.serialize(data)
 
-    def update_quotas(self, tenant_id, **kwargs):
+    def update_quotas(self, project_id, **kwargs):
         put_body = {'quota': kwargs}
         body = jsonutils.dumps(put_body)
-        uri = '%s/quotas/%s' % (self.uri_prefix, tenant_id)
+        uri = '%s/quotas/%s' % (self.uri_prefix, project_id)
         resp, body = self.put(uri, body)
         self.expected_success(200, resp.status)
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body['quota'])
 
-    def reset_quotas(self, tenant_id):
-        uri = '%s/quotas/%s' % (self.uri_prefix, tenant_id)
+    def reset_quotas(self, project_id):
+        uri = '%s/quotas/%s' % (self.uri_prefix, project_id)
         resp, body = self.delete(uri)
         self.expected_success(204, resp.status)
         return service_client.ResponseBody(resp, body)
@@ -382,7 +382,7 @@ class NetworkClientJSON(service_client.RestClient):
         cur_gw_info = body['router']['external_gateway_info']
         if cur_gw_info:
             # TODO(kevinbenton): setting the external gateway info is not
-            # allowed for a regular tenant. If the ability to update is also
+            # allowed for a regular project. If the ability to update is also
             # merged, a test case for this will need to be added similar to
             # the SNAT case.
             cur_gw_info.pop('external_fixed_ips', None)
@@ -734,15 +734,15 @@ class NetworkClientJSON(service_client.RestClient):
         return service_client.ResponseBody(resp, body)
 
     def create_trunk(self, parent_port_id=None, subports=None,
-                     tenant_id=None, name=None, admin_state_up=None,
+                     project_id=None, name=None, admin_state_up=None,
                      description=None, **kwargs):
         uri = '%s/trunks' % self.uri_prefix
         if parent_port_id:
             kwargs['port_id'] = parent_port_id
         if subports is not None:
             kwargs['sub_ports'] = subports
-        if tenant_id is not None:
-            kwargs['tenant_id'] = tenant_id
+        if project_id is not None:
+            kwargs['project_id'] = project_id
         if name is not None:
             kwargs['name'] = name
         if description is not None:

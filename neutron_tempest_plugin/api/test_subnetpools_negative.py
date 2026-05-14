@@ -40,9 +40,9 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('dc9336e5-f28f-4658-a0b0-cc79e607007d')
-    def test_tenant_get_not_shared_admin_subnetpool(self):
+    def test_project_get_not_shared_admin_subnetpool(self):
         created_subnetpool = self._create_subnetpool(is_admin=True)
-        # None-shared admin subnetpool cannot be retrieved by tenant user.
+        # None-shared admin subnetpool cannot be retrieved by project user.
         self.assertRaises(lib_exc.NotFound, self.client.show_subnetpool,
                           created_subnetpool['id'])
 
@@ -55,7 +55,7 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('d1143fe2-212b-4e23-a308-d18f7d8d78d6')
-    def test_tenant_create_shared_subnetpool(self):
+    def test_project_create_shared_subnetpool(self):
         # 'shared' subnetpool can only be created by admin.
         self.assertRaises(lib_exc.Forbidden, self._create_subnetpool,
                           is_admin=False, shared=True)
@@ -63,7 +63,7 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('6ae09d8f-95be-40ed-b1cf-8b850d45bab5')
     @utils.requires_ext(extension='default-subnetpools', service='network')
-    def test_tenant_create_default_subnetpool(self):
+    def test_project_create_default_subnetpool(self):
         # 'default' subnetpool can only be created by admin.
         self.assertRaises(lib_exc.Forbidden, self._create_subnetpool,
                           is_admin=False, is_default=True)
@@ -177,7 +177,7 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
         reason="Test is outdated starting from Ussuri release."
     )
     @utils.requires_ext(extension='address-scope', service='network')
-    def test_tenant_create_subnetpool_associate_shared_address_scope(self):
+    def test_project_create_subnetpool_associate_shared_address_scope(self):
         address_scope = self.create_address_scope(
             name=data_utils.rand_name('smoke-address-scope'), is_admin=True,
             shared=True, ip_version=4)
@@ -241,7 +241,7 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('7438e49e-1351-45d8-937b-892059fb97f5')
     @utils.requires_ext(extension='address-scope', service='network')
-    def test_tenant_update_sp_prefix_associated_with_shared_addr_scope(self):
+    def test_project_update_sp_prefix_associated_with_shared_addr_scope(self):
         address_scope = self.create_address_scope(
             name=data_utils.rand_name('smoke-address-scope'), is_admin=True,
             shared=True, ip_version=4)
@@ -257,8 +257,8 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
         self.assertEqual(addr_scope_id,
                          body['subnetpool']['address_scope_id'])
 
-        # updating the subnetpool prefix by the tenant user should fail
-        # since the tenant is not the owner of address scope
+        # updating the subnetpool prefix by the project user should fail
+        # since the project is not the owner of address scope
         update_prefixes = ['20.0.0.0/18', '30.0.0.0/18', '40.0.0.0/18']
         self.assertRaises(lib_exc.BadRequest, self.client.update_subnetpool,
                           pool_id, prefixes=update_prefixes)
@@ -283,11 +283,11 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('2f66dc2f-cc32-4caa-91ec-0c0cd7c46d70')
-    def test_update_subnetpool_tenant_id(self):
+    def test_update_subnetpool_project_id(self):
         subnetpool = self._create_subnetpool()
         self.assertRaises(
             lib_exc.BadRequest,
             self.admin_client.update_subnetpool,
             subnetpool['id'],
-            tenant_id=self.admin_client.project_id,
+            project_id=self.admin_client.project_id,
         )

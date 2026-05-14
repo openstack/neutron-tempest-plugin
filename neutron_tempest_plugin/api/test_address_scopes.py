@@ -56,7 +56,7 @@ class AddressScopeTestBase(base.BaseAdminNetworkTest):
 class AddressScopeTest(AddressScopeTestBase):
 
     @decorators.idempotent_id('045f9294-8b1a-4848-b6a8-edf1b41e9d06')
-    def test_tenant_create_list_address_scope(self):
+    def test_project_create_list_address_scope(self):
         address_scope = self._create_address_scope(ip_version=4)
         body = self.client.list_address_scopes()
         returned_address_scopes = body['address_scopes']
@@ -90,7 +90,7 @@ class AddressScopeTest(AddressScopeTestBase):
         self.assertEqual(self.client.project_id, show_addr_scope['tenant_id'])
 
     @decorators.idempotent_id('85a259b2-ace6-4e32-9657-a9a392b452aa')
-    def test_tenant_update_address_scope(self):
+    def test_project_update_address_scope(self):
         self._test_update_address_scope_helper()
 
     @decorators.idempotent_id('22b3b600-72a8-4b60-bc94-0f29dd6271df')
@@ -251,6 +251,6 @@ class RbacAddressScopeTest(AddressScopeTestBase):
                 action='access_as_shared',
                 target_tenant=self.client2.project_id)
 
-        # make sure the rbac-policy is invisible to the tenant for which it's
+        # make sure the rbac-policy is invisible to the project for which it's
         # being shared
         self.assertFalse(self.client.list_rbac_policies()['rbac_policies'])

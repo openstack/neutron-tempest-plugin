@@ -110,6 +110,14 @@
     name: neutron-tempest-plugin-openvswitch-ubuntu-jammy-2025-1
     parent: neutron-tempest-plugin-openvswitch-2025-1
     nodeset: neutron-nested-virt-ubuntu-jammy
+    required-projects: &required-projects-2025-1
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 2.12.0
+      - openstack/tempest
+    vars:
+      devstack_localrc:
+        TEMPEST_VENV_UPPER_CONSTRAINTS: '/opt/stack/requirements/upper-constraints.txt'
 
 - job:
     name: neutron-tempest-plugin-openvswitch-iptables_hybrid-2025-1
@@ -184,7 +192,10 @@
     name: neutron-tempest-plugin-ovn-ubuntu-jammy-2025-1
     parent: neutron-tempest-plugin-ovn-2025-1
     nodeset: neutron-nested-virt-ubuntu-jammy
+    required-projects: *required-projects-2025-1
     vars:
+      devstack_localrc:
+        TEMPEST_VENV_UPPER_CONSTRAINTS: '/opt/stack/requirements/upper-constraints.txt'
       # NOTE(ralonsoh): The advance image used "ubuntu-22.04-minimal" has a reported issue (LP#2110520)
       # with the IGMP report messages. Because of that and because ML2/OVN has "igmp_snooping_enable"
       # set, the receiver VM cannot subscribe to the IGMP group nor receive any IGMP message.

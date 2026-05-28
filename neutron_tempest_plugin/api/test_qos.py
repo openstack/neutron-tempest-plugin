@@ -452,7 +452,7 @@ class QosTestJSON(base.BaseAdminNetworkTest):
 
 class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
-    credentials = ['primary', 'admin']
+    credentials = ['primary', 'alt', 'admin']
     direction = None
     required_extensions = [qos_apidef.ALIAS]
 
@@ -468,6 +468,7 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_BANDWIDTH_LIMIT)
     def resource_setup(cls):
         super().resource_setup()
+        cls.client2 = cls.os_alt.network_client
 
     def setUp(self):
         super().setUp()
@@ -589,10 +590,14 @@ class QosBandwidthLimitRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('a4a2e7ad-786f-4927-a85a-e545a93bd274')
     def test_rule_create_forbidden_for_regular_projects(self):
+        policy = self.create_qos_policy(name=self.policy_name,
+                                        description='test policy',
+                                        shared=False,
+                                        project_id=self.client2.project_id)
         self.assertRaises(
             exceptions.Forbidden,
             self.qos_bw_limit_rule_client_primary.create_limit_bandwidth_rule,
-            'policy', **{'max_kbps': 1, 'max_burst_kbps': 2})
+            policy['id'], **{'max_kbps': 1, 'max_burst_kbps': 2})
 
     @decorators.idempotent_id('1bfc55d9-6fd8-4293-ab3a-b1d69bf7cd2e')
     def test_rule_update_forbidden_for_regular_projects_own_policy(self):
@@ -1010,11 +1015,13 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
     VALID_DSCP_MARK2 = 48
 
     required_extensions = [qos_apidef.ALIAS]
+    credentials = ['primary', 'alt', 'admin']
 
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_DSCP_MARKING)
     def resource_setup(cls):
         super().resource_setup()
+        cls.client2 = cls.os_alt.network_client
 
     def setUp(self):
         super().setUp()
@@ -1105,10 +1112,14 @@ class QosDscpMarkingRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('bf6002ea-29de-486f-b65d-08aea6d4c4e2')
     def test_rule_create_forbidden_for_regular_projects(self):
+        policy = self.create_qos_policy(name=self.policy_name,
+                                        description='test policy',
+                                        shared=False,
+                                        project_id=self.client2.project_id)
         self.assertRaises(
             exceptions.Forbidden,
             self.client.create_dscp_marking_rule,
-            'policy', self.VALID_DSCP_MARK1)
+            policy['id'], self.VALID_DSCP_MARK1)
 
     @decorators.idempotent_id('33646b08-4f05-4493-a48a-bde768a18533')
     def test_invalid_rule_create(self):
@@ -1229,11 +1240,13 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
     RULE_NAME = qos_consts.RULE_TYPE_MINIMUM_BANDWIDTH + "_rule"
     RULES_NAME = RULE_NAME + "s"
     required_extensions = [qos_apidef.ALIAS]
+    credentials = ['primary', 'alt', 'admin']
 
     @classmethod
     @base.require_qos_rule_type(qos_consts.RULE_TYPE_MINIMUM_BANDWIDTH)
     def resource_setup(cls):
         super().resource_setup()
+        cls.client2 = cls.os_alt.network_client
 
     @classmethod
     def setup_clients(cls):
@@ -1382,10 +1395,15 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('b4a2e7ad-786f-4927-a85a-e545a93bd274')
     def test_rule_create_forbidden_for_regular_projects(self):
+        policy = self.create_qos_policy(name=self.policy_name,
+                                        description='test policy',
+                                        shared=False,
+                                        project_id=self.client2.project_id)
         self.assertRaises(
             exceptions.Forbidden,
             self.qos_min_bw_rules_client_primary.create_minimum_bandwidth_rule,
-            'policy', **{'direction': self.DIRECTION_EGRESS, 'min_kbps': 300})
+            policy['id'],
+            **{'direction': self.DIRECTION_EGRESS, 'min_kbps': 300})
 
     @decorators.idempotent_id('de0bd0c2-54d9-4e29-85f1-cfb36ac3ebe2')
     def test_get_rules_by_policy(self):
@@ -1416,12 +1434,14 @@ class QosMinimumBandwidthRuleTestJSON(base.BaseAdminNetworkTest):
 
 class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
     required_extensions = [qos_apidef.ALIAS]
+    credentials = ['primary', 'alt', 'admin']
 
     @classmethod
     @utils.requires_ext(service='network',
                         extension='port-resource-request-groups')
     def resource_setup(cls):
         super().resource_setup()
+        cls.client2 = cls.os_alt.network_client
 
     @classmethod
     def setup_clients(cls):
@@ -1605,11 +1625,16 @@ class QosMinimumPpsRuleTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('1a6b6128-3d3e-11ec-bf49-57b326d417c0')
     def test_rule_create_forbidden_for_regular_projects(self):
+        policy = self.create_qos_policy(name=self.policy_name,
+                                        description='test policy',
+                                        shared=False,
+                                        project_id=self.client2.project_id)
         self.assertRaises(
             exceptions.Forbidden,
             self.min_pps_client_primary.create_minimum_packet_rate_rule,
-            'policy', **{qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
-                         qos_consts.MIN_KPPS: 300})
+            policy['id'],
+            **{qos_consts.DIRECTION: n_constants.EGRESS_DIRECTION,
+               qos_consts.MIN_KPPS: 300})
 
     @decorators.idempotent_id('1b94f4e2-3d3e-11ec-bb21-6f98e4044b8b')
     def test_get_rules_by_policy(self):

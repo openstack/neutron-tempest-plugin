@@ -114,7 +114,8 @@
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 2.12.0
-      - openstack/tempest
+      - name: openstack/tempest
+        override-checkout: 46.3.0
     vars:
       devstack_localrc:
         TEMPEST_VENV_UPPER_CONSTRAINTS: '/opt/stack/requirements/upper-constraints.txt'

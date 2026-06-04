@@ -248,7 +248,13 @@
     name: neutron-tempest-plugin-designate-scenario-2024-1
     parent: neutron-tempest-plugin-designate-scenario
     nodeset: neutron-nested-virt-ubuntu-jammy
-    required-projects: *required-projects-2024-1
+    required-projects:
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 2.12.0
+      - name: openstack/designate-tempest-plugin
+        override-checkout: 2024.1-last
+      - openstack/tempest
     vars:
       network_api_extensions_common: *api_extensions
       devstack_localrc:

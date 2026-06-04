@@ -594,6 +594,7 @@
         - vlan-transparent
         - qinq
         - external-gateway-multihoming
+        - pvlan
       devstack_localrc:
         Q_AGENT: ovn
         OVN_AGENT_EXTENSIONS: 'metadata'
@@ -630,6 +631,7 @@
         q-meta: false
         q-metering: false
         q-qos: true
+        neutron-pvlan: true
         # Cinder services
         c-api: false
         c-bak: false

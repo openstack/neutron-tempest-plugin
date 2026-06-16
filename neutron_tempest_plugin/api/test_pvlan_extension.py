@@ -83,19 +83,13 @@ class PVLANExtensionTestJSON(base_pvlan_extension.PVLANExtensionTestBase):
         isolated_port = self.create_port(
             pvlan_net, pvlan_type='isolated')
 
-        self.update_port(
+        updated_port = self.update_port(
             isolated_port,
             pvlan_type='community',
             pvlan_community='community_2')
-        # TODO(neutron): Re-enable PUT body checks after ML2 refreshes the port
-        # dict following PRECOMMIT_UPDATE. Today the PVLAN plugin updates
-        # pvlan_type in that callback, but update_port() builds the response
-        # before PRECOMMIT runs, so the PUT body still shows the old role.
-        # Persistence is validated below via GET (show port).
-        # updated_port = self.update_port(...)
-        # self.assertEqual('community', updated_port['pvlan_type'])
+        self.assertEqual('community', updated_port['pvlan_type'])
         # PUT response returns the updated role.
-        # self.assertEqual('community_2', updated_port['pvlan_community'])
+        self.assertEqual('community_2', updated_port['pvlan_community'])
         # PUT response returns the new community name.
 
         shown_port = self._show_port(isolated_port['id'])

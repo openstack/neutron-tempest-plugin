@@ -58,20 +58,16 @@ class NetworksTestJSON(base.BaseNetworkTest):
     @utils.requires_ext(extension="project-id", service="network")
     def test_show_network_fields_keystone_v3(self):
 
-        def _check_show_network_fields(fields, expect_project_id,
-                                       expect_tenant_id):
+        def _check_show_network_fields(fields):
             params = {}
             if fields:
                 params['fields'] = fields
             body = self.client.show_network(self.network['id'], **params)
             network = body['network']
-            self.assertEqual(expect_project_id, 'project_id' in network)
-            self.assertEqual(expect_tenant_id, 'tenant_id' in network)
+            self.assertIn('project_id', network)
 
-        _check_show_network_fields(None, True, True)
-        _check_show_network_fields(['tenant_id'], False, True)
-        _check_show_network_fields(['project_id'], True, False)
-        _check_show_network_fields(['project_id', 'tenant_id'], True, True)
+        _check_show_network_fields(None)
+        _check_show_network_fields(['project_id'])
 
     @decorators.idempotent_id('0cc0552f-afaf-4231-b7a7-c2a1774616da')
     @utils.requires_ext(extension="project-id", service="network")
@@ -82,7 +78,6 @@ class NetworksTestJSON(base.BaseNetworkTest):
         network = self.create_network(name, project_id=project_id)
         self.assertEqual(name, network['name'])
         self.assertEqual(project_id, network['project_id'])
-        self.assertEqual(project_id, network['tenant_id'])
 
         observed_network = self.client.list_networks(
             id=network['id'])['networks'][0]
@@ -93,7 +88,6 @@ class NetworksTestJSON(base.BaseNetworkTest):
             network['id'], name=new_name)['network']
         self.assertEqual(new_name, updated_network['name'])
         self.assertEqual(project_id, updated_network['project_id'])
-        self.assertEqual(project_id, updated_network['tenant_id'])
 
     @decorators.idempotent_id('94e2a44c-3367-4253-8c2a-22deaf59e96c')
     @utils.requires_ext(extension="dns-integration",
@@ -114,8 +108,7 @@ class NetworksTestJSON(base.BaseNetworkTest):
     @decorators.idempotent_id('a23186b9-aa6f-4b08-b877-35ca3b9cd54c')
     @utils.requires_ext(extension="project-id", service="network")
     def test_list_networks_fields_keystone_v3(self):
-        def _check_list_networks_fields(fields, expect_project_id,
-                                        expect_tenant_id):
+        def _check_list_networks_fields(fields):
             params = {}
             if fields:
                 params['fields'] = fields
@@ -123,13 +116,10 @@ class NetworksTestJSON(base.BaseNetworkTest):
             networks = body['networks']
             self.assertNotEmpty(networks, "Network list returned is empty")
             for network in networks:
-                self.assertEqual(expect_project_id, 'project_id' in network)
-                self.assertEqual(expect_tenant_id, 'tenant_id' in network)
+                self.assertIn('project_id', network)
 
-        _check_list_networks_fields(None, True, True)
-        _check_list_networks_fields(['tenant_id'], False, True)
-        _check_list_networks_fields(['project_id'], True, False)
-        _check_list_networks_fields(['project_id', 'tenant_id'], True, True)
+        _check_list_networks_fields(None)
+        _check_list_networks_fields(['project_id'])
 
 
 # TODO(ihrachys): check that new segment reservation updates mtu, once

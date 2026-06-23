@@ -11,10 +11,8 @@
 #    under the License.
 import testtools
 
-from oslo_utils import uuidutils
 from tempest.common import utils
 from tempest.lib import decorators
-from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin import config
@@ -32,46 +30,11 @@ class NetworksTestAdmin(base.BaseAdminNetworkTest):
                                       client=self.admin_client)
         self.assertEqual(name, network['name'])
         self.assertEqual(project_id, network['project_id'])
-        self.assertEqual(project_id, network['tenant_id'])
 
         observed_network = self.client.list_networks(
             id=network['id'])['networks'][0]
         self.assertEqual(name, observed_network['name'])
         self.assertEqual(project_id, observed_network['project_id'])
-        self.assertEqual(project_id, observed_network['tenant_id'])
-
-    @decorators.idempotent_id('8d21aaca-4364-4eb9-8b79-44b4fff6373b')
-    @utils.requires_ext(extension="project-id", service="network")
-    def test_create_network_with_project_and_tenant(self):
-        project_id = self.client.project_id  # non-admin
-
-        name = 'created-with-project-and-tenant'
-        network = self.create_network(name, project_id=project_id,
-                                      tenant_id=project_id,
-                                      client=self.admin_client)
-        self.assertEqual(name, network['name'])
-        self.assertEqual(project_id, network['project_id'])
-        self.assertEqual(project_id, network['tenant_id'])
-
-        observed_network = self.client.list_networks(
-            id=network['id'])['networks'][0]
-        self.assertEqual(name, observed_network['name'])
-        self.assertEqual(project_id, observed_network['project_id'])
-        self.assertEqual(project_id, observed_network['tenant_id'])
-
-    @decorators.idempotent_id('08b92179-669d-45ee-8233-ef6611190809')
-    @utils.requires_ext(extension="project-id", service="network")
-    def test_create_network_with_project_and_other_tenant(self):
-        project_id = self.client.project_id  # non-admin
-        other_tenant = uuidutils.generate_uuid()
-
-        name = 'created-with-project-and-other-tenant'
-        e = self.assertRaises(lib_exc.BadRequest,
-                              self.create_network, name,
-                              project_id=project_id, tenant_id=other_tenant,
-                              client=self.admin_client)
-        expected_message = "'project_id' and 'tenant_id' do not match"
-        self.assertEqual(expected_message, e.resp_body['message'])
 
     @decorators.idempotent_id('571d0dde-0f84-11e7-b565-fa163e4fa634')
     @testtools.skipUnless("vxlan" in config.CONF.neutron_plugin_options.

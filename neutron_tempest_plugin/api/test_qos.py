@@ -810,7 +810,6 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
         qos_pol['shared'] = True
         self.client2.show_qos_policy(qos_pol['id'])
         rbac_pol = {'target_tenant': '*',
-                    'tenant_id': self.admin_client.project_id,
                     'project_id': self.admin_client.project_id,
                     'object_type': 'qos_policy',
                     'object_id': qos_pol['id'],
@@ -818,6 +817,8 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
 
         rbac_policies = self.admin_client.list_rbac_policies()['rbac_policies']
         rbac_policies = [r for r in rbac_policies if r.pop('id')]
+        # TODO(haleyb) remove this code when tenant_id removed
+        [r.pop('tenant_id', None) for r in rbac_policies]
         self.assertIn(rbac_pol, rbac_policies)
 
         # update shared True -> False should fail because the policy is bound
@@ -958,7 +959,12 @@ class RbacSharedQosPoliciesTest(base.BaseAdminNetworkTest):
                       ('project_id', 'target_tenant'))
         for fields in field_args:
             res = self.admin_client.list_rbac_policies(fields=fields)
-            self.assertEqual(set(fields), set(res['rbac_policies'][0].keys()))
+            # NOTE(haleyb) restore original code when tenant_id removed
+            rkeys = set(res['rbac_policies'][0].keys())
+            rkeys.discard('tenant_id')
+            self.assertEqual(set(fields), rkeys)
+            # self.assertEqual(set(fields),
+            #     set(res['rbac_policies'][0].keys()))
 
     @decorators.idempotent_id('c10d993a-a350-11e5-9c7a-54ee756c66df')
     def test_rbac_policy_show(self):

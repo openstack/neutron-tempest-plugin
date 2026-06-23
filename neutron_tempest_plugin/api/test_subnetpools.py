@@ -144,9 +144,7 @@ class SubnetPoolsTest(SubnetPoolsTestBase):
         body = self.client.show_subnetpool(subnetpool['id'])
         show_subnetpool = body['subnetpool']
         self.assertIn('project_id', show_subnetpool)
-        self.assertIn('tenant_id', show_subnetpool)
         self.assertEqual(self.client.project_id, show_subnetpool['project_id'])
-        self.assertEqual(self.client.project_id, show_subnetpool['tenant_id'])
 
     @decorators.idempotent_id('764f1b93-1c4a-4513-9e7b-6c2fc5e9270c')
     def test_project_update_subnetpool(self):

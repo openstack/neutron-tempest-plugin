@@ -85,9 +85,7 @@ class AddressScopeTest(AddressScopeTestBase):
         body = self.client.show_address_scope(address_scope['id'])
         show_addr_scope = body['address_scope']
         self.assertIn('project_id', show_addr_scope)
-        self.assertIn('tenant_id', show_addr_scope)
         self.assertEqual(self.client.project_id, show_addr_scope['project_id'])
-        self.assertEqual(self.client.project_id, show_addr_scope['tenant_id'])
 
     @decorators.idempotent_id('85a259b2-ace6-4e32-9657-a9a392b452aa')
     def test_project_update_address_scope(self):
@@ -203,7 +201,12 @@ class RbacAddressScopeTest(AddressScopeTestBase):
                       ('project_id', 'target_tenant'))
         for fields in field_args:
             res = self.admin_client.list_rbac_policies(fields=fields)
-            self.assertEqual(set(fields), set(res['rbac_policies'][0].keys()))
+            # TODO(haleyb) restore original code when tenant_id removed
+            rkeys = set(res['rbac_policies'][0].keys())
+            rkeys.discard('tenant_id')
+            self.assertEqual(set(fields), rkeys)
+            # self.assertEqual(set(fields),
+            #     set(res['rbac_policies'][0].keys()))
 
     @decorators.idempotent_id('19cbd62e-c6c3-4495-98b9-b9c6c6c9c127')
     def test_rbac_policy_show(self):

@@ -571,8 +571,8 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
     @test.unstable_test("bug 1897408")
     @decorators.idempotent_id('f762e6ac-920e-4d0f-aa67-02bdd4ab8433')
     @utils.services('compute', 'network')
-    def test_bgpvpn_tenant_separation_and_local_connectivity(self):
-        """This test checks tenant separation for BGPVPN.
+    def test_bgpvpn_project_separation_and_local_connectivity(self):
+        """This test checks project separation for BGPVPN.
 
         1. Create networks A with subnet S1 and S2
         2. Create networks A-Bis with subnet S1 and S2 (like for network A)
@@ -1151,16 +1151,16 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
                                  namestart='subnet-smoke', **kwargs):
         if not subnets_client:
             subnets_client = self.subnets_client
-        tenant_cidr = kwargs.get('cidr')
+        project_cidr = kwargs.get('cidr')
         subnet = dict(
             name=data_utils.rand_name(namestart),
             network_id=network['id'],
-            tenant_id=network['tenant_id'],
+            project_id=network['project_id'],
             **kwargs)
         result = subnets_client.create_subnet(**subnet)
-        self.assertIsNotNone(result, 'Unable to allocate tenant network')
+        self.assertIsNotNone(result, 'Unable to allocate project network')
         subnet = result['subnet']
-        self.assertEqual(subnet['cidr'], tenant_cidr)
+        self.assertEqual(subnet['cidr'], project_cidr)
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,
                         subnets_client.delete_subnet, subnet['id'])
         return subnet
@@ -1254,7 +1254,7 @@ class TestBGPVPNBasic(base.BaseBgpvpnTest, manager.NetworkScenarioTest):
         export_rts = export_rts or []
         self.bgpvpn = self.create_bgpvpn(
             self.bgpvpn_admin_client,
-            tenant_id=self.bgpvpn_admin_client.project_id,
+            project_id=self.bgpvpn_admin_client.project_id,
             name=name, route_targets=rts, export_targets=export_rts,
             import_targets=import_rts)
         return self.bgpvpn

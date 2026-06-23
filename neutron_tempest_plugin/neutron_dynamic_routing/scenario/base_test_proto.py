@@ -44,7 +44,7 @@ class BgpSpeakerProtoTestBase(base.BgpSpeakerScenarioTestJSONBase):
         self.check_remote_as_state(self.dr, self.r_ass[0],
                                    ctn_base.BGP_FSM_ESTABLISHED)
 
-    def _test_check_advertised_tenant_network(self, ip_version):
+    def _test_check_advertised_project_network(self, ip_version):
         self.bgp_peer_args[0]['peer_ip'] = self.r_as_ip[0].split('/')[0]
         num, subnet = next(self.tnet_gen)
         mask = '/' + str(self.TPool.prefixlen)
@@ -67,7 +67,7 @@ class BgpSpeakerProtoTestBase(base.BgpSpeakerScenarioTestJSONBase):
                                  'nexthop',
                                  self.get_next_hop(speaker_id, TNet.cidr))
 
-    def _test_check_advertised_multiple_tenant_network(self, ip_version):
+    def _test_check_advertised_multiple_project_network(self, ip_version):
         self.bgp_peer_args[0]['peer_ip'] = self.r_as_ip[0].split('/')[0]
         tnets = []
         tnets_cidr = []
@@ -118,7 +118,7 @@ class BgpSpeakerProtoTestBase(base.BgpSpeakerScenarioTestJSONBase):
         self.check_multi_remote_as_state(self.dr, self.r_ass,
                                          ctn_base.BGP_FSM_ESTABLISHED)
 
-    def _test_check_advertised_tenant_network_with_multiple_peers(
+    def _test_check_advertised_project_network_with_multiple_peers(
             self, ip_version):
         for (bgp_peer_args, r_as_ip) in zip(self.bgp_peer_args,
                                             self.r_as_ip):

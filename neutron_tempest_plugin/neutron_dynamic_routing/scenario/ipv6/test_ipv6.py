@@ -38,7 +38,7 @@ class BgpSpeakerIpv6Test(test_base.BgpSpeakerProtoTestBase):
     PPool = base.Pool(name='test-pool-ext', prefixlen=PNet.mask,
                       prefixes=[PNet.net + '/8'])
     PSubNet = base.SubNet(name='', cidr=PNet.cidr, mask=PNet.mask)
-    TPool = base.Pool(name='tenant-test-pool', prefixlen=64,
+    TPool = base.Pool(name='project-test-pool', prefixlen=64,
                       prefixes=['2001:db8:8000::/48'])
     L_AS = base.AS(asn='64512', router_id='192.168.0.2', adv_net='')
     ras_l = [
@@ -115,12 +115,12 @@ class BgpSpeakerIpv6Test(test_base.BgpSpeakerProtoTestBase):
         self._test_check_neighbor_established(self.ip_version)
 
     @decorators.idempotent_id('6a3483fc-8c8a-4387-bda6-c7061410e04b')
-    def test_check_advertised_tenant_network(self):
-        self._test_check_advertised_tenant_network(self.ip_version)
+    def test_check_advertised_project_network(self):
+        self._test_check_advertised_project_network(self.ip_version)
 
     @decorators.idempotent_id('aca5d678-c249-4de5-921b-6b6ba621e4f7')
-    def test_check_advertised_multiple_tenant_network(self):
-        self._test_check_advertised_multiple_tenant_network(self.ip_version)
+    def test_check_advertised_multiple_project_network(self):
+        self._test_check_advertised_multiple_project_network(self.ip_version)
 
     @decorators.idempotent_id('f81012f3-2f7e-4b3c-8c1d-b1778146d712')
     def test_check_neighbor_established_with_multiple_peers(self):
@@ -128,6 +128,6 @@ class BgpSpeakerIpv6Test(test_base.BgpSpeakerProtoTestBase):
             self.ip_version)
 
     @decorators.idempotent_id('be710ec1-a338-44c9-8b89-31c3532aae65')
-    def test_check_advertised_tenant_network_with_multiple_peers(self):
-        self._test_check_advertised_tenant_network_with_multiple_peers(
+    def test_check_advertised_project_network_with_multiple_peers(self):
+        self._test_check_advertised_project_network_with_multiple_peers(
             self.ip_version)

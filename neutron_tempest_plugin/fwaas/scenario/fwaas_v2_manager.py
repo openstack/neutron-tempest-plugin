@@ -52,16 +52,16 @@ class NetworkScenarioTest(ScenarioTest):
         if not CONF.service_available.neutron:
             raise cls.skipException('Neutron not available')
 
-    def _create_router(self, client=None, tenant_id=None,
+    def _create_router(self, client=None, project_id=None,
                        namestart='router-smoke'):
         if not client:
             client = self.routers_client
-        if not tenant_id:
-            tenant_id = client.project_id
+        if not project_id:
+            project_id = client.project_id
         name = data_utils.rand_name(namestart)
         result = client.create_router(name=name,
                                       admin_state_up=True,
-                                      tenant_id=tenant_id)
+                                      project_id=project_id)
         router = result['router']
         self.assertEqual(router['name'], name)
         self.addCleanup(test_utils.call_and_ignore_notfound_exc,

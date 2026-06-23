@@ -322,7 +322,12 @@ class RBACSharedNetworksTest(base.BaseAdminNetworkTest):
                       ('project_id', 'target_tenant'))
         for fields in field_args:
             res = self.client.list_rbac_policies(fields=fields)
-            self.assertEqual(set(fields), set(res['rbac_policies'][0].keys()))
+            # TODO(haleyb) restore original code when tenant_id removed
+            rkeys = set(res['rbac_policies'][0].keys())
+            rkeys.discard('tenant_id')
+            self.assertEqual(set(fields), rkeys)
+            # self.assertEqual(set(fields),
+            #     set(res['rbac_policies'][0].keys()))
 
     @decorators.idempotent_id('86c3529b-1231-40de-803c-afffffff5fff')
     def test_policy_show(self):

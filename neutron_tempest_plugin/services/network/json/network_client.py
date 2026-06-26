@@ -398,7 +398,8 @@ class NetworkClientJSON(service_client.RestClient):
             update_body['routes'] = kwargs['routes']
         if 'enable_ndp_proxy' in kwargs:
             update_body['enable_ndp_proxy'] = kwargs['enable_ndp_proxy']
-        for attr in ('enable_default_route_bfd', 'enable_default_route_ecmp'):
+        for attr in ('enable_default_route_bfd', 'enable_default_route_ecmp',
+                     'evpn_vni'):
             if attr in kwargs:
                 update_body[attr] = kwargs[attr]
         update_body = dict(router=update_body)

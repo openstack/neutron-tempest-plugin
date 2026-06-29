@@ -152,7 +152,8 @@ function customize_image {
     install_customize_image_tools
     (
         export TEMP_DIR DISK_FORMAT RC_DIR
-        if [[ "$(basename ${image_file})" == ubuntu-* ]]; then
+        # noble, resolute images not prefixed with ubuntu-
+        if [[ "$(basename ${image_file})" == *-cloudimg-* ]]; then
             "${top_dir}/tools/customize_ubuntu_image" "${image_file}"
         fi
     )

@@ -14,6 +14,7 @@
 #    under the License.
 
 import os
+import random
 import subprocess
 import time
 import typing
@@ -39,26 +40,49 @@ from tempest.lib import exceptions as lib_exc
 
 CONF = config.CONF
 LOG = log.getLogger(__name__)
-FRR_BASE_IMAGE = 'quay.io/nf-core/ubuntu:22.04'
+FRR_BASE_IMAGES = [
+    'quay.io/nf-core/ubuntu:22.04',
+    'docker.io/library/ubuntu:22.04',
+    'public.ecr.aws/ubuntu/ubuntu:22.04',
+    'mirror.gcr.io/library/ubuntu:22.04',
+    'mcr.microsoft.com/mirror/docker/library/ubuntu:22.04',
+]
 
 
 class FRROCIImage(ctn_base.DockerImage):
     def __init__(
         self,
         daemons: tuple[str, str],
-        baseimage: str | None = None,
         use_existing: bool = False,
     ):
-        super().__init__(baseimage=baseimage or FRR_BASE_IMAGE)
+        super().__init__(baseimage=FRR_BASE_IMAGES[0])
         self.daemons = daemons
         self.tagname = 'frr-' + '-'.join(daemons)
+        self._base_images = list(FRR_BASE_IMAGES)
+        random.shuffle(self._base_images)
         if use_existing and self.exist(self.tagname):
             return
 
+        self._build_image()
+
+    def _build_image(self):
         workdir = os.path.join(ctn_base.TEST_BASE_DIR, self.tagname)
+        for baseimage in self._base_images:
+            try:
+                self._write_dockerfile_and_build(baseimage, workdir)
+                return
+            except ctn_base.CommandError:
+                LOG.warning("Failed to build image with base '%s', "
+                            "trying next mirror.", baseimage)
+        raise ctn_base.CommandError(
+            "All base image mirrors failed for '%s'" % self.tagname)
+
+    def _write_dockerfile_and_build(self, baseimage, workdir):
+        self.cmd.sudo(f'rm -rf {workdir}')
+        self.cmd.execute(f'mkdir -p {workdir}')
         pkgs = ' '.join(('telnet', 'tcpdump', 'frr'))
         c = ctn_base.CmdBuffer()
-        c << f'FROM {self.baseimage}'
+        c << f'FROM {baseimage}'
         c << 'RUN apt-get update'
         c << f'RUN apt-get install -qy --no-install-recommends {pkgs}'
         c << 'RUN echo "#!/bin/sh" > /frr'
@@ -72,8 +96,6 @@ class FRROCIImage(ctn_base.DockerImage):
         c << 'RUN chmod +x /frr'
         c << 'CMD /frr'
 
-        self.cmd.sudo(f'rm -rf {workdir}')
-        self.cmd.execute(f'mkdir -p {workdir}')
         self.cmd.execute(f"echo '{str(c)}' > {workdir}/Dockerfile")
         self.build(self.tagname, workdir)
 

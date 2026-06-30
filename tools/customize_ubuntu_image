@@ -75,6 +75,11 @@ function chroot_image {
               sudo sed -i "/URIs:/a Trusted: yes" ${mount_dir}/etc/apt/sources.list.d/ubuntu.sources
           elif sudo test -f ${mount_dir}/etc/apt/sources.list; then
               source <(sudo cat ${mount_dir}/etc/os-release)
+              # Ubuntu 26.04 move to rust-coreutils has some issues with tee command
+              # as content is getting malformed when being written in chroot mounted file
+              # so empty the file before writing content
+              # https://computingforgeeks.com/ubuntu-2604-rust-coreutils-guide/
+              sudo truncate -s 0 ${mount_dir}/etc/apt/sources.list
               sudo tee ${mount_dir}/etc/apt/sources.list <<EOF
               deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME} main universe
               deb [ trusted=yes ] https://${mirror}/ubuntu ${UBUNTU_CODENAME}-updates main universe

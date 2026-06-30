@@ -1534,8 +1534,6 @@
             taas:
               provider_physical_network: public
               provider_segmentation_id: 100
-            image_feature_enabled:
-              api_v2: true
       devstack_plugins:
         tap-as-a-service: git://opendev.org/openstack/tap-as-a-service.git
       devstack_services:
@@ -1643,8 +1641,6 @@
             taas:
               provider_physical_network: public
               provider_segmentation_id: 100
-            image_feature_enabled:
-              api_v2: true
       devstack_plugins:
         tap-as-a-service: git://opendev.org/openstack/tap-as-a-service.git
       devstack_services:

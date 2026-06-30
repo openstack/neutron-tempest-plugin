@@ -431,7 +431,7 @@
     parent: neutron-tempest-plugin-ovn
     vars:
       devstack_localrc:
-        NEUTRON_ENFORCE_SCOPE: false
+        NEUTRON_ENFORCE_NEW_DEFAULTS: false
 
 - job:
     name: neutron-tempest-plugin-openvswitch-distributed-dhcp

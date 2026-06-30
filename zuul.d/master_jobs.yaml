@@ -1086,7 +1086,6 @@
       tempest_test_regex: ^neutron_tempest_plugin\.sfc
       devstack_plugins:
         networking-sfc: https://opendev.org/openstack/networking-sfc
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin
       network_api_extensions_sfc:
         - flow_classifier
         - sfc
@@ -1225,7 +1224,6 @@
     vars:
       devstack_plugins:
         neutron-dynamic-routing: https://opendev.org/openstack/neutron-dynamic-routing
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin
       network_api_extensions_bgp:
         - bgp
         - bgp_dragent_scheduler
@@ -1371,7 +1369,6 @@
       tempest_test_regex: ^neutron_tempest_plugin\.vpnaas
       devstack_plugins:
         neutron-vpnaas: https://opendev.org/openstack/neutron-vpnaas.git
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
       network_api_extensions_common: *api_extensions
       network_api_extensions_vpnaas:
         - vpnaas
@@ -1444,7 +1441,6 @@
       tempest_test_regex: ^neutron_tempest_plugin\.vpnaas
       devstack_plugins:
         neutron-vpnaas: https://opendev.org/openstack/neutron-vpnaas.git
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
       network_api_extensions_common: *api_extensions
       network_api_extensions_vpnaas:
         - vpnaas
@@ -1541,8 +1537,6 @@
             image_feature_enabled:
               api_v2: true
       devstack_plugins:
-        neutron: git://opendev.org/openstack/neutron.git
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
         tap-as-a-service: git://opendev.org/openstack/tap-as-a-service.git
       devstack_services:
         # Disable OVN services
@@ -1652,8 +1646,6 @@
             image_feature_enabled:
               api_v2: true
       devstack_plugins:
-        neutron: git://opendev.org/openstack/neutron.git
-        neutron-tempest-plugin: https://opendev.org/openstack/neutron-tempest-plugin.git
         tap-as-a-service: git://opendev.org/openstack/tap-as-a-service.git
       devstack_services:
         tap_mirror: true

@@ -1,0 +1,7 @@
+---
+fixes:
+  - |
+    The ``FRROCIImage`` class used in the multiple gateways scenario tests
+    now tries multiple Ubuntu 22.04 base image mirrors in randomized order
+    when building the FRR container image. This improves reliability in CI
+    environments where a single registry may be temporarily unavailable.

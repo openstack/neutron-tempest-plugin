@@ -151,6 +151,7 @@ class IPv6Test(base.BaseTempestTestCase):
         ipv6_address = ipv6_port['fixed_ips'][0]['ip_address']
         ip_command = ip.IPCommand(ssh_client)
         nic = ip_command.get_nic_name_by_mac(ipv6_port['mac_address'])
+        _tentative_count = [0]
 
         def guest_has_address(expected_address):
             ip_addresses = [a.address for a in ip_command.list_addresses()]
@@ -163,9 +164,25 @@ class IPv6Test(base.BaseTempestTestCase):
             # ipv6 is not configured, adding nic restart if dad failure is
             # detected to workaround this
             if ip_command.has_dadfailed(nic):
-                LOG.debug('DAD failure detected on %s, restarting', nic)
+                LOG.debug('DAD failure detected on %s, disabling DAD and '
+                          'restarting', nic)
+                ip_command.disable_dad(nic)
                 ip_command.set_link(nic, "down")
                 ip_command.set_link(nic, "up")
+            elif ip_command.has_tentative(nic):
+                _tentative_count[0] += 1
+                if _tentative_count[0] >= 3:
+                    LOG.debug('DAD stuck in tentative on %s for %d polls, '
+                              'disabling DAD and restarting',
+                              nic, _tentative_count[0])
+                    ip_command.disable_dad(nic)
+                    ip_command.set_link(nic, "down")
+                    ip_command.set_link(nic, "up")
+                    _tentative_count[0] = 0
+                else:
+                    LOG.debug('DAD in tentative on %s (poll %d), waiting',
+                              nic, _tentative_count[0])
+
             return False
         # Set NIC with IPv6 to be UP and wait until IPv6 address
         # will be configured on this NIC
@@ -175,7 +192,8 @@ class IPv6Test(base.BaseTempestTestCase):
         try:
             utils.wait_until_true(
                 lambda: guest_has_address(ipv6_address),
-                timeout=60)
+                timeout=60,
+                sleep=3)
         except utils.WaitTimeout:
             LOG.debug('Timeout without NM configuration')
         except (lib_exc.SSHTimeout,

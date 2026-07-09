@@ -210,7 +210,7 @@
       - ^plugin.spec$
       - ^neutron/agent/.*$
       - ^neutron/privileged/.*$
-      - ^neutron_lib/tests/unit/.*$
+      - ^neutron_lib/tests/.*$
       - ^neutron_tempest_plugin/scenario/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
@@ -306,6 +306,7 @@
       - ^neutron/services/trunk/drivers/ovn/.*$
       - ^neutron/cmd/ovn/.*$
       - ^neutron/common/ovn/.*$
+      - ^neutron_lib/tests/.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -719,6 +720,7 @@
       - ^neutron/services/qos/drivers/openvswitch/.*$
       - ^neutron/services/trunk/drivers/openvswitch/.*$
       - ^neutron/scheduler/.*$
+      - ^neutron_lib/tests/.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
@@ -1027,6 +1029,7 @@
       - ^neutron/privileged/.*$
       - ^neutron/plugins/ml2/drivers/.*$
       - ^neutron/scheduler/.*$
+      - ^neutron_lib/tests/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$

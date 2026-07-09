@@ -189,6 +189,24 @@ class IPCommand:
         output = self.execute('address', 'show', 'dev', device)
         return 'dadfailed' in output
 
+    def has_tentative(self, device):
+        """Check if device has any IPv6 addresses in tentative state"""
+        output = self.execute('address', 'show', 'dev', device)
+        return 'tentative' in output
+
+    def disable_dad(self, device):
+        """Disable DAD on a device by setting dad_transmits to 0
+
+        When DAD fails (LP#2069718), setting dad_transmits=0 tells the
+        kernel to skip DAD entirely so the link-local address goes
+        straight to valid state and RA processing / SLAAC can proceed.
+        """
+        cmd = ("{sudo} sh -c 'echo 0 > "
+               "/proc/sys/net/ipv6/conf/{dev}/dad_transmits'").format(
+            sudo=self.sudo, dev=device)
+        shell.execute(cmd, ssh_client=self.ssh_client,
+                      timeout=self.timeout)
+
 
 def parse_addresses(command_output):
     address = device = None

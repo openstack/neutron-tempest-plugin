@@ -156,6 +156,9 @@ NeutronPluginOptions = [
     cfg.BoolOpt('bgp_schedule_speakers_to_agents',
                 default=False,
                 help='Schedule BGP speakers to agents explicitly.'),
+    cfg.IntOpt('evpn_vni',
+               default=1,
+               help='VNI to use when creating EVPN routers in tests.'),
 ]
 neutron_group = cfg.OptGroup(name="neutron_plugin_options",
                              title="Neutron Plugin Options")

@@ -426,12 +426,13 @@ class NetworkClientJSON(service_client.RestClient):
         """
         return self._update_router(router_id, set_enable_snat=True, **kwargs)
 
-    def add_router_interface_with_subnet_id(self, router_id, subnet_id):
+    def add_router_interface_with_subnet_id(self, router_id, subnet_id,
+                                            **kwargs):
         uri = '%s/routers/%s/add_router_interface' % (self.uri_prefix,
                                                       router_id)
         update_body = {"subnet_id": subnet_id}
-        update_body = jsonutils.dumps(update_body)
-        resp, body = self.put(uri, update_body)
+        update_body.update(kwargs)
+        resp, body = self.put(uri, jsonutils.dumps(update_body))
         self.expected_success(200, resp.status)
         body = jsonutils.loads(body)
         return service_client.ResponseBody(resp, body)

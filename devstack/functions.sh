@@ -35,8 +35,7 @@ function save_function {
 function configure_advanced_image {
     local advanced_image_uuid
 
-    if ! is_service_enabled glance; then
-        # if glance is not enabled, there is no image for to configure
+    if ! openstack service show glance &>/dev/null; then
         return 0
     fi
 
@@ -66,8 +65,7 @@ function configure_advanced_image {
 function configure_flavor_for_advanced_image {
     local flavor_ref
 
-    if ! is_service_enabled nova; then
-        # if nova is not enabled, there is no flavor to configure
+    if ! openstack service show nova &>/dev/null; then
         return 0
     fi
 

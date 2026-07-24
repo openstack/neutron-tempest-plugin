@@ -159,6 +159,45 @@ NeutronPluginOptions = [
     cfg.IntOpt('evpn_vni',
                default=1,
                help='VNI to use when creating EVPN routers in tests.'),
+    cfg.StrOpt('evpn_vtep_ip',
+               default=None,
+               help='VTEP IP for dynamic VNI provisioning. When set, '
+                    'tests allocate VNIs dynamically instead of using '
+                    'the static evpn_vni value.'),
+    cfg.StrOpt('evpn_vtep_host',
+               default=None,
+               help='SSH host for the VTEP node. When set, VNI '
+                    'provisioning commands are executed remotely via '
+                    'SSH instead of locally.'),
+    cfg.StrOpt('evpn_vtep_username',
+               default=None,
+               help='SSH username for the VTEP host.'),
+    cfg.StrOpt('evpn_vtep_keyfile',
+               default=None,
+               help='SSH private key file for the VTEP host.'),
+    cfg.IntOpt('evpn_vxlan_port',
+               default=4789,
+               help='VXLAN UDP port for EVPN tunnels.'),
+    cfg.IntOpt('evpn_asn',
+               default=65000,
+               help='BGP ASN for the frr instance.'),
+    cfg.IntOpt('evpn_peer_asn',
+               default=64999,
+               help='BGP ASN of the compute nodes '
+                    '(for route-target import).'),
+    cfg.StrOpt('evpn_datapath_ip',
+               default=None,
+               help='Datapath IP added to EVPN bridges for '
+                    'VTEP discovery.'),
+    # The EVPN API tests (test_evpn.py, test_evpn_negative.py) use
+    # hardcoded VNI values up to 501. The dynamic range must start
+    # above those to avoid conflicts when tests run in parallel.
+    cfg.IntOpt('evpn_vni_range_start',
+               default=1000,
+               help='Start of VNI range for dynamic allocation.'),
+    cfg.IntOpt('evpn_vni_range_end',
+               default=1100,
+               help='End of VNI range for dynamic allocation.'),
 ]
 neutron_group = cfg.OptGroup(name="neutron_plugin_options",
                              title="Neutron Plugin Options")

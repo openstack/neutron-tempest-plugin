@@ -110,15 +110,57 @@ class MetadataTest(base.BaseTempestTestCase):
                                   **params)['server']
 
     def _get_metadata_query_script(self):
-        sheebang_line = '\n#!/bin/bash -x'
-        curl_cmd = '\ncurl http://[%(address)s' % {'address':
-                                                   nlib_const.METADATA_V6_IP}
-        ip_cmd = ("%25$(ip -6 -br address show scope link up | head -1 | "
-                  "cut -d ' ' -f1)]/openstack/")
-        echo_cmd = '\necho %s' % QUERY_MSG
-        script = '%s%s%s%s' % (sheebang_line, curl_cmd, ip_cmd, echo_cmd)
-        script_clean = textwrap.dedent(script).lstrip().encode('utf8')
-        script_b64 = base64.b64encode(script_clean)
+        metadata_url = ('http://[%s%%25$(ip -6 -br address show scope link '
+                        'up | head -1 | cut -d \' \' -f1)]/openstack/'
+                        % nlib_const.METADATA_V6_IP)
+        script = textwrap.dedent('''\
+            #!/bin/bash -x
+            ip -6 addr show
+            ip -6 route show
+            # 30 seconds loop to check for DAD issues.
+            dad_end=$(($(date +%%s) + 30))
+            while [ $(date +%%s) -lt $dad_end ]; do
+                iface=$(ip -6 -br address show scope link up | head -1 | \
+                    cut -d ' ' -f1)
+                if [ -z "$iface" ]; then
+                    iface=$(ip -o link show | awk -F': ' '{print $2}' | \
+                        grep -v lo | head -1)
+                fi
+                if [ -n "$iface" ]; then
+                    if ip -6 addr show dev "$iface" scope link 2>/dev/null | \
+                            grep -qE 'tentative|dadfailed' || \
+                            dmesg | grep -qi \
+                                "duplicate address.*${iface}"; then
+                        echo "DAD issue on ${iface}, bouncing interface"
+                        ip link set "$iface" down
+                        sleep 1
+                        ip link set "$iface" up
+                    fi
+                fi
+                sleep 5
+            done
+            # 15 seconds loop to retrieve the metadata.
+            end=$(($(date +%%s) + 15))
+            while [ $(date +%%s) -lt $end ]; do
+                output=$(curl -s -o /dev/stdout -w "\\n%%{http_code}" \
+            "%(url)s" 2>&1)
+                rc=$?
+                if [ $rc -eq 0 ]; then
+                    http_code=$(echo "$output" | tail -1)
+                    if [ "$http_code" = "200" ]; then
+                        echo "$output" | head -n -1
+                        echo %(msg)s
+                        dmesg | grep -i -E "ipv6|dad|link|eth|ens"
+                        exit 0
+                    fi
+                fi
+                sleep 2
+            done
+            echo "ERROR: curl failed after 30s (rc=$rc, output=$output)"
+            echo %(msg)s
+            dmesg | grep -i -E "ipv6|dad|link|eth|ens"
+        ''') % {'url': metadata_url, 'msg': QUERY_MSG}
+        script_b64 = base64.b64encode(script.lstrip().encode('utf8'))
         return {'user_data': script_b64}
 
     def _wait_for_metadata_query_msg(self, vm):

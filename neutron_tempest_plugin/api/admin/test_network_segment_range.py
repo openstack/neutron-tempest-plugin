@@ -126,7 +126,6 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
                          updated_network_segment_range['maximum'])
 
     @decorators.idempotent_id('5e118fef-a139-4886-8250-07e73d2cbe7a')
-    @decorators.skip_because(bug='2161678')
     def test_update_network_segment_range_failed_with_existing_range_impacted(
             self):
         # Creates a network segment range
@@ -138,13 +137,44 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
             name, client=self.admin_client, project_id=project_id,
             provider_network_type=NETWORK_TYPE)
         # Updates a network segment range
+        # specifically using a value that excludes the current existing network
+        updated_minimum = network['provider:segmentation_id'] + 1
         updated_maximum = TEST_SEGMENT_RANGE_MAXIMUM_ID + 50
         self.assertRaises(lib_exc.Conflict,
                           self.admin_client.update_network_segment_range,
                           network_segment_range['id'],
                           name='new-range-name',
-                          minimum=network['provider:segmentation_id'],
+                          minimum=updated_minimum,
                           maximum=updated_maximum)
+        # network needs to be deleted otherwise the range deletion will fail
+        # because the segment is in use (assigned to the network created)
+        self.admin_client.delete_network(network['id'])
+
+    @decorators.idempotent_id('f9aa93be-1101-40b1-bbfa-a1a064e9ed43')
+    def test_update_network_segment_range_with_existing_range_minimum(
+            self):
+        # Creates a network segment range
+        network_segment_range = self._create_network_segment_range()
+        project_id = network_segment_range['project_id']
+        # Creates a network
+        name = data_utils.rand_name('test_network_for_' + project_id)
+        network = self.create_network(
+            name, client=self.admin_client, project_id=project_id,
+            provider_network_type=NETWORK_TYPE)
+        # Updates a network segment range
+        # Use the current network as the minimum value
+        updated_minimum = network['provider:segmentation_id']
+        updated_maximum = TEST_SEGMENT_RANGE_MAXIMUM_ID + 50
+        body = self.admin_client.update_network_segment_range(
+            network_segment_range['id'], name='new-range-name',
+            minimum=updated_minimum, maximum=updated_maximum)
+        updated_network_segment_range = body['network_segment_range']
+        self.assertEqual('new-range-name',
+                         updated_network_segment_range['name'])
+        self.assertEqual(updated_minimum,
+                         updated_network_segment_range['minimum'])
+        self.assertEqual(updated_maximum,
+                         updated_network_segment_range['maximum'])
         # network needs to be deleted otherwise the range deletion will fail
         # because the segment is in use (assigned to the network created)
         self.admin_client.delete_network(network['id'])

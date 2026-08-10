@@ -126,6 +126,7 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
                          updated_network_segment_range['maximum'])
 
     @decorators.idempotent_id('5e118fef-a139-4886-8250-07e73d2cbe7a')
+    @decorators.skip_because(bug='2161678')
     def test_update_network_segment_range_failed_with_existing_range_impacted(
             self):
         # Creates a network segment range

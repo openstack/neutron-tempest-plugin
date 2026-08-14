@@ -15,12 +15,12 @@ from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 import testtools
 
-from neutron_tempest_plugin.api import base_routers as base
+from neutron_tempest_plugin.api import base
 
 VNI_MAX = 2**24 - 1
 
 
-class RoutersEvpnNegativeTest(base.BaseRouterTest):
+class RoutersEvpnNegativeTest(base.BaseAdminNetworkTest):
     # VNIs used in this class must not overlap with RoutersEvpnTest
     # because tempest may run both classes in parallel.
     required_extensions = ['router', 'evpn']
@@ -72,7 +72,7 @@ class RoutersEvpnNegativeTest(base.BaseRouterTest):
     @decorators.idempotent_id('b2c3d4e5-7f6a-9b8c-4d5e-2f1a0b9c8d7e')
     def test_update_router_evpn_vni_not_allowed(self):
         name = data_utils.rand_name('evpn-router')
-        router = self._create_admin_router(name, evpn_vni=100)
+        router = self.create_admin_router(name, evpn_vni=100)
         self.assertRaises(
             lib_exc.BadRequest,
             self.admin_client.update_router,
@@ -83,9 +83,9 @@ class RoutersEvpnNegativeTest(base.BaseRouterTest):
     def test_create_router_evpn_vni_duplicate_conflict(self):
         vni = 100
         name1 = data_utils.rand_name('evpn-router')
-        self._create_admin_router(name1, evpn_vni=vni)
+        self.create_admin_router(name1, evpn_vni=vni)
         name2 = data_utils.rand_name('evpn-router')
         self.assertRaises(
             lib_exc.Conflict,
-            self._create_admin_router,
+            self.create_admin_router,
             name2, evpn_vni=vni)

@@ -657,8 +657,7 @@ class NetworkMultipleGWTest(base.BaseAdminTempestTestCase):
     def test_update_router_single_gw_bfd(self):
         ext_network_id = self.ext_networks[0][0]['id']
         bfd_container = self.containers[0]
-        router = self._create_router_with_client(
-            self.admin_client,
+        router = self.create_admin_router(
             router_name=data_utils.rand_name('router'),
             admin_state_up=True,
             enable_snat=False,

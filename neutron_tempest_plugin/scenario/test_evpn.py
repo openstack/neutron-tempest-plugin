@@ -53,13 +53,6 @@ class NetworkEvpnTest(base.BaseAdminTempestTestCase):
             cls.router['id'], cls.subnet['id'],
             advertise_host=True)
 
-    @classmethod
-    def resource_cleanup(cls):
-        cls._try_delete_resource(
-            cls.admin_client.remove_router_interface_with_subnet_id,
-            cls.router['id'], cls.subnet['id'])
-        super().resource_cleanup()
-
     @decorators.idempotent_id('a1b2c3d4-e5f6-7890-abcd-ef1234567890')
     def test_basic_instance_evpn(self):
         server = self.create_server(

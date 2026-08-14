@@ -19,7 +19,6 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin.api import base_routers
 from neutron_tempest_plugin import config
 
 CONF = config.CONF
@@ -205,7 +204,7 @@ class TestTimeStamp(base.BaseAdminNetworkTest):
         self.assertIsNot(origin_updated_at, new_updated_at)
 
 
-class TestTimeStampWithL3(base_routers.BaseRouterTest):
+class TestTimeStampWithL3(base.BaseAdminNetworkTest):
 
     required_extensions = ['standard-attr-timestamp']
 

@@ -14,10 +14,10 @@ from tempest.common import utils as tutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
-from neutron_tempest_plugin.api import base_routers as base
+from neutron_tempest_plugin.api import base
 
 
-class RoutersEvpnTest(base.BaseRouterTest):
+class RoutersEvpnTest(base.BaseAdminNetworkTest):
     # VNIs used in this class must not overlap with RoutersEvpnNegativeTest
     # because tempest may run both classes in parallel.
     required_extensions = ['router', 'evpn']
@@ -25,7 +25,7 @@ class RoutersEvpnTest(base.BaseRouterTest):
     @decorators.idempotent_id('a4f3c2b1-0d9e-4f8a-b7c6-5e4d3c2b1a09')
     def test_create_router_post_accepted_with_evpn_vni(self):
         name = data_utils.rand_name('evpn-router')
-        router = self._create_admin_router(name, evpn_vni=500)
+        router = self.create_admin_router(name, evpn_vni=500)
         self.assertEqual(500, router['evpn_vni'])
         body = self.admin_client.show_router(router['id'])
         self.assertEqual(500, body['router']['evpn_vni'])
@@ -36,7 +36,7 @@ class RoutersEvpnTest(base.BaseRouterTest):
     def test_create_router_with_evpn_vni_and_description(self):
         name = data_utils.rand_name('evpn-router')
         desc = 'evpn router description'
-        router = self._create_admin_router(
+        router = self.create_admin_router(
             name, description=desc, evpn_vni=501)
         self.assertEqual(501, router['evpn_vni'])
         self.assertEqual(desc, router['description'])

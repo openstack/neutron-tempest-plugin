@@ -16,10 +16,10 @@ from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 import testtools
 
-from neutron_tempest_plugin.api import base_routers as base
+from neutron_tempest_plugin.api import base
 
 
-class RoutersFlavorTestCase(base.BaseRouterTest):
+class RoutersFlavorTestCase(base.BaseAdminNetworkTest):
 
     required_extensions = ['router', 'flavors', 'l3-flavors']
 

@@ -19,14 +19,14 @@ from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 import testtools
 
-from neutron_tempest_plugin.api import base_routers as base
+from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin import config
 
 
 CONF = config.CONF
 
 
-class RoutersNegativeTestBase(base.BaseRouterTest):
+class RoutersNegativeTestBase(base.BaseAdminNetworkTest):
 
     required_extensions = ['router']
 
@@ -126,7 +126,7 @@ class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
         # create a centralized router
         router_args = {'project_id': self.client.project_id,
                        'distributed': False}
-        router = self._create_admin_router(
+        router = self.create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
             **router_args)
         self.assertTrue(router['admin_state_up'])
@@ -143,7 +143,7 @@ class DvrRoutersNegativeTestExtended(RoutersNegativeTestBase):
         # create a centralized router
         router_args = {'project_id': self.client.project_id,
                        'distributed': False}
-        router = self._create_admin_router(
+        router = self.create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
             **router_args)
         self.assertTrue(router['admin_state_up'])

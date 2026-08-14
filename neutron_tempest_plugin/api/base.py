@@ -132,6 +132,7 @@ class BaseNetworkTest(test.BaseTestCase):
         cls.admin_subnets = []
         cls.ports = []
         cls.routers = []
+        cls.admin_routers = []
         cls.floating_ips = []
         cls.port_forwardings = []
         cls.local_ips = []
@@ -208,6 +209,11 @@ class BaseNetworkTest(test.BaseTestCase):
             for router in cls.routers:
                 cls._try_delete_resource(cls.delete_router,
                                          router)
+            # Clean up admin_routers
+            for router in cls.admin_routers:
+                cls._try_delete_resource(cls.delete_router,
+                                         router,
+                                         cls.admin_client)
             # Clean up metering label rules
             for metering_label_rule in cls.metering_label_rules:
                 cls._try_delete_resource(
@@ -638,6 +644,10 @@ class BaseNetworkTest(test.BaseTestCase):
         cls, client, router_name=None, admin_state_up=False,
         external_network_id=None, enable_snat=None, **kwargs
     ):
+        # NOTE(eolivare): if this method is called directly, the created router
+        # will not be cleaned up at resource_cleanup. Please use either
+        # create_router or create_admin_router instead, or implemented the
+        # router cleanup somehow in your tests.
         ext_gw_info = {}
         if external_network_id:
             ext_gw_info['network_id'] = external_network_id
@@ -647,17 +657,20 @@ class BaseNetworkTest(test.BaseTestCase):
             router_name, external_gateway_info=ext_gw_info,
             admin_state_up=admin_state_up, **kwargs)
         router = body['router']
-        cls.routers.append(router)
         return router
 
     @classmethod
     def create_router(cls, *args, **kwargs):
-        return cls._create_router_with_client(cls.client, *args, **kwargs)
+        router = cls._create_router_with_client(cls.client, *args, **kwargs)
+        cls.routers.append(router)
+        return router
 
     @classmethod
     def create_admin_router(cls, *args, **kwargs):
-        return cls._create_router_with_client(cls.os_admin.network_client,
-                                              *args, **kwargs)
+        router = cls._create_router_with_client(cls.os_admin.network_client,
+                                                *args, **kwargs)
+        cls.admin_routers.append(router)
+        return router
 
     @classmethod
     def _list_router_interfaces(cls, client, router_id):

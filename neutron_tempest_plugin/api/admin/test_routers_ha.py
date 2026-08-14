@@ -16,10 +16,10 @@ from tempest.lib import decorators
 
 from neutron_lib import constants
 
-from neutron_tempest_plugin.api import base_routers as base
+from neutron_tempest_plugin.api import base
 
 
-class RoutersTestHA(base.BaseRouterTest):
+class RoutersTestHA(base.BaseAdminNetworkTest):
 
     required_extensions = ['router', 'l3-ha']
 
@@ -39,6 +39,17 @@ class RoutersTestHA(base.BaseRouterTest):
             msg = "'ha' attribute not found. HA Possibly not enabled"
             raise cls.skipException(msg)
 
+    def _delete_router(self, router_id, network_client=None):
+        client = network_client or self.client
+        client.delete_router(router_id)
+        # Asserting that the router is not found in the list
+        # after deletion
+        list_body = self.client.list_routers()
+        routers_list = list()
+        for router in list_body['routers']:
+            routers_list.append(router['id'])
+        self.assertNotIn(router_id, routers_list)
+
     @decorators.idempotent_id('8abc177d-14f1-4018-9f01-589b299cbee1')
     def test_ha_router_creation(self):
         """Test HA router creation
@@ -50,7 +61,7 @@ class RoutersTestHA(base.BaseRouterTest):
         The router is created and the "ha" attribute is set to True
         """
         name = data_utils.rand_name('router')
-        router = self._create_admin_router(name, ha=True)
+        router = self.create_admin_router(name, ha=True)
         self.assertTrue(router['ha'])
 
     @decorators.idempotent_id('97b5f7ef-2192-4fa3-901e-979cd5c1097a')
@@ -69,7 +80,7 @@ class RoutersTestHA(base.BaseRouterTest):
         if self.is_driver_ovn:
             raise self.skipException("Test not meant for OVN driver")
         name = data_utils.rand_name('router')
-        router = self._create_admin_router(name, ha=False)
+        router = self.create_admin_router(name, ha=False)
         self.assertFalse(router['ha'])
 
     @decorators.idempotent_id('5a6bfe82-5b23-45a4-b027-5160997d4753')
@@ -90,8 +101,8 @@ class RoutersTestHA(base.BaseRouterTest):
             raise self.skipException("Test not meant for OVN driver")
         name = data_utils.rand_name('router')
         # router needs to be in admin state down in order to be upgraded to HA
-        router = self._create_admin_router(name, ha=False,
-                                           admin_state_up=False)
+        router = self.create_admin_router(name, ha=False,
+                                          admin_state_up=False)
         self.assertFalse(router['ha'])
         router = self.admin_client.update_router(router['id'],
                                                  ha=True)
@@ -113,7 +124,7 @@ class RoutersTestHA(base.BaseRouterTest):
             raise self.skipException(
                 "Test not meant for OVN implementation of HA")
         for i in range(2):
-            router = self._create_admin_router(
+            router = self.create_admin_router(
                 data_utils.rand_name('router%d' % i),
                 ha=True)
         ha_net_name = constants.HA_NETWORK_NAME % router['project_id']

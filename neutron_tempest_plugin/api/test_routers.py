@@ -23,14 +23,13 @@ from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin.api import base_routers
 from neutron_tempest_plugin.common import utils
 from neutron_tempest_plugin import config
 
 CONF = config.CONF
 
 
-class RoutersTest(base_routers.BaseRouterTest):
+class RoutersTest(base.BaseAdminNetworkTest):
 
     required_extensions = ['router']
 
@@ -60,7 +59,7 @@ class RoutersTest(base_routers.BaseRouterTest):
     def test_create_router_with_default_snat_value(self):
         # Create a router with default snat rule
         name = data_utils.rand_name('router')
-        router = self._create_router(
+        router = self.create_router(
             name, external_network_id=CONF.network.public_network_id)
         self._verify_router_gateway(
             router['id'], {'network_id': CONF.network.public_network_id,
@@ -76,7 +75,7 @@ class RoutersTest(base_routers.BaseRouterTest):
             external_gateway_info = {
                 'network_id': CONF.network.public_network_id,
                 'enable_snat': enable_snat}
-            router = self._create_admin_router(
+            router = self.create_admin_router(
                 name, external_network_id=CONF.network.public_network_id,
                 enable_snat=enable_snat)
             # Verify snat attributes after router creation
@@ -111,7 +110,7 @@ class RoutersTest(base_routers.BaseRouterTest):
     @decorators.idempotent_id('b386c111-3b21-466d-880c-5e72b01e1a33')
     @tutils.requires_ext(extension='ext-gw-mode', service='network')
     def test_update_router_set_gateway_with_snat_explicit(self):
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         self.admin_client.update_router_with_snat_gw_info(
             router['id'],
             external_gateway_info={
@@ -126,7 +125,7 @@ class RoutersTest(base_routers.BaseRouterTest):
     @decorators.idempotent_id('96536bc7-8262-4fb2-9967-5c46940fa279')
     @tutils.requires_ext(extension='ext-gw-mode', service='network')
     def test_update_router_set_gateway_without_snat(self):
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         self.admin_client.update_router_with_snat_gw_info(
             router['id'],
             external_gateway_info={
@@ -141,7 +140,7 @@ class RoutersTest(base_routers.BaseRouterTest):
     @decorators.idempotent_id('f2faf994-97f4-410b-a831-9bc977b64374')
     @tutils.requires_ext(extension='ext-gw-mode', service='network')
     def test_update_router_reset_gateway_without_snat(self):
-        router = self._create_router(
+        router = self.create_router(
             data_utils.rand_name('router'),
             external_network_id=CONF.network.public_network_id)
         self.admin_client.update_router_with_snat_gw_info(
@@ -160,7 +159,7 @@ class RoutersTest(base_routers.BaseRouterTest):
         network = self.create_network()
         subnet = self.create_subnet(network)
         # Add router interface with subnet id
-        router = self._create_router(data_utils.rand_name('router'), True)
+        router = self.create_router(data_utils.rand_name('router'), True)
         intf = self.create_router_interface(router['id'], subnet['id'])
 
         def _status_active():
@@ -176,7 +175,7 @@ class RoutersTest(base_routers.BaseRouterTest):
         self.name = self.network['name']
         self.subnet = self.create_subnet(self.network)
         # Add router interface with subnet id
-        self.router = self._create_router(
+        self.router = self.create_router(
             data_utils.rand_name('router-'), True)
         self.create_router_interface(self.router['id'], self.subnet['id'])
         self.addCleanup(
@@ -208,7 +207,7 @@ class RoutersTest(base_routers.BaseRouterTest):
     def test_extra_routes_atomic(self):
         self.network = self.create_network()
         self.subnet = self.create_subnet(self.network)
-        self.router = self._create_router(
+        self.router = self.create_router(
             data_utils.rand_name('router-'), True)
         self.create_router_interface(self.router['id'], self.subnet['id'])
         self.addCleanup(
@@ -274,8 +273,8 @@ class RoutersTest(base_routers.BaseRouterTest):
         self.create_subnet(network)
         port1 = self.create_port(network)
         port2 = self.create_port(network)
-        router1 = self._create_router(data_utils.rand_name('router1'))
-        router2 = self._create_router(data_utils.rand_name('router2'))
+        router1 = self.create_router(data_utils.rand_name('router1'))
+        router2 = self.create_router(data_utils.rand_name('router2'))
         self.client.add_router_interface_with_port_id(
             router1['id'], port1['id'])
         self.client.add_router_interface_with_port_id(
@@ -305,7 +304,7 @@ class RoutersTest(base_routers.BaseRouterTest):
         gateway_ip = netaddr.IPAddress(subnet['gateway_ip'])
         self.client.update_subnet(subnet['id'], gateway_ip=str(gateway_ip + 1))
 
-        router = self._create_router(data_utils.rand_name('router'), True)
+        router = self.create_router(data_utils.rand_name('router'), True)
         intf = self.create_router_interface(router['id'], subnet['id'])
 
         def _status_active():
@@ -326,7 +325,7 @@ class RoutersTest(base_routers.BaseRouterTest):
                           subnet['id'], gateway_ip=None)
 
 
-class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
+class ExternalGWMultihomingRoutersTest(base.BaseAdminNetworkTest):
 
     @classmethod
     @tutils.requires_ext(extension="external-gateway-multihoming",
@@ -336,16 +335,16 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('33e9a156-a83f-435f-90ee-1a49dc9c350d')
     def test_create_router_enable_default_route_ecmp(self):
-        router1 = self._create_admin_router(data_utils.rand_name('router1'),
-                                            enable_default_route_ecmp=True)
-        router2 = self._create_admin_router(data_utils.rand_name('router2'),
-                                            enable_default_route_ecmp=False)
+        router1 = self.create_admin_router(data_utils.rand_name('router1'),
+                                           enable_default_route_ecmp=True)
+        router2 = self.create_admin_router(data_utils.rand_name('router2'),
+                                           enable_default_route_ecmp=False)
         self.assertEqual(router1['enable_default_route_ecmp'], True)
         self.assertEqual(router2['enable_default_route_ecmp'], False)
 
     @decorators.idempotent_id('bfbad985-2df2-4cd9-9c32-819b5508c40e')
     def test_update_router_enable_default_route_ecmp(self):
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         updated_router = self.admin_client.update_router(
             router['id'],
             enable_default_route_ecmp=not router['enable_default_route_ecmp'])
@@ -355,7 +354,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('a22016a6-f118-4eb5-abab-7e241ae01848')
     def test_update_router_enable_default_route_bfd(self):
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         updated_router = self.admin_client.update_router(
             router['id'],
             enable_default_route_bfd=not router['enable_default_route_bfd'])
@@ -365,16 +364,16 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('842f6edb-e072-4805-bf11-04c25420776d')
     def test_create_router_enable_default_route_bfd(self):
-        router1 = self._create_admin_router(data_utils.rand_name('router1'),
-                                            enable_default_route_bfd=True)
-        router2 = self._create_admin_router(data_utils.rand_name('router2'),
-                                            enable_default_route_bfd=False)
+        router1 = self.create_admin_router(data_utils.rand_name('router1'),
+                                           enable_default_route_bfd=True)
+        router2 = self.create_admin_router(data_utils.rand_name('router2'),
+                                           enable_default_route_bfd=False)
         self.assertEqual(router1['enable_default_route_bfd'], True)
         self.assertEqual(router2['enable_default_route_bfd'], False)
 
     @decorators.idempotent_id('089fa304-3726-4120-9759-668e8ff1114c')
     def test_create_router_add_external_gateways_one(self):
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         self.assertEqual(len(router['external_gateways']), 0)
 
         res = self.admin_client.router_add_external_gateways(
@@ -388,7 +387,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('60a1e7db-04ef-4a3a-9ff1-01a990d365fd')
     def test_create_router_add_external_gateways(self):
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         self.assertEqual(len(router['external_gateways']), 0)
 
         res = self.admin_client.router_add_external_gateways(
@@ -421,12 +420,10 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('e49efc57-7b25-43a3-8e55-2d87a3759c57')
     def test_create_router_add_external_gateways_compat(self):
-        router = self._create_router(
+        router = self.create_admin_router(
             data_utils.rand_name('router'),
             external_network_id=CONF.network.public_network_id,
-            enable_snat=False,
-            client=self.admin_client,
-        )
+            enable_snat=False)
         self.assertEqual(len(router['external_gateways']), 1)
         res = self.admin_client.router_add_external_gateways(
             router['id'],
@@ -436,11 +433,10 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('2a238eec-d9d5-435a-9013-d6e195ecd5d1')
     def test_create_router_remove_external_gateways_compat(self):
-        router = self._create_router(
+        router = self.create_admin_router(
             data_utils.rand_name('router'),
             external_network_id=CONF.network.public_network_id,
-            enable_snat=False,
-            client=self.admin_client)
+            enable_snat=False)
         self.assertEqual(len(router['external_gateways']), 1)
         res = self.admin_client.router_remove_external_gateways(
             router['id'],
@@ -449,7 +445,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
 
     @decorators.idempotent_id('03ab196a-dac0-4363-93e4-ea799246870b')
     def test_create_router_add_remove_external_gateways(self):
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         self.assertEqual(len(router['external_gateways']), 0)
 
         res = self.admin_client.router_add_external_gateways(
@@ -480,7 +476,7 @@ class ExternalGWMultihomingRoutersTest(base_routers.BaseRouterTest):
         NOTE(fnordahl): Main reason for IP re-use is to ensure we don't tread
         on allocations done by other tests.
         """
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         self.assertEqual(len(router['external_gateways']), 0)
 
         res = self.admin_client.router_add_external_gateways(
@@ -533,18 +529,18 @@ class RoutersIpV6Test(RoutersTest):
     _ip_version = 6
 
 
-class DvrRoutersTest(base_routers.BaseRouterTest):
+class DvrRoutersTest(base.BaseAdminNetworkTest):
 
     required_extensions = ['dvr']
 
     @decorators.idempotent_id('141297aa-3424-455d-aa8d-f2d95731e00a')
     def test_create_distributed_router(self):
         name = data_utils.rand_name('router')
-        router = self._create_admin_router(name, distributed=True)
+        router = self.create_admin_router(name, distributed=True)
         self.assertTrue(router['distributed'])
 
 
-class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
+class DvrRoutersTestToCentralized(base.BaseAdminNetworkTest):
 
     required_extensions = ['dvr', 'l3-ha']
 
@@ -553,7 +549,7 @@ class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
         # Convert a centralized router to distributed firstly
         router_args = {'project_id': self.client.project_id,
                        'distributed': False, 'ha': False}
-        router = self._create_admin_router(
+        router = self.create_admin_router(
             data_utils.rand_name('router'), admin_state_up=False,
             **router_args)
         self.assertFalse(router['distributed'])
@@ -576,7 +572,7 @@ class DvrRoutersTestToCentralized(base_routers.BaseRouterTest):
         self.assertNotIn('ha', show_body['router'])
 
 
-class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
+class DvrRoutersTestUpdateDistributedExtended(base.BaseAdminNetworkTest):
 
     required_extensions = ['dvr', 'l3-ha',
                            'router-admin-state-down-before-update']
@@ -585,7 +581,7 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
     def test_convert_centralized_router_to_distributed_extended(self):
         router_args = {'project_id': self.client.project_id,
                        'distributed': False, 'ha': False}
-        router = self._create_admin_router(
+        router = self.create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
             **router_args)
         self.assertTrue(router['admin_state_up'])
@@ -608,7 +604,7 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
     def test_convert_distributed_router_to_centralized_extended(self):
         router_args = {'project_id': self.client.project_id,
                        'distributed': True, 'ha': False}
-        router = self._create_admin_router(
+        router = self.create_admin_router(
             data_utils.rand_name('router'), admin_state_up=True,
             **router_args)
         self.assertTrue(router['admin_state_up'])
@@ -628,13 +624,13 @@ class DvrRoutersTestUpdateDistributedExtended(base_routers.BaseRouterTest):
         self.assertFalse(update_body['router']['distributed'])
 
 
-class HaRoutersTest(base_routers.BaseRouterTest):
+class HaRoutersTest(base.BaseAdminNetworkTest):
 
     required_extensions = ['l3-ha']
 
     @decorators.idempotent_id('77db8eae-3aa3-4e61-bf2a-e739ce042e53')
     def test_convert_legacy_router(self):
-        router = self._create_router(data_utils.rand_name('router'))
+        router = self.create_router(data_utils.rand_name('router'))
         self.assertNotIn('ha', router)
         update_body = self.admin_client.update_router(router['id'],
                                                       ha=True)
@@ -693,7 +689,7 @@ class RoutersSearchCriteriaTest(base.BaseSearchCriteriaTest):
         self._test_list_no_pagination_limit_0()
 
 
-class RoutersDeleteTest(base_routers.BaseRouterTest):
+class RoutersDeleteTest(base.BaseAdminNetworkTest):
     """The only test in this class is a test that removes router!
 
     * We cannot delete common and mandatory resources (router in this case)

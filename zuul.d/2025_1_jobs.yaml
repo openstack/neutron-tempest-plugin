@@ -119,6 +119,12 @@
     vars:
       devstack_localrc:
         TEMPEST_VENV_UPPER_CONSTRAINTS: '/opt/stack/requirements/upper-constraints.txt'
+      # NOTE: This job pins neutron-tempest-plugin to the 2.12.0 tag, which
+      # predates the skip added for bug 2161678. The buggy test asserts a
+      # Conflict that should not be raised, so it must be excluded here until
+      # the fix lands. See https://bugs.launchpad.net/neutron/+bug/2161678
+      tempest_exclude_regex: "\
+        (^neutron_tempest_plugin.api.admin.test_network_segment_range.NetworkSegmentRangeTestJson.test_update_network_segment_range_failed_with_existing_range_impacted)"
 
 - job:
     name: neutron-tempest-plugin-openvswitch-iptables_hybrid-2025-1
@@ -204,10 +210,15 @@
       # https://bugs.launchpad.net/neutron/+bug/2112620, skipping random failing tests
       # neutron_tempest_plugin.scenario.test_vlan_transparency
       # neutron_tempest_plugin.scenario.test_security_groups
+      # NOTE: This job pins neutron-tempest-plugin to the 2.12.0 tag, which
+      # predates the skip added for bug 2161678. The buggy test asserts a
+      # Conflict that should not be raised, so it must be excluded here until
+      # the fix lands. See https://bugs.launchpad.net/neutron/+bug/2161678
       tempest_exclude_regex: "\
         (^neutron_tempest_plugin.scenario.test_multicast.MulticastTestIPv4.test_multicast_between_vms_on_same_network)|\
         (^neutron_tempest_plugin.scenario.test_vlan_transparency)|\
-        (^neutron_tempest_plugin.scenario.test_security_groups)"
+        (^neutron_tempest_plugin.scenario.test_security_groups)|\
+        (^neutron_tempest_plugin.api.admin.test_network_segment_range.NetworkSegmentRangeTestJson.test_update_network_segment_range_failed_with_existing_range_impacted)"
 
 - job:
     name: neutron-tempest-plugin-dvr-multinode-scenario-2025-1

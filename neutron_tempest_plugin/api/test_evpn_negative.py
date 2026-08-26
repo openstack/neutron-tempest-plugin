@@ -25,13 +25,14 @@ class RoutersEvpnNegativeTest(base.BaseAdminNetworkTest):
     # because tempest may run both classes in parallel.
     required_extensions = ['router', 'evpn']
     credentials = ['admin', 'primary']
+    base_vni = 100
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('c6d5e4f3-2a1b-4c8d-9e0f-7a6b5c4d3e2f')
     def test_create_router_evpn_vni_non_admin_forbidden(self):
         name = data_utils.rand_name('evpn-router')
         with testtools.ExpectedException(lib_exc.Forbidden):
-            self.client.create_router(name=name, evpn_vni=100)
+            self.client.create_router(name=name, evpn_vni=self.base_vni)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('d7e6f5a4-3b2c-5d9e-0f1a-8b7c6d5e4f3a')
@@ -39,7 +40,7 @@ class RoutersEvpnNegativeTest(base.BaseAdminNetworkTest):
         name = data_utils.rand_name('evpn-router')
         router = self.create_router(name)
         with testtools.ExpectedException(lib_exc.BadRequest):
-            self.client.update_router(router['id'], evpn_vni=100)
+            self.client.update_router(router['id'], evpn_vni=self.base_vni + 1)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('e8f7a6b5-4c3d-6e0f-1a2b-9c8d7e6f5a4b')
@@ -72,7 +73,7 @@ class RoutersEvpnNegativeTest(base.BaseAdminNetworkTest):
     @decorators.idempotent_id('b2c3d4e5-7f6a-9b8c-4d5e-2f1a0b9c8d7e')
     def test_update_router_evpn_vni_not_allowed(self):
         name = data_utils.rand_name('evpn-router')
-        router = self.create_admin_router(name, evpn_vni=100)
+        router = self.create_admin_router(name, evpn_vni=self.base_vni + 2)
         self.assertRaises(
             lib_exc.BadRequest,
             self.admin_client.update_router,
@@ -81,7 +82,7 @@ class RoutersEvpnNegativeTest(base.BaseAdminNetworkTest):
     @decorators.attr(type='negative')
     @decorators.idempotent_id('d4e5f6a7-8b9c-0d1e-6f7a-4b3c2d1e0f9a')
     def test_create_router_evpn_vni_duplicate_conflict(self):
-        vni = 100
+        vni = self.base_vni + 3
         name1 = data_utils.rand_name('evpn-router')
         self.create_admin_router(name1, evpn_vni=vni)
         name2 = data_utils.rand_name('evpn-router')

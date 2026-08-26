@@ -21,11 +21,12 @@ class RoutersEvpnTest(base.BaseAdminNetworkTest):
     # VNIs used in this class must not overlap with RoutersEvpnNegativeTest
     # because tempest may run both classes in parallel.
     required_extensions = ['router', 'evpn']
+    base_vni = 500
 
     @decorators.idempotent_id('a4f3c2b1-0d9e-4f8a-b7c6-5e4d3c2b1a09')
     def test_create_router_post_accepted_with_evpn_vni(self):
         name = data_utils.rand_name('evpn-router')
-        router = self.create_admin_router(name, evpn_vni=500)
+        router = self.create_admin_router(name, evpn_vni=self.base_vni)
         self.assertEqual(500, router['evpn_vni'])
         body = self.admin_client.show_router(router['id'])
         self.assertEqual(500, body['router']['evpn_vni'])
@@ -37,6 +38,6 @@ class RoutersEvpnTest(base.BaseAdminNetworkTest):
         name = data_utils.rand_name('evpn-router')
         desc = 'evpn router description'
         router = self.create_admin_router(
-            name, description=desc, evpn_vni=501)
+            name, description=desc, evpn_vni=self.base_vni + 1)
         self.assertEqual(501, router['evpn_vni'])
         self.assertEqual(desc, router['description'])

@@ -68,6 +68,7 @@
         - flavors
         - floating-ip-port-forwarding
         - floating-ip-port-forwarding-detail
+        - floating-ip-router-writable
         - floatingip-pools
         - ip-substring-filtering
         - l3-conntrack-helper

@@ -69,41 +69,72 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
 
         return vms
 
-    @decorators.idempotent_id('8944b90d-1766-4669-bd8a-672b5d106bb7')
-    def test_connectivity_through_2_routers(self):
-        ap1_net = self.create_network()
-        ap2_net = self.create_network()
-        wan_net = self.create_network()
-        ap1_subnet = self.create_subnet(
-            ap1_net, cidr="10.10.210.0/24", gateway="10.10.210.254")
-        ap2_subnet = self.create_subnet(
-            ap2_net, cidr="10.10.220.0/24", gateway="10.10.220.254")
+    def _create_two_router_topology(self, inner_cidr_base,
+                                    outer_cidr_base, transit_cidr_base):
+        outer_net = self.create_network()
+        inner_net = self.create_network()
+        transit_net = self.create_network()
+        outer_cidr = f"{outer_cidr_base}.0/24"
+        inner_cidr = f"{inner_cidr_base}.0/24"
+        transit_cidr = f"{transit_cidr_base}.0/24"
+        outer_subnet = self.create_subnet(
+            outer_net, cidr=outer_cidr,
+            gateway=f"{outer_cidr_base}.254")
+        inner_subnet = self.create_subnet(
+            inner_net, cidr=inner_cidr,
+            gateway=f"{inner_cidr_base}.254")
         self.create_subnet(
-            wan_net, cidr="10.10.200.0/24", gateway="10.10.200.254")
+            transit_net, cidr=transit_cidr,
+            gateway=f"{transit_cidr_base}.254")
 
-        ap1_rt = self.create_router(
-            router_name=data_utils.rand_name("ap1_rt"),
+        outer_router = self.create_router(
+            router_name=data_utils.rand_name("outer-router"),
             admin_state_up=True,
             external_network_id=CONF.network.public_network_id)
-        ap2_rt = self.create_router(
-            router_name=data_utils.rand_name("ap2_rt"),
+        inner_router = self.create_router(
+            router_name=data_utils.rand_name("inner-router"),
             admin_state_up=True)
-        self._wait_for_router_ha_active(ap1_rt['id'])
-        self._wait_for_router_ha_active(ap2_rt['id'])
+        self._wait_for_router_ha_active(outer_router['id'])
+        self._wait_for_router_ha_active(inner_router['id'])
 
-        ap1_internal_port = self.create_port(
-            ap1_net, security_groups=[self.secgroup['id']])
-        ap2_internal_port = self.create_port(
-            ap2_net, security_groups=[self.secgroup['id']])
-        ap1_wan_port = self.create_port(wan_net)
-        ap2_wan_port = self.create_port(wan_net)
+        outer_port = self.create_port(
+            outer_net, security_groups=[self.secgroup['id']])
+        inner_port = self.create_port(
+            inner_net, security_groups=[self.secgroup['id']])
+        outer_transit_port = self.create_port(transit_net)
+        inner_transit_port = self.create_port(transit_net)
 
         self.client.add_router_interface_with_port_id(
-            ap1_rt['id'], ap1_wan_port['id'])
+            outer_router['id'], outer_transit_port['id'])
         self.client.add_router_interface_with_port_id(
-            ap2_rt['id'], ap2_wan_port['id'])
-        self.create_router_interface(ap1_rt['id'], ap1_subnet['id'])
-        self.create_router_interface(ap2_rt['id'], ap2_subnet['id'])
+            inner_router['id'], inner_transit_port['id'])
+        self.create_router_interface(outer_router['id'], outer_subnet['id'])
+        self.create_router_interface(inner_router['id'], inner_subnet['id'])
+
+        return {
+            'outer_port': outer_port,
+            'inner_port': inner_port,
+            'outer_router': outer_router,
+            'inner_router': inner_router,
+            'outer_subnet': outer_subnet,
+            'inner_subnet': inner_subnet,
+            'outer_transit_port': outer_transit_port,
+            'inner_transit_port': inner_transit_port,
+        }
+
+    @decorators.idempotent_id('8944b90d-1766-4669-bd8a-672b5d106bb7')
+    def test_connectivity_through_2_routers(self):
+        topology = self._create_two_router_topology(
+            inner_cidr_base="10.10.220", outer_cidr_base="10.10.210",
+            transit_cidr_base="10.10.200")
+        ap1_rt = topology['outer_router']
+        ap2_rt = topology['inner_router']
+        ap1_subnet = topology['outer_subnet']
+        ap2_subnet = topology['inner_subnet']
+        ap1_wan_port = topology['outer_transit_port']
+        ap2_wan_port = topology['inner_transit_port']
+        ap1_internal_port = topology['outer_port']
+        ap2_internal_port = topology['inner_port']
 
         self.client.update_router(
             ap1_rt['id'],
@@ -125,6 +156,52 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
         self.check_remote_connectivity(
             ap1_sshclient, ap2_internal_port['fixed_ips'][0]['ip_address'],
             servers=servers)
+
+    @utils.requires_ext(extension="floating-ip-router-writable",
+                        service="network")
+    @decorators.idempotent_id('f0b97c49-9cc0-4241-93c3-e1f86ca7a8a3')
+    def test_connectivity_to_indirect_floatingip(self):
+        """Validate a FIP hosted on the outer router reaches an inner VM."""
+        topology = self._create_two_router_topology(
+            inner_cidr_base="10.10.250", outer_cidr_base="10.10.240",
+            transit_cidr_base="10.10.230")
+        outer_router = topology['outer_router']
+        inner_router = topology['inner_router']
+        outer_transit_port = topology['outer_transit_port']
+        inner_transit_port = topology['inner_transit_port']
+
+        self.client.update_router(
+            outer_router['id'],
+            routes=[{"destination": topology['inner_subnet']['cidr'],
+                     "nexthop":
+                     inner_transit_port['fixed_ips'][0]['ip_address']}])
+        self.client.update_router(
+            inner_router['id'],
+            routes=[{"destination": "0.0.0.0/0",
+                     "nexthop":
+                     outer_transit_port['fixed_ips'][0]['ip_address']}])
+
+        server = self.create_server(
+            flavor_ref=CONF.compute.flavor_ref,
+            image_ref=CONF.compute.image_ref,
+            key_name=self.keypair['name'],
+            networks=[{'port': topology['inner_port']['id']}])
+        self.wait_for_server_active(server['server'])
+        self.wait_for_guest_os_ready(server['server'])
+
+        floatingip = self.client.create_floatingip(
+            floating_network_id=CONF.network.public_network_id,
+            port_id=topology['inner_port']['id'],
+            router_id=outer_router['id'])['floatingip']
+        self.addCleanup(self.client.delete_floatingip, floatingip['id'])
+        sshclient = ssh.Client(
+            floatingip['floating_ip_address'],
+            CONF.validation.image_ssh_user,
+            pkey=self.keypair['private_key'])
+
+        self.check_remote_connectivity(
+            sshclient, topology['inner_port']['fixed_ips'][0]['ip_address'],
+            servers=[server])
 
     @decorators.idempotent_id('b72c3b77-3396-4144-b05d-9cd3c0099893')
     def test_connectivity_router_east_west_traffic(self):

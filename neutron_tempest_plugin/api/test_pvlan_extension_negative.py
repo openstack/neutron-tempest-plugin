@@ -13,17 +13,11 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import unittest
-
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base_pvlan_extension
-
-# PVLAN plugin raises NeutronException (HTTP 500), not BadRequest (HTTP 400).
-_SKIP_UNTIL_PVLAN_BAD_REQUEST = (
-    'Skipped until PVLAN plugin validation returns HTTP 400')
 
 
 class PVLANExtensionNegativeTestJSON(
@@ -47,7 +41,6 @@ class PVLANExtensionNegativeTestJSON(
                 pvlan_type='community',
                 pvlan_community=invalid_name)
 
-    @unittest.skip(_SKIP_UNTIL_PVLAN_BAD_REQUEST)
     @decorators.attr(type='negative')
     @decorators.idempotent_id('c2d3e4f5-a6b7-4c8d-9e0f-1a2b3c4d5e6f')
     def test_create_community_port_without_community_name(self):
@@ -102,7 +95,6 @@ class PVLANExtensionNegativeTestJSON(
         self.assertEqual('promiscuous', shown_port['pvlan_type'])
         # GET confirms pvlan_type was not changed by the failed update.
 
-    @unittest.skip(_SKIP_UNTIL_PVLAN_BAD_REQUEST)
     @decorators.attr(type='negative')
     @decorators.idempotent_id('c8d9e0f1-a2b3-4c4d-5e6f-7a8b9c0d1e2f')
     def test_create_port_with_pvlan_type_on_non_pvlan_network(self):
@@ -119,7 +111,6 @@ class PVLANExtensionNegativeTestJSON(
             name=data_utils.rand_name('port-'),
             pvlan_type='isolated')
 
-    @unittest.skip(_SKIP_UNTIL_PVLAN_BAD_REQUEST)
     @decorators.attr(type='negative')
     @decorators.idempotent_id('d9e0f1a2-b3c4-4d5e-6f7a-8b9c0d1e2f3a')
     def test_create_port_with_pvlan_community_on_non_pvlan_network(self):

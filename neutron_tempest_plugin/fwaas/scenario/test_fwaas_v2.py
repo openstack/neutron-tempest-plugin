@@ -248,6 +248,8 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
                 topology['router_portid_2']],
             ingress_firewall_policy_id=fw_policy['id'],
             egress_firewall_policy_id=fw_policy['id'])
+        self.addCleanup(self.update_firewall_group_and_wait, fw_group['id'],
+                        ports=[])
         self._wait_firewall_group_ready(fw_group['id'])
         LOG.debug('fw_allow_icmp_rule: %s\nfw_allow_ssh_rule: %s\n'
                   'fw_policy: %s\nfw_group: %s\n',

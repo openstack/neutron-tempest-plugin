@@ -12,13 +12,13 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from tempest.api.network import base
 from tempest import config
 
+from neutron_tempest_plugin.api import base
 from neutron_tempest_plugin.fwaas.common import fwaas_v2_client
 
 CONF = config.CONF
 
 
 class BaseFWaaSTest(fwaas_v2_client.FWaaSClientMixin, base.BaseNetworkTest):
-    pass
+    required_extensions = ['fwaas_v2']

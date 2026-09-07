@@ -14,7 +14,6 @@
 
 import netaddr
 
-from tempest.common import utils
 from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib.common.utils import test_utils
@@ -56,13 +55,6 @@ class FWaaSv2ExtensionTestJSON(v2_base.BaseFWaaSTest):
         Show firewall group
     """
 
-    @classmethod
-    def resource_setup(cls):
-        super().resource_setup()
-        if not utils.is_extension_enabled('fwaas_v2', 'network'):
-            msg = "FWaaS v2  Extension not enabled."
-            raise cls.skipException(msg)
-
     def setUp(self):
         super().setUp()
         self.fw_rule_1 = self.create_firewall_rule(action="allow",
@@ -84,19 +76,19 @@ class FWaaSv2ExtensionTestJSON(v2_base.BaseFWaaSTest):
         subnet_cidr_1 = list(cidr.subnet(mask_bits))[-1]
         subnet_cidr_2 = list(cidr.subnet(mask_bits))[-2]
         subnet_1 = self.create_subnet(network_1, cidr=subnet_cidr_1,
-            mask_bits=mask_bits)
+            mask_bits=mask_bits, reserve_cidr=False)
         subnet_2 = self.create_subnet(network_2, cidr=subnet_cidr_2,
-            mask_bits=mask_bits)
+            mask_bits=mask_bits, reserve_cidr=False)
 
         router = self.create_router(
             data_utils.rand_name('router-'),
             admin_state_up=True)
         self.addCleanup(self._try_delete_router, router)
 
-        intf_1 = self.routers_client.add_router_interface(router['id'],
-            subnet_id=subnet_1['id'])
-        intf_2 = self.routers_client.add_router_interface(router['id'],
-            subnet_id=subnet_2['id'])
+        intf_1 = self.client.add_router_interface_with_subnet_id(
+            router['id'], subnet_1['id'])
+        intf_2 = self.client.add_router_interface_with_subnet_id(
+            router['id'], subnet_2['id'])
 
         return intf_1, intf_2
 

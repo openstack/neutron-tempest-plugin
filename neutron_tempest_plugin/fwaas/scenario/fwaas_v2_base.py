@@ -14,57 +14,38 @@
 #    under the License.
 
 from tempest import config
-from tempest.lib.common import ssh
 from tempest.lib import exceptions as lib_exc
 
+from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.fwaas.common import fwaas_v2_client
-from neutron_tempest_plugin.fwaas.scenario import fwaas_v2_manager as manager
+from neutron_tempest_plugin.scenario import base as scenario_base
 
 CONF = config.CONF
 
 
 class FWaaSScenarioTestBase:
-    def check_connectivity(self, ip_address, username=None, private_key=None,
-                           should_connect=True,
-                           check_icmp=True, check_ssh=True,
-                           check_reverse_icmp_ip=None,
-                           should_reverse_connect=True):
-        if should_connect:
-            msg = "Timed out waiting for %s to become reachable" % ip_address
+    def check_ssh_connectivity(self, ip_address, username=None,
+                               private_key=None, should_connect=True):
+        """Check SSH reachability, including expected negative checks."""
+        connect_timeout = CONF.validation.connect_timeout
+        kwargs = {}
+        if not should_connect:
+            # Use a shorter timeout for negative cases.
+            kwargs['timeout'] = 1
+        try:
+            client = ssh.Client(ip_address, username, pkey=private_key,
+                                channel_timeout=connect_timeout,
+                                **kwargs)
+            client.test_connection_auth()
+        except lib_exc.SSHTimeout:
+            if should_connect:
+                raise
         else:
-            msg = "ip address %s is reachable" % ip_address
-        if check_icmp:
-            ok = self.ping_ip_address(ip_address,
-                                      should_succeed=should_connect)
-            self.assertTrue(ok, msg=msg)
-        if check_ssh:
-            connect_timeout = CONF.validation.connect_timeout
-            kwargs = {}
-            if not should_connect:
-                # Use a shorter timeout for negative case
-                kwargs['timeout'] = 1
-            try:
-                client = ssh.Client(ip_address, username, pkey=private_key,
-                                    channel_timeout=connect_timeout,
-                                    ssh_key_type=CONF.validation.ssh_key_type,
-                                    **kwargs)
-                client.test_connection_auth()
-                self.assertTrue(should_connect, "Unexpectedly reachable")
-                if check_reverse_icmp_ip:
-                    cmd = 'ping -c1 -w1 %s' % check_reverse_icmp_ip
-                    try:
-                        client.exec_command(cmd)
-                        self.assertTrue(should_reverse_connect,
-                                        "Unexpectedly reachable (reverse)")
-                    except lib_exc.SSHExecCommandFailed:
-                        if should_reverse_connect:
-                            raise
-            except lib_exc.SSHTimeout:
-                if should_connect:
-                    raise
+            self.assertTrue(should_connect, "Unexpectedly reachable")
 
 
 class FWaaSScenarioTest_V2(fwaas_v2_client.FWaaSClientMixin,
-                        FWaaSScenarioTestBase,
-                        manager.NetworkScenarioTest):
-    pass
+                           FWaaSScenarioTestBase,
+                           scenario_base.BaseTempestTestCase):
+    credentials = ['primary', 'admin']
+    required_extensions = ['fwaas_v2', 'security-group', 'router']

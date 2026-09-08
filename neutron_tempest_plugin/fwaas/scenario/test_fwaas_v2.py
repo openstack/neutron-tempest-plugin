@@ -15,12 +15,11 @@
 
 
 from oslo_log import log as logging
-from tempest.common import utils
 from tempest import config
-from tempest.lib.common.utils import test_utils
+from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
-from tempest.lib import exceptions as lib_exc
 
+from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin.fwaas.scenario import fwaas_v2_base as base
 
 
@@ -37,35 +36,27 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
     - public_network_id
     """
 
-    @classmethod
-    def setup_credentials(cls):
-        # Create no default network resources; tests create their own topology.
-        cls.set_network_resources()
-        super().setup_credentials()
-
     def setUp(self):
         LOG.debug("Initializing FWaaSScenarioTest Setup")
         super().setUp()
-        required_exts = ['fwaas_v2', 'security-group', 'router']
-        # if self.router_insertion:
-        #    required_exts.append('fwaasrouterinsertion')
-        for ext in required_exts:
-            if not utils.is_extension_enabled(ext, 'network'):
-                msg = "%s Extension not enabled." % ext
-                raise self.skipException(msg)
         LOG.debug("FWaaSScenarioTest Setup done.")
 
     def _create_server(self, network, security_group=None):
         keys = self.create_keypair()
-        kwargs = {}
+        port_kwargs = {}
         if security_group is not None:
-            kwargs['security_groups'] = [{'name': security_group['name']}]
-        server = self.create_server(
-            key_name=keys['name'],
-            networks=[{'uuid': network['id']}],
-            wait_until='ACTIVE',
-            **kwargs)
-        return server, keys
+            port_kwargs['security_groups'] = [security_group['id']]
+        port = self.create_port(network, **port_kwargs)
+        server_kwargs = {
+            'flavor_ref': CONF.compute.flavor_ref,
+            'image_ref': CONF.compute.image_ref,
+            'key_name': keys['name'],
+            'networks': [{'port': port['id']}]}
+        if security_group is not None:
+            server_kwargs['security_groups'] = [
+                {'name': security_group['name']}]
+        server = self.create_server(**server_kwargs)
+        return server['server'], keys, port
 
     def _check_connectivity_between_internal_networks(
             self, floating_ip1, keys1, network2, server2, should_connect=True):
@@ -75,81 +66,41 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
                             network_id=network2['id'])['ports']
                         if p['device_owner'].startswith('network'))
         self._check_server_connectivity(
-            floating_ip1, keys1, internal_ips, should_connect)
+            floating_ip1, keys1, internal_ips, should_connect,
+            servers=[server2])
 
-    def _check_server_connectivity(self, floating_ip, keys1, address_list,
-                                   should_connect=True):
-        ip_address = floating_ip['floating_ip_address']
-        private_key = keys1
-        ssh_source = self.get_remote_client(
-            ip_address, private_key=private_key)
+    def _check_server_connectivity(self, floating_ip, private_key,
+                                   address_list, should_connect=True,
+                                   servers=None):
+        ssh_source = ssh.Client(
+            floating_ip['floating_ip_address'],
+            CONF.validation.image_ssh_user,
+            pkey=private_key)
 
         for remote_ip in address_list:
-            if should_connect:
-                msg = ("Timed out waiting for %s to become "
-                       "reachable") % remote_ip
-            else:
-                msg = "ip address %s is reachable" % remote_ip
-            try:
-                self.assertTrue(self._check_remote_connectivity
-                                (ssh_source, remote_ip, should_connect),
-                                msg)
-            except Exception:
-                LOG.exception("Unable to access %s via ssh to "
-                              "floating-ip %s",
-                              remote_ip, floating_ip)
-                raise
-
-    def _check_remote_connectivity(self, source, dest, should_succeed=True,
-                                   nic=None):
-        """check ping server via source ssh connection
-
-        :param source: RemoteClient: an ssh connection from which to ping
-        :param dest: and IP to ping against
-        :param should_succeed: boolean should ping succeed or not
-        :param nic: specific network interface to ping from
-        :returns: boolean -- should_succeed == ping
-        :returns: ping is false if ping failed
-        """
-        def ping_remote():
-            try:
-                source.ping_host(dest, nic=nic)
-            except lib_exc.SSHExecCommandFailed:
-                LOG.warning('Failed to ping IP: %s via a ssh connection '
-                            'from: %s.', dest, source.ssh_client.host)
-                return not should_succeed
-            return should_succeed
-
-        return test_utils.call_until_true(ping_remote,
-                                          CONF.validation.ping_timeout,
-                                          1)
-
-    def _add_router_interface(self, router_id, subnet_id):
-        resp = self.routers_client.add_router_interface(
-            router_id, subnet_id=subnet_id)
-        self.addCleanup(test_utils.call_and_ignore_notfound_exc,
-                        self.routers_client.remove_router_interface, router_id,
-                        subnet_id=subnet_id)
-        return resp
+            self.check_remote_connectivity(
+                ssh_source, remote_ip, should_succeed=should_connect,
+                servers=servers)
 
     def _create_network_subnet(self, prefix="smoke-",
                               port_security_enabled=True):
         network_prefix = "network-%s" % prefix
         subnet_prefix = "subnet-%s" % prefix
         network = self.create_network(
-            namestart=network_prefix,
+            network_name=data_utils.rand_name(network_prefix),
             port_security_enabled=port_security_enabled)
         subnet = self.create_subnet(
-            network=network, namestart=subnet_prefix)
+            network=network, name=data_utils.rand_name(subnet_prefix))
         return network, subnet
 
     def _create_test_server(self, network, security_group):
         pub_network_id = CONF.network.public_network_id
-        server, keys = self._create_server(
+        server, keys, port = self._create_server(
             network, security_group=security_group)
         private_key = keys['private_key']
-        server_floating_ip = self.create_floating_ip(server, pub_network_id)
-        fixed_ip = list(server['addresses'].values())[0][0]['addr']
+        server_floating_ip = self.create_floatingip(
+            external_network_id=pub_network_id, port=port)
+        fixed_ip = port['fixed_ips'][0]['ip_address']
         return server, private_key, fixed_ip, server_floating_ip
 
     def _create_topology(self):
@@ -187,16 +138,16 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
 
         # Create a router and attach Network1, Network2 and External Networks
         # to it.
-        router = self._create_router(namestart='SCENARIO-TEST-ROUTER')
         pub_network_id = CONF.network.public_network_id
-        kwargs = {'external_gateway_info': dict(network_id=pub_network_id)}
-        router = self.routers_client.update_router(
-            router['id'], **kwargs)['router']
+        router = self.create_router(
+            router_name=data_utils.rand_name('SCENARIO-TEST-ROUTER'),
+            admin_state_up=True,
+            external_network_id=pub_network_id)
         router_id = router['id']
-        resp_add_intf = self._add_router_interface(
+        resp_add_intf = self.create_router_interface(
             router_id, subnet_id=subnet1['id'])
         router_portid_1 = resp_add_intf['port_id']
-        resp_add_intf = self._add_router_interface(
+        resp_add_intf = self.create_router_interface(
             router_id, subnet_id=subnet2['id'])
         router_portid_2 = resp_add_intf['port_id']
         resp['router'] = router
@@ -205,6 +156,10 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
 
         # Create a VM on each of the network and assign it a floating IP.
         security_group = self.create_security_group()
+        self.create_loginable_secgroup_rule(
+            secgroup_id=security_group['id'])
+        self.create_pingable_secgroup_rule(
+            secgroup_id=security_group['id'])
         server1, private_key1, server_fixed_ip_1, server_floating_ip_1 = (
             self._create_test_server(network1, security_group))
         server2, private_key2, server_fixed_ip_2, server_floating_ip_2 = (
@@ -225,14 +180,22 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
         topology = self._create_topology()
         ssh_login = CONF.validation.image_ssh_user
 
-        self.check_vm_connectivity(
-            ip_address=topology['server_floating_ip_1']['floating_ip_address'],
-            username=ssh_login,
-            private_key=topology['private_key1'])
-        self.check_vm_connectivity(
-            ip_address=topology['server_floating_ip_2']['floating_ip_address'],
-            username=ssh_login,
-            private_key=topology['private_key2'])
+        # TODO(slaweq): Revisit whether host-originated ICMP checks are
+        # needed in addition to the SSH and east-west connectivity checks.
+        self.ping_ip_address(
+            topology['server_floating_ip_1']['floating_ip_address'])
+        self.check_connectivity(
+            host=topology['server_floating_ip_1']['floating_ip_address'],
+            ssh_user=ssh_login,
+            ssh_key=topology['private_key1'],
+            servers=[topology['server1']])
+        self.ping_ip_address(
+            topology['server_floating_ip_2']['floating_ip_address'])
+        self.check_connectivity(
+            host=topology['server_floating_ip_2']['floating_ip_address'],
+            ssh_user=ssh_login,
+            ssh_key=topology['private_key2'],
+            servers=[topology['server2']])
 
         # Scenario 1: Add allow ICMP rules between the two VMs.
         fw_allow_icmp_rule = self.create_firewall_rule(action="allow",
@@ -260,7 +223,8 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
             topology['server_floating_ip_1'],
             topology['private_key1'],
             address_list=[topology['server_fixed_ip_2']],
-            should_connect=True)
+            should_connect=True,
+            servers=[topology['server1'], topology['server2']])
 
         # Scenario 2: Now remove the allow_icmp rule add a deny_icmp rule and
         # check that ICMP gets blocked
@@ -278,7 +242,8 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
             topology['server_floating_ip_1'],
             topology['private_key1'],
             address_list=[topology['server_fixed_ip_2']],
-            should_connect=False)
+            should_connect=False,
+            servers=[topology['server1'], topology['server2']])
 
         # Scenario 3: Create a rule allowing ICMP only from server_fixed_ip_1
         # to server_fixed_ip_2 and check that traffic from opposite direction
@@ -314,12 +279,14 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
             topology['server_floating_ip_1'],
             topology['private_key1'],
             address_list=[topology['server_fixed_ip_2']],
-            should_connect=True)
+            should_connect=True,
+            servers=[topology['server1'], topology['server2']])
         self._check_server_connectivity(
             topology['server_floating_ip_2'],
             topology['private_key2'],
             address_list=[topology['server_fixed_ip_1']],
-            should_connect=CONF.fwaas.driver == 'ovn')
+            should_connect=CONF.fwaas.driver == 'ovn',
+            servers=[topology['server1'], topology['server2']])
 
         # Disassociate ports of this firewall group for cleanup resources
         self.update_firewall_group_and_wait(fw_group['id'], ports=[])
@@ -348,16 +315,17 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
         network, subnet = self._create_network_subnet(
             prefix='fwaas-ssh-fip-',
             port_security_enabled=False)
-        router = self._create_router(namestart='fwaas-ssh-fip-router')
         pub_network_id = CONF.network.public_network_id
-        router = self.routers_client.update_router(
-            router['id'],
-            external_gateway_info=dict(network_id=pub_network_id))['router']
-        resp = self._add_router_interface(
+        router = self.create_router(
+            router_name=data_utils.rand_name('fwaas-ssh-fip-router'),
+            admin_state_up=True,
+            external_network_id=pub_network_id)
+        resp = self.create_router_interface(
             router['id'], subnet_id=subnet['id'])
         router_port_id = resp['port_id']
-        server, keys = self._create_server(network)
-        floating_ip = self.create_floating_ip(server, pub_network_id)
+        server, keys, port = self._create_server(network)
+        floating_ip = self.create_floatingip(
+            external_network_id=pub_network_id, port=port)
 
         return {
             'server': server,
@@ -382,10 +350,13 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
         private_key = topology['private_key']
 
         # Baseline: Ensure VM is reachable before applying firewall
-        self.check_vm_connectivity(
-            ip_address=fip_address,
-            username=ssh_login,
-            private_key=private_key)
+        # TODO(slaweq): Revisit whether host-originated ICMP is needed here.
+        self.ping_ip_address(fip_address)
+        self.check_connectivity(
+            host=fip_address,
+            ssh_user=ssh_login,
+            ssh_key=private_key,
+            servers=[topology['server']])
 
         # Phase 1: Attach firewall group with empty policy - SSH blocked
         fw_policy = self.create_firewall_policy()
@@ -398,13 +369,11 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
         self._wait_firewall_group_ready(fw_group['id'])
         LOG.debug('Firewall group with empty policy attached to router port')
 
-        self.check_connectivity(
+        self.check_ssh_connectivity(
             ip_address=fip_address,
             username=ssh_login,
             private_key=private_key,
-            should_connect=False,
-            check_icmp=False,
-            check_ssh=True)
+            should_connect=False)
 
         # Phase 2: Add allow SSH rules - ingress dport 22, egress sport 22
         fw_allow_ssh_rule = self.create_firewall_rule(
@@ -422,9 +391,7 @@ class TestFWaaS_v2(base.FWaaSScenarioTest_V2):
         LOG.debug('Added allow SSH rules to ingress and egress policy')
 
         self.check_connectivity(
-            ip_address=fip_address,
-            username=ssh_login,
-            private_key=private_key,
-            should_connect=True,
-            check_icmp=False,
-            check_ssh=True)
+            host=fip_address,
+            ssh_user=ssh_login,
+            ssh_key=private_key,
+            servers=[topology['server']])

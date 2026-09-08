@@ -59,3 +59,67 @@ class FloatingIPNegativeTestJSON(base.BaseNetworkTest):
                                       port_id=port['id'])
         self.assertRaises(lib_exc.Conflict, self.client.update_floatingip,
                           floating_ip2['id'], port_id=port['id'])
+
+
+class IndirectFloatingIPsNegativeTestJSON(base.BaseAdminNetworkTest):
+
+    credentials = ['primary', 'admin']
+    required_extensions = ['router', 'floating-ip-router-writable']
+
+    def _create_indirect_topology(self, outer_external_network_id=None):
+        project_network = self.create_network()
+        project_subnet = self.create_subnet(project_network)
+        transit_network = self.create_network()
+        self.create_subnet(transit_network)
+
+        inner_router = self.create_router(data_utils.rand_name('inner-router'))
+        outer_router = self.create_router(
+            data_utils.rand_name('outer-router'),
+            external_network_id=outer_external_network_id)
+        self.create_router_interface(inner_router['id'], project_subnet['id'])
+
+        inner_transit_port = self.create_port(transit_network)
+        self.client.add_router_interface_with_port_id(
+            inner_router['id'], inner_transit_port['id'])
+        outer_transit_port = self.create_port(transit_network)
+        self.client.add_router_interface_with_port_id(
+            outer_router['id'], outer_transit_port['id'])
+
+        return self.create_port(project_network), outer_router
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('fb0bdc69-57df-48a5-9e30-7cc6b8b9a1a1')
+    def test_floatingip_router_without_gateway_on_floating_network(self):
+        other_external_network = self.create_network(external=True)
+        self.create_subnet(other_external_network)
+        port, router = self._create_indirect_topology(
+            other_external_network['id'])
+
+        self.assertRaises(
+            lib_exc.Conflict,
+            self.create_floatingip,
+            port=port,
+            router_id=router['id'])
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('f3c46ae0-a0cf-4a15-a7b1-8cb03dc29af7')
+    def test_floatingip_without_router_id_on_isolated_network(self):
+        port, _router = self._create_indirect_topology()
+
+        self.assertRaises(
+            lib_exc.NotFound,
+            self.create_floatingip,
+            port=port)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('2d3f9f2c-25ee-4d1a-b24f-42728bc8ec5e')
+    def test_floatingip_cannot_associate_isolated_network_port(self):
+        network = self.create_network()
+        self.create_subnet(network)
+        port = self.create_port(network)
+        floating_ip = self.create_floatingip()
+
+        self.assertRaises(
+            lib_exc.NotFound,
+            self.client.update_floatingip,
+            floating_ip['id'], port_id=port['id'])

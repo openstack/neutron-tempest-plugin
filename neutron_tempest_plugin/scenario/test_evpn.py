@@ -16,8 +16,10 @@
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
+import neutron_tempest_plugin.common.evpn_provisioner as evpn_provisioner
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import base
+
 
 CONF = config.CONF
 
@@ -29,8 +31,33 @@ class NetworkEvpnTest(base.BaseAdminTempestTestCase):
     _ip_version = 4
 
     @classmethod
+    def _init_vni_provisioner(cls):
+        opts = CONF.neutron_plugin_options
+        if opts.evpn_vtep_ip:
+            cls.vni_provisioner = evpn_provisioner.EVPNVNIProvisioner(
+                vtep_ip=opts.evpn_vtep_ip,
+                datapath_ip=opts.evpn_datapath_ip,
+                vxlan_port=opts.evpn_vxlan_port,
+                asn=opts.evpn_asn,
+                peer_asn=opts.evpn_peer_asn,
+                vni_range_start=opts.evpn_vni_range_start,
+                vni_range_end=opts.evpn_vni_range_end)
+        else:
+            cls.vni_provisioner = None
+
+    @classmethod
+    def _allocate_vni(cls):
+        if cls.vni_provisioner:
+            vni = cls.vni_provisioner.allocate_vni()
+            cls.addClassResourceCleanup(
+                cls.vni_provisioner.delete_vni, vni)
+            return vni
+        return CONF.neutron_plugin_options.evpn_vni
+
+    @classmethod
     def resource_setup(cls):
         super().resource_setup()
+        cls._init_vni_provisioner()
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
         cls.keypair = cls.create_keypair()
@@ -48,7 +75,7 @@ class NetworkEvpnTest(base.BaseAdminTempestTestCase):
         cls.router = cls.create_router_by_client(
             is_admin=True,
             external_network_id=None,
-            evpn_vni=CONF.neutron_plugin_options.evpn_vni)
+            evpn_vni=cls._allocate_vni())
         cls.admin_client.add_router_interface_with_subnet_id(
             cls.router['id'], cls.subnet['id'],
             advertise_host=True)

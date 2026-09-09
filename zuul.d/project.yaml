@@ -18,6 +18,10 @@
         - neutron-tempest-plugin-openvswitch-iptables_hybrid-distributed-dhcp
         - neutron-tempest-plugin-ovn-enforce-scope-old-defaults
         - neutron-tempest-plugin-openvswitch-iptables_hybrid
+        # NOTE: Run evpn job from tempest during development. Remove it after
+        # development is complete. The neutron-ovn-evpn-tempest-multinode is
+        # defined in neutron/zuul.d/job-templates.yaml
+        - neutron-ovn-evpn-tempest-multinode
     periodic:
       jobs:
         - neutron-tempest-plugin-ovn-enforce-scope-old-defaults

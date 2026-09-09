@@ -13,16 +13,17 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import netaddr
-from oslo_config import cfg
-import testtools
+import hashlib
 
+import netaddr
 from neutron_lib.utils import test
+from oslo_config import cfg
 from tempest.common import utils
 from tempest.common import waiters
 from tempest.lib.common import ssh
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
+import testtools
 
 from neutron_tempest_plugin import config
 from neutron_tempest_plugin.scenario import constants
@@ -93,6 +94,51 @@ class Vpnaas(base.BaseTempestTestCase):
     outer_ipv6 = False
 
     @classmethod
+    def _get_private_cidrs(cls):
+        """Assign unique private CIDRs for this test class.
+
+        VPN scenario tests run in parallel (tempest_concurrency > 1) but
+        previously all used the same 10.10.0.0/24 and 10.20.0.0/24
+        subnets. That caused routing/IPsec leaks across tests. CIDRs are
+        derived from the class name so each class gets a stable, distinct
+        address space.
+
+        Example:
+        cls.__name__    = "Vpnaas4in4"
+        sha3_384 digest = 12444c9e...  (first 4 bytes)
+        name_hash       = 0x12444C9E  (306465950)
+        octet2          = (0x44 % 253) + 1 = 68 % 253 + 1 = 69
+        octet3_left     = 0x9E & 0x7F   = 30
+        octet3_right    = 0x4C & 0x7F   = 76   (different from left, no bump)
+        octet3_ssh      = (30 + 2) % 128 = 32
+
+        Class        name_hash   LEFT v4      RIGHT v4     SSH v4
+        Vpnaas4in4   0x12444C9E  10.69.30.0   10.69.76.0   10.69.32.0
+        Vpnaas4in6   0x6A28ABBB  10.41.59.0   10.41.43.0   10.41.61.0
+        Vpnaas6in4   0x7803160C  10.4.12.0    10.4.22.0    10.4.14.0
+        Vpnaas6in6   0xDCC372B0  10.196.48.0  10.196.114.0 10.196.50.0
+        """
+        name_hash = int.from_bytes(hashlib.sha3_384(
+            cls.__name__.encode()).digest()[:4], 'big')
+        octet2 = ((name_hash >> 16) & 0xff) % 253 + 1
+        octet3_left = name_hash & 0x7f
+        octet3_right = (name_hash >> 8) & 0x7f
+        if octet3_right == octet3_left:
+            octet3_right = (octet3_left + 1) % 128
+        octet3_ssh = (octet3_left + 2) % 128
+
+        cls._private_v4_left_cidr = netaddr.IPNetwork(
+            '10.%d.%d.0/24' % (octet2, octet3_left))
+        cls._private_v4_right_cidr = netaddr.IPNetwork(
+            '10.%d.%d.0/24' % (octet2, octet3_right))
+        cls._private_v4_left_ssh_cidr = netaddr.IPNetwork(
+            '10.%d.%d.0/24' % (octet2, octet3_ssh))
+        cls._private_v6_left_cidr = netaddr.IPNetwork(
+            '2001:db8:%x:2::/64' % (name_hash & 0xffff))
+        cls._private_v6_right_cidr = netaddr.IPNetwork(
+            '2001:db8:%x:1::/64' % ((name_hash >> 16) & 0xffff))
+
+    @classmethod
     @utils.requires_ext(extension="vpnaas", service="network")
     def resource_setup(cls):
         super().resource_setup()
@@ -116,6 +162,8 @@ class Vpnaas(base.BaseTempestTestCase):
             cls.extra_subnet_attributes['ipv6_address_mode'] = 'slaac'
             cls.extra_subnet_attributes['ipv6_ra_mode'] = 'slaac'
 
+        cls._get_private_cidrs()
+
         # LEFT
         cls.router = cls.create_router(
             data_utils.rand_name('left-router'),
@@ -123,19 +171,19 @@ class Vpnaas(base.BaseTempestTestCase):
             external_network_id=CONF.network.public_network_id)
         cls.network = cls.create_network(network_name='left-network')
         ip_version = 6 if cls.inner_ipv6 else 4
-        v4_cidr = netaddr.IPNetwork('10.20.0.0/24')
-        v6_cidr = netaddr.IPNetwork('2001:db8:0:2::/64')
-        cidr = v6_cidr if cls.inner_ipv6 else v4_cidr
+        cidr = (cls._private_v6_left_cidr if cls.inner_ipv6 else
+                cls._private_v4_left_cidr)
         cls.subnet = cls.create_subnet(
             cls.network, ip_version=ip_version, cidr=cidr, name='left-subnet',
-            **cls.extra_subnet_attributes)
+            reserve_cidr=True, **cls.extra_subnet_attributes)
         cls.create_router_interface(cls.router['id'], cls.subnet['id'])
 
         # Gives an internal IPv4 subnet for floating IP to the left server,
         # we use it to ssh into the left server.
         if cls.inner_ipv6:
             v4_subnet = cls.create_subnet(
-                cls.network, ip_version=4, name='left-v4-subnet')
+                cls.network, ip_version=4, name='left-v4-subnet',
+                cidr=cls._private_v4_left_ssh_cidr, reserve_cidr=True)
             cls.create_router_interface(cls.router['id'], v4_subnet['id'])
 
         # RIGHT
@@ -165,13 +213,12 @@ class Vpnaas(base.BaseTempestTestCase):
             admin_state_up=True,
             external_network_id=CONF.network.public_network_id)
         network = cls.create_network(network_name='right-network')
-        v4_cidr = netaddr.IPNetwork('10.10.0.0/24')
-        v6_cidr = netaddr.IPNetwork('2001:db8:0:1::/64')
-        cidr = v6_cidr if cls.inner_ipv6 else v4_cidr
+        cidr = (cls._private_v6_right_cidr if cls.inner_ipv6 else
+                cls._private_v4_right_cidr)
         ip_version = 6 if cls.inner_ipv6 else 4
         subnet = cls.create_subnet(
             network, ip_version=ip_version, cidr=cidr, name='right-subnet',
-            **cls.extra_subnet_attributes)
+            reserve_cidr=True, **cls.extra_subnet_attributes)
         cls.create_router_interface(router['id'], subnet['id'])
 
         return network, subnet, router

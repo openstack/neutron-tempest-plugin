@@ -33,7 +33,15 @@ class AddressScopeTestBase(base.BaseAdminNetworkTest):
         return self.create_address_scope(name=name, is_admin=is_admin,
                                          **kwargs)
 
-    def _test_update_address_scope_helper(self, is_admin=False, shared=None):
+    def _share_address_scope(self, address_scope, target_tenant='*'):
+        return self.admin_client.create_rbac_policy(
+            object_type='address_scope',
+            object_id=address_scope['id'],
+            action='access_as_shared',
+            target_tenant=target_tenant,
+        )['rbac_policy']
+
+    def _test_update_address_scope_helper(self, is_admin=False):
         address_scope = self._create_address_scope(is_admin=is_admin,
                                                    ip_version=4)
 
@@ -42,11 +50,7 @@ class AddressScopeTestBase(base.BaseAdminNetworkTest):
         else:
             client = self.client
 
-        kwargs = {'name': 'new_name'}
-        if shared is not None:
-            kwargs['shared'] = shared
-
-        client.update_address_scope(address_scope['id'], **kwargs)
+        client.update_address_scope(address_scope['id'], name='new_name')
         body = client.show_address_scope(address_scope['id'])
         address_scope = body['address_scope']
         self.assertEqual('new_name', address_scope['name'])
@@ -76,7 +80,6 @@ class AddressScopeTest(AddressScopeTestBase):
         self.assertEqual(address_scope['id'], returned_address_scope['id'])
         self.assertEqual(address_scope['name'],
                          returned_address_scope['name'])
-        self.assertFalse(returned_address_scope['shared'])
 
     @decorators.idempotent_id('bbd57364-6d57-48e4-b0f1-8b9a998f5e06')
     @utils.requires_ext(extension="project-id", service="network")
@@ -99,21 +102,28 @@ class AddressScopeTest(AddressScopeTestBase):
                           address_scope['id'])
 
     @decorators.idempotent_id('5a06c287-8036-4d04-9d78-def8e06d43df')
+    @utils.requires_ext(extension='rbac-address-scope', service='network')
     def test_admin_create_shared_address_scope(self):
-        address_scope = self._create_address_scope(is_admin=True, shared=True,
-                                                   ip_version=4)
+        address_scope = self._create_address_scope(is_admin=True, ip_version=4)
+        self._share_address_scope(address_scope, target_tenant='*')
         body = self.admin_client.show_address_scope(
             address_scope['id'])
         returned_address_scope = body['address_scope']
         self.assertEqual(address_scope['name'],
                          returned_address_scope['name'])
-        self.assertTrue(returned_address_scope['shared'])
+        self.client.show_address_scope(address_scope['id'])
 
     @decorators.idempotent_id('e9e1ccdd-9ccd-4076-9503-71820529508b')
+    @utils.requires_ext(extension='rbac-address-scope', service='network')
     def test_admin_update_shared_address_scope(self):
-        address_scope = self._test_update_address_scope_helper(is_admin=True,
-                                                               shared=True)
-        self.assertTrue(address_scope['shared'])
+        address_scope = self._create_address_scope(is_admin=True, ip_version=4)
+        self._share_address_scope(address_scope,
+                                  target_tenant=self.client.project_id)
+        self.admin_client.update_address_scope(address_scope['id'],
+                                               name='new_name')
+        body = self.admin_client.show_address_scope(address_scope['id'])
+        self.assertEqual('new_name', body['address_scope']['name'])
+        self.client.show_address_scope(address_scope['id'])
 
 
 class RbacAddressScopeTest(AddressScopeTestBase):
@@ -129,12 +139,7 @@ class RbacAddressScopeTest(AddressScopeTestBase):
 
     def _make_admin_as_shared_to_project_id(self, project_id):
         a_s = self._create_address_scope(ip_version=4, is_admin=True)
-        rbac_policy = self.admin_client.create_rbac_policy(
-            object_type='address_scope',
-            object_id=a_s['id'],
-            action='access_as_shared',
-            target_tenant=project_id,
-        )['rbac_policy']
+        rbac_policy = self._share_address_scope(a_s, target_tenant=project_id)
         return {'address_scope': a_s, 'rbac_policy': rbac_policy}
 
     @decorators.idempotent_id('038e999b-cd4b-4021-a9ff-ebb734f6e056')

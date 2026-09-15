@@ -1,0 +1,5 @@
+---
+other:
+  - |
+    Update address scope API tests to stop using the removed ``shared``
+    attribute. Sharing is now exercised through RBAC policies.

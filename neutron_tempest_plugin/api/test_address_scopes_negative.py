@@ -28,18 +28,6 @@ class AddressScopeTestNegative(test_address_scopes.AddressScopeTestBase):
                           shared=True, ip_version=4)
 
     @decorators.attr(type='negative')
-    @decorators.idempotent_id('a857b61e-bf53-4fab-b21a-b0daaf81b5bd')
-    def test_project_update_address_scope_shared_true(self):
-        self.assertRaises(lib_exc.Forbidden,
-                          self._test_update_address_scope_helper, shared=True)
-
-    @decorators.attr(type='negative')
-    @decorators.idempotent_id('a859ef2f-9c76-4e2e-ba0f-e0339a489e8c')
-    def test_project_update_address_scope_shared_false(self):
-        self.assertRaises(lib_exc.Forbidden,
-                          self._test_update_address_scope_helper, shared=False)
-
-    @decorators.attr(type='negative')
     @decorators.idempotent_id('9b6dd7ad-cabb-4f55-bd5e-e61176ef41f6')
     def test_get_non_existent_address_scope(self):
         non_exist_id = data_utils.rand_name('address_scope')
@@ -68,15 +56,6 @@ class AddressScopeTestNegative(test_address_scopes.AddressScopeTestBase):
         non_exist_id = data_utils.rand_name('address_scope')
         self.assertRaises(lib_exc.NotFound, self.client.update_address_scope,
                           non_exist_id, name='foo-name')
-
-    @decorators.attr(type='negative')
-    @decorators.idempotent_id('702d0515-82cb-4207-b0d9-703336e54665')
-    def test_update_shared_address_scope_to_unshare(self):
-        address_scope = self._create_address_scope(is_admin=True, shared=True,
-                                                   ip_version=4)
-        self.assertRaises(lib_exc.BadRequest,
-                          self.admin_client.update_address_scope,
-                          address_scope['id'], name='new-name', shared=False)
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('1e471e5c-6f9c-437a-9257-fd9bc4b6f0fb')

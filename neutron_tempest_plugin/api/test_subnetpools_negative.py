@@ -244,7 +244,13 @@ class SubnetPoolsNegativeTestJSON(test_subnetpools.SubnetPoolsTestBase):
     def test_project_update_sp_prefix_associated_with_shared_addr_scope(self):
         address_scope = self.create_address_scope(
             name=data_utils.rand_name('smoke-address-scope'), is_admin=True,
-            shared=True, ip_version=4)
+            ip_version=4)
+        self.admin_client.create_rbac_policy(
+            object_type='address_scope',
+            object_id=address_scope['id'],
+            action='access_as_shared',
+            target_tenant='*',
+        )
         addr_scope_id = address_scope['id']
         pool_values = {'prefixes': ['20.0.0.0/18', '30.0.0.0/18']}
 

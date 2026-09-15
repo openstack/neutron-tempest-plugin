@@ -224,8 +224,13 @@ class BaseTempestTestCase(base_api.BaseNetworkTest):
     @classmethod
     def create_router_by_client(cls, is_admin=False, **kwargs):
         kwargs.update({'router_name': data_utils.rand_name('router'),
-                       'admin_state_up': True,
-                       'external_network_id': CONF.network.public_network_id})
+                       'admin_state_up': True})
+        # Only default to the public network when the caller did not express
+        # an explicit intent. EVPN routers pass external_network_id=None on
+        # purpose (they must not have an external gateway), so honor that
+        # instead of unconditionally overwriting it.
+        kwargs.setdefault('external_network_id',
+                          CONF.network.public_network_id)
         if not is_admin:
             router = cls.create_router(**kwargs)
         else:

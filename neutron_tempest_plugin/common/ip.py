@@ -133,21 +133,35 @@ class IPCommand:
                                  ip_addresses=ip_addresses, port=port,
                                  subnets=subnets)
 
-    def add_link(self, name, link_type, link=None, segmentation_id=None):
+    def add_link(self, name, link_type, link=None, segmentation_id=None,
+                 table=None, local=None, dstport=None, nolearning=False):
         command = ['add']
         if link:
             command += ['link', link]
         command += ['name', name, 'type', link_type]
         if segmentation_id:
             command += ['id', segmentation_id]
+        if table:
+            command += ['table', table]
+        if local:
+            command += ['local', local]
+        if dstport:
+            command += ['dstport', dstport]
+        if nolearning:
+            command.append('nolearning')
         return self.execute('link', *command)
+
+    def delete_link(self, device):
+        return self.execute('link', 'del', device)
 
     def set_link_address(self, address, device):
         command = ['set', 'address', address, 'dev', device]
         return self.execute('link', *command)
 
-    def set_link(self, device, state=None):
+    def set_link(self, device, state=None, master=None):
         command = ['set', 'dev', device]
+        if master:
+            command += ['master', master]
         if state:
             command.append(state)
         return self.execute('link', *command)

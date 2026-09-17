@@ -16,6 +16,9 @@
 import testtools
 
 from tempest.common import waiters
+from tempest.lib.common import api_microversion_fixture
+from tempest.lib.common import api_version_request
+from tempest.lib.common import api_version_utils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
@@ -32,6 +35,13 @@ class NetworkEvpnTest(base.BaseAdminTempestTestCase):
     required_extensions = ['evpn']
 
     _ip_version = 4
+
+    # No test-imposed minimum: Nova requests use the compute microversion
+    # configured in tempest (CONF.compute.min_microversion), defaulting to
+    # 2.1 when unset. The fixture in setUp makes this the version actually
+    # sent to the API, which the live migration test relies on to decide
+    # whether 'disk_over_commit' must be included.
+    compute_min_microversion = None
 
     @classmethod
     def _init_vni_provisioner(cls):
@@ -60,6 +70,10 @@ class NetworkEvpnTest(base.BaseAdminTempestTestCase):
     @classmethod
     def resource_setup(cls):
         super().resource_setup()
+        cls.compute_request_microversion = (
+            api_version_utils.select_request_microversion(
+                cls.compute_min_microversion,
+                CONF.compute.min_microversion))
         cls._init_vni_provisioner()
         cls.network = cls.create_network()
         cls.subnet = cls.create_subnet(cls.network)
@@ -89,6 +103,14 @@ class NetworkEvpnTest(base.BaseAdminTempestTestCase):
             cls.admin_client.remove_router_interface_with_subnet_id,
             cls.router['id'], cls.subnet['id'])
         super().resource_cleanup()
+
+    def setUp(self):
+        super().setUp()
+        # Force Nova requests to use the configured compute microversion, so
+        # the microversion checks below reflect the version the API actually
+        # uses (mirrors neutron_tempest_plugin.scenario.test_pvlan_migration).
+        self.useFixture(api_microversion_fixture.APIMicroversionFixture(
+            compute_microversion=self.compute_request_microversion))
 
     def _create_evpn_server(self):
         server = self.create_server(
@@ -240,7 +262,17 @@ class NetworkEvpnTest(base.BaseAdminTempestTestCase):
                            block_migration_for_live_migration)
         migration_kwargs = dict(
             host=None, block_migration=block_migration)
-        if CONF.compute.min_microversion is None:
+        # 'disk_over_commit' is required up to compute microversion 2.24 and
+        # was removed in 2.25. Mirror tempest's
+        # is_requested_microversion_compatible('2.24') (not available here,
+        # as this scenario test does not inherit the compute test base) using
+        # the actually requested microversion set by the fixture in setUp: an
+        # unset microversion parses as a null (0.0) version, so the parameter
+        # is sent by default and only dropped from microversion 2.25 onwards.
+        request_microversion = api_version_request.APIVersionRequest(
+            self.compute_request_microversion)
+        if request_microversion <= api_version_request.APIVersionRequest(
+                '2.24'):
             migration_kwargs['disk_over_commit'] = False
         self.os_admin.servers_client.live_migrate_server(
             server['id'], **migration_kwargs)

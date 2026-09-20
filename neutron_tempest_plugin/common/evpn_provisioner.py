@@ -13,15 +13,14 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-import subprocess
-import tempfile
-
 from oslo_concurrency import lockutils
 from oslo_log import log as logging
-from tempest.lib import exceptions as lib_exc
 
+from neutron_tempest_plugin.common import ip
+from neutron_tempest_plugin.common import shell
 from neutron_tempest_plugin.common import ssh
 from neutron_tempest_plugin import config
+from neutron_tempest_plugin import exceptions
 
 CONF = config.CONF
 
@@ -102,39 +101,22 @@ class EVPNVNIProvisioner:
                 key_filename=opts.evpn_vtep_keyfile)
         else:
             self._ssh_client = None
-
-    def _run(self, cmd):
-        full_cmd = 'sudo ' + ' '.join(cmd)
-        LOG.debug('EVPNVNIProvisioner: %s', full_cmd)
-        if self._ssh_client:
-            self._ssh_client.exec_command(full_cmd)
-        else:
-            subprocess.run(
-                ['sudo'] + cmd,
-                check=True, capture_output=True, text=True)
+        # ``IPCommand`` runs commands locally when ssh_client is None and
+        # remotely (on the VTEP host) otherwise.
+        self._ip_cmd = ip.IPCommand(ssh_client=self._ssh_client)
 
     def _run_vtysh(self, config):
         LOG.debug('EVPNVNIProvisioner vtysh config:\n%s', config)
-        if self._ssh_client:
-            tmpf = self._ssh_client.exec_command(
-                'mktemp --suffix=.conf').strip()
-            self._ssh_client.exec_command(
-                "cat > %s << 'EVPN_EOF'\n%s\nEVPN_EOF" % (tmpf, config))
-            self._ssh_client.exec_command(
-                'sudo vtysh -f %s' % tmpf)
-            self._ssh_client.exec_command(
-                'sudo vtysh -c "write memory"')
-        else:
-            with tempfile.NamedTemporaryFile(
-                    mode='w', suffix='.conf', delete=True) as f:
-                f.write(config)
-                f.flush()
-                subprocess.run(
-                    ['/usr/bin/sudo', 'vtysh', '-f', f.name],
-                    check=True, capture_output=True, text=True)
-                subprocess.run(
-                    ['/usr/bin/sudo', 'vtysh', '-c', 'write memory'],
-                    check=True, capture_output=True, text=True)
+        # Write the config to a temporary file and apply it with vtysh, one
+        # step at a time through shell.execute so it works both locally and
+        # remotely.
+        tmpf = shell.execute("mktemp --suffix=.conf",
+                             ssh_client=self._ssh_client).stdout.strip()
+        shell.execute("cat > %s << 'EVPN_EOF'\n%s\nEVPN_EOF" % (tmpf, config),
+                      ssh_client=self._ssh_client)
+        shell.execute("sudo vtysh -f %s" % tmpf, ssh_client=self._ssh_client)
+        shell.execute('sudo vtysh -c "write memory"',
+                      ssh_client=self._ssh_client)
 
     def _create_vni_unlocked(self, vni):
         LOG.info('Creating EVPN VNI %d infrastructure', vni)
@@ -142,26 +124,21 @@ class EVPNVNIProvisioner:
         bridge = 'br-%d' % vni
         vxlan = 'vxlan-%d' % vni
 
-        self._run(
-            ['ip', 'link', 'add', vrf,
-             'type', 'vrf', 'table', str(vni)])
-        self._run(['ip', 'link', 'set', vrf, 'up'])
-        self._run(['ip', 'link', 'add', bridge, 'type', 'bridge'])
-        self._run(['ip', 'link', 'set', bridge, 'master', vrf])
-        self._run(
-            ['ip', 'link', 'add', vxlan,
-             'type', 'vxlan', 'id', str(vni),
-             'local', self.vtep_ip,
-             'dstport', str(self.vxlan_port), 'nolearning'])
-        self._run(['ip', 'link', 'set', vxlan, 'master', bridge])
-        self._run(
-            ['bridge', 'link', 'set', 'dev', vxlan,
-             'neigh_suppress', 'on'])
-        self._run(['ip', 'link', 'set', bridge, 'up'])
-        self._run(['ip', 'link', 'set', vxlan, 'up'])
-        self._run(
-            ['ip', 'addr', 'add',
-             '%s/32' % self.datapath_ip, 'dev', bridge])
+        self._ip_cmd.add_link(name=vrf, link_type='vrf', table=vni)
+        self._ip_cmd.set_link(device=vrf, state='up')
+        self._ip_cmd.add_link(name=bridge, link_type='bridge')
+        self._ip_cmd.set_link(device=bridge, master=vrf)
+        self._ip_cmd.add_link(
+            name=vxlan, link_type='vxlan', segmentation_id=vni,
+            local=self.vtep_ip, dstport=self.vxlan_port, nolearning=True)
+        self._ip_cmd.set_link(device=vxlan, master=bridge)
+        shell.execute(
+            'sudo bridge link set dev %s neigh_suppress on' % vxlan,
+            ssh_client=self._ssh_client)
+        self._ip_cmd.set_link(device=bridge, state='up')
+        self._ip_cmd.set_link(device=vxlan, state='up')
+        self._ip_cmd.add_address(address='%s/32' % self.datapath_ip,
+                             device=bridge)
 
         self._run_vtysh(_FRR_CREATE_TEMPLATE.format(
             vni=vni, asn=self.asn, peer_asn=self.peer_asn))
@@ -175,9 +152,8 @@ class EVPNVNIProvisioner:
         # live interfaces ("Only inactive VRFs can be deleted").
         for dev in ('vxlan-%d' % vni, 'br-%d' % vni, 'evpnvrf-%d' % vni):
             try:
-                self._run(['ip', 'link', 'del', dev])
-            except (subprocess.CalledProcessError,
-                    lib_exc.SSHExecCommandFailed):
+                self._ip_cmd.delete_link(dev)
+            except exceptions.ShellCommandFailed:
                 LOG.warning('Failed to delete %s (may not exist)', dev)
 
         self._run_vtysh(_FRR_DELETE_TEMPLATE.format(

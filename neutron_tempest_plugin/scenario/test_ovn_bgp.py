@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from neutron_lib.utils import test
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
@@ -37,6 +38,7 @@ class NetworkOVNBGPTest(base.BaseAdminTempestTestCase):
         cls.create_pingable_secgroup_rule(
             secgroup_id=cls.secgroup['id'])
 
+    @test.unstable_test("bug 2167462 / FDP-4384")
     @decorators.idempotent_id('b0bbcb98-f176-4f4d-9a9e-87dcacdfe8d3')
     def test_leak_routes_connectivity(self):
         network = self.create_network()

@@ -1355,7 +1355,7 @@
       network_api_extensions_fwaas:
         - fwaas_v2
       devstack_localrc:
-        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_fwaas) | join(',') }}"
+        NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common | difference(['security-group']) + network_api_extensions_fwaas) | join(',') }}"
       devstack_services:
         # Neutron services
         q-agt: true
@@ -1364,6 +1364,16 @@
         q-metering: true
         q-l3: true
       devstack_local_conf:
+        post-config:
+          /$NEUTRON_CORE_PLUGIN_CONF:
+            securitygroup:
+              # NOTE(slaweq): using noop driver for Security groups is
+              # needed to allow test FWaaS rules and not let them interact
+              # with security groups as we have also enabled
+              # firewall_l2_driver in the environemnt
+              firewall_driver: noop
+            fwaas:
+              firewall_l2_driver: ovs
         test-config:
           $TEMPEST_CONFIG:
             fwaas:

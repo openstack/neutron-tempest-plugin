@@ -89,6 +89,26 @@ class FWaaSClientMixin:
                         fwg['id'])
         return fwg
 
+    def create_firewall_group_and_wait(self, ports=None, **kwargs):
+        fw_group = self.create_firewall_group(ports=ports or [], **kwargs)
+        self.addCleanup(self.update_firewall_group_and_wait, fw_group['id'],
+                        ports=[])
+        self._wait_firewall_group_active(fw_group['id'])
+        return fw_group
+
+    def _assert_firewall_group_active(self, firewall_group_id):
+        fwg_body = self.firewall_groups_client.show_firewall_group(
+            firewall_group_id)['firewall_group']
+        self.assertEqual(nl_constants.ACTIVE, fwg_body['status'],
+                         'Firewall group failed to apply on agent')
+
+    def _wait_firewall_group_active(self, firewall_group_id):
+        self._wait_firewall_group_while(
+            firewall_group_id,
+            [nl_constants.PENDING_CREATE, nl_constants.PENDING_UPDATE,
+             nl_constants.INACTIVE])
+        self._assert_firewall_group_active(firewall_group_id)
+
     def delete_firewall_group_and_wait(self, firewall_group_id):
         self.firewall_groups_client.delete_firewall_group(firewall_group_id)
         self._wait_firewall_group_while(firewall_group_id,

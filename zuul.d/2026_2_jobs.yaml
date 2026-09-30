@@ -16,9 +16,11 @@
       network_available_features: &available_features
         - ipv6_metadata
       network_api_extensions_common: &api_extensions
+        - aap-reject-multicast
         - address-group
         - address-scope
         - agent
+        - agent_sort_key
         - allowed-address-pairs
         - auto-allocated-topology
         - availability_zone
@@ -79,6 +81,7 @@
         - router_availability_zone
         - security-group
         - security-groups-default-rules
+        - security-groups-default-statefulness
         - security-groups-normalized-cidr
         - security-groups-remote-address-group
         - segment
@@ -159,6 +162,7 @@
         - vlan-transparent
         - qinq
         - external-gateway-multihoming
+        - l3-agent-scheduler-ha-chassis-priority
         - pvlan
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\

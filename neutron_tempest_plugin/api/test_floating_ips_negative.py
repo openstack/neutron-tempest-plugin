@@ -14,6 +14,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from oslo_utils import uuidutils
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
@@ -61,31 +62,8 @@ class FloatingIPNegativeTestJSON(base.BaseNetworkTest):
                           floating_ip2['id'], port_id=port['id'])
 
 
-class IndirectFloatingIPsNegativeTestJSON(base.BaseAdminNetworkTest):
-
-    credentials = ['primary', 'admin']
-    required_extensions = ['router', 'floating-ip-router-writable']
-
-    def _create_indirect_topology(self, outer_external_network_id=None):
-        project_network = self.create_network()
-        project_subnet = self.create_subnet(project_network)
-        transit_network = self.create_network()
-        self.create_subnet(transit_network)
-
-        inner_router = self.create_router(data_utils.rand_name('inner-router'))
-        outer_router = self.create_router(
-            data_utils.rand_name('outer-router'),
-            external_network_id=outer_external_network_id)
-        self.create_router_interface(inner_router['id'], project_subnet['id'])
-
-        inner_transit_port = self.create_port(transit_network)
-        self.client.add_router_interface_with_port_id(
-            inner_router['id'], inner_transit_port['id'])
-        outer_transit_port = self.create_port(transit_network)
-        self.client.add_router_interface_with_port_id(
-            outer_router['id'], outer_transit_port['id'])
-
-        return self.create_port(project_network), outer_router
+class IndirectFloatingIPsNegativeTestJSON(
+        base.IndirectFloatingIPAdminTestBase):
 
     @decorators.attr(type='negative')
     @decorators.idempotent_id('fb0bdc69-57df-48a5-9e30-7cc6b8b9a1a1')
@@ -123,3 +101,81 @@ class IndirectFloatingIPsNegativeTestJSON(base.BaseAdminNetworkTest):
             lib_exc.NotFound,
             self.client.update_floatingip,
             floating_ip['id'], port_id=port['id'])
+
+
+class IndirectFloatingIPsPolicyNegativeTestJSON(
+        base.IndirectFloatingIPAdminTestBase):
+
+    credentials = ['primary', 'project_reader', 'admin']
+
+    @classmethod
+    def setup_clients(cls):
+        super().setup_clients()
+        cls.reader_client = cls.os_project_reader.network_client
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('dcf70f65-204d-4c73-9cab-68b283bc5e4f')
+    def test_floatingip_create_router_id_forbidden_for_reader(self):
+        port, outer_router = self._create_indirect_topology(
+            outer_external_network_id=self.ext_net_id)
+
+        self.assertRaises(
+            lib_exc.Forbidden,
+            self.reader_client.create_floatingip,
+            self.ext_net_id,
+            port_id=port['id'],
+            router_id=outer_router['id'])
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('ee4e0695-4eef-4884-ad29-453ea8707558')
+    def test_floatingip_update_router_id_forbidden_for_reader(self):
+        port, router_a, router_b = self._create_dual_gateway_topology()
+
+        floatingip = self.create_floatingip(
+            port=port, router_id=router_a['id'])
+
+        self.assertRaises(
+            lib_exc.Forbidden,
+            self.reader_client.update_floatingip,
+            floatingip['id'],
+            router_id=router_b['id'])
+
+
+class IndirectFloatingIPsRouterIdNegativeTestJSON(
+        base.IndirectFloatingIPAdminTestBase):
+
+    credentials = ['primary', 'alt', 'admin']
+
+    @classmethod
+    def setup_clients(cls):
+        super().setup_clients()
+        cls.alt_client = cls.os_alt.network_client
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('7486fe3e-b445-4e84-a644-471b2194c3a5')
+    def test_floatingip_create_with_nonexistent_router_id(self):
+        port, _outer_router = self._create_indirect_topology(
+            outer_external_network_id=self.ext_net_id)
+
+        self.assertRaises(
+            lib_exc.NotFound,
+            self.create_floatingip,
+            port=port,
+            router_id=uuidutils.generate_uuid())
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('f9c26f5e-0572-4b3f-952d-28bed813b292')
+    def test_floatingip_create_with_cross_project_router_id(self):
+        port, _outer_router = self._create_indirect_topology(
+            outer_external_network_id=self.ext_net_id)
+        alt_router = self._create_router_with_client(
+            self.alt_client,
+            data_utils.rand_name('alt-gw-router'),
+            external_network_id=self.ext_net_id)
+        self.addCleanup(self.alt_client.delete_router, alt_router['id'])
+
+        self.assertRaises(
+            lib_exc.NotFound,
+            self.create_floatingip,
+            port=port,
+            router_id=alt_router['id'])

@@ -158,3 +158,21 @@ class FloatingIPPoolTestJSON(base.BaseAdminNetworkTest):
 
         test_create_floatingip_from_subnet(pools, subnet1)
         test_create_floatingip_from_subnet(pools, subnet2)
+
+
+class IndirectFloatingIPsTestJSON(base.IndirectFloatingIPAdminTestBase):
+
+    @decorators.idempotent_id('f57b2629-8fab-4f15-8b70-c612844d7ee8')
+    def test_floatingip_update_router_id_between_gateway_routers(self):
+        port, router_a, router_b = self._create_dual_gateway_topology()
+
+        floatingip = self.create_floatingip(
+            port=port, router_id=router_a['id'])
+        self.assertEqual(router_a['id'], floatingip['router_id'])
+
+        updated = self.client.update_floatingip(
+            floatingip['id'], router_id=router_b['id'])['floatingip']
+        self.assertEqual(router_b['id'], updated['router_id'])
+
+        body = self.client.show_floatingip(floatingip['id'])['floatingip']
+        self.assertEqual(router_b['id'], body['router_id'])

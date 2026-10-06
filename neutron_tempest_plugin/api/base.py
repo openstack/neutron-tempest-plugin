@@ -1699,3 +1699,50 @@ class BaseSearchCriteriaTest(BaseNetworkTest):
             resources = self._extract_resources(body)
             for resource in resources:
                 self.assertIn(resource['name'], self.resource_names)
+
+
+class IndirectFloatingIPAdminTestBase(BaseAdminNetworkTest):
+
+    credentials = ['primary', 'admin']
+    required_extensions = ['router', 'floating-ip-router-writable']
+
+    @classmethod
+    def resource_setup(cls):
+        super().resource_setup()
+        cls.ext_net_id = CONF.network.public_network_id
+
+    def _add_router_interface_by_port(self, router_id, network):
+        port = self.create_port(network)
+        self.client.add_router_interface_with_port_id(router_id, port['id'])
+        return port
+
+    def _create_dual_gateway_topology(self):
+        network = self.create_network()
+        subnet = self.create_subnet(network)
+        port = self.create_port(network)
+        router_a = self.create_router(
+            data_utils.rand_name('gw-router-a'),
+            external_network_id=self.ext_net_id)
+        router_b = self.create_router(
+            data_utils.rand_name('gw-router-b'),
+            external_network_id=self.ext_net_id)
+        self.create_router_interface(router_a['id'], subnet['id'])
+        self._add_router_interface_by_port(router_b['id'], network)
+        return port, router_a, router_b
+
+    def _create_indirect_topology(self, outer_external_network_id=None):
+        project_network = self.create_network()
+        project_subnet = self.create_subnet(project_network)
+        transit_network = self.create_network()
+        self.create_subnet(transit_network)
+
+        inner_router = self.create_router(data_utils.rand_name('inner-router'))
+        outer_router = self.create_router(
+            data_utils.rand_name('outer-router'),
+            external_network_id=outer_external_network_id)
+        self.create_router_interface(inner_router['id'], project_subnet['id'])
+
+        self._add_router_interface_by_port(inner_router['id'], transit_network)
+        self._add_router_interface_by_port(outer_router['id'], transit_network)
+
+        return self.create_port(project_network), outer_router

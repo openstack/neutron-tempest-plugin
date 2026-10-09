@@ -20,8 +20,8 @@ from neutron_tempest_plugin.common import utils
 
 class NeutronTempestPluginException(exceptions.TempestException):
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self._properties = kwargs
 
     def __getattr__(self, name):

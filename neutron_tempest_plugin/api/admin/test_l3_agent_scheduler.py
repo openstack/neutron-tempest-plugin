@@ -16,7 +16,6 @@ from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 
 from neutron_tempest_plugin.api import base
-from neutron_tempest_plugin import exceptions
 
 AGENT_TYPE = 'L3 agent'
 AGENT_MODES = (
@@ -57,8 +56,9 @@ class L3AgentSchedulerTestJSON(base.BaseAdminNetworkTest):
                 cls.agent = agent
                 break
         else:
-            msg = "L3 Agent Scheduler enabled in conf, but L3 Agent not found"
-            raise exceptions.InvalidConfiguration(msg)
+            msg = ("At least one L3 agent is required to be running in "
+                   "the environment for this test.")
+            raise cls.skipException(msg)
         cls.router = cls.create_router(data_utils.rand_name('router'))
 
     @decorators.idempotent_id('b7ce6e89-e837-4ded-9b78-9ed3c9c6a45a')

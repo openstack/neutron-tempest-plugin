@@ -646,6 +646,7 @@
         q-metering: false
         q-qos: true
         neutron-pvlan: true
+        neutron-network-segment-range: true
         # Cinder services
         c-api: false
         c-bak: false
@@ -670,6 +671,8 @@
               type_drivers: local,flat,vlan,geneve
             ml2_type_vlan:
               network_vlan_ranges: foo:1:10,public
+            ml2_type_geneve:
+              vni_ranges: 1:1000
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:

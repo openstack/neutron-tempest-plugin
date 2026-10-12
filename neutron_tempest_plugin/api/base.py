@@ -620,14 +620,15 @@ class BaseNetworkTest(test.BaseTestCase):
                 yield subnet_cidr
 
     @classmethod
-    def create_port(cls, network, **kwargs):
+    def create_port(cls, network, client=None, **kwargs):
         """Wrapper utility that returns a test port."""
+        client = client or cls.client
         if CONF.network.port_vnic_type and 'binding:vnic_type' not in kwargs:
             kwargs['binding:vnic_type'] = CONF.network.port_vnic_type
         if CONF.network.port_profile and 'binding:profile' not in kwargs:
             kwargs['binding:profile'] = CONF.network.port_profile
-        body = cls.client.create_port(network_id=network['id'],
-                                      **kwargs)
+        body = client.create_port(network_id=network['id'],
+                                  **kwargs)
         port = body['port']
         cls.ports.append(port)
         return port

@@ -74,7 +74,7 @@ class SubnetsSearchCriteriaTest(base.BaseSearchCriteriaTest):
             'unknown_filter': 'value'}, filter_is_valid=False)
 
 
-class SubnetServiceTypeTestJSON(base.BaseNetworkTest):
+class SubnetServiceTypeTestJSON(base.BaseAdminNetworkTest):
 
     required_extensions = ['subnet-service-types']
 
@@ -103,9 +103,15 @@ class SubnetServiceTypeTestJSON(base.BaseNetworkTest):
             self.network,
             service_types=['network:test_type_2', 'network:distributed'],
             cidr=str(cidr_2))
+        # device_owner is restricted to admin and service roles; create the
+        # ports as admin but keep them in the test project for cleanup.
         port_type_1 = self.create_port(self.network,
+                                       client=self.admin_client,
+                                       project_id=self.network['project_id'],
                                        device_owner="network:test_type_1")
         port_type_2 = self.create_port(self.network,
+                                       client=self.admin_client,
+                                       project_id=self.network['project_id'],
                                        device_owner="network:test_type_2")
 
         self.assertEqual(1, len(port_type_1['fixed_ips']))

@@ -607,6 +607,12 @@
         - pvlan
       devstack_localrc:
         Q_AGENT: ovn
+        # NOTE: devstack's lib/tempest unconditionally disables the
+        # l3_agent_scheduler extension unless q-l3/neutron-l3 is enabled,
+        # even though ML2/OVN supports this extension too. Add it back
+        # via ADDITIONAL_NETWORK_API_EXTENSIONS, which is appended after
+        # that disable logic runs.
+        ADDITIONAL_NETWORK_API_EXTENSIONS: l3_agent_scheduler
         OVN_AGENT_EXTENSIONS: 'metadata'
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_ovn) | join(',') }}"
         # NOTE(ralonsoh): during the eventlet removal, the "logger" mech

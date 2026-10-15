@@ -14,15 +14,22 @@
 #    under the License.
 
 from neutron_lib import constants as n_constants
+from tempest import config
 from tempest.lib.common.utils import data_utils
 from tempest.lib import decorators
 from tempest.lib import exceptions as lib_exc
 
 from neutron_tempest_plugin.api import base
 
+CONF = config.CONF
+
 TEST_SEGMENT_RANGE_MINIMUM_ID = 1100
 TEST_SEGMENT_RANGE_MAXIMUM_ID = 1105
-NETWORK_TYPE = n_constants.TYPE_VXLAN
+_TUNNEL_SEGMENT_RANGE_TYPES = (
+    n_constants.TYPE_VXLAN,
+    n_constants.TYPE_GENEVE,
+)
+_DEFAULT_TUNNEL_SEGMENT_RANGE_MAX = 2000
 
 
 class NetworkSegmentRangeTestBase(base.BaseAdminNetworkTest):
@@ -30,13 +37,25 @@ class NetworkSegmentRangeTestBase(base.BaseAdminNetworkTest):
     required_extensions = ['network-segment-range']
 
     @classmethod
+    def _tunnel_network_type(cls):
+        available = CONF.neutron_plugin_options.available_type_drivers or []
+        for network_type in _TUNNEL_SEGMENT_RANGE_TYPES:
+            if network_type in available:
+                return network_type
+        return None
+
+    @classmethod
     def skip_checks(cls):
         super().skip_checks()
+        if cls._tunnel_network_type() is None:
+            raise cls.skipException(
+                'None of %s are in available_type_drivers' %
+                ', '.join(_TUNNEL_SEGMENT_RANGE_TYPES))
 
     @classmethod
     def resource_setup(cls):
         super().resource_setup()
-        network_type = NETWORK_TYPE
+        network_type = cls._tunnel_network_type()
         physical_network = ""
         minimum = TEST_SEGMENT_RANGE_MINIMUM_ID
         maximum = TEST_SEGMENT_RANGE_MAXIMUM_ID
@@ -106,7 +125,8 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         self.assertIsNotNone(network_segment_range['id'])
         self.assertFalse(network_segment_range['default'])
         self.assertFalse(network_segment_range['shared'])
-        self.assertEqual('vxlan', network_segment_range['network_type'])
+        self.assertEqual(self._network_segment_range_data['network_type'],
+                         network_segment_range['network_type'])
         self.assertEqual(TEST_SEGMENT_RANGE_MINIMUM_ID,
                          network_segment_range['minimum'])
         self.assertEqual(TEST_SEGMENT_RANGE_MAXIMUM_ID,
@@ -135,7 +155,8 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         name = data_utils.rand_name('test_network_for_' + project_id)
         network = self.create_network(
             name, client=self.admin_client, project_id=project_id,
-            provider_network_type=NETWORK_TYPE)
+            provider_network_type=self._network_segment_range_data[
+                'network_type'])
         # Updates a network segment range
         # specifically using a value that excludes the current existing network
         updated_minimum = network['provider:segmentation_id'] + 1
@@ -160,7 +181,8 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         name = data_utils.rand_name('test_network_for_' + project_id)
         network = self.create_network(
             name, client=self.admin_client, project_id=project_id,
-            provider_network_type=NETWORK_TYPE)
+            provider_network_type=self._network_segment_range_data[
+                'network_type'])
         # Updates a network segment range
         # Use the current network as the minimum value
         updated_minimum = network['provider:segmentation_id']
@@ -219,9 +241,10 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
                 network['id'])['network']
             network_ids.append(network['id'])
             self.assertEqual(name, observed_network['name'])
-            # default vxlan network segment range: 1-2000
+            # default tunnel network segment range: 1-2000
             self.assertTrue(
-                1 <= observed_network['provider:segmentation_id'] <= 2000)
+                1 <= observed_network['provider:segmentation_id'] <=
+                _DEFAULT_TUNNEL_SEGMENT_RANGE_MAX)
         # networks need to be deleted otherwise the range deletion will fail
         # because the segments are in use (assigned to the networks created)
         for network_id in network_ids:
@@ -272,7 +295,8 @@ class NetworkSegmentRangeTestJson(NetworkSegmentRangeTestBase):
         name = data_utils.rand_name('test_network_for_' + project_id)
         network = self.create_network(
             name, client=self.admin_client, project_id=project_id,
-            provider_network_type=NETWORK_TYPE)
+            provider_network_type=self._network_segment_range_data[
+                'network_type'])
         # Deletes a network segment range
         self.assertRaises(lib_exc.Conflict,
                           self.admin_client.delete_network_segment_range,

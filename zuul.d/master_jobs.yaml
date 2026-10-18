@@ -1534,6 +1534,7 @@
 - job:
     name: neutron-tempest-plugin-tap-as-a-service
     parent: neutron-tempest-plugin-base
+    timeout: 10800
     description: |
       Perform setup common to all tap-as-a-service tempest tests
     roles:

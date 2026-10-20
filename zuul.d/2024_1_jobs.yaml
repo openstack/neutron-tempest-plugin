@@ -218,6 +218,11 @@
           (^tempest.api.compute.servers.test_attach_interfaces)|\
           (^tempest.api.compute.servers.test_multiple_create)"
       devstack_localrc:
+        # NOTE: ML2/OVN only supports the l3_agent_scheduler extension
+        # since the 2026.2 cycle[1], so unset the parent job's forced
+        # enablement of it on this branch.
+        # [1] https://review.opendev.org/c/openstack/neutron/+/982792
+        ADDITIONAL_NETWORK_API_EXTENSIONS: ""
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_ovn) | join(',') }}"
         NEUTRON_DEPLOY_MOD_WSGI: false
       devstack_local_conf:

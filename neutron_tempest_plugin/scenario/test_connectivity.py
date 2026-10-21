@@ -194,6 +194,10 @@ class NetworkConnectivityTest(base.BaseTempestTestCase):
             port_id=topology['inner_port']['id'],
             router_id=outer_router['id'])['floatingip']
         self.addCleanup(self.client.delete_floatingip, floatingip['id'])
+        self.assertEqual(outer_router['id'], floatingip['router_id'])
+        self.assertEqual(topology['inner_port']['id'], floatingip['port_id'])
+        shown = self.client.show_floatingip(floatingip['id'])['floatingip']
+        self.assertEqual(outer_router['id'], shown['router_id'])
         sshclient = ssh.Client(
             floatingip['floating_ip_address'],
             CONF.validation.image_ssh_user,

@@ -49,6 +49,8 @@ class ExternalNetworksRBACTestJSON(base.BaseAdminNetworkTest):
 
     @decorators.idempotent_id('afd8f1b7-a81e-4629-bca8-a367b3a144bb')
     def test_regular_client_shares_with_another(self):
+        self.skipTest('Skip this test while LP#2161501 is fixed and '
+                      'backported to stable releases')
         net = self.create_network()
         self.client.create_rbac_policy(
             object_type='network', object_id=net['id'],

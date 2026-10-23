@@ -13,6 +13,11 @@
           (^neutron_tempest_plugin.scenario)|\
           (^tempest.api.compute.servers.test_attach_interfaces)|\
           (^tempest.api.compute.servers.test_multiple_create)"
+      # TODO(amorin): remove
+      # DHCPLeaseOptionsTest.test_dhcp_lease_sibling_subnet_on_link when
+      # https://bugs.launchpad.net/neutron/+bug/2172290 is fixed in this branch
+      tempest_exclude_regex: "\
+          (^neutron_tempest_plugin.scenario.test_dhcp.DHCPLeaseOptionsTest.test_dhcp_lease_sibling_subnet_on_link)"
       network_available_features: &available_features
         - ipv6_metadata
       network_api_extensions_common: &api_extensions
@@ -124,10 +129,14 @@
       # when bug https://bugs.launchpad.net/neutron/+bug/1838760 will be fixed
       # TODO(akatz): remove established tcp session verification test when the
       # bug https://bugzilla.redhat.com/show_bug.cgi?id=1965036 will be fixed
+      # TODO(amorin): remove
+      # DHCPLeaseOptionsTest.test_dhcp_lease_sibling_subnet_on_link when
+      # https://bugs.launchpad.net/neutron/+bug/2172290 is fixed in this branch
       tempest_exclude_regex: "\
           (^neutron_tempest_plugin.scenario.test_trunk.TrunkTest.test_subport_connectivity)|\
           (^neutron_tempest_plugin.scenario.test_security_groups.StatefulNetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)|\
-          (^neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)"
+          (^neutron_tempest_plugin.scenario.test_security_groups.StatelessNetworkSecGroupTest.test_established_tcp_session_after_re_attachinging_sg)|\
+          (^neutron_tempest_plugin.scenario.test_dhcp.DHCPLeaseOptionsTest.test_dhcp_lease_sibling_subnet_on_link)"
       devstack_localrc:
         NETWORK_API_EXTENSIONS: "{{ (network_api_extensions_common + network_api_extensions_openvswitch) | join(',') }}"
       devstack_local_conf:
@@ -186,6 +195,11 @@
     nodeset: openstack-two-node-noble
     override-checkout: stable/2025.2
     vars:
+      # TODO(amorin): remove
+      # DHCPLeaseOptionsTest.test_dhcp_lease_sibling_subnet_on_link when
+      # https://bugs.launchpad.net/neutron/+bug/2172290 is fixed in this branch
+      tempest_exclude_regex: "\
+          (^neutron_tempest_plugin.scenario.test_dhcp.DHCPLeaseOptionsTest.test_dhcp_lease_sibling_subnet_on_link)"
       network_api_extensions_common: *api_extensions
       network_api_extensions_dvr:
         - dhcp_agent_scheduler

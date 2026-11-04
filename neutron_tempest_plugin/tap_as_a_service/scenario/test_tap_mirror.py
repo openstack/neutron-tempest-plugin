@@ -139,25 +139,68 @@ def _create_shared_server_with_floatingip_cls(cls, network,
     cls.wait_for_guest_os_ready(cls, server, client=client)
 
     fip = cls.create_floatingip(port=port)
-    return port, fip
+    return server, port, fip
 
 
-def _make_remote_client_cls(cls, fip, advanced=False):
+def _log_shared_ssh_failure(cls, label, server, port, fip, router):
+    server_id = server['id']
+    port_id = port['id']
+    fip_id = fip['id']
+    router_id = router['id']
+    LOG.error('SSH validation failed for %s: server=%s port=%s network=%s '
+              'router=%s floatingip=%s address=%s', label, server_id,
+              port_id, port['network_id'], router_id, fip_id,
+              fip['floating_ip_address'])
+
+    servers_client = cls.os_primary.servers_client
+    network_client = cls.client
+    requests = [
+        ('server', servers_client.show_server, server_id),
+        ('port', network_client.show_port, port_id),
+        ('floating IP', network_client.show_floatingip, fip_id),
+        ('router', network_client.show_router, router_id),
+    ]
+    if CONF.compute_feature_enabled.console_output:
+        requests.append(('console output', servers_client.get_console_output,
+                         server_id))
+    else:
+        LOG.info('Console output is not supported for server %s', server_id)
+
+    for resource, request, resource_id in requests:
+        try:
+            LOG.info('SSH failure %s details for %s: %s', resource,
+                     resource_id, request(resource_id))
+        except Exception:
+            LOG.exception('Unable to collect %s details for %s', resource,
+                          resource_id)
+
+
+def _make_remote_client_cls(cls, fip, advanced=False, diagnostics=None):
     user = cls.username if advanced else CONF.validation.image_ssh_user
     client = remote_client.RemoteClient(
         fip['floating_ip_address'], user,
         pkey=cls.keypair['private_key'],
         ssh_key_type=CONF.validation.ssh_key_type)
-    client.validate_authentication()
+    try:
+        client.validate_authentication()
+    except Exception:
+        if diagnostics is not None:
+            try:
+                _log_shared_ssh_failure(cls, fip=fip, **diagnostics)
+            except Exception:
+                LOG.exception('Unable to collect SSH failure diagnostics')
+        raise
     return client
 
 
-def _create_shared_monitor_cls(cls):
+def _create_shared_monitor_cls(cls, label):
     """Boot one monitor VM (own network) and return (client, floating IP)."""
-    netmon, _, _ = _create_shared_network_cls(cls)
-    _, fip = _create_shared_server_with_floatingip_cls(
+    netmon, _, router = _create_shared_network_cls(cls)
+    server, port, fip = _create_shared_server_with_floatingip_cls(
         cls, netmon, use_taas_cloud_image=True, port_security_enabled=False)
-    return _make_remote_client_cls(cls, fip, advanced=True), \
+    diagnostics = dict(label=label, server=server, port=port, router=router)
+    return _make_remote_client_cls(cls, fip, advanced=True,
+                                   diagnostics=diagnostics), \
         fip['floating_ip_address']
 
 
@@ -184,15 +227,21 @@ def _create_shared_topology(cls):
     cls._taas_server_ids = []
     cls.network, cls.subnet, cls.router = _create_shared_network_cls(cls)
 
-    cls.vm0_port, vm0_fip = _create_shared_server_with_floatingip_cls(
-        cls, cls.network)
-    cls.vm1_port, vm1_fip = _create_shared_server_with_floatingip_cls(
-        cls, cls.network)
-    cls.vm0_client = _make_remote_client_cls(cls, vm0_fip)
-    cls.vm1_client = _make_remote_client_cls(cls, vm1_fip)
+    vm0_server, cls.vm0_port, vm0_fip = (
+        _create_shared_server_with_floatingip_cls(cls, cls.network))
+    vm1_server, cls.vm1_port, vm1_fip = (
+        _create_shared_server_with_floatingip_cls(cls, cls.network))
+    cls.vm0_client = _make_remote_client_cls(
+        cls, vm0_fip, diagnostics=dict(label='vm0', server=vm0_server,
+                                       port=cls.vm0_port, router=cls.router))
+    cls.vm1_client = _make_remote_client_cls(
+        cls, vm1_fip, diagnostics=dict(label='vm1', server=vm1_server,
+                                       port=cls.vm1_port, router=cls.router))
 
-    cls.monitor1_client, cls.monitor1_ip = _create_shared_monitor_cls(cls)
-    cls.monitor2_client, cls.monitor2_ip = _create_shared_monitor_cls(cls)
+    cls.monitor1_client, cls.monitor1_ip = _create_shared_monitor_cls(
+        cls, 'monitor1')
+    cls.monitor2_client, cls.monitor2_ip = _create_shared_monitor_cls(
+        cls, 'monitor2')
 
 
 def _cleanup_shared_servers(cls):

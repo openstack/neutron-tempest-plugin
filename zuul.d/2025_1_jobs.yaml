@@ -2,7 +2,12 @@
     name: neutron-tempest-plugin-openvswitch-2025-1
     parent: neutron-tempest-plugin-openvswitch
     nodeset: neutron-nested-virt-ubuntu-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: &required-projects-2025-1
+      - openstack/neutron
+      - name: openstack/neutron-tempest-plugin
+        override-checkout: 2.12.0
+      - openstack/tempest
     vars:
       network_api_extensions_openvswitch: &api_extensions_openvswitch
         - dhcp_agent_scheduler
@@ -110,7 +115,7 @@
     name: neutron-tempest-plugin-openvswitch-ubuntu-jammy-2025-1
     parent: neutron-tempest-plugin-openvswitch-2025-1
     nodeset: neutron-nested-virt-ubuntu-jammy
-    required-projects: &required-projects-2025-1
+    required-projects: &required-projects-jammy-2025-1
       - openstack/neutron
       - name: openstack/neutron-tempest-plugin
         override-checkout: 2.12.0
@@ -130,7 +135,8 @@
     name: neutron-tempest-plugin-openvswitch-iptables_hybrid-2025-1
     parent: neutron-tempest-plugin-openvswitch-iptables_hybrid
     nodeset: neutron-nested-virt-ubuntu-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
     vars:
       network_api_extensions_common: *api_extensions
       network_api_extensions_openvswitch: *api_extensions_openvswitch
@@ -163,7 +169,6 @@
     name: neutron-tempest-plugin-ovn-enforce-scope-old-defaults-2025-1
     parent: neutron-tempest-plugin-ovn-2025-1
     nodeset: neutron-nested-virt-ubuntu-noble
-    override-checkout: stable/2025.1
     vars:
       devstack_localrc:
         NEUTRON_ENFORCE_SCOPE: false
@@ -172,7 +177,8 @@
     name: neutron-tempest-plugin-ovn-2025-1
     parent: neutron-tempest-plugin-ovn
     nodeset: neutron-nested-virt-ubuntu-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
     vars:
       network_api_extensions_ovn:
         - vlan-transparent
@@ -204,7 +210,7 @@
     name: neutron-tempest-plugin-ovn-ubuntu-jammy-2025-1
     parent: neutron-tempest-plugin-ovn-2025-1
     nodeset: neutron-nested-virt-ubuntu-jammy
-    required-projects: *required-projects-2025-1
+    required-projects: *required-projects-jammy-2025-1
     vars:
       devstack_localrc:
         TEMPEST_VENV_UPPER_CONSTRAINTS: '/opt/stack/requirements/upper-constraints.txt'
@@ -229,7 +235,8 @@
     name: neutron-tempest-plugin-dvr-multinode-scenario-2025-1
     parent: neutron-tempest-plugin-dvr-multinode-scenario
     nodeset: openstack-two-node-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
     vars:
       network_api_extensions_common: *api_extensions
       network_api_extensions_dvr:
@@ -242,7 +249,8 @@
     name: neutron-tempest-plugin-designate-scenario-2025-1
     parent: neutron-tempest-plugin-designate-scenario
     nodeset: neutron-nested-virt-ubuntu-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
     vars:
       network_api_extensions_common: *api_extensions
 
@@ -250,43 +258,50 @@
     name: neutron-tempest-plugin-sfc-2025-1
     parent: neutron-tempest-plugin-sfc
     nodeset: openstack-single-node-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
 
 - job:
     name: neutron-tempest-plugin-bgpvpn-bagpipe-2025-1
     parent: neutron-tempest-plugin-bgpvpn-bagpipe
     nodeset: openstack-single-node-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
 
 - job:
     name: neutron-tempest-plugin-dynamic-routing-2025-1
     parent: neutron-tempest-plugin-dynamic-routing
     nodeset: openstack-single-node-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
 
 - job:
     name: neutron-tempest-plugin-fwaas-2025-1
     parent: neutron-tempest-plugin-fwaas-openvswitch
     nodeset: openstack-single-node-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
 
 - job:
     name: neutron-tempest-plugin-vpnaas-2025-1
     parent: neutron-tempest-plugin-vpnaas
     nodeset: openstack-single-node-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service-2025-1
     parent: neutron-tempest-plugin-tap-as-a-service
     nodeset: openstack-single-node-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
 
 - job:
     name: neutron-tempest-plugin-tap-as-a-service-ovn-2025-1
     parent: neutron-tempest-plugin-tap-as-a-service-ovn
     nodeset: openstack-single-node-noble
-    override-checkout: stable/2025.1
+    override-checkout: unmaintained/2025.1
+    required-projects: *required-projects-2025-1
     vars:
       network_api_extensions_tempest:
         - tap-mirror

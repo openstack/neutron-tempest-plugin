@@ -34,7 +34,7 @@
     parent: neutron-tempest-plugin-base
     abstract: true
     branches:
-      regex: ^(unmaintained|stable/(victoria|wallaby|xena|yoga|zed|2023|2024)).*$
+      regex: ^(unmaintained/(yoga|zed|2023|2024)).*$
       negate: true
     # Comment nodeset and vars to switch back to non nested nodes
     nodeset: neutron-nested-virt-ubuntu-noble

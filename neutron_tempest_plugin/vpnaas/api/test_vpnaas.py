@@ -353,7 +353,7 @@ class VPNaaSTestJSON(base.BaseAdminNetworkTest):
                      'pfs': 'group2',
                      'name': data_utils.rand_name("New-IPSec"),
                      'encryption_algorithm': "aes-256",
-                     'lifetime': {'units': "seconds", 'value': '2000'}}
+                     'lifetime': {'units': "seconds", 'value': 2000}}
         body = self.client.update_ipsecpolicy(ipsecpolicy['id'],
                                               **new_ipsec)
         updated_ipsec_policy = body['ipsecpolicy']

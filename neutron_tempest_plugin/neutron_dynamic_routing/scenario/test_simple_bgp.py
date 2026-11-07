@@ -122,13 +122,10 @@ class Bgp(BgpClientMixin, base.BaseTempestTestCase):
 
     @classmethod
     def _create_right_network(cls):
-        # NOTE(yamamoto): Disable SNAT to workaround a bug
-        # https://midonet.atlassian.net/browse/MNA-1114
         router = cls.create_admin_router(
             data_utils.rand_name('right-router'),
             admin_state_up=True,
             external_network_id=CONF.network.public_network_id,
-            enable_snat=False,
             project_id=cls.os_primary.network_client.project_id)
         network = cls.create_network(network_name='right-network')
         subnet = cls.create_subnet(

@@ -92,18 +92,21 @@ class SubnetServiceTypeTestJSON(base.BaseNetworkTest):
         # ML2/OVN backend. It's needed because OVN driver creates additional
         # port for metadata service in each subnet with enabled dhcp and such
         # port needs to have allocated IP address from the subnet also.
+        # Service types must start with "network:", "neutron:" or "compute:".
+        # Use "network:" because, since 2026.2, project members cannot delete
+        # "compute:" ports, so the class cleanup would fail.
         self.create_subnet(
             self.network,
-            service_types=['test:type_1', 'network:distributed'],
+            service_types=['network:test_type_1', 'network:distributed'],
             cidr=str(cidr_1))
         self.create_subnet(
             self.network,
-            service_types=['test:type_2', 'network:distributed'],
+            service_types=['network:test_type_2', 'network:distributed'],
             cidr=str(cidr_2))
         port_type_1 = self.create_port(self.network,
-                                       device_owner="test:type_1")
+                                       device_owner="network:test_type_1")
         port_type_2 = self.create_port(self.network,
-                                       device_owner="test:type_2")
+                                       device_owner="network:test_type_2")
 
         self.assertEqual(1, len(port_type_1['fixed_ips']))
         self.assertEqual(1, len(port_type_2['fixed_ips']))

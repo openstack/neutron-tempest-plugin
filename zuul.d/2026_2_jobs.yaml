@@ -164,6 +164,7 @@
         - external-gateway-multihoming
         - l3-agent-scheduler-ha-chassis-priority
         - pvlan
+      network_available_features: *available_features
       tempest_test_regex: "\
           (^neutron_tempest_plugin.api)|\
           (^neutron_tempest_plugin.scenario)|\
@@ -175,7 +176,7 @@
         test-config:
           $TEMPEST_CONFIG:
             network-feature-enabled:
-              available_features: ""
+              available_features: "{{ network_available_features | join(',') }}"
             neutron_plugin_options:
               available_type_drivers: local,flat,vlan,geneve
               is_igmp_snooping_enabled: True

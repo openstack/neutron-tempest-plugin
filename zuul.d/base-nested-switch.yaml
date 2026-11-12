@@ -68,10 +68,3 @@
     # Comment nodeset and vars to switch back to non nested nodes
     nodeset: neutron-nested-virt-ubuntu-focal
     vars: *nested_virt_vars
-
-# Base nested switch job for EM releases
-- job:
-    name: neutron-tempest-plugin-base-nested-switch
-    parent: neutron-tempest-plugin-base
-    abstract: true
-    branches: ^stable/xena.*$

@@ -151,7 +151,7 @@ class FloatingIpSameNetwork(FloatingIpTestCasesMixin,
     @ddt.data({'src_has_fip': True, 'dest_has_fip': True},
               {'src_has_fip': True, 'dest_has_fip': False},
               {'src_has_fip': False, 'dest_has_fip': True},
-              {'src_has_fip': True, 'dest_has_fip': False})
+              {'src_has_fip': False, 'dest_has_fip': False})
     def test_east_west(self, src_has_fip, dest_has_fip):
         self._test_east_west(src_has_fip=src_has_fip,
                              dest_has_fip=dest_has_fip)
@@ -168,7 +168,7 @@ class FloatingIpSeparateNetwork(FloatingIpTestCasesMixin,
     @ddt.data({'src_has_fip': True, 'dest_has_fip': True},
               {'src_has_fip': True, 'dest_has_fip': False},
               {'src_has_fip': False, 'dest_has_fip': True},
-              {'src_has_fip': True, 'dest_has_fip': False})
+              {'src_has_fip': False, 'dest_has_fip': False})
     def test_east_west(self, src_has_fip, dest_has_fip):
         self._test_east_west(src_has_fip=src_has_fip,
                              dest_has_fip=dest_has_fip)

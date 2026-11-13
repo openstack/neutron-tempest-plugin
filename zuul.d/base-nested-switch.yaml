@@ -74,4 +74,4 @@
     name: neutron-tempest-plugin-base-nested-switch
     parent: neutron-tempest-plugin-base
     abstract: true
-    branches: ^(stable/(victoria|wallaby|xena)).*$
+    branches: ^stable/xena.*$

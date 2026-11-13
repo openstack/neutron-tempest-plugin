@@ -33,46 +33,6 @@
 
 
 - project-template:
-    name: neutron-tempest-plugin-jobs-victoria
-    check:
-      jobs:
-        - neutron-tempest-plugin-api-victoria
-        - neutron-tempest-plugin-scenario-linuxbridge-victoria
-        - neutron-tempest-plugin-scenario-openvswitch-victoria
-        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-victoria
-        - neutron-tempest-plugin-scenario-ovn-victoria
-        - neutron-tempest-plugin-designate-scenario-victoria
-    gate:
-      jobs:
-        - neutron-tempest-plugin-api-victoria
-    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
-    #              the experimental queue when it will be more stable
-    experimental:
-      jobs:
-        - neutron-tempest-plugin-dvr-multinode-scenario-victoria
-
-
-- project-template:
-    name: neutron-tempest-plugin-jobs-wallaby
-    check:
-      jobs:
-        - neutron-tempest-plugin-api-wallaby
-        - neutron-tempest-plugin-scenario-linuxbridge-wallaby
-        - neutron-tempest-plugin-scenario-openvswitch-wallaby
-        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-wallaby
-        - neutron-tempest-plugin-scenario-ovn-wallaby
-        - neutron-tempest-plugin-designate-scenario-wallaby
-    gate:
-      jobs:
-        - neutron-tempest-plugin-api-wallaby
-    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
-    #              the experimental queue when it will be more stable
-    experimental:
-      jobs:
-        - neutron-tempest-plugin-dvr-multinode-scenario-wallaby
-
-
-- project-template:
     name: neutron-tempest-plugin-jobs-xena
     check:
       jobs:

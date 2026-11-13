@@ -189,3 +189,148 @@ class DHCPPortUpdateTest(base.BaseTempestTestCase):
         self.check_connectivity(fip['floating_ip_address'],
                                 CONF.validation.image_ssh_user,
                                 self.keypair['private_key'])
+
+
+class DHCPLeaseOptionsTest(base.BaseTempestTestCase):
+    """Check what the guest learns from DHCP, whoever answers it.
+
+    The same assertions hold for the DHCP agent and for the OVS agent
+    DHCP extension, so that a job running either proves they configure
+    a guest alike.
+    """
+
+    credentials = ['primary', 'admin']
+
+    DNS_SERVERS = ['192.0.2.53', '192.0.2.54']
+
+    @classmethod
+    def resource_setup(cls):
+        super().resource_setup()
+        cls.rand_name = data_utils.rand_name(
+            cls.__name__.rsplit('.', 1)[-1])
+        cls.network = cls.create_network(name=cls.rand_name)
+        cls.subnet = cls.create_subnet(
+            network=cls.network, name=cls.rand_name,
+            dns_nameservers=cls.DNS_SERVERS[:1])
+        cidr = netaddr.IPNetwork(cls.subnet['cidr'])
+        cls.host_route = {'destination': '198.51.100.0/24',
+                          'nexthop': str(cidr[-2])}
+        cls.subnet = cls.client.update_subnet(
+            cls.subnet['id'], host_routes=[cls.host_route])['subnet']
+        # A sibling subnet is on-link for the guest, even without DHCP.
+        cls.sibling_subnet = cls.create_subnet(
+            network=cls.network, name=cls.rand_name + '-sibling',
+            gateway=None, enable_dhcp=False)
+        cls.router = cls.create_router_by_client()
+        cls.create_router_interface(cls.router['id'], cls.subnet['id'])
+        cls.keypair = cls.create_keypair(name=cls.rand_name)
+        cls.security_group = cls.create_security_group(name=cls.rand_name)
+        cls.create_loginable_secgroup_rule(cls.security_group['id'])
+        cls.setup_advanced_image()
+
+    def _create_server(self):
+        port = self.create_port(
+            network=self.network, name=self.rand_name,
+            security_groups=[self.security_group['id']],
+            fixed_ips=[{'subnet_id': self.subnet['id']}])
+        fip = self.create_floatingip(port=port)
+        server = self.create_server(
+            flavor_ref=self.flavor_ref,
+            image_ref=self.image_ref,
+            key_name=self.keypair['name'],
+            networks=[{'port': port['id']}])
+        self.wait_for_server_active(server['server'])
+        self.wait_for_guest_os_ready(server['server'])
+        self.addOnException(
+            lambda exc_info: (self._log_console_output([server['server']]),
+                              self._log_local_network_status()))
+        ssh_client = ssh.Client(fip['floating_ip_address'], self.username,
+                                pkey=self.keypair['private_key'])
+        return port, ssh_client
+
+    @staticmethod
+    def _guest_interface(ssh_client, port):
+        ip_address = port['fixed_ips'][0]['ip_address']
+        out = ssh_client.exec_command(
+            "ip -o -4 addr show | awk '/inet %s\\// {print $2}'" %
+            ip_address)
+        return out.strip()
+
+    @staticmethod
+    def _guest_dns_servers(ssh_client):
+        # systemd-resolved keeps the servers it learnt out of
+        # /etc/resolv.conf.
+        out = ssh_client.exec_command(
+            "cat /run/systemd/resolve/resolv.conf 2>/dev/null || "
+            "cat /etc/resolv.conf")
+        return [line.split()[1] for line in out.splitlines()
+                if line.startswith('nameserver')]
+
+    @staticmethod
+    def _guest_routes(ssh_client, iface):
+        return ssh_client.exec_command(
+            'ip -4 route show dev %s' % iface).splitlines()
+
+    def _assert_lease(self, port, ssh_client, dns_servers):
+        iface = self._guest_interface(ssh_client, port)
+        self.assertTrue(iface)
+
+        mtu = ssh_client.exec_command('cat /sys/class/net/%s/mtu' % iface)
+        self.assertEqual(self.network['mtu'], int(mtu))
+
+        self.assertIn('%(destination)s via %(nexthop)s' % self.host_route,
+                      '\n'.join(self._guest_routes(ssh_client, iface)))
+
+        self.assertEqual(dns_servers, self._guest_dns_servers(ssh_client))
+
+    @testtools.skipUnless(
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
+    @decorators.idempotent_id('7a8f2de8-9384-47d8-89e7-9dad53cc6355')
+    def test_dhcp_lease_options(self):
+        """The network MTU, host routes and DNS servers reach the guest."""
+        port, ssh_client = self._create_server()
+        self._assert_lease(port, ssh_client, self.DNS_SERVERS[:1])
+
+    @testtools.skipUnless(
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
+    @decorators.idempotent_id('c0da67a0-7da5-40e0-99fc-2467730fb5a5')
+    def test_dhcp_lease_sibling_subnet_on_link(self):
+        """A sibling subnet is on-link for the guest, even without DHCP."""
+        port, ssh_client = self._create_server()
+        iface = self._guest_interface(ssh_client, port)
+        self.assertTrue(iface)
+        routes = self._guest_routes(ssh_client, iface)
+        sibling = [r for r in routes
+                   if r.startswith(self.sibling_subnet['cidr'] + ' ')]
+        self.assertTrue(sibling, "No route to %s in %s" %
+                        (self.sibling_subnet['cidr'], routes))
+        self.assertNotIn(' via ', sibling[0])
+
+    @testtools.skipUnless(
+        (CONF.neutron_plugin_options.advanced_image_ref or
+         CONF.neutron_plugin_options.default_image_is_advanced),
+        "Advanced image is required to run this test.")
+    @decorators.idempotent_id('4c5f8032-7df4-47d2-8bfc-a07a7eeb1cde')
+    def test_dhcp_lease_follows_subnet_update(self):
+        """A lease renewed after a subnet update carries the new options."""
+        port, ssh_client = self._create_server()
+        self.client.update_subnet(self.subnet['id'],
+                                  dns_nameservers=self.DNS_SERVERS)
+        self.addCleanup(self.client.update_subnet, self.subnet['id'],
+                        dns_nameservers=self.DNS_SERVERS[:1])
+        iface = self._guest_interface(ssh_client, port)
+
+        def _renewed():
+            ssh_client.exec_command('sudo networkctl renew %s' % iface)
+            return self._guest_dns_servers(ssh_client) == self.DNS_SERVERS
+
+        neutron_utils.wait_until_true(
+            _renewed, timeout=60, sleep=5,
+            exception=AssertionError(
+                "The guest did not get the DNS servers %s" %
+                self.DNS_SERVERS))
+        self._assert_lease(port, ssh_client, self.DNS_SERVERS)

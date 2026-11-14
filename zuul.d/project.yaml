@@ -31,26 +31,6 @@
         - neutron-tempest-plugin-ovn-enforce-scope-old-defaults
         - neutron-tempest-plugin-openvswitch-iptables_hybrid
 
-
-- project-template:
-    name: neutron-tempest-plugin-jobs-xena
-    check:
-      jobs:
-        - neutron-tempest-plugin-api-xena
-        - neutron-tempest-plugin-scenario-linuxbridge-xena
-        - neutron-tempest-plugin-scenario-openvswitch-xena
-        - neutron-tempest-plugin-scenario-openvswitch-iptables_hybrid-xena
-        - neutron-tempest-plugin-scenario-ovn-xena
-        - neutron-tempest-plugin-designate-scenario-xena
-    gate:
-      jobs:
-        - neutron-tempest-plugin-api-xena
-    #TODO(slaweq): Move neutron-tempest-plugin-dvr-multinode-scenario out of
-    #              the experimental queue when it will be more stable
-    experimental:
-      jobs:
-        - neutron-tempest-plugin-dvr-multinode-scenario-xena
-
 - project-template:
     name: neutron-tempest-plugin-jobs-yoga
     check:

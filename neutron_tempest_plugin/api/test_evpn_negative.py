@@ -90,3 +90,41 @@ class RoutersEvpnNegativeTest(base.BaseAdminNetworkTest):
             lib_exc.Conflict,
             self.create_admin_router,
             name2, evpn_vni=vni)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('a53c65ff-5ce5-48c9-a082-d2d080a37c4e')
+    def test_create_router_auto_vni_non_admin_forbidden(self):
+        name = data_utils.rand_name('evpn-router')
+        with testtools.ExpectedException(lib_exc.Forbidden):
+            self.client.create_router(name=name, evpn_vni=0)
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('b56ef949-464d-4a00-8bad-5b0f89a261b3')
+    def test_update_router_evpn_vni_to_auto_not_allowed(self):
+        # The VNI of an EVPN router cannot be changed, not even to "auto"
+        # (evpn_vni=0). The server rejects any update of evpn_vni
+        # (allow_put=False) regardless of the value.
+        # An explicit VNI is used on purpose: auto-allocating routers are
+        # only created in AutoVniRoutersEvpnTest, to not interfere with its
+        # lowest free VNI assertions.
+        vni = self.base_vni + 4
+        name = data_utils.rand_name('evpn-router')
+        router = self.create_admin_router(name, evpn_vni=vni)
+        self.assertRaises(
+            lib_exc.BadRequest,
+            self.admin_client.update_router,
+            router['id'], evpn_vni=0)
+        shown = self.admin_client.show_router(router['id'])['router']
+        self.assertEqual(vni, shown['evpn_vni'])
+
+    @decorators.attr(type='negative')
+    @decorators.idempotent_id('a2209012-84d3-4468-bdcd-cb79da4d3875')
+    def test_update_plain_router_to_auto_vni_not_allowed(self):
+        name = data_utils.rand_name('evpn-router')
+        router = self.create_admin_router(name)
+        self.assertRaises(
+            lib_exc.BadRequest,
+            self.admin_client.update_router,
+            router['id'], evpn_vni=0)
+        shown = self.admin_client.show_router(router['id'])['router']
+        self.assertIsNone(shown['evpn_vni'])

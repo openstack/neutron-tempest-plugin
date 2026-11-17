@@ -157,7 +157,7 @@ NeutronPluginOptions = [
                 default=False,
                 help='Schedule BGP speakers to agents explicitly.'),
     cfg.IntOpt('evpn_vni',
-               default=1,
+               default=1000,
                help='VNI to use when creating EVPN routers in tests.'),
     cfg.StrOpt('evpn_vtep_ip',
                default=None,
@@ -190,8 +190,11 @@ NeutronPluginOptions = [
                help='Datapath IP added to EVPN bridges for '
                     'VTEP discovery.'),
     # The EVPN API tests (test_evpn.py, test_evpn_negative.py) use
-    # hardcoded VNI values up to 501. The dynamic range must start
-    # above those to avoid conflicts when tests run in parallel.
+    # hardcoded VNI values up to 501.
+    # They also test auto-vni functionality which allocated VNI values
+    # automatically starting with 1.
+    # Due to that, the dynamic range must start above those to avoid conflicts
+    # when tests run in parallel.
     cfg.IntOpt('evpn_vni_range_start',
                default=1000,
                help='Start of VNI range for dynamic allocation.'),

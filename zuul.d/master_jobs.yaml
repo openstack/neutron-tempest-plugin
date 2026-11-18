@@ -311,7 +311,7 @@
       - ^neutron/cmd/ovn/.*$
       - ^neutron/common/ovn/.*$
       - ^neutron_lib/tests/.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
@@ -418,7 +418,7 @@
       - ^neutron/services/trunk/drivers/ovn/.*$
       - ^neutron/cmd/ovn/.*$
       - ^neutron/common/ovn/.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
@@ -580,7 +580,7 @@
       - ^neutron/services/trunk/drivers/ovn/.*$
       - ^neutron/cmd/ovn/.*$
       - ^neutron/common/ovn/.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
@@ -742,7 +742,7 @@
       - ^neutron/services/trunk/drivers/openvswitch/.*$
       - ^neutron/scheduler/.*$
       - ^neutron_lib/tests/.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
@@ -990,7 +990,7 @@
       - ^neutron/services/trunk/drivers/ovn/.*$
       - ^neutron/cmd/ovn/.*$
       - ^neutron/common/ovn/.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
@@ -1053,7 +1053,7 @@
       - ^neutron_lib/tests/.*$
       - ^neutron_tempest_plugin/api/test_.*$
       - ^neutron_tempest_plugin/api/admin/test_.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^rally-jobs/.*$
       - ^roles/.*functional.*$
@@ -1090,6 +1090,8 @@
       - ^zuul.d/base-nested-switch.yaml
 
 - job:
+    # networking-sfc has been deprecated, this can be removed in the future
+    # when all jobs that inherit have been removed
     name: neutron-tempest-plugin-sfc
     parent: neutron-tempest-plugin-base
     timeout: 10800
@@ -1227,7 +1229,7 @@
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
       - ^neutron_tempest_plugin/scenario/test_.*$
-      - ^neutron_tempest_plugin/(fwaas|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(fwaas|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
@@ -1287,7 +1289,7 @@
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
       - ^neutron_tempest_plugin/scenario/test_.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|tap_as_a_service|vpnaas).*$
       - ^tools/.*$
       - ^tox.ini$
       - ^plugin.spec$
@@ -1343,7 +1345,7 @@
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
       - ^neutron_tempest_plugin/scenario/test_.*$
-      - ^neutron_tempest_plugin/(bgpvpn|neutron_dynamic_routing|sfc|tap_as_a_service|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|neutron_dynamic_routing|tap_as_a_service|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
@@ -1457,7 +1459,7 @@
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
       - ^neutron_tempest_plugin/scenario/test_.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
@@ -1522,7 +1524,7 @@
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
       - ^neutron_tempest_plugin/scenario/test_.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|tap_as_a_service).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|tap_as_a_service).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
@@ -1637,7 +1639,7 @@
       - ^neutron_tempest_plugin/api/admin/test_.*$
       - ^neutron_tempest_plugin/scenario/admin/.*$
       - ^neutron_tempest_plugin/scenario/test_.*$
-      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|sfc|vpnaas).*$
+      - ^neutron_tempest_plugin/(bgpvpn|fwaas|neutron_dynamic_routing|vpnaas).*$
       - ^neutron_tempest_plugin/services/bgp/.*$
       - ^tools/.*$
       - ^tox.ini$
